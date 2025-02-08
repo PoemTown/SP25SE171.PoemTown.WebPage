@@ -10,7 +10,7 @@ const Headeruser = () => {
     {
       key: "profile",
       label: "Profile",
-      onClick: () => navigate("/profile"), 
+      onClick: () => navigate("/profile"),
     },
     {
       key: "logout",
@@ -28,7 +28,7 @@ const Headeruser = () => {
   return (
     <header style={styles.header}>
       {/* Logo Section */}
-      <div style={styles.logo}>
+      <div style={styles.logo} onClick={() => navigate("/")} >
         <img src="./logo.png" alt="PoemTown Logo" style={styles.logoImage} />
       </div>
 
@@ -68,11 +68,13 @@ const styles = {
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
     flexWrap: "wrap",
     gap: "10px",
+    cursor: "pointer",
   },
   logo: {
     flex: "1",
     display: "flex",
     justifyContent: "flex-start",
+    cursor: "pointer",
   },
   logoImage: {
     height: "80px",

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import Headerdefault from "../components/Headerdefault";
 import Headeruser from "../components/Headeruser";
 import Footer from "../components/Footer";
@@ -6,15 +7,19 @@ import Content from "../components/componentHomepage/Content";
 
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState("latest");
-  const [isLoggedIn, setIsLoggedIn] = useState(false); 
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
-    setIsLoggedIn(!!token); 
+    setIsLoggedIn(!!token);
   }, []);
 
   const handleTabClick = (tab) => {
     setActiveTab(tab);
+    if (tab === "yourpage") {
+      navigate("/userpage");
+    }
   };
 
   return (
@@ -36,7 +41,6 @@ const Homepage = () => {
         </div>
       </section>
 
-      {/* Navigation Bar */}
       <nav style={styles.navbar}>
         <ul style={styles.navList}>
           {navTabs.map((tab) => (
@@ -48,9 +52,12 @@ const Homepage = () => {
               }}
             >
               <a
-                href={tab.href}
+                href={tab.key === "yourpage" ? undefined : tab.href}
                 style={styles.navLink}
-                onClick={() => handleTabClick(tab.key)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleTabClick(tab.key);
+                }}
               >
                 {tab.label}
               </a>
