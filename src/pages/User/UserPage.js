@@ -3,6 +3,18 @@ import Headeruser from "../../components/Headeruser";
 import Footer from "../../components/Footer";
 import { Settings } from "lucide-react";
 
+const imageLibrary = {
+    coverImages: [
+        "./@.png",
+        "./Login.jpg",
+        "./logo.png",
+    ],
+    backgroundImages: [
+        "./@.png",
+        "./Login.jpg",
+        "./logo.png",
+    ],
+};
 
 const UserPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -11,14 +23,19 @@ const UserPage = () => {
     const [tempCoverImage, setTempCoverImage] = useState(null);
     const [tempBackgroundImage, setTempBackgroundImage] = useState(null);
 
-    const handleImageChange = (event, setImage, setTempImage) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setTempImage(reader.result);
-            };
-            reader.readAsDataURL(file);
+    const handleImageSelect = (image, type) => {
+        if (type === "cover") {
+            setTempCoverImage(image);
+        } else {
+            setTempBackgroundImage(image);
+        }
+    };
+
+    const handleRemoveImage = (type) => {
+        if (type === "cover") {
+            setTempCoverImage(null);
+        } else {
+            setTempBackgroundImage(null);
         }
     };
 
@@ -108,36 +125,55 @@ const UserPage = () => {
 
                             <h2>Chỉnh sửa giao diện</h2>
 
-                            {/* Cover Preview */}
+                            {/* Cover Image Selection */}
                             <div style={{ marginBottom: "15px", textAlign: "left" }}>
-                                <label><b>Thay đổi ảnh Cover:</b></label>
-                                <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, setCoverImage, setTempCoverImage)} />
+                                <label><b>Chọn ảnh Cover:</b></label>
+                                <div style={{ display: "flex", gap: "10px", marginTop: "10px", overflowX: "auto" }}>
+                                    {imageLibrary.coverImages.map((img, index) => (
+                                        <img
+                                            key={index}
+                                            src={img}
+                                            alt="Cover Option"
+                                            style={{
+                                                width: "80px", height: "50px", borderRadius: "5px",
+                                                cursor: "pointer", border: tempCoverImage === img ? "2px solid blue" : "2px solid transparent"
+                                            }}
+                                            onClick={() => handleImageSelect(img, "cover")}
+                                        />
+                                    ))}
+                                </div>
                                 {tempCoverImage && (
-                                    <div>
-                                        <img src={tempCoverImage} alt="Cover Preview" style={{ width: "100%", marginTop: "10px", borderRadius: "5px" }} />
-                                        <button onClick={() => setTempCoverImage(null)}
-                                            style={{ marginTop: "5px", padding: "5px", backgroundColor: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
-                                            Hủy chọn
-                                        </button>
-                                    </div>
+                                    <button onClick={() => handleRemoveImage("cover")}
+                                        style={{ marginTop: "10px", padding: "5px", background: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                                        Hủy chọn ảnh Cover
+                                    </button>
                                 )}
                             </div>
 
-                            {/* Background Preview */}
+                            {/* Background Image Selection */}
                             <div style={{ marginBottom: "15px", textAlign: "left" }}>
-                                <label><b>Thay đổi Background:</b></label>
-                                <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, setBackgroundImage, setTempBackgroundImage)} />
+                                <label><b>Chọn Background:</b></label>
+                                <div style={{ display: "flex", gap: "10px", marginTop: "10px", overflowX: "auto" }}>
+                                    {imageLibrary.backgroundImages.map((img, index) => (
+                                        <img
+                                            key={index}
+                                            src={img}
+                                            alt="Background Option"
+                                            style={{
+                                                width: "80px", height: "50px", borderRadius: "5px",
+                                                cursor: "pointer", border: tempBackgroundImage === img ? "2px solid blue" : "2px solid transparent"
+                                            }}
+                                            onClick={() => handleImageSelect(img, "background")}
+                                        />
+                                    ))}
+                                </div>
                                 {tempBackgroundImage && (
-                                    <div>
-                                        <img src={tempBackgroundImage} alt="Background Preview" style={{ width: "100%", marginTop: "10px", borderRadius: "5px" }} />
-                                        <button onClick={() => setTempBackgroundImage(null)}
-                                            style={{ marginTop: "5px", padding: "5px", backgroundColor: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
-                                            Hủy chọn
-                                        </button>
-                                    </div>
+                                    <button onClick={() => handleRemoveImage("background")}
+                                        style={{ marginTop: "10px", padding: "5px", background: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                                        Hủy chọn Background
+                                    </button>
                                 )}
                             </div>
-
 
                             <button onClick={handleSaveChanges}
                                 style={{ padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", width: "100%" }}>
