@@ -8,27 +8,24 @@ const UserPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [coverImage, setCoverImage] = useState(null);
     const [backgroundImage, setBackgroundImage] = useState(null);
+    const [tempCoverImage, setTempCoverImage] = useState(null);
+    const [tempBackgroundImage, setTempBackgroundImage] = useState(null);
 
-    const handleCoverChange = (event) => {
+    const handleImageChange = (event, setImage, setTempImage) => {
         const file = event.target.files[0];
         if (file) {
             const reader = new FileReader();
             reader.onloadend = () => {
-                setCoverImage(reader.result);
+                setTempImage(reader.result);
             };
             reader.readAsDataURL(file);
         }
     };
 
-    const handleBackgroundChange = (event) => {
-        const file = event.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                setBackgroundImage(reader.result);
-            };
-            reader.readAsDataURL(file);
-        }
+    const handleSaveChanges = () => {
+        setCoverImage(tempCoverImage);
+        setBackgroundImage(tempBackgroundImage);
+        setIsModalOpen(false);
     };
 
     return (
@@ -93,85 +90,58 @@ const UserPage = () => {
                 {isModalOpen && (
                     <div style={{
                         position: "fixed",
-                        top: "0",
-                        left: "0",
-                        width: "100%",
-                        height: "100%",
+                        top: "0", left: "0",
+                        width: "100%", height: "100%",
                         backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        zIndex: "999",
-                        animation: "fadeIn 0.3s ease-in-out"
+                        display: "flex", justifyContent: "center", alignItems: "center",
+                        zIndex: "999"
                     }}>
                         <div style={{
-                            backgroundColor: "white",
-                            padding: "25px",
-                            borderRadius: "12px",
-                            width: "420px",
-                            textAlign: "center",
-                            boxShadow: "0 5px 15px rgba(0, 0, 0, 0.3)",
-                            position: "relative",
-                            animation: "scaleIn 0.3s ease-in-out"
+                            backgroundColor: "white", padding: "25px",
+                            borderRadius: "12px", width: "420px",
+                            textAlign: "center", position: "relative"
                         }}>
                             <button onClick={() => setIsModalOpen(false)}
-                                style={{
-                                    position: "absolute",
-                                    top: "10px",
-                                    right: "10px",
-                                    background: "transparent",
-                                    border: "none",
-                                    fontSize: "20px",
-                                    cursor: "pointer",
-                                    color: "#333"
-                                }}>
+                                style={{ position: "absolute", top: "10px", right: "10px", background: "transparent", border: "none", fontSize: "20px", cursor: "pointer" }}>
                                 ✖
                             </button>
 
-                            <h2 style={{ marginBottom: "15px", color: "#333" }}>Chỉnh sửa giao diện</h2>
+                            <h2>Chỉnh sửa giao diện</h2>
 
-                            {/* Thay đổi ảnh Cover */}
+                            {/* Cover Preview */}
                             <div style={{ marginBottom: "15px", textAlign: "left" }}>
-                                <label style={{ fontWeight: "bold" }}>Thay đổi ảnh Cover:</label>
-                                <input type="file" accept="image/*" onChange={handleCoverChange}
-                                    style={{
-                                        display: "block",
-                                        marginTop: "5px",
-                                        padding: "6px",
-                                        border: "1px solid #ddd",
-                                        borderRadius: "5px",
-                                        width: "100%"
-                                    }} />
+                                <label><b>Thay đổi ảnh Cover:</b></label>
+                                <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, setCoverImage, setTempCoverImage)} />
+                                {tempCoverImage && (
+                                    <div>
+                                        <img src={tempCoverImage} alt="Cover Preview" style={{ width: "100%", marginTop: "10px", borderRadius: "5px" }} />
+                                        <button onClick={() => setTempCoverImage(null)}
+                                            style={{ marginTop: "5px", padding: "5px", backgroundColor: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                                            Hủy chọn
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
-                            {/* Thay đổi Background */}
+                            {/* Background Preview */}
                             <div style={{ marginBottom: "15px", textAlign: "left" }}>
-                                <label style={{ fontWeight: "bold" }}>Thay đổi Background:</label>
-                                <input type="file" accept="image/*" onChange={handleBackgroundChange}
-                                    style={{
-                                        display: "block",
-                                        marginTop: "5px",
-                                        padding: "6px",
-                                        border: "1px solid #ddd",
-                                        borderRadius: "5px",
-                                        width: "100%"
-                                    }} />
+                                <label><b>Thay đổi Background:</b></label>
+                                <input type="file" accept="image/*" onChange={(e) => handleImageChange(e, setBackgroundImage, setTempBackgroundImage)} />
+                                {tempBackgroundImage && (
+                                    <div>
+                                        <img src={tempBackgroundImage} alt="Background Preview" style={{ width: "100%", marginTop: "10px", borderRadius: "5px" }} />
+                                        <button onClick={() => setTempBackgroundImage(null)}
+                                            style={{ marginTop: "5px", padding: "5px", backgroundColor: "red", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}>
+                                            Hủy chọn
+                                        </button>
+                                    </div>
+                                )}
                             </div>
 
-                            <button onClick={() => setIsModalOpen(false)}
-                                style={{
-                                    padding: "12px",
-                                    backgroundColor: "#007bff",
-                                    color: "white",
-                                    border: "none",
-                                    borderRadius: "6px",
-                                    cursor: "pointer",
-                                    fontWeight: "bold",
-                                    width: "100%",
-                                    fontSize: "16px",
-                                    transition: "0.3s"
-                                }}>
-                                Đóng
+
+                            <button onClick={handleSaveChanges}
+                                style={{ padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", width: "100%" }}>
+                                Lưu thay đổi
                             </button>
                         </div>
                     </div>
