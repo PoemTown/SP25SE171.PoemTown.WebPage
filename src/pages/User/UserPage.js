@@ -5,14 +5,13 @@ import { Settings } from "lucide-react";
 
 const imageLibrary = {
     coverImages: [
-        "./@.png",
-        "./Login.jpg",
-        "./logo.png",
+        "./1.png",
+        "./2.png",
+        "./3.png",
     ],
     backgroundImages: [
-        "./@.png",
-        "./Login.jpg",
-        "./logo.png",
+        "./a.png",
+        "./b.png",
     ],
 };
 
@@ -22,6 +21,8 @@ const UserPage = () => {
     const [backgroundImage, setBackgroundImage] = useState(null);
     const [tempCoverImage, setTempCoverImage] = useState(null);
     const [tempBackgroundImage, setTempBackgroundImage] = useState(null);
+    const [navTabColor, setNavTabColor] = useState("white");
+    const [userStatsBorderColor, setUserStatsBorderColor] = useState("#FFD700");
 
     const handleImageSelect = (image, type) => {
         if (type === "cover") {
@@ -43,6 +44,14 @@ const UserPage = () => {
         setCoverImage(tempCoverImage);
         setBackgroundImage(tempBackgroundImage);
         setIsModalOpen(false);
+    };
+
+    const handleColorChange = (e, type) => {
+        if (type === "navTab") {
+            setNavTabColor(e.target.value);
+        } else if (type === "userStatsBorder") {
+            setUserStatsBorderColor(e.target.value);
+        }
     };
 
     return (
@@ -175,6 +184,18 @@ const UserPage = () => {
                                 )}
                             </div>
 
+                            {/* Navigation Tab Color Selection */}
+                            <div style={{ marginBottom: "15px", textAlign: "left" }}>
+                                <label><b>Chọn màu nền Tabs:</b></label>
+                                <input type="color" value={navTabColor} onChange={(e) => handleColorChange(e, "navTab")} style={{ marginLeft: "10px", cursor: "pointer" }} />
+                            </div>
+
+                            {/* User Stats Border Color Selection */}
+                            <div style={{ marginBottom: "15px", textAlign: "left" }}>
+                                <label><b>Chọn màu viền Thông tin người dùng:</b></label>
+                                <input type="color" value={userStatsBorderColor} onChange={(e) => handleColorChange(e, "userStatsBorder")} style={{ marginLeft: "10px", cursor: "pointer" }} />
+                            </div>
+
                             <button onClick={handleSaveChanges}
                                 style={{ padding: "10px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold", width: "100%" }}>
                                 Lưu thay đổi
@@ -183,9 +204,8 @@ const UserPage = () => {
                     </div>
                 )}
 
-
                 {/* Navigation Tabs */}
-                <nav style={{ marginTop: "15px", backgroundColor: "white", padding: "10px", borderRadius: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <nav style={{ marginTop: "15px", backgroundColor: navTabColor, padding: "10px", borderRadius: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     {["Thơ của bạn", "Bộ sưu tập của bạn", "Bookmark của bạn", "Bản nháp của bạn", "Lịch sử chỉnh sửa", "Quản lý Bản Quyền", "Kho của bạn", "Quản lý ví"].map((tab, index) => (
                         <button
                             key={index}
@@ -195,6 +215,7 @@ const UserPage = () => {
                         </button>
                     ))}
                 </nav>
+
                 <div style={{ maxWidth: "1500px", margin: "auto", padding: "10px" }}>
                     {/* Button Sáng tác thơ */}
                     <button style={{ marginTop: "15px", padding: "10px 15px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>Sáng Tác Thơ</button>
@@ -223,7 +244,7 @@ const UserPage = () => {
                         {/* Right: User Stats */}
                         <div style={{ flex: "1" }}>
                             {/* Personal Achievements */}
-                            <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", border: "2px solid #FFD700", marginBottom: "10px" }}>
+                            <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", border: `2px solid ${userStatsBorderColor}`, marginBottom: "10px" }}>
                                 <h3 style={{ fontWeight: "bold" }}>Thành tựu cá nhân</h3>
                                 <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
                                     <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
@@ -233,7 +254,7 @@ const UserPage = () => {
                             </div>
 
                             {/* User Information */}
-                            <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px" }}>
+                            <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", border: `2px solid ${userStatsBorderColor}`, marginBottom: "10px" }}>
                                 <h3 style={{ fontWeight: "bold" }}>Thông tin người dùng</h3>
                                 <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
                                     <li>Tổng bài viết: 67</li>
@@ -246,7 +267,6 @@ const UserPage = () => {
                     </div>
                 </div>
             </div>
-
 
             <Footer />
         </div>
