@@ -35,7 +35,7 @@ const CreatePoemForm = ({ onBack }) => {
       description: poemData.description,
       chapterNumber: isNaN(poemData.chapter) ? 0 : Number(poemData.chapter),
       chapterName: poemData.chapter || null,
-      status: Number(poemData.status), // Chuyển về kiểu số
+      status: Number(poemData.status), 
       collectionId: poemData.collection ? poemData.collection : null,
       sourceCopyRightId: null,
       poemImageUrl: null,

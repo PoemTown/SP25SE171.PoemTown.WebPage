@@ -1,94 +1,249 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import CreatePoemForm from "./Form/CreatePoemForm";
-const YourPoem = ({ borderColor }) => {
-  const [currentPage, setCurrentPage] = useState("list");
+import { Menu, Dropdown, Modal, Button } from "antd";
+import { MoreOutlined, BookOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 
-  const handleCreatePoemClick = () => {
-    setCurrentPage("create");
+const YourPoem = ({ borderColor }) => {
+  const [isCreatingPoem, setIsCreatingPoem] = useState(false);
+  const [poems, setPoems] = useState([]);
+  const [selectedPoemId, setSelectedPoemId] = useState(null);
+  const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+
+  useEffect(() => {
+    const fetchPoems = async () => {
+      const accessToken = localStorage.getItem("accessToken");
+      try {
+        const response = await fetch(
+          "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine",
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+          }
+        );
+        const data = await response.json();
+        if (data.statusCode === 200) {
+          const poemsWithId = data.data.map((poem) => ({
+            id: poem.id,
+            title: poem.title,
+            description: poem.description,
+            content: poem.content,
+            likeCount: poem.likeCount,
+            commentCount: poem.commentCount,
+          }));
+          setPoems(poemsWithId);
+        }
+      } catch (error) {
+        console.error("Error fetching poems:", error);
+      }
+    };
+
+    fetchPoems();
+  }, []);
+
+  const handleEdit = (id) => {
+    console.log("Edit poem:", id);
   };
 
-  const [poemData, setPoemData] = useState({
-    title: "",
-    description: "",
-    chapter: "",
-    collection: "",
-    content: "",
-  });
-  const [isCreatingPoem, setIsCreatingPoem] = useState(false);
+  const showDeleteModal = (id) => {
+    setSelectedPoemId(id);
+    setIsDeleteModalVisible(true);
+  };
+
+  const handleDeleteForever = async () => {
+    console.log("Xóa vĩnh viễn:", selectedPoemId);
+    // Gửi yêu cầu API để xóa vĩnh viễn bài thơ
+    setIsDeleteModalVisible(false);
+  };
+
+  const handleMoveToTrash = async () => {
+    console.log("Chuyển vào thùng rác:", selectedPoemId);
+    // Gửi yêu cầu API để chuyển bài thơ vào thùng rác
+    setIsDeleteModalVisible(false);
+  };
 
   return (
-    <div style={{ maxWidth: "1500px", margin: "auto", padding: "10px" }}>
+    <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px" }}>
       {!isCreatingPoem ? (
         <>
           <button
             onClick={() => setIsCreatingPoem(true)}
             style={{
-              marginTop: "15px",
-              padding: "10px 15px",
               backgroundColor: "#007bff",
               color: "white",
-              border: "none",
+              padding: "12px 20px",
               borderRadius: "5px",
-              cursor: "pointer",
+              border: "none",
               fontWeight: "bold",
+              cursor: "pointer",
+              display: "block",
+              marginBottom: "20px",
             }}
           >
-            Sáng Tác Thơ
+            SÁNG TÁC THƠ
           </button>
 
-          <div style={{ display: "flex", marginTop: "20px", gap: "20px" }}>
-            <div style={{ flex: "2" }}>
-              {[1, 2, 3].map((post) => (
+          <div style={{ display: "flex", gap: "20px" }}>
+            <div style={{ flex: 2 }}>
+              {poems.map((poem) => (
                 <div
-                  key={post}
+                  key={poem.id}
                   style={{
                     backgroundColor: "white",
                     padding: "15px",
                     borderRadius: "10px",
                     boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
                     marginBottom: "15px",
+                    position: "relative",
                   }}
                 >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontWeight: "bold" }}>Tiêu đề bài thơ {post}</h3>
-                    <span style={{ color: "#999", fontSize: "12px" }}>🕒 3 ngày trước</span>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                      <img
+                        src="./@.png"
+                        alt="avatar"
+                        style={{
+                          width: "40px",
+                          height: "40px",
+                          borderRadius: "50%",
+                          objectFit: "cover",
+                        }}
+                      />
+                      <div>
+                        <strong>KalenGuy34</strong>
+                        <p style={{ fontSize: "12px", color: "#888" }}>🕒 3 ngày trước</p>
+                      </div>
+                    </div>
+
+                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                      <BookOutlined style={{ fontSize: "18px", cursor: "pointer", color: "#555" }} />
+
+                      <Dropdown
+                        overlay={
+                          <Menu>
+                            <Menu.Item key="edit" onClick={() => handleEdit(poem.id)}>
+                              ✏️ Chỉnh sửa
+                            </Menu.Item>
+                            <Menu.Item key="delete" onClick={() => showDeleteModal(poem.id)}>
+                              ❌ Xóa
+                            </Menu.Item>
+                          </Menu>
+                        }
+                        trigger={["click"]}
+                      >
+                        <MoreOutlined
+                          style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
+                          onClick={(e) => e.preventDefault()}
+                        />
+                      </Dropdown>
+                    </div>
                   </div>
-                  <p style={{ color: "#555", marginTop: "5px" }}>Nội dung ngắn gọn của bài thơ...</p>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "12px", color: "#666" }}>
-                    <span>👁️ 3,150</span>
-                    <span>❤️ 1,253</span>
-                    <span>💬 675</span>
-                    <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>Xem bài thơ →</a>
+
+                  <h3 style={{ fontWeight: "bold", marginTop: "10px" }}>{poem.title}</h3>
+                  <p style={{ fontStyle: "italic", color: "#777", marginTop: "5px" }}>
+                    Mô tả: {poem.description}
+                  </p>
+                  <p style={{ color: "#555", marginTop: "5px", marginLeft: "20px" }}>{poem.content}</p>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      marginTop: "10px",
+                      fontSize: "12px",
+                      color: "#666",
+                    }}
+                  >
+                    <span>👁️ {Math.floor(Math.random() * 5000)}</span>
+                    <span>❤️ {poem.likeCount}</span>
+                    <span>💬 {poem.commentCount}</span>
+                    <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>
+                      Xem bài thơ →
+                    </a>
                   </div>
                 </div>
               ))}
             </div>
 
-            <div style={{ flex: "1" }}>
-              <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", border: `2px solid ${borderColor}`, marginBottom: "10px" }}>
+            {/* Thành tựu và thống kê */}
+            <div style={{ flex: 1 }}>
+              <div
+                style={{
+                  backgroundColor: "white",
+                  padding: "15px",
+                  borderRadius: "10px",
+                  border: `2px solid ${borderColor}`,
+                  marginBottom: "15px",
+                }}
+              >
                 <h3 style={{ fontWeight: "bold" }}>Thành tựu cá nhân</h3>
                 <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
                   <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
+                  <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
                   <li>🏆 Cúp vàng bài viết tháng 7/2024</li>
-                  <li>🏆 Cúp bạc bài viết tháng 6/2024</li>
+                  <li>🥈 Cúp bạc tác giả tháng 6/2024</li>
                 </ul>
+                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
               </div>
 
-              <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", border: `2px solid ${borderColor}`, marginBottom: "10px" }}>
-                <h3 style={{ fontWeight: "bold" }}>Thông tin người dùng</h3>
+              <div
+                style={{
+                  backgroundColor: "white",
+                  padding: "15px",
+                  borderRadius: "10px",
+                  border: `2px solid ${borderColor}`,
+                }}
+              >
+                <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
                 <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
-                  <li>Tổng bài viết: 67</li>
-                  <li>Tổng lượt xem: 3,150</li>
-                  <li>Tổng lượt thích: 1,253</li>
-                  <li>Tổng lượt bookmark: 35</li>
+                  <li>Tổng bài viết: 2</li>
+                  <li>Tổng bộ sưu tập: 5</li>
+                  <li>Tổng audio cá nhân: 16</li>
+                  <li>Tổng lượt xem: 662</li>
+                  <li>Tổng lượt thích: 233</li>
+                  <li>Đang theo dõi: 60</li>
+                  <li>Người theo dõi: 1,585</li>
+                  <li>Bookmark bài viết: 35</li>
+                  <li>Bookmark bộ sưu tập: 12</li>
                 </ul>
+                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
               </div>
             </div>
+
           </div>
         </>
       ) : (
         <CreatePoemForm onBack={() => setIsCreatingPoem(false)} />
       )}
+
+      {/* Modal Xác nhận Xóa */}
+      <Modal
+        title="Xóa bài thơ"
+        open={isDeleteModalVisible}
+        onCancel={() => setIsDeleteModalVisible(false)}
+        footer={[
+          <Button key="cancel" onClick={() => setIsDeleteModalVisible(false)}>
+            Hủy
+          </Button>,
+          <Button key="trash" type="default" onClick={handleMoveToTrash}>
+            Chuyển vào thùng rác
+          </Button>,
+          <Button key="delete" type="primary" danger onClick={handleDeleteForever}>
+            Xóa vĩnh viễn
+          </Button>,
+        ]}
+      >
+        <p>
+          <ExclamationCircleOutlined style={{ color: "red", marginRight: "10px" }} />
+          Bạn muốn xóa bài thơ này vĩnh viễn hay chuyển vào thùng rác?
+        </p>
+      </Modal>
     </div>
   );
 };
