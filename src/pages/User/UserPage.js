@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import Headeruser from "../../components/Headeruser";
 import Footer from "../../components/Footer";
 import { Settings } from "lucide-react";
-
+import YourPoem from "./YourPoem";
 const imageLibrary = {
     coverImages: [
         "./1.png",
@@ -23,6 +23,7 @@ const UserPage = () => {
     const [tempBackgroundImage, setTempBackgroundImage] = useState(null);
     const [navTabColor, setNavTabColor] = useState("white");
     const [userStatsBorderColor, setUserStatsBorderColor] = useState("#FFD700");
+    const [activeTab, setActiveTab] = useState("Thơ của bạn");
 
     const handleImageSelect = (image, type) => {
         if (type === "cover") {
@@ -209,63 +210,74 @@ const UserPage = () => {
                     {["Thơ của bạn", "Bộ sưu tập của bạn", "Bookmark của bạn", "Bản nháp của bạn", "Lịch sử chỉnh sửa", "Quản lý Bản Quyền", "Kho của bạn", "Quản lý ví"].map((tab, index) => (
                         <button
                             key={index}
-                            style={{ padding: "10px 15px", fontSize: "14px", color: "#555", border: "none", background: "none", cursor: "pointer", fontWeight: "bold" }}
+                            onClick={() => setActiveTab(tab)}
+                            style={{
+                                padding: "10px 15px",
+                                fontSize: "14px",
+                                border: "none",
+                                background: "none",
+                                cursor: "pointer",
+                                fontWeight: activeTab === tab ? "bold" : "normal",
+                                color: activeTab === tab ? "#007bff" : "#555",
+                                borderBottom: activeTab === tab ? "2px solid #007bff" : "none"
+                            }}
                         >
                             {tab}
                         </button>
                     ))}
                 </nav>
-
-                <div style={{ maxWidth: "1500px", margin: "auto", padding: "10px" }}>
-                    {/* Button Sáng tác thơ */}
-                    <button style={{ marginTop: "15px", padding: "10px 15px", backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}>Sáng Tác Thơ</button>
-
-                    {/* Content Section */}
-                    <div style={{ display: "flex", marginTop: "20px", gap: "20px" }}>
-                        {/* Left: User Posts */}
-                        <div style={{ flex: "2" }}>
-                            {[1, 2, 3].map((post) => (
-                                <div key={post} style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)", marginBottom: "15px" }}>
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <h3 style={{ fontWeight: "bold" }}>Tiêu đề bài thơ {post}</h3>
-                                        <span style={{ color: "#999", fontSize: "12px" }}>🕒 3 ngày trước</span>
-                                    </div>
-                                    <p style={{ color: "#555", marginTop: "5px" }}>Nội dung ngắn gọn của bài thơ...</p>
-                                    <div style={{ display: "flex", justifyContent: "space-between", marginTop: "10px", fontSize: "12px", color: "#666" }}>
-                                        <span>👁️ 3,150</span>
-                                        <span>❤️ 1,253</span>
-                                        <span>💬 675</span>
-                                        <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>Xem bài thơ →</a>
-                                    </div>
-                                </div>
-                            ))}
+                {/* Nội dung hiển thị theo Tab */}
+                <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
+                    {activeTab === "Thơ của bạn" && (
+                        <div>
+                            <YourPoem borderColor={userStatsBorderColor} />
                         </div>
+                    )}
 
-                        {/* Right: User Stats */}
-                        <div style={{ flex: "1" }}>
-                            {/* Personal Achievements */}
-                            <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", border: `2px solid ${userStatsBorderColor}`, marginBottom: "10px" }}>
-                                <h3 style={{ fontWeight: "bold" }}>Thành tựu cá nhân</h3>
-                                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
-                                    <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
-                                    <li>🏆 Cúp vàng bài viết tháng 7/2024</li>
-                                    <li>🏆 Cúp bạc bài viết tháng 6/2024</li>
-                                </ul>
-                            </div>
-
-                            {/* User Information */}
-                            <div style={{ backgroundColor: "white", padding: "15px", borderRadius: "10px", border: `2px solid ${userStatsBorderColor}`, marginBottom: "10px" }}>
-                                <h3 style={{ fontWeight: "bold" }}>Thông tin người dùng</h3>
-                                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
-                                    <li>Tổng bài viết: 67</li>
-                                    <li>Tổng lượt xem: 3,150</li>
-                                    <li>Tổng lượt thích: 1,253</li>
-                                    <li>Tổng lượt bookmark: 35</li>
-                                </ul>
-                            </div>
+                    {activeTab === "Bộ sưu tập của bạn" && (
+                        <div>
+                            <h3>Bộ sưu tập của bạn</h3>
+                            <p>Các bộ sưu tập thơ mà bạn đã tạo sẽ hiển thị ở đây.</p>
                         </div>
-                    </div>
+                    )}
+                    {activeTab === "Bookmark của bạn" && (
+                        <div>
+                            <h3>Bookmark của bạn</h3>
+                            <p>Các bài thơ bạn đã đánh dấu yêu thích sẽ hiển thị tại đây.</p>
+                        </div>
+                    )}
+                    {activeTab === "Bản nháp của bạn" && (
+                        <div>
+                            <h3>Bản nháp của bạn</h3>
+                            <p>Những bài thơ chưa hoàn thành của bạn sẽ hiển thị tại đây.</p>
+                        </div>
+                    )}
+                    {activeTab === "Lịch sử chỉnh sửa" && (
+                        <div>
+                            <h3>Lịch sử chỉnh sửa</h3>
+                            <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>
+                        </div>
+                    )}
+                    {activeTab === "Quản lý Bản Quyền" && (
+                        <div>
+                            <h3>Quản lý Bản Quyền</h3>
+                            <p>Thông tin về bản quyền các tác phẩm của bạn sẽ được hiển thị tại đây.</p>
+                        </div>
+                    )}
+                    {activeTab === "Kho của bạn" && (
+                        <div>
+                            <h3>Kho của bạn</h3>
+                            <p>Quản lý các tài liệu và tệp tin liên quan đến tác phẩm của bạn.</p>
+                        </div>
+                    )}
+                    {activeTab === "Quản lý ví" && (
+                        <div>
+                            <h3>Quản lý ví</h3>
+                            <p>Thông tin về tài chính và ví điện tử sẽ hiển thị ở đây.</p>
+                        </div>
+                    )}
                 </div>
+
             </div>
 
             <Footer />
