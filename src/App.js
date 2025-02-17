@@ -6,6 +6,9 @@ import SignupPage from "./pages/SignupPage";
 import EmailConfirmationPage from "./pages/EmailConfirmationPage";
 import ForgotPassword from "./pages/ForgotPassword";
 import UserPage from "./pages/User/UserPage";
+import YourPoem from "./pages/User/YourPoem";
+import CreatePoem from "./pages/User/CreatePoem"; 
+
 function App() {
   return (
     <Router>
@@ -16,7 +19,12 @@ function App() {
         <Route path="/signup" element={<SignupPage />} />
         <Route path="/confirm-email" element={<EmailConfirmationPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
-        <Route path="/userpage" element={<UserPage />} />
+        
+        {/* Nested Route trong UserPage */}
+        <Route path="/userpage" element={<UserPage />}>
+          <Route index element={<YourPoem borderColor="#ddd" />} /> 
+          <Route path="create-poem" element={<CreatePoem />} />
+        </Route>
       </Routes>
     </Router>
   );
