@@ -59,10 +59,11 @@ const Headeruser = () => {
 
 const styles = {
   header: {
+    height: "80px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "10px 20px",
+    padding: "0px 20px",
     backgroundColor: "#fff",
     borderBottom: "1px solid #ddd",
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
@@ -75,9 +76,10 @@ const styles = {
     display: "flex",
     justifyContent: "flex-start",
     cursor: "pointer",
+    
   },
   logoImage: {
-    height: "80px",
+    height: "60px",
   },
   nav: {
     flex: "2",

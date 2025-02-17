@@ -4,11 +4,19 @@ import Headerdefault from "../components/Headerdefault";
 import Headeruser from "../components/Headeruser";
 import Footer from "../components/Footer";
 import Content from "../components/componentHomepage/Content";
+import { useParams } from "react-router-dom";
 
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState("latest");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const navigate = useNavigate();
+
+  const {tab} = useParams();
+  const currentTab = tab || "lastest";
+
+  useEffect(() => {
+    setActiveTab(currentTab);
+  }, [currentTab]);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
@@ -52,7 +60,7 @@ const Homepage = () => {
               }}
             >
               <a
-                href={tab.key === "yourpage" ? undefined : tab.href}
+                href={`/?tab=${tab.key}`}
                 style={styles.navLink}
                 onClick={(e) => {
                   e.preventDefault();
@@ -65,8 +73,9 @@ const Homepage = () => {
           ))}
         </ul>
       </nav>
-
-      <Content />
+      <div style={styles.content}>
+      <Content activeTab={activeTab} />
+      </div>
       <Footer />
     </div>
   );
@@ -86,6 +95,7 @@ const navTabs = [
 const styles = {
   container: {
     fontFamily: "'Arial', sans-serif",
+    margin: "0",
   },
   main: {
     padding: "20px",
@@ -102,26 +112,31 @@ const styles = {
     lineHeight: "1.6",
   },
   heroSection: {
-    position: "relative",
-    height: "30vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start", 
+    maxHeight: "295px",
+    height: "26vh",
     backgroundImage: "url('./background.png')",
     backgroundSize: "cover",
     backgroundPosition: "center",
+    padding: "40px",
     color: "#fff",
-    padding: "20px",
   },
   heroContent: {
-    position: "absolute",
-    top: "20px",
-    left: "20px",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
     maxWidth: "400px",
   },
+  
   title: {
     fontSize: "36px",
     fontWeight: "bold",
+    borderBottom: "1px solid #ffffff",
+    paddingBottom: "10px",
+    marginBottom: "10px",
     margin: "0",
   },
   subtitle: {
@@ -144,10 +159,10 @@ const styles = {
   navbar: {
     display: "flex",
     justifyContent: "center",
+    alignItems: "stretch",
     backgroundColor: "#fff",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-    padding: "10px 20px",
-    marginTop: "10px",
+    borderBottom: "1px solid #ccc",
+    minHeight: "60px",
   },
   navList: {
     listStyleType: "none",
@@ -159,6 +174,11 @@ const styles = {
   },
   navItem: {
     fontSize: "14px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "93%", 
+    
   },
   navLink: {
     textDecoration: "none",
@@ -168,10 +188,14 @@ const styles = {
     transition: "border-bottom 0.3s",
   },
   navLinkActive: {
-    borderBottom: "2px solid #000",
+    borderBottom: "5px solid #4E9FE5",
+    borderRadius: "0px",
     color: "#000",
     fontWeight: "bolder",
   },
+  content: {
+    margin: "0px 195px",
+  }
 };
 
 export default Homepage;
