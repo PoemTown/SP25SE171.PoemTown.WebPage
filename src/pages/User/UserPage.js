@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Headeruser from "../../components/Headeruser";
 import Footer from "../../components/Footer";
 import { Settings } from "lucide-react";
 import YourPoem from "./YourPoem";
+import YourDraft from "./YourDraft";
 const imageLibrary = {
     coverImages: [
         "./1.png",
@@ -24,6 +25,7 @@ const UserPage = () => {
     const [navTabColor, setNavTabColor] = useState("white");
     const [userStatsBorderColor, setUserStatsBorderColor] = useState("#FFD700");
     const [activeTab, setActiveTab] = useState("Thơ của bạn");
+    const [displayName, setDisplayName] = useState("");
 
     const handleImageSelect = (image, type) => {
         if (type === "cover") {
@@ -54,11 +56,44 @@ const UserPage = () => {
             setUserStatsBorderColor(e.target.value);
         }
     };
+    const [userData, setUserData] = useState({
+        displayName: "Loading...",
+        email: "Loading...",
+    });
+
+    useEffect(() => {
+        const fetchUserProfile = async () => {
+            try {
+                const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile", {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`, 
+                        "Content-Type": "application/json",
+                    },
+                });
+                const result = await response.json();
+                if (response.ok && result.data) {
+                    setUserData({
+                        displayName: result.data.displayName,
+                        email: result.data.email,
+                    });
+                    setDisplayName(result.data.displayName); 
+                } else {
+                    console.error("Lỗi khi lấy dữ liệu người dùng:", result.message);
+                }
+            } catch (error) {
+                console.error("Lỗi khi gọi API:", error);
+            }
+        };
+
+        fetchUserProfile();
+    }, []);
 
     return (
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
             <Headeruser />
 
+          
             {/* Cover Image */}
             <div style={{ width: "100%", paddingTop: "10px", position: "relative" }}>
                 <div style={{
@@ -77,10 +112,10 @@ const UserPage = () => {
                             style={{ width: "80px", height: "80px", borderRadius: "50%", border: "2px solid white" }}
                         />
                         <div style={{ marginLeft: "15px" }}>
-                            <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>KalenGuy34</h2>
-                            <p style={{ color: "#555" }}>@KhoaKalen</p>
+                            <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{userData.displayName}</h2>
+                            <p style={{ color: "#555" }}>{userData.email}</p>
                             <div style={{ fontSize: "14px", color: "#333" }}>
-                                📜 67 Bài đăng • 👀 1,865 Người theo dõi • 📌 52 Đang theo dõi
+                                 👀 1,865 Người theo dõi • 📌 52 Đang theo dõi
                             </div>
                         </div>
                     </div>
@@ -230,7 +265,7 @@ const UserPage = () => {
                 <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
                     {activeTab === "Thơ của bạn" && (
                         <div>
-                            <YourPoem borderColor={userStatsBorderColor} />
+                            <YourPoem borderColor={userStatsBorderColor} displayName={displayName} />
                         </div>
                     )}
 
@@ -248,9 +283,8 @@ const UserPage = () => {
                     )}
                     {activeTab === "Bản nháp của bạn" && (
                         <div>
-                            <h3>Bản nháp của bạn</h3>
-                            <p>Những bài thơ chưa hoàn thành của bạn sẽ hiển thị tại đây.</p>
-                        </div>
+                        <YourDraft borderColor={userStatsBorderColor} displayName={displayName} />
+                    </div>
                     )}
                     {activeTab === "Lịch sử chỉnh sửa" && (
                         <div>
