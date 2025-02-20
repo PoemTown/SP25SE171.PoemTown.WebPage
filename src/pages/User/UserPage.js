@@ -3,6 +3,7 @@ import Headeruser from "../../components/Headeruser";
 import Footer from "../../components/Footer";
 import { Settings } from "lucide-react";
 import YourPoem from "./YourPoem";
+import YourCollection from "./Collection/YourCollection"
 const imageLibrary = {
     coverImages: [
         "./1.png",
@@ -236,8 +237,7 @@ const UserPage = () => {
 
                     {activeTab === "Bộ sưu tập của bạn" && (
                         <div>
-                            <h3>Bộ sưu tập của bạn</h3>
-                            <p>Các bộ sưu tập thơ mà bạn đã tạo sẽ hiển thị ở đây.</p>
+                            <YourCollection />
                         </div>
                     )}
                     {activeTab === "Bookmark của bạn" && (
