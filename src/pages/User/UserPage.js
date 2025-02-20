@@ -64,10 +64,10 @@ const UserPage = () => {
     useEffect(() => {
         const fetchUserProfile = async () => {
             try {
-                const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile", {
+                const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile/online", {
                     method: "GET",
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`, 
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                         "Content-Type": "application/json",
                     },
                 });
@@ -76,8 +76,11 @@ const UserPage = () => {
                     setUserData({
                         displayName: result.data.displayName,
                         email: result.data.email,
+                        avatar: result.data.avatar,
+                        totalFollowers:result.data.totalFollowers,
+                        totalFollowings:result.data.totalFollowings,
                     });
-                    setDisplayName(result.data.displayName); 
+                    setDisplayName(result.data.displayName);
                 } else {
                     console.error("Lỗi khi lấy dữ liệu người dùng:", result.message);
                 }
@@ -93,9 +96,9 @@ const UserPage = () => {
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
             <Headeruser />
 
-          
+
             {/* Cover Image */}
-            <div style={{ width: "100%", paddingTop: "10px", position: "relative" }}>
+            <div style={{ width: "100%", position: "relative" }}>
                 <div style={{
                     backgroundColor: "#FFD700",
                     padding: "15px",
@@ -107,15 +110,21 @@ const UserPage = () => {
                 }}>
                     <div style={{ display: "flex", alignItems: "center" }}>
                         <img
-                            src="./@.png"
+                            src={userData.avatar || "./default-avatar.png"} 
                             alt="Avatar"
-                            style={{ width: "80px", height: "80px", borderRadius: "50%", border: "2px solid white" }}
+                            style={{
+                                width: "80px",
+                                height: "80px",
+                                borderRadius: "50%",
+                                border: "2px solid white"
+                            }}
                         />
+
                         <div style={{ marginLeft: "15px" }}>
                             <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{userData.displayName}</h2>
                             <p style={{ color: "#555" }}>{userData.email}</p>
                             <div style={{ fontSize: "14px", color: "#333" }}>
-                                 👀 1,865 Người theo dõi • 📌 52 Đang theo dõi
+                                👀 {userData.totalFollowers} Người theo dõi • 📌 {userData.totalFollowings} Đang theo dõi
                             </div>
                         </div>
                     </div>
@@ -145,7 +154,6 @@ const UserPage = () => {
                 backgroundSize: "cover",
                 backgroundPosition: "center",
                 minHeight: "auto",
-                padding: "10px"
             }}>
 
                 {/* MODAL */}
@@ -241,7 +249,7 @@ const UserPage = () => {
                 )}
 
                 {/* Navigation Tabs */}
-                <nav style={{ marginTop: "15px", backgroundColor: navTabColor, padding: "10px", borderRadius: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
+                <nav style={{ marginTop: "0px", backgroundColor: navTabColor, padding: "10px", borderRadius: "10px", display: "flex", gap: "10px", flexWrap: "wrap" }}>
                     {["Thơ của bạn", "Bộ sưu tập của bạn", "Bookmark của bạn", "Bản nháp của bạn", "Lịch sử chỉnh sửa", "Quản lý Bản Quyền", "Kho của bạn", "Quản lý ví"].map((tab, index) => (
                         <button
                             key={index}
@@ -265,7 +273,7 @@ const UserPage = () => {
                 <div style={{ marginTop: "20px", padding: "15px", backgroundColor: "#fff", borderRadius: "10px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
                     {activeTab === "Thơ của bạn" && (
                         <div>
-                            <YourPoem borderColor={userStatsBorderColor} displayName={displayName} />
+                            <YourPoem borderColor={userStatsBorderColor} displayName={displayName} avatar={userData.avatar} />
                         </div>
                     )}
 
@@ -283,8 +291,8 @@ const UserPage = () => {
                     )}
                     {activeTab === "Bản nháp của bạn" && (
                         <div>
-                        <YourDraft borderColor={userStatsBorderColor} displayName={displayName} />
-                    </div>
+                            <YourDraft borderColor={userStatsBorderColor} displayName={displayName} avatar={userData.avatar}/>
+                        </div>
                     )}
                     {activeTab === "Lịch sử chỉnh sửa" && (
                         <div>

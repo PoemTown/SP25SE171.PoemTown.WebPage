@@ -3,7 +3,7 @@ import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 
-const YourDraft = ({ borderColor, displayName }) => {
+const YourDraft = ({ borderColor, displayName,avatar }) => {
     const [isCreatingPoem, setIsCreatingPoem] = useState(false);
     const [poems, setPoems] = useState([]);
     const [selectedPoemId, setSelectedPoemId] = useState(null);
@@ -94,7 +94,7 @@ const YourDraft = ({ borderColor, displayName }) => {
                                     >
                                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                             <img
-                                                src="./@.png"
+                                                src={avatar || "./default-avatar.png"}
                                                 alt="avatar"
                                                 style={{
                                                     width: "40px",
