@@ -1,37 +1,46 @@
 import React, { useState, useEffect } from "react";
 import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button } from "antd";
-import { MoreOutlined, BookOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
-
-const YourPoem = ({ borderColor }) => {
+import { MoreOutlined, BookOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined } from "@ant-design/icons";
+import CommentModal from "./Form/CommentModal";
+const YourPoem = ({ borderColor, displayName }) => {
   const [isCreatingPoem, setIsCreatingPoem] = useState(false);
   const [poems, setPoems] = useState([]);
+  const [likedPoems, setLikedPoems] = useState(new Set());
   const [selectedPoemId, setSelectedPoemId] = useState(null);
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
+  const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
+  const [selectedPoemForComment, setSelectedPoemForComment] = useState(null);
 
   useEffect(() => {
     const fetchPoems = async () => {
       const accessToken = localStorage.getItem("accessToken");
       try {
         const response = await fetch(
-          "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine",
+          "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine?filterOptions.status=1",
           {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
+            headers: { Authorization: `Bearer ${accessToken}` },
           }
         );
         const data = await response.json();
         if (data.statusCode === 200) {
-          const poemsWithId = data.data.map((poem) => ({
-            id: poem.id,
-            title: poem.title,
-            description: poem.description,
-            content: poem.content,
-            likeCount: poem.likeCount,
-            commentCount: poem.commentCount,
-          }));
+          const likedPoemIds = new Set();
+          const poemsWithId = data.data.map((poem) => {
+            if (poem.like) {
+              likedPoemIds.add(poem.id);
+            }
+            return {
+              id: poem.id,
+              title: poem.title,
+              description: poem.description,
+              content: poem.content,
+              likeCount: poem.likeCount,
+              commentCount: poem.commentCount,
+            };
+          });
+
           setPoems(poemsWithId);
+          setLikedPoems(likedPoemIds);
         }
       } catch (error) {
         console.error("Error fetching poems:", error);
@@ -41,26 +50,66 @@ const YourPoem = ({ borderColor }) => {
     fetchPoems();
   }, []);
 
-  const handleEdit = (id) => {
-    console.log("Edit poem:", id);
-  };
-
-  const showDeleteModal = (id) => {
-    setSelectedPoemId(id);
-    setIsDeleteModalVisible(true);
-  };
-
   const handleDeleteForever = async () => {
     console.log("Xóa vĩnh viễn:", selectedPoemId);
-    // Gửi yêu cầu API để xóa vĩnh viễn bài thơ
+
     setIsDeleteModalVisible(false);
   };
 
   const handleMoveToTrash = async () => {
     console.log("Chuyển vào thùng rác:", selectedPoemId);
-    // Gửi yêu cầu API để chuyển bài thơ vào thùng rác
+
     setIsDeleteModalVisible(false);
   };
+
+  const openCommentModal = (poemId) => {
+    setSelectedPoemForComment(poemId);
+    setIsCommentModalVisible(true);
+  };
+
+  const closeCommentModal = () => {
+    setIsCommentModalVisible(false);
+    setSelectedPoemForComment(null);
+  };
+  const handleLikePoem = async (id) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) return;
+
+    const isLiked = likedPoems.has(id);
+    const method = isLiked ? "DELETE" : "POST";
+
+    try {
+      await fetch(`https://api-poemtown-staging.nodfeather.win/api/likes/v1/${id}`, {
+        method: method,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+      });
+
+      setLikedPoems((prevLiked) => {
+        const newLiked = new Set(prevLiked);
+        if (isLiked) {
+          newLiked.delete(id);
+        } else {
+          newLiked.add(id);
+        }
+        return newLiked;
+      });
+
+      setPoems((prevPoems) =>
+        prevPoems.map((poem) =>
+          poem.id === id
+            ? { ...poem, likeCount: isLiked ? poem.likeCount - 1 : poem.likeCount + 1 }
+            : poem
+        )
+      );
+    } catch (error) {
+      console.error("Error liking/unliking poem:", error);
+    }
+  };
+
+
 
   return (
     <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px" }}>
@@ -116,7 +165,7 @@ const YourPoem = ({ borderColor }) => {
                         }}
                       />
                       <div>
-                        <strong>KalenGuy34</strong>
+                        <strong>{displayName}</strong>
                         <p style={{ fontSize: "12px", color: "#888" }}>🕒 3 ngày trước</p>
                       </div>
                     </div>
@@ -127,10 +176,10 @@ const YourPoem = ({ borderColor }) => {
                       <Dropdown
                         overlay={
                           <Menu>
-                            <Menu.Item key="edit" onClick={() => handleEdit(poem.id)}>
+                            <Menu.Item key="edit">
                               ✏️ Chỉnh sửa
                             </Menu.Item>
-                            <Menu.Item key="delete" onClick={() => showDeleteModal(poem.id)}>
+                            <Menu.Item key="delete">
                               ❌ Xóa
                             </Menu.Item>
                           </Menu>
@@ -161,8 +210,17 @@ const YourPoem = ({ borderColor }) => {
                     }}
                   >
                     <span>👁️ {Math.floor(Math.random() * 5000)}</span>
-                    <span>❤️ {poem.likeCount}</span>
-                    <span>💬 {poem.commentCount}</span>
+                    <span
+                      onClick={() => handleLikePoem(poem.id)}
+                      style={{ cursor: "pointer", color: likedPoems.has(poem.id) ? "red" : "#555" }}
+                    >
+                      {likedPoems.has(poem.id) ? <HeartFilled /> : <HeartOutlined />} {poem.likeCount}
+                    </span>
+
+                    <span onClick={() => openCommentModal(poem.id)} style={{ cursor: "pointer" }}>
+                      💬 {poem.commentCount}
+                    </span>
+
                     <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>
                       Xem bài thơ →
                     </a>
@@ -170,7 +228,6 @@ const YourPoem = ({ borderColor }) => {
                 </div>
               ))}
             </div>
-
             {/* Thành tựu và thống kê */}
             <div style={{ flex: 1 }}>
               <div
@@ -215,7 +272,6 @@ const YourPoem = ({ borderColor }) => {
                 <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
               </div>
             </div>
-
           </div>
         </>
       ) : (
@@ -244,8 +300,15 @@ const YourPoem = ({ borderColor }) => {
           Bạn muốn xóa bài thơ này vĩnh viễn hay chuyển vào thùng rác?
         </p>
       </Modal>
+      <CommentModal
+        visible={isCommentModalVisible}
+        onClose={closeCommentModal}
+        poemId={selectedPoemForComment}
+      />
+
     </div>
   );
 };
 
 export default YourPoem;
+
