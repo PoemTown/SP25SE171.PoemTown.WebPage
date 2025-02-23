@@ -1,19 +1,22 @@
 import React, { useEffect, useState } from "react";
-import { Button } from 'antd';
+import { Button, message, Modal } from 'antd';
 import { FiArrowLeft } from "react-icons/fi";
 import { FaRegUser } from "react-icons/fa6";
 import { LuBook } from "react-icons/lu";
+import { IoIosClose } from "react-icons/io";
 import { MdOutlineKeyboardVoice } from "react-icons/md";
 import YourCollectionDetail from "./YourCollectionDetail";
 import CreateCollection from "./CreateCollection";
+import axios from "axios";
 
 const YourCollection = () => {
     const [collections, setCollection] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState(null);
     const [reloadTrigger, setReloadTrigger] = useState(false);
+    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxN2I4ZjQ1NC0xZjkwLTQyODAtZGNjNy0wOGRkNGI3MWViNTIiLCJUb2tlbkhhc2giOiI1Mzk2ZTIzODA5YzgxZTYyZDJhMjZkMTNkZmJhM2E1ZGU1NmM1NDc4Mjc5MGRjYTI3ZjdmMDVjYjgxNzc0Njc2Iiwicm9sZSI6IlVTRVIiLCJuYmYiOjE3NDAzMTY1NTEsImV4cCI6MTc0MDMyMDE1MSwiaWF0IjoxNzQwMzE2NTUxLCJpc3MiOiJZb3VyQXBwSXNzdWVyIiwiYXVkIjoiWW91ckFwcEF1ZGllbmNlIn0.sTqrQDaP5XiAurzuoNWHIC4JB4jxMON9aFjqrVDj9f0';
+
     useEffect(() => {
         const fetchCollections = async () => {
-            const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxN2I4ZjQ1NC0xZjkwLTQyODAtZGNjNy0wOGRkNGI3MWViNTIiLCJUb2tlbkhhc2giOiI2NmNhN2RlZjFiZjE5NjU2Y2ZjYmI5ZjAyM2ZkNDQ1YjIzYWVmMmNlOTI2ODI2ODJkMDg1NDczZWY1MmNhMGI2Iiwicm9sZSI6IlVTRVIiLCJuYmYiOjE3NDAyMTc5NjgsImV4cCI6MTc0MDIyMTU2OCwiaWF0IjoxNzQwMjE3OTY4LCJpc3MiOiJZb3VyQXBwSXNzdWVyIiwiYXVkIjoiWW91ckFwcEF1ZGllbmNlIn0.HlcCm5fcuEe6xao1VmfnFOkG9OLSoKXq6tqf4KdVq14';
             try {
                 const response = await fetch(
                     "https://localhost:7108/api/collections/v1",
@@ -27,6 +30,7 @@ const YourCollection = () => {
                         id: collection.id,
                         name: collection.collectionName,
                         description: collection.collectionDescription,
+                        image:collection.collectionImage,
                         totalPoem: collection.totalChapter
                     })));
                 }
@@ -37,6 +41,30 @@ const YourCollection = () => {
         fetchCollections();
     }, [reloadTrigger]);
 
+    const handleCreate = () => {
+        setSelectedCollection(1); // Chuyển sang giao diện tạo bộ sưu tập
+    };
+
+
+    const handleDelete = async (id) => {
+
+        try {
+            const response = await axios.delete(`https://localhost:7108/api/collections/v1/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            console.log("Response:", response.data);
+            setReloadTrigger((prev) => !prev); // Quay lại danh sách
+            message.success("Xóa tập thơ thành công!");
+        } catch (error) {
+            console.error("Error:", error);
+            message.error("Có lỗi xảy ra khi xóa tập thơ!");
+        }
+    };
+    //----------------------------------------------------------------------------------------//
     const handleMoveToDetail = (collection) => {
         setSelectedCollection(collection); // Chuyển sang trang chi tiết
     };
@@ -46,9 +74,20 @@ const YourCollection = () => {
         setReloadTrigger((prev) => !prev); // Quay lại danh sách
     };
 
-    const handleCreate = () => {
-        setSelectedCollection(1); // Chuyển sang giao diện tạo bộ sưu tập
+    const showDeleteConfirm = (id) => {
+        Modal.confirm({
+            title: "Bạn có chắc chắn muốn xóa?",
+            content: "Hành động này không thể hoàn tác!",
+            okText: "Xóa",
+            cancelText: "Hủy",
+            okType: "danger",
+            onOk() {
+                handleDelete(id);
+            },
+        });
     };
+
+    //----------------------------------------------------------------------------------//
     return (
         <div>
             {selectedCollection === null ? (
@@ -115,6 +154,20 @@ const YourCollection = () => {
                                     >
                                         <nav>Xem tuyển tập &gt;</nav>
                                     </div>
+                                    <div
+                                        style={{
+                                            marginLeft: "auto",
+                                            fontWeight: "100",
+                                            cursor: "pointer",
+                                            position: 'absolute',
+                                            right: 0,
+                                            top: 10
+                                        }}
+                                        onClick={() => showDeleteConfirm(collection.id)}
+                                    >
+                                        <nav><IoIosClose size={25} /></nav>
+                                    </div>
+
                                 </div>
                             </div>
                         ))}
@@ -168,24 +221,14 @@ const YourCollection = () => {
             ) : selectedCollection === 1 ? (
                 // ✅ Hiển thị giao diện tạo bộ sưu tập
                 <div style={{ padding: "0px" }}>
-                    <div
-                        style={{ cursor: "pointer", color: "#007bff", fontSize: "18px", marginBottom: "10px" }}
-                        onClick={handleBack}
-                    >
-                        <FiArrowLeft /> Quay về
-                    </div>
-                    <CreateCollection />
+                    <CreateCollection handleBack={handleBack} />
                 </div>
+             
+                
             ) : (
                 // ✅ Hiển thị chi tiết bộ sưu tập
                 <div style={{ padding: "0px" }}>
-                    <div
-                        style={{ cursor: "pointer", color: "#007bff", fontSize: "18px", marginBottom: "10px" }}
-                        onClick={handleBack}
-                    >
-                        <FiArrowLeft /> Quay về
-                    </div>
-                    <YourCollectionDetail collection={selectedCollection} />
+                    <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} />
                 </div>
             )}
         </div>

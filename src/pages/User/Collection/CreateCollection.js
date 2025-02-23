@@ -1,39 +1,85 @@
 import { Button, Input, message, Radio } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-const CreateCollection = () => {
-    const [collectionName, setCollectionName] = useState("");
-    const [collectionDescription, setCollectionDescription] = useState("");
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxN2I4ZjQ1NC0xZjkwLTQyODAtZGNjNy0wOGRkNGI3MWViNTIiLCJUb2tlbkhhc2giOiI2NmNhN2RlZjFiZjE5NjU2Y2ZjYmI5ZjAyM2ZkNDQ1YjIzYWVmMmNlOTI2ODI2ODJkMDg1NDczZWY1MmNhMGI2Iiwicm9sZSI6IlVTRVIiLCJuYmYiOjE3NDAyMTc5NjgsImV4cCI6MTc0MDIyMTU2OCwiaWF0IjoxNzQwMjE3OTY4LCJpc3MiOiJZb3VyQXBwSXNzdWVyIiwiYXVkIjoiWW91ckFwcEF1ZGllbmNlIn0.HlcCm5fcuEe6xao1VmfnFOkG9OLSoKXq6tqf4KdVq14";
+import { FiArrowLeft } from "react-icons/fi";
+const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
+    const [data, setData] = useState({
+        id: null,  // Nếu update có ID, create không có ID
+        collectionName: "",
+        collectionDescription: "",
+        collectionImage: ""
+    });
+
+
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxN2I4ZjQ1NC0xZjkwLTQyODAtZGNjNy0wOGRkNGI3MWViNTIiLCJUb2tlbkhhc2giOiI1Mzk2ZTIzODA5YzgxZTYyZDJhMjZkMTNkZmJhM2E1ZGU1NmM1NDc4Mjc5MGRjYTI3ZjdmMDVjYjgxNzc0Njc2Iiwicm9sZSI6IlVTRVIiLCJuYmYiOjE3NDAzMTY1NTEsImV4cCI6MTc0MDMyMDE1MSwiaWF0IjoxNzQwMzE2NTUxLCJpc3MiOiJZb3VyQXBwSXNzdWVyIiwiYXVkIjoiWW91ckFwcEF1ZGllbmNlIn0.sTqrQDaP5XiAurzuoNWHIC4JB4jxMON9aFjqrVDj9f0";
+
+    useEffect(() => {
+        if (collection) {
+            console.log(collection)
+            setData({
+                id: collection.id,
+                collectionName: collection.collectionName,
+                collectionDescription: collection.collectionDescription,
+                collectionImage: ""
+            });
+        }
+    }, [collection]);
+    const handleChange = (e) => {
+        setData({ ...data, [e.target.name]: e.target.value });
+    };
+
     const handleSubmit = async () => {
-        if (!collectionName || !collectionDescription) {
+        if (!data.collectionName || !data.collectionDescription) {
             message.error("Vui lòng nhập đầy đủ thông tin!");
             return;
         }
-
-        const data = {
-            collectionName: collectionName,
-            collectionDescription: collectionDescription,
-            collectionImage: ""
-        };
-
         try {
-            const response = await axios.post("https://localhost:7108/api/collections/v1", data, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json"
-                }
-            });
-
-            console.log("Response:", response.data);
-            message.success("Tạo tập thơ thành công!");
+            if (collection) {
+                // 🛠 Nếu có selectedCollection → cập nhật tập thơ
+                const response = await axios.put(
+                    `https://localhost:7108/api/collections/v1`,
+                    data,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                console.log("Update Response:", response.data);
+                message.success("Cập nhật tập thơ thành công!");
+            } else {
+                // 🆕 Nếu không có selectedCollection → tạo tập thơ mới
+                const response = await axios.post(
+                    "https://localhost:7108/api/collections/v1",
+                    data,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                console.log("Create Response:", response.data);
+                message.success("Tạo tập thơ thành công!");
+            }
         } catch (error) {
             console.error("Error:", error);
-            message.error("Có lỗi xảy ra khi tạo tập thơ!");
+            message.error("Có lỗi xảy ra!");
         }
     };
+
+
     return (
         <>
+            <div
+                style={{ cursor: "pointer", color: "#007bff", fontSize: "18px", marginBottom: "10px" }}
+                onClick={handleBack || handleBackDetail}
+            >
+                <FiArrowLeft /> Quay về
+            </div>
+
+
             <div style={{ display: 'flex', gap: '5%' }}>
                 {/* Ảnh */}
                 <div style={{
@@ -50,20 +96,23 @@ const CreateCollection = () => {
                     <div>
                         <h4 style={{ marginBottom: '1%' }}>Tên tập thơ</h4>
                         <Input
+                            name="collectionName"
                             placeholder="Nhập tên tập thơ"
-                            value={collectionName}
-                            onChange={(e) => setCollectionName(e.target.value)}
+                            value={data.collectionName}
+                            onChange={handleChange}
                         />
                     </div>
                     <div>
                         <h4 style={{ marginBottom: '1%' }}>Mô tả</h4>
                         <Input
+                            name="collectionDescription"
                             placeholder="Nhập mô tả tập thơ"
-                            value={collectionDescription}
-                            onChange={(e) => setCollectionDescription(e.target.value)}
+                            value={data.collectionDescription}
+                            onChange={handleChange}
                         />
                     </div>
                 </div>
+
 
                 {/* Xác nhận */}
                 <div style={{ flex: 1, display: "flex", justifyContent: "center", alignItems: "center" }}>
