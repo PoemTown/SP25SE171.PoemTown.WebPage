@@ -13,25 +13,38 @@ const YourCollection = () => {
     const [collections, setCollection] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState(null);
     const [reloadTrigger, setReloadTrigger] = useState(false);
-    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxN2I4ZjQ1NC0xZjkwLTQyODAtZGNjNy0wOGRkNGI3MWViNTIiLCJUb2tlbkhhc2giOiI1Mzk2ZTIzODA5YzgxZTYyZDJhMjZkMTNkZmJhM2E1ZGU1NmM1NDc4Mjc5MGRjYTI3ZjdmMDVjYjgxNzc0Njc2Iiwicm9sZSI6IlVTRVIiLCJuYmYiOjE3NDAzMTY1NTEsImV4cCI6MTc0MDMyMDE1MSwiaWF0IjoxNzQwMzE2NTUxLCJpc3MiOiJZb3VyQXBwSXNzdWVyIiwiYXVkIjoiWW91ckFwcEF1ZGllbmNlIn0.sTqrQDaP5XiAurzuoNWHIC4JB4jxMON9aFjqrVDj9f0';
-
+    const accessToken = localStorage.getItem("accessToken");
+    // const params = {
+    //     /*"filterOptions.collectionName": filterOptions.collectionName,
+    //     sortOptions,
+    //     isDelete,
+    //     pageNumber,
+    //     pageSize,
+    //     allowExceedPageSize,*/
+    //     targetUserId
+    // };
+    
     useEffect(() => {
         const fetchCollections = async () => {
+            
             try {
                 const response = await fetch(
-                    "https://localhost:7108/api/collections/v1",
+                    "https://api-poemtown-staging.nodfeather.win/api/collections/v1",
                     {
                         headers: { Authorization: `Bearer ${accessToken}` },
                     }
                 );
                 const data = await response.json();
                 if (data.statusCode === 200) {
+                    console.log("Response:", data.data);
                     setCollection(data.data.map((collection) => ({
                         id: collection.id,
                         name: collection.collectionName,
                         description: collection.collectionDescription,
-                        image:collection.collectionImage,
-                        totalPoem: collection.totalChapter
+                        image: collection.collectionImage,
+                        totalPoem: collection.totalChapter,
+                        totalRecord: collection.totalRecord,
+                        displayName: collection.user.displayName
                     })));
                 }
             } catch (error) {
@@ -44,12 +57,10 @@ const YourCollection = () => {
     const handleCreate = () => {
         setSelectedCollection(1); // Chuyển sang giao diện tạo bộ sưu tập
     };
-
-
     const handleDelete = async (id) => {
 
         try {
-            const response = await axios.delete(`https://localhost:7108/api/collections/v1/${id}`, {
+            const response = await axios.delete(`https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     "Content-Type": "application/json"
@@ -120,7 +131,10 @@ const YourCollection = () => {
                                 </div>
                                 <div style={{ flex: 4, position: 'relative' }}>
                                     <p style={{ marginBottom: '1%', fontWeight: 'bold' }}>
-                                        {collection.name} - <span style={{ color: "#007bff", fontWeight: "500" }}>Tabooqq253</span>
+                                        {collection.name} -
+                                        <span style={{ color: "#007bff", fontWeight: "500" }}>
+                                            {collection?.displayName || "Unknown User"}
+                                        </span>
                                     </p>
                                     <p style={{
                                         marginRight: '2%',
@@ -142,7 +156,7 @@ const YourCollection = () => {
                                         </div>
                                         <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                             <MdOutlineKeyboardVoice />
-                                            <span>24</span>
+                                            <span>{collection.totalRecord}</span>
                                         </div>
 
 
@@ -223,8 +237,8 @@ const YourCollection = () => {
                 <div style={{ padding: "0px" }}>
                     <CreateCollection handleBack={handleBack} />
                 </div>
-             
-                
+
+
             ) : (
                 // ✅ Hiển thị chi tiết bộ sưu tập
                 <div style={{ padding: "0px" }}>

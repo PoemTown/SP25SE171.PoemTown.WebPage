@@ -11,7 +11,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
     });
 
 
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxN2I4ZjQ1NC0xZjkwLTQyODAtZGNjNy0wOGRkNGI3MWViNTIiLCJUb2tlbkhhc2giOiI1Mzk2ZTIzODA5YzgxZTYyZDJhMjZkMTNkZmJhM2E1ZGU1NmM1NDc4Mjc5MGRjYTI3ZjdmMDVjYjgxNzc0Njc2Iiwicm9sZSI6IlVTRVIiLCJuYmYiOjE3NDAzMTY1NTEsImV4cCI6MTc0MDMyMDE1MSwiaWF0IjoxNzQwMzE2NTUxLCJpc3MiOiJZb3VyQXBwSXNzdWVyIiwiYXVkIjoiWW91ckFwcEF1ZGllbmNlIn0.sTqrQDaP5XiAurzuoNWHIC4JB4jxMON9aFjqrVDj9f0";
+    const token = localStorage.getItem("accessToken");
 
     useEffect(() => {
         if (collection) {
@@ -37,7 +37,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
             if (collection) {
                 // 🛠 Nếu có selectedCollection → cập nhật tập thơ
                 const response = await axios.put(
-                    `https://localhost:7108/api/collections/v1`,
+                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1`,
                     data,
                     {
                         headers: {
@@ -51,7 +51,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
             } else {
                 // 🆕 Nếu không có selectedCollection → tạo tập thơ mới
                 const response = await axios.post(
-                    "https://localhost:7108/api/collections/v1",
+                    "https://api-poemtown-staging.nodfeather.win/api/collections/v1",
                     data,
                     {
                         headers: {

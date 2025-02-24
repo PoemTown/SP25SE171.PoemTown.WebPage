@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, Menu } from 'antd';
+import { Button, Dropdown, Menu, message } from 'antd';
 import { FaRegUser } from "react-icons/fa6";
 import { LuBook } from "react-icons/lu";
 import { MdEdit } from "react-icons/md";
@@ -12,10 +12,9 @@ import axios from "axios";
 const YourCollectionDetail = ({ collection, handleBack }) => {
     const [poems, setPoem] = useState([]);
     const [collectionDetails, setCollectionDetails] = useState([]);
-
     const [reloadTrigger, setReloadTrigger] = useState(false);
     const [selectedCollection, setSelectedCollection] = useState(0);
-    const accessToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJVc2VySWQiOiIxN2I4ZjQ1NC0xZjkwLTQyODAtZGNjNy0wOGRkNGI3MWViNTIiLCJUb2tlbkhhc2giOiI1Mzk2ZTIzODA5YzgxZTYyZDJhMjZkMTNkZmJhM2E1ZGU1NmM1NDc4Mjc5MGRjYTI3ZjdmMDVjYjgxNzc0Njc2Iiwicm9sZSI6IlVTRVIiLCJuYmYiOjE3NDAzMTY1NTEsImV4cCI6MTc0MDMyMDE1MSwiaWF0IjoxNzQwMzE2NTUxLCJpc3MiOiJZb3VyQXBwSXNzdWVyIiwiYXVkIjoiWW91ckFwcEF1ZGllbmNlIn0.sTqrQDaP5XiAurzuoNWHIC4JB4jxMON9aFjqrVDj9f0';
+    const accessToken = localStorage.getItem("accessToken");
     useEffect(() => {
         const fetchData = async () => {
             console.log(collection);
@@ -24,7 +23,7 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
             try {
                 //  Gọi API lấy chi tiết bộ sưu tập
                 const response1 = await fetch(
-                    `https://localhost:7108/api/collections/v1/${collection.id}/detail`,
+                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collection.id}/detail`,
                     { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 const data1 = await response1.json();
@@ -35,7 +34,7 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
     
                 // Gọi API lấy danh sách bài thơ trong bộ sưu tập
                 const response2 = await fetch(
-                    `https://localhost:7108/api/poems/v1/${collection.id}`,
+                    `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${collection.id}`,
                     { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 const data2 = await response2.json();
@@ -51,8 +50,37 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
     
         fetchData();
     }, [reloadTrigger]);
-    
 
+    const handleDelete = () => {
+        console.log("Xóa bài thơ:");
+    };
+
+    const handleMove = async(collectionId, poemId) => {
+        try {
+            
+                const response = await axios.put(
+                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collectionId}/${poemId}`,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                            "Content-Type": "application/json",
+                        },
+                    }
+                );
+                console.log("Update Response:", response.data);
+                message.success("Cập nhật tập thơ thành công!");
+                // 🆕 Nếu không có selectedCollection → tạo tập thơ mới
+                console.log("Create Response:", response.data);
+                message.success("Tạo tập thơ thành công!");
+        } catch (error) {
+            console.error("Error:", error);
+            message.error("Có lỗi xảy ra!");
+        }
+        setReloadTrigger((prev) => !prev);
+        console.log("Chuyển bài thơ:");
+    };
+
+    //----------------------------------------------------------------------------------------//
     function formatDate(isoString) {
         const date = new Date(isoString);
         const day = String(date.getUTCDate()).padStart(2, '0'); // Lấy ngày (DD)
@@ -62,15 +90,6 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
         return `${day}-${month}-${year}`;
     }
 
-    const handleDelete = () => {
-        console.log("Xóa bài thơ:");
-    };
-
-    const handleMove = () => {
-        console.log("Chuyển bài thơ:");
-    };
-
-    //----------------------------------------------------------------------------------------//
     const menu = (
         <Menu>
             <Menu.Item key="delete" onClick={handleDelete}>
@@ -146,7 +165,7 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                                     </div>
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                         <MdOutlineKeyboardVoice />
-                                        <span>24</span>
+                                        <span>{collectionDetails.totalRecord}</span>
                                     </div>
                                 </div>
                             </div>
@@ -244,11 +263,11 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                             }}>
                                 <h3 style={{ fontWeight: "bold", textAlign: 'center' }}>Thống kê tập thơ</h3>
                                 <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
-                                    <li>Tổng bài viết: <span>16</span></li>
-                                    <li>Tổng audio : <span>14</span></li>
-                                    <li>Tổng lượt theo dõi: <span>2.148</span></li>
-                                    <li>Ngày phát hành: <span>14/8/2023</span></li>
-                                    <li>Cập nhật gần nhất: <span>27/11/2024</span></li>
+                                    <li>Tổng bài viết: <span>{collectionDetails.totalChapter}</span></li>
+                                    <li>Tổng audio : <span>{collectionDetails.totalRecord}</span></li>
+                                    
+                                    <li>Ngày phát hành: <span>{formatDate(collectionDetails.createdTime)}</span></li>
+                                    <li>Cập nhật gần nhất: <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
                                 </ul>
                             </div>
                         </div>
