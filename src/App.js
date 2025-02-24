@@ -8,7 +8,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 import UserPage from "./pages/User/UserPage";
 import YourPoem from "./pages/User/YourPoem";
 import CreatePoem from "./pages/User/CreatePoem"; 
-
+import YourDraft from "./pages/User/YourDraft";
 function App() {
   return (
     <Router>
@@ -24,6 +24,7 @@ function App() {
         <Route path="/userpage" element={<UserPage />}>
           <Route index element={<YourPoem borderColor="#ddd" />} /> 
           <Route path="create-poem" element={<CreatePoem />} />
+          <Route index element={<YourPoem borderColor="#ddd" />} />
         </Route>
       </Routes>
     </Router>

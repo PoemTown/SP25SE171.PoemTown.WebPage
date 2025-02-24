@@ -15,6 +15,7 @@ const Homepage = () => {
   const currentTab = tab || "lastest";
 
   useEffect(() => {
+    const currentTab = window.location.pathname.split('/')[1] || 'latest';
     setActiveTab(currentTab);
   }, [currentTab]);
 
@@ -23,9 +24,11 @@ const Homepage = () => {
     setIsLoggedIn(!!token);
   }, []);
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    if (tab === "yourpage") {
+  const handleTabClick = (newTab) => {
+    navigate(`/${newTab}`);
+    setActiveTab(newTab);
+    
+    if (newTab === "yourpage") {
       navigate("/userpage");
     }
   };
@@ -51,23 +54,23 @@ const Homepage = () => {
 
       <nav style={styles.navbar}>
         <ul style={styles.navList}>
-          {navTabs.map((tab) => (
+          {navTabs.map((tabItem) => (
             <li
-              key={tab.key}
+              key={tabItem.key}
               style={{
                 ...styles.navItem,
-                ...(activeTab === tab.key ? styles.navLinkActive : {}),
+                ...(activeTab === tabItem.key ? styles.navLinkActive : {}),
               }}
             >
               <a
-                href={`/?tab=${tab.key}`}
+                href={`/${tabItem.key}`}
                 style={styles.navLink}
                 onClick={(e) => {
                   e.preventDefault();
-                  handleTabClick(tab.key);
+                  handleTabClick(tabItem.key);
                 }}
               >
-                {tab.label}
+                {tabItem.label}
               </a>
             </li>
           ))}
