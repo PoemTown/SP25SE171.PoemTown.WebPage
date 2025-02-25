@@ -3,7 +3,7 @@ import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 
-const YourDraft = ({ borderColor, displayName,avatar }) => {
+const YourDraft = ({ displayName, avatar, statisticBorder, achievementBorder}) => {
     const [isCreatingPoem, setIsCreatingPoem] = useState(false);
     const [poems, setPoems] = useState([]);
     const [selectedPoemId, setSelectedPoemId] = useState(null);
@@ -169,7 +169,7 @@ const YourDraft = ({ borderColor, displayName,avatar }) => {
                                     backgroundColor: "white",
                                     padding: "15px",
                                     borderRadius: "10px",
-                                    border: `2px solid ${borderColor}`,
+                                    border: `2px solid ${achievementBorder}`,
                                     marginBottom: "15px",
                                 }}
                             >
@@ -188,7 +188,7 @@ const YourDraft = ({ borderColor, displayName,avatar }) => {
                                     backgroundColor: "white",
                                     padding: "15px",
                                     borderRadius: "10px",
-                                    border: `2px solid ${borderColor}`,
+                                    border: `2px solid ${statisticBorder}`,
                                 }}
                             >
                                 <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
