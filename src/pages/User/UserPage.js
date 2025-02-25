@@ -162,8 +162,7 @@ const UserPage = () => {
 
                     {activeTab === "Bộ sưu tập của bạn" && (
                         <div>
-                            <h3>Bộ sưu tập của bạn</h3>
-                            <p>Các bộ sưu tập thơ mà bạn đã tạo sẽ hiển thị ở đây.</p>
+                            <YourCollection />
                         </div>
                     )}
                     {activeTab === "Bookmark của bạn" && (
