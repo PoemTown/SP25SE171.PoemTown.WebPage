@@ -44,7 +44,7 @@ const YourDesign = ({ statisticBorder, achievementBorder }) => {
                         type="text"
                         value={selectedTemplate}
                         onChange={(e) => setSelectedTemplate(e.target.value)}
-                        style={{ display: "block", margin: "10px 0", padding: "5px", width: "100%" }}
+                        style={{ display: "block", margin: "10px 0", padding: "15px", width: "100%" }}
                     />
                     <div style={{ display: "flex", overflowX: "auto", gap: "10px", paddingBottom: "10px" }}>
                         {templates.map((template) => (
@@ -66,7 +66,7 @@ const YourDesign = ({ statisticBorder, achievementBorder }) => {
                         <button style={{ padding: "10px 30px", border: "1px dashed black", borderRadius: "5px" }}>+</button>
                     </div>
                     <div style={{ display: "flex", justifyContent: "flex-end" }}>
-                        <button style={{ backgroundColor: "#00FF00", color: "white", padding: "10px 15px", borderRadius: "5px", marginTop: "10px" }}>SỬ DỤNG</button>
+                        <button style={{ backgroundColor: "#6aad5e", color: "white", padding: "10px 15px", borderRadius: "5px", marginTop: "10px" }}>SỬ DỤNG</button>
                     </div>
                 </div>
 

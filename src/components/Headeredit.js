@@ -41,7 +41,7 @@ const Headeredit = () => {
           Về PoemTown
         </a>
         <a href="#about-us" style={styles.navLink}>
-          Về chúng tôi
+          Về chúng tôi 
         </a>
       </nav>
 

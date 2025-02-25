@@ -89,9 +89,7 @@ const UserPage = () => {
 
     return (
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-            <Headeruser />
-
-
+            {activeTab === "Trang trí" ? <Headeredit /> : <Headeruser />}
             {/* Cover Image */}
             <div style={{ width: "100%", position: "relative" }}>
                 <div style={{
