@@ -5,6 +5,7 @@ import Footer from "../../components/Footer";
 import YourPoem from "./YourPoem";
 import YourDraft from "./YourDraft";
 import YourDesign from "./YourDesign";
+import YourCollection from "./Collection/YourCollection";
 
 const UserPage = () => {
     const [coverImage, setCoverImage] = useState(null);
