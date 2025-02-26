@@ -5,10 +5,12 @@ import Headeruser from "../components/Headeruser";
 import Footer from "../components/Footer";
 import Content from "../components/componentHomepage/Content";
 import { useParams } from "react-router-dom";
+import { Modal } from "antd";
 
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState("latest");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
   const {tab} = useParams();
@@ -24,7 +26,30 @@ const Homepage = () => {
     setIsLoggedIn(!!token);
   }, []);
 
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleSignup = () => {
+    navigate("/signup");
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  }
+
+
   const handleTabClick = (newTab) => {
+    console.log(newTab);
+    
+    if ((newTab === "bookmark" || newTab === "yourpage") && isLoggedIn === false) {
+      showModal();
+      return;
+    } 
+    
     navigate(`/${newTab}`);
     setActiveTab(newTab);
     
@@ -36,20 +61,35 @@ const Homepage = () => {
   return (
     <div style={styles.container}>
       {isLoggedIn ? <Headeruser /> : <Headerdefault />}
+      <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
+        <>
+          <button style={styles.signupButton} onClick={handleSignup}>
+            Đăng ký
+          </button>
+          <button style={styles.loginButton} onClick={handleLogin}>
+            Đăng nhập
+          </button>
+
+        </>
+      )}>
+        <h2 style={{ textAlign: "center", color: "red", fontSize: "1.8rem" }}>Vui lòng đăng nhập để sử dụng</h2>
+        <img alt="Access Denied" style={{ margin: "0 15%", width: "70%" }} src="./access_denied_nofitication.png" />
+      </Modal>
       <section style={styles.heroSection}>
         <div style={styles.heroContent}>
           <h1 style={styles.title}>PoemTown</h1>
           <p style={styles.subtitle}>
             Thị trấn mơ mộng kết nối những người có tâm hồn yêu thơ
           </p>
-          <div style={styles.searchBox}>
+          
+        </div>
+        <div style={styles.searchBox}>
             <input
               type="text"
               placeholder="Search"
               style={styles.searchInput}
             />
           </div>
-        </div>
       </section>
 
       <nav style={styles.navbar}>
@@ -96,6 +136,26 @@ const navTabs = [
 
 // CSS Styles
 const styles = {
+  loginButton: {
+    backgroundColor: "#4A90E2",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  signupButton: {
+    backgroundColor: "#F5A623",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    marginRight: "20px"
+  },
+
   container: {
     fontFamily: "'Arial', sans-serif",
     margin: "0",
@@ -149,7 +209,7 @@ const styles = {
   searchBox: {
     marginTop: "10px",
     display: "flex",
-    width: "100%",
+    width: "50%",
   },
   searchInput: {
     width: "100%",
@@ -197,7 +257,7 @@ const styles = {
     fontWeight: "bolder",
   },
   content: {
-    margin: "0px 195px",
+      margin: "0px 129px"
   }
 };
 
