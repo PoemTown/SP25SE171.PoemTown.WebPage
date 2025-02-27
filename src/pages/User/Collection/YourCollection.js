@@ -9,7 +9,7 @@ import YourCollectionDetail from "./YourCollectionDetail";
 import CreateCollection from "./CreateCollection";
 import axios from "axios";
 
-const YourCollection = () => {
+const YourCollection = ({avatar}) => {
     const [collections, setCollection] = useState([]);
     const [selectedCollection, setSelectedCollection] = useState(null);
     const [reloadTrigger, setReloadTrigger] = useState(false);
@@ -22,7 +22,7 @@ const YourCollection = () => {
     //     pageSize,
     //     allowExceedPageSize,*/
     //     targetUserId
-    // };
+    // }; 
     
     useEffect(() => {
         const fetchCollections = async () => {
@@ -125,15 +125,15 @@ const YourCollection = () => {
                                 <div style={{ flex: 1, width: "120px", height: "120px" }}>
                                     <img
                                         style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                        src="./@.png"
+                                        src={collection.image ? collection.image : "/default.png"}
                                         alt="Ảnh cá nhân"
                                     />
                                 </div>
                                 <div style={{ flex: 4, position: 'relative' }}>
                                     <p style={{ marginBottom: '1%', fontWeight: 'bold' }}>
-                                        {collection.name} -
+                                        {collection.name} - {" "}
                                         <span style={{ color: "#007bff", fontWeight: "500" }}>
-                                            {collection?.displayName || "Unknown User"}
+                                             {collection?.displayName || "Unknown User"}
                                         </span>
                                     </p>
                                     <p style={{
@@ -242,7 +242,7 @@ const YourCollection = () => {
             ) : (
                 // ✅ Hiển thị chi tiết bộ sưu tập
                 <div style={{ padding: "0px" }}>
-                    <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} />
+                    <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} avatar = {avatar} />
                 </div>
             )}
         </div>

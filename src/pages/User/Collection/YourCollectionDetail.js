@@ -9,17 +9,20 @@ import { FiThumbsUp, FiBookmark, FiArrowLeft } from "react-icons/fi";
 import { FaRegComment } from "react-icons/fa";
 import CreateCollection from "./CreateCollection";
 import axios from "axios";
-const YourCollectionDetail = ({ collection, handleBack }) => {
+const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     const [poems, setPoem] = useState([]);
     const [collectionDetails, setCollectionDetails] = useState([]);
     const [reloadTrigger, setReloadTrigger] = useState(false);
     const [selectedCollection, setSelectedCollection] = useState(0);
+    const [collections, setCollection] = useState([]);
+    const [moveMenuItems, setMoveMenuItems] = useState([]);
+    const [selectedPoemId, setSelectedPoemId] = useState(null);
     const accessToken = localStorage.getItem("accessToken");
     useEffect(() => {
         const fetchData = async () => {
             console.log(collection);
-           
-    
+
+
             try {
                 //  Gọi API lấy chi tiết bộ sưu tập
                 const response1 = await fetch(
@@ -31,7 +34,7 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                     setCollectionDetails(data1.data);
                     console.log("Collection Details:", data1.data);
                 }
-    
+
                 // Gọi API lấy danh sách bài thơ trong bộ sưu tập
                 const response2 = await fetch(
                     `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${collection.id}`,
@@ -42,43 +45,65 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                     setPoem(data2.data);
                     console.log("Poems:", data2.data);
                 }
-    
+
             } catch (error) {
                 console.error("Error fetching data:", error);
             }
         };
-    
+
         fetchData();
     }, [reloadTrigger]);
 
+
+    const fetchCollections = async () => {
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/collections/v1",
+                {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                }
+            );
+            const data = await response.json();
+            if (data.statusCode === 200) {
+                console.log("Response:", data.data);
+                setCollection(data.data.map((collection) => ({
+                    id: collection.id,
+                    name: collection.collectionName,
+                })));
+            }
+        } catch (error) {
+            console.error("Error fetching collections:", error);
+        }
+    }
     const handleDelete = () => {
         console.log("Xóa bài thơ:");
     };
 
-    const handleMove = async(collectionId, poemId) => {
+    const handleMove = async (collectionId, poemId) => {
         try {
-            
-                const response = await axios.put(
-                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collectionId}/${poemId}`,
-                    {
-                        headers: {
-                            Authorization: `Bearer ${accessToken}`,
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-                console.log("Update Response:", response.data);
-                message.success("Cập nhật tập thơ thành công!");
-                // 🆕 Nếu không có selectedCollection → tạo tập thơ mới
-                console.log("Create Response:", response.data);
-                message.success("Tạo tập thơ thành công!");
+
+            const response = await axios.post(
+                `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collectionId}/${poemId}`,
+                {}, // Body request, để trống nếu không cần
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            console.log("Update Response:", response.data);
+            message.success("Cập nhật tập thơ thành công!");
         } catch (error) {
-            console.error("Error:", error);
-            message.error("Có lỗi xảy ra!");
+            console.error("Error:", error.response?.data || error.errorMessage);
+             message.error(error.response?.data.errorMessage);
         }
+
         setReloadTrigger((prev) => !prev);
-        console.log("Chuyển bài thơ:");
+        console.log("Chuyển bài thơ:", collectionId, poemId);
     };
+
 
     //----------------------------------------------------------------------------------------//
     function formatDate(isoString) {
@@ -90,23 +115,38 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
         return `${day}-${month}-${year}`;
     }
 
-    const menu = (
+    const handleMouseEnter = (poemId) => {
+        console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
+        fetchCollections();
+        console.log("aaaa" + collections)
+        // Giả sử gọi API để lấy danh sách bộ sưu tập
+        setMoveMenuItems(
+            collections.map((collection) => (
+                <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
+                    📂 {collection.name}
+                </Menu.Item>
+            ))
+        );
+    };
+
+    const menu = (poemId) => (
         <Menu>
             <Menu.Item key="delete" onClick={handleDelete}>
                 ❌ Xóa bài thơ
             </Menu.Item>
-            <Menu.Item key="move" onClick={handleMove}>
-                🔄 Chuyển bài thơ
-            </Menu.Item>
+            {/* Sử dụng hàm callback để tránh gọi ngay lập tức */}
+            <Menu.SubMenu key="move" title="🔄 Chuyển bài thơ" onTitleMouseEnter={() => handleMouseEnter(poemId)}>
+                {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
+            </Menu.SubMenu>
         </Menu>
     );
     const handleMoveToUpdate = () => {
-        setSelectedCollection(1); 
+        setSelectedCollection(1);
     };
 
     const handleBackDetail = () => {
-        setSelectedCollection(0); 
-        setReloadTrigger((prev) => !prev); 
+        setSelectedCollection(0);
+        setReloadTrigger((prev) => !prev);
     };
 
 
@@ -135,7 +175,7 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                             <div style={{ flex: 1, width: "120px", height: "120px" }}>
                                 <img
                                     style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                    src="./@.png"
+                                    src={collectionDetails.collectionImage ? collectionDetails.collectionImage : "/default.png"}
                                     alt="Ảnh cá nhân"
                                 />
                             </div>
@@ -191,15 +231,15 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                                         {/* Header */}
                                         <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
                                             <img
-                                                src="./@.png"
+                                                src={avatar || "./default-avatar.png"}
                                                 alt="Avatar"
                                                 style={{ width: "40px", height: "40px", borderRadius: "50%", marginRight: "10px" }}
                                             />
                                             <div>
                                                 <strong>{poem.user.displayName} -</strong> <span style={{ color: "#777" }}> {formatDate(poem.createdTime)}</span>
                                             </div>
-                                            <Dropdown overlay={menu} trigger={["click"]}>
-                                                <div style={{ marginLeft: "auto", cursor: "pointer" }}>
+                                            <Dropdown overlay={menu(poem.id)} trigger={["click"]}>
+                                                <div style={{ marginLeft: "auto", cursor: "pointer" }} onClick={fetchCollections}>
                                                     <IoIosMore size={20} />
                                                 </div>
                                             </Dropdown>
@@ -265,7 +305,7 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                                 <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
                                     <li>Tổng bài viết: <span>{collectionDetails.totalChapter}</span></li>
                                     <li>Tổng audio : <span>{collectionDetails.totalRecord}</span></li>
-                                    
+
                                     <li>Ngày phát hành: <span>{formatDate(collectionDetails.createdTime)}</span></li>
                                     <li>Cập nhật gần nhất: <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
                                 </ul>
@@ -275,7 +315,7 @@ const YourCollectionDetail = ({ collection, handleBack }) => {
                 </div>
             ) : (
                 <div style={{ padding: "0px" }}>
-                    <CreateCollection handleBackDetail={handleBackDetail} collection={collectionDetails}/>
+                    <CreateCollection handleBackDetail={handleBackDetail} collection={collectionDetails} />
                 </div>
             )}
         </div>

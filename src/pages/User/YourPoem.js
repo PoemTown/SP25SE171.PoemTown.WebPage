@@ -3,7 +3,8 @@ import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined } from "@ant-design/icons";
 import CommentModal from "./Form/CommentModal";
-const YourPoem = ({ borderColor, displayName }) => {
+
+const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) => {
   const [isCreatingPoem, setIsCreatingPoem] = useState(false);
   const [poems, setPoems] = useState([]);
   const [likedPoems, setLikedPoems] = useState(new Set());
@@ -155,7 +156,7 @@ const YourPoem = ({ borderColor, displayName }) => {
                   >
                     <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <img
-                        src="./@.png"
+                        src={avatar || "./default-avatar.png"}
                         alt="avatar"
                         style={{
                           width: "40px",
@@ -235,7 +236,7 @@ const YourPoem = ({ borderColor, displayName }) => {
                   backgroundColor: "white",
                   padding: "15px",
                   borderRadius: "10px",
-                  border: `2px solid ${borderColor}`,
+                  border: `2px solid ${achievementBorder}`,
                   marginBottom: "15px",
                 }}
               >
@@ -254,7 +255,7 @@ const YourPoem = ({ borderColor, displayName }) => {
                   backgroundColor: "white",
                   padding: "15px",
                   borderRadius: "10px",
-                  border: `2px solid ${borderColor}`,
+                  border: `2px solid ${statisticBorder}`,
                 }}
               >
                 <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>

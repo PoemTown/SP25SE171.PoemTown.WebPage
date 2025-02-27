@@ -3,6 +3,8 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
+    const [collectionFile, setCollectionFile] = useState(null);
+
     const [data, setData] = useState({
         id: null,  // Nếu update có ID, create không có ID
         collectionName: "",
@@ -20,7 +22,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
                 id: collection.id,
                 collectionName: collection.collectionName,
                 collectionDescription: collection.collectionDescription,
-                collectionImage: ""
+                collectionImage: collection.collectionImage
             });
         }
     }, [collection]);
@@ -70,6 +72,43 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
     };
 
 
+    const handleUploadImage = async (event) => {
+        const file = event.target.files[0];
+        if (file) {
+            const imageUrl = URL.createObjectURL(file);
+            setCollectionFile(imageUrl);
+
+            const formData = new FormData();
+            formData.append("file", file);
+            try {
+                const response = await fetch(
+                    "https://api-poemtown-staging.nodfeather.win/api/collections/v1/image",
+                    {
+                        method: "POST",
+                        headers: {
+                            Authorization: `Bearer ${token}`,
+                        },
+                        body: formData,
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error("Failed to upload image");
+                }
+
+                const data = await response.json();
+                const uploadedImageUrl = data.data;
+
+                message.success("Avatar updated successfully!");
+                sessionStorage.setItem("collectionImage", uploadedImageUrl);
+                setData((prev) => ({ ...prev, collectionImage: uploadedImageUrl }));
+                setCollectionFile(uploadedImageUrl);
+            } catch (error) {
+                message.error("Error uploading image!");
+                console.error(error);
+            }
+        }
+    }
     return (
         <>
             <div
@@ -81,15 +120,44 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
 
 
             <div style={{ display: 'flex', gap: '5%' }}>
-                {/* Ảnh */}
-                <div style={{
-                    flex: 1, display: "flex", justifyContent: "center", alignItems: "center",
-                    backgroundImage: `url('/check.png')`, backgroundSize: "cover", height: "200px"
-                }}>
-                    <Radio.Button value="large" style={{ backgroundColor: '#3A86FF', color: '#FBFBFB' }}>
-                        Tải ảnh lên
-                    </Radio.Button>
-                </div>
+            {/* Khung ảnh */}
+            <div 
+                size={80}
+                style={{
+                    flex: 1, 
+                    display: "flex", 
+                    justifyContent: "center", 
+                    alignItems: "center",
+                    backgroundImage: `url(${collectionFile ? collectionFile : data.collectionImage ? data.collectionImage : '/check.png'})`,
+                    backgroundSize: "cover", 
+                    backgroundPosition: "center",
+                    height: "200px",
+                    borderRadius: "10px",
+                    position: "relative"
+                }}
+            >
+                {/* Nút tải ảnh */}
+                <label 
+                    style={{
+                        backgroundColor: '#3A86FF',
+                        color: '#FBFBFB',
+                        padding: "10px 20px",
+                        borderRadius: "5px",
+                        cursor: "pointer",
+                        position: "absolute",
+                        bottom: "70px"
+                    }}
+                >
+                    Tải ảnh lên
+                    <input
+                        type="file"
+                        accept="image/*"
+                        style={{ display: "none" }}
+                        onChange={handleUploadImage}
+                    />
+                </label>
+            </div>
+        
 
                 {/* Nhập thông tin */}
                 <div style={{ flex: 2 }}>

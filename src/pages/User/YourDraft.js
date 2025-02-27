@@ -3,7 +3,7 @@ import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 
-const YourDraft = ({ borderColor, displayName }) => {
+const YourDraft = ({ displayName, avatar, statisticBorder, achievementBorder}) => {
     const [isCreatingPoem, setIsCreatingPoem] = useState(false);
     const [poems, setPoems] = useState([]);
     const [selectedPoemId, setSelectedPoemId] = useState(null);
@@ -94,7 +94,7 @@ const YourDraft = ({ borderColor, displayName }) => {
                                     >
                                         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                                             <img
-                                                src="./@.png"
+                                                src={avatar || "./default-avatar.png"}
                                                 alt="avatar"
                                                 style={{
                                                     width: "40px",
@@ -169,7 +169,7 @@ const YourDraft = ({ borderColor, displayName }) => {
                                     backgroundColor: "white",
                                     padding: "15px",
                                     borderRadius: "10px",
-                                    border: `2px solid ${borderColor}`,
+                                    border: `2px solid ${achievementBorder}`,
                                     marginBottom: "15px",
                                 }}
                             >
@@ -188,7 +188,7 @@ const YourDraft = ({ borderColor, displayName }) => {
                                     backgroundColor: "white",
                                     padding: "15px",
                                     borderRadius: "10px",
-                                    border: `2px solid ${borderColor}`,
+                                    border: `2px solid ${statisticBorder}`,
                                 }}
                             >
                                 <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
