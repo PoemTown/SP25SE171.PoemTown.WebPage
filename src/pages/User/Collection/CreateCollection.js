@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
     const [data, setData] = useState({
-        id: null,  // Nếu update có ID, create không có ID
+        id: null,  
         collectionName: "",
         collectionDescription: "",
         collectionImage: ""
