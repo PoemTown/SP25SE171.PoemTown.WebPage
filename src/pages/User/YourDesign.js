@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { Settings } from "lucide-react";
 import UserStats from "./Components/UserStats";
+import UserBackgroundEditModal from "./Form/UserBackgroundEditModal";
 
-const YourDesign = ({ statisticBorder, achievementBorder }) => {
+const YourDesign = ({ statisticBorder, achievementBorder, setBackgroundImage }) => {
     const [selectedTemplate, setSelectedTemplate] = useState("");
     const [selectedTemplateId, setSelectedTemplateId] = useState("");
     const [templates, setTemplates] = useState([]);
@@ -30,7 +31,6 @@ const YourDesign = ({ statisticBorder, achievementBorder }) => {
                 if (data?.statusCode === 200 && Array.isArray(data.data)) {
                     setTemplates(data.data);
 
-                    // Kiểm tra sessionStorage
                     const storedTemplate = sessionStorage.getItem("selectedTemplate");
                     const storedTemplateId = sessionStorage.getItem("selectedTemplateId");
 
@@ -38,7 +38,6 @@ const YourDesign = ({ statisticBorder, achievementBorder }) => {
                         setSelectedTemplate(storedTemplate);
                         setSelectedTemplateId(storedTemplateId);
                     } else {
-                        // Nếu không có trong sessionStorage, lấy theme mặc định từ API
                         const activeTemplate = data.data.find((template) => template.isInUse);
                         setSelectedTemplate(activeTemplate ? activeTemplate.name : data.data[0]?.name || "");
                         setSelectedTemplateId(activeTemplate ? activeTemplate.id : data.data[0]?.id || "");
@@ -57,8 +56,6 @@ const YourDesign = ({ statisticBorder, achievementBorder }) => {
     const handleSelectTemplate = (name, id) => {
         setSelectedTemplate(name);
         setSelectedTemplateId(id);
-
-        // Lưu vào sessionStorage
         sessionStorage.setItem("selectedTemplate", name);
         sessionStorage.setItem("selectedTemplateId", id);
     };
@@ -159,60 +156,14 @@ const YourDesign = ({ statisticBorder, achievementBorder }) => {
                 </div>
             </div>
 
-            {/* Modal Popup */}
-            {showModal && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100vw",
-                        height: "100vh",
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                    }}
-                    onClick={() => setShowModal(false)}
-                >
-                    <div
-                        style={{
-                            backgroundColor: "white",
-                            padding: "20px",
-                            borderRadius: "10px",
-                            width: "400px",
-                            position: "relative",
-                        }}
-                        onClick={(e) => e.stopPropagation()}
-                    >
-                        <h3 style={{ fontWeight: "bold" }}>Kho của bạn</h3>
-                        <p>Cùng thiết kế một ngôi nhà thật đậm chất riêng của mình.</p>
-                        <p>Nền của Tường nhà</p>
-
-                        {/* Lựa chọn nền tường */}
-                        <div style={{ display: "flex", gap: "10px" }}>
-                            <input type="radio" name="background" checked={selectedBackground === "option1"} onChange={() => setSelectedBackground("option1")} />
-                            <input type="radio" name="background" checked={selectedBackground === "option2"} onChange={() => setSelectedBackground("option2")} />
-                            <input type="radio" name="background" checked={selectedBackground === "option3"} onChange={() => setSelectedBackground("option3")} />
-                        </div>
-
-                        <button
-                            onClick={() => setShowModal(false)}
-                            style={{
-                                backgroundColor: "#6aad5e",
-                                color: "white",
-                                padding: "10px 15px",
-                                borderRadius: "5px",
-                                marginTop: "20px",
-                                width: "100%",
-                                cursor: "pointer",
-                            }}
-                        >
-                            XÁC NHẬN
-                        </button>
-                    </div>
-                </div>
-            )}
+            {/* Sử dụng modal đã tách riêng */}
+            <UserBackgroundEditModal
+                showModal={showModal}
+                setShowModal={setShowModal}
+                selectedBackground={selectedBackground}
+                setSelectedBackground={setSelectedBackground}
+                setBackgroundImage={setBackgroundImage}
+            />
         </div>
     );
 };

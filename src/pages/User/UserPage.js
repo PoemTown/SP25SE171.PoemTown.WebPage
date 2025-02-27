@@ -33,13 +33,17 @@ const UserPage = () => {
                 const result = await response.json();
                 if (response.ok && Array.isArray(result.data)) {
                     const cover = result.data.find(item => item.type === 1);
-                    
                     if (cover) {
                         setCoverImage(cover.image || null);
                         sessionStorage.setItem("coverImageId", cover.id);
                     }
     
-                    setBackgroundImage(result.data.find(item => item.type === 4)?.image || null);
+                    const background = result.data.find(item => item.type === 4);
+                if (background) {
+                    setBackgroundImage(background.image || null);
+                    sessionStorage.setItem("backgroundImageId", background.id);
+                }
+
                     setNavBorder(result.data.find(item => item.type === 3)?.colorCode || "#FFD700");
                     setAchievementBorder(result.data.find(item => item.type === 5)?.colorCode || "#FFD700");
                     setStatisticBorder(result.data.find(item => item.type === 7)?.colorCode || "#FFD700");
@@ -146,7 +150,7 @@ const UserPage = () => {
                     )}
                     {activeTab === "Lịch sử chỉnh sửa" && <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>}
                     {activeTab === "Quản lý Bản Quyền" && <p>Thông tin về bản quyền các tác phẩm của bạn sẽ được hiển thị tại đây.</p>}
-                    {activeTab === "Trang trí" && <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />}
+                    {activeTab === "Trang trí" && <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage}/>}
                     {activeTab === "Quản lý ví" && <p>Thông tin về tài chính và ví điện tử sẽ hiển thị ở đây.</p>}
                 </div>
             </div>

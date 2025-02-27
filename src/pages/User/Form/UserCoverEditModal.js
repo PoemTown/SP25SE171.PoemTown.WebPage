@@ -22,7 +22,7 @@ const UserCoverEditModal = ({
         }
     };
     const handleConfirmApiCall = async () => {
-        const coverImageId = sessionStorage.getItem("coverImageId"); // Nền hiện tại
+        const coverImageId = sessionStorage.getItem("coverImageId");
     
         if (!selectedImageId) {
             alert("Vui lòng chọn một hình nền!");
