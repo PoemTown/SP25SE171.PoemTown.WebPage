@@ -3,8 +3,11 @@ import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined } from "@ant-design/icons";
 import CommentModal from "./Form/CommentModal";
+import { IoBookmark } from "react-icons/io5";
+import { CiBookmark } from "react-icons/ci";
+import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
 
-const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) => {
+const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) => {
   const [isCreatingPoem, setIsCreatingPoem] = useState(false);
   const [poems, setPoems] = useState([]);
   const [likedPoems, setLikedPoems] = useState(new Set());
@@ -12,6 +15,7 @@ const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) =>
   const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [selectedPoemForComment, setSelectedPoemForComment] = useState(null);
+  const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
 
   useEffect(() => {
     const fetchPoems = async () => {
@@ -26,9 +30,13 @@ const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) =>
         const data = await response.json();
         if (data.statusCode === 200) {
           const likedPoemIds = new Set();
+          const bookmarkedPoemIds = new Set();
           const poemsWithId = data.data.map((poem) => {
             if (poem.like) {
               likedPoemIds.add(poem.id);
+            }
+            if (poem.targetMark) {
+              bookmarkedPoemIds.add(poem.id);
             }
             return {
               id: poem.id,
@@ -37,11 +45,13 @@ const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) =>
               content: poem.content,
               likeCount: poem.likeCount,
               commentCount: poem.commentCount,
+              createdTime: poem.createdTime,
             };
           });
 
           setPoems(poemsWithId);
           setLikedPoems(likedPoemIds);
+          setBookmarkedPoems(bookmarkedPoemIds);
         }
       } catch (error) {
         console.error("Error fetching poems:", error);
@@ -50,6 +60,46 @@ const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) =>
 
     fetchPoems();
   }, []);
+
+  const handleBookmark = async (id) => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (!accessToken) return;
+
+    const isBookmarked = bookmarkedPoems.has(id);
+    const method = isBookmarked ? "DELETE" : "POST";
+
+    try {
+      await fetch(
+        `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`,
+        {
+          method: method,
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json"
+          },
+        }
+      );
+
+      setBookmarkedPoems((prev) => {
+        const newBookmarks = new Set(prev);
+        if (isBookmarked) {
+          newBookmarks.delete(id);
+        } else {
+          newBookmarks.add(id);
+        }
+        return newBookmarks;
+      });
+    } catch (error) {
+      console.error("Error updating bookmark:", error);
+    }
+  };
+
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const options = { day: 'numeric', month: 'long', year: 'numeric' };
+    return date.toLocaleDateString('vi-VN', options);
+  };
 
   const handleDeleteForever = async () => {
     console.log("Xóa vĩnh viễn:", selectedPoemId);
@@ -110,10 +160,8 @@ const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) =>
     }
   };
 
-
-
   return (
-    <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px" }}>
+    <div style={{ margin: "0 129px"}}>
       {!isCreatingPoem ? (
         <>
           <button
@@ -133,104 +181,254 @@ const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) =>
             SÁNG TÁC THƠ
           </button>
 
-          <div style={{ display: "flex", gap: "20px" }}>
-            <div style={{ flex: 2 }}>
-              {poems.map((poem) => (
-                <div
-                  key={poem.id}
-                  style={{
-                    backgroundColor: "white",
-                    padding: "15px",
-                    borderRadius: "10px",
-                    boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
-                    marginBottom: "15px",
-                    position: "relative",
-                  }}
-                >
+          <div style={{ display: "flex", gap: "20px", flexDirection: "row" }}>
+            <div style={{ display: "flex", flexDirection: "column", flex: 6  }}>
+              {poems.map((poem) => {
+                const lines = poem.content?.split('\n') || [];
+                const displayedLines = lines.slice(0, 4);
+                const hasMoreLines = lines.length > 4;
+                const truncatedDescription = poem.description?.length > 102
+                  ? `${poem.description.substring(0, 102)}...`
+                  : poem.description;
+                return (
                   <div
+                    key={poem.id}
                     style={{
                       display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
+                      gap: "10px",
+                      background: "white",
+                      borderRadius: "12px",
+                      padding: "20px",
+                      border: "1px solid #ccc",
+                      boxShadow: "0px 3px 6px 0px #0000004D",
+                      alignItems: "stretch",
+                      maxWidth: "850px",
+                      width: "100%",
+                      flexDirection: "row",
+                      marginBottom: "40px"
                     }}
                   >
-                    <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                    <div style={{
+                      width: "168x",
+                      height: "268px",
+                      border: "1px solid #000",
+                    }}>
+                      <img src={poem.image || "./anhminhhoa.png"} alt="anh minh hoa" style={{
+                        width: "168px",
+                        maxWidth: "168px",
+                        height: "100%",
+                        objectFit: "cover",
+                        objectPosition: "center"
+                      }} />
+                    </div>
+                    <div style={{ flexGrow: "1", }}>
                       <img
                         src={avatar || "./default-avatar.png"}
                         alt="avatar"
                         style={{
-                          width: "40px",
-                          height: "40px",
+                          width: "52px",
+                          height: "52px",
                           borderRadius: "50%",
                           objectFit: "cover",
+                          border: "2px solid #eee",
+                          marginTop: "4px",
                         }}
                       />
-                      <div>
-                        <strong>{displayName}</strong>
-                        <p style={{ fontSize: "12px", color: "#888" }}>🕒 3 ngày trước</p>
+                    </div>
+                    <div style={{
+                      flexBasis: "100%",
+                      display: "flex",
+                      flexDirection: "column"
+                    }}>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          fontSize: "0.9rem",
+                          color: "#666",
+                        }}
+                      >
+                        <div style={{
+                          display: "flex",
+                          alignItems: "flex-start",
+                          gap: "8px",
+                          flexDirection: "row",
+                        }}>
+                          <span style={{ fontWeight: "bold", color: "#2a7fbf", }}>{displayName}</span>
+                          <span style={{ color: "#888", fontSize: "0.85rem", textAlign: "right", }}>– 🕒{formatDate(poem.createdTime)}</span>
+                        </div>
+                        <div style={{
+                          display: "flex",
+                          gap: "12px",
+                          alignItems: "center",
+                        }}>
+                          <button style={{
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "4px",
+                            fontSize: "1.2rem",
+                            color: "#666",
+                            display: "flex",
+                            alignItems: "center",
+                          }} onClick={() => handleBookmark(poem.id)}>
+                            {bookmarkedPoems.has(poem.id) ? (<IoBookmark color="#FFCE1B" />) : (<CiBookmark />)}
+                          </button>
+
+                          <Dropdown
+                            overlay={
+                              <Menu>
+                                <Menu.Item key="edit">
+                                  ✏️ Chỉnh sửa
+                                </Menu.Item>
+                                <Menu.Item key="delete">
+                                  ❌ Xóa
+                                </Menu.Item>
+                              </Menu>
+                            }
+                            trigger={["click"]}
+                          >
+                            <MoreOutlined
+                              style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
+                              onClick={(e) => e.preventDefault()}
+                            />
+                          </Dropdown>
+                        </div>
+                      </div>
+                      <h3 style={{
+                        color: "#222",
+                        margin: "0",
+                        fontSize: "1.4rem",
+                      }}>{poem.title}</h3>
+                      <p style={{
+                        color: "#444",
+                        fontSize: "0.95rem",
+                        marginTop: "1px",
+                        lineHeight: "1.4",
+                        marginBottom: "5px"
+                      }}>
+                        Mô tả: {truncatedDescription}
+                      </p>
+                      <div style={{
+                        color: "#333",
+                        fontStyle: "italic",
+                        borderLeft: "3px solid #eee",
+                        paddingLeft: "15px",
+                        marginBottom: "auto",
+                        flexGrow: 1,
+                        position: 'relative',
+                      }}>
+                        <div style={{
+                          display: '-webkit-box',
+                          WebkitLineClamp: 5,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          position: 'relative',
+                          paddingRight: '20px',
+                        }}>
+                          <span style={{
+                            position: 'absolute',
+                            fontSize: '1.7rem',
+                            lineHeight: 1,
+                            color: '#666',
+                          }}>“</span>
+                          {displayedLines.map((line, index) => (
+                            <p key={index} style={{
+                              margin: "0 0 0 0",
+                              lineHeight: "1.6",
+                              fontSize: "1rem",
+                              textIndent: '0.8rem',
+                            }}>{line}</p>
+                          ))}
+                          <p style={{
+                            margin: "0 0 0 0",
+                            lineHeight: "1.6",
+                            fontSize: "1rem",
+                            textIndent: '0.8rem',
+                          }}>
+                            {hasMoreLines && <span style={{
+                              background: 'white',
+                              paddingLeft: '4px',
+                            }}>...</span>}
+                            <span style={{
+                              fontSize: '1.7rem',
+                              lineHeight: 1,
+                              color: '#666',
+                            }}>”</span>
+                          </p>
+                        </div>
+                      </div>
+                      <div
+                        style={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          marginTop: "auto",
+                        }}
+                      >
+                        <div style={{
+                          display: "flex",
+                          gap: "20px",
+                          alignItems: "center",
+                        }}>
+                          <button
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              transition: "background 0.2s",
+
+                              "&:hover": {
+                                background: "#f0f0f0",
+                              }
+                            }}
+                            onClick={() => handleLikePoem(poem.id)}
+                          >
+                            {likedPoems.has(poem.id) ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
+                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em"}}>{poem.likeCount || 0}</span>
+                          </button>
+                          <button style={{
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            background: "none",
+                            border: "none",
+                            cursor: "pointer",
+                            padding: "4px 8px",
+                            borderRadius: "4px",
+                            transition: "background 0.2s",
+
+                            "&:hover": {
+                              background: "#f0f0f0",
+                            }
+                          }} onClick={() => openCommentModal(poem.id)}>
+                            <BiCommentDetail size={20} />
+                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em"}}>{poem.commentCount || 0}</span>
+                          </button>
+                        </div>
+                        <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>
+                          Xem bài thơ →
+                        </a>
                       </div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
-                      <BookOutlined style={{ fontSize: "18px", cursor: "pointer", color: "#555" }} />
-
-                      <Dropdown
-                        overlay={
-                          <Menu>
-                            <Menu.Item key="edit">
-                              ✏️ Chỉnh sửa
-                            </Menu.Item>
-                            <Menu.Item key="delete">
-                              ❌ Xóa
-                            </Menu.Item>
-                          </Menu>
-                        }
-                        trigger={["click"]}
-                      >
-                        <MoreOutlined
-                          style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
-                          onClick={(e) => e.preventDefault()}
-                        />
-                      </Dropdown>
-                    </div>
                   </div>
-
-                  <h3 style={{ fontWeight: "bold", marginTop: "10px" }}>{poem.title}</h3>
-                  <p style={{ fontStyle: "italic", color: "#777", marginTop: "5px" }}>
-                    Mô tả: {poem.description}
-                  </p>
-                  <p style={{ color: "#555", marginTop: "5px", marginLeft: "20px" }}>{poem.content}</p>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      marginTop: "10px",
-                      fontSize: "12px",
-                      color: "#666",
-                    }}
-                  >
-                    <span>👁️ {Math.floor(Math.random() * 5000)}</span>
-                    <span
-                      onClick={() => handleLikePoem(poem.id)}
-                      style={{ cursor: "pointer", color: likedPoems.has(poem.id) ? "red" : "#555" }}
-                    >
-                      {likedPoems.has(poem.id) ? <HeartFilled /> : <HeartOutlined />} {poem.likeCount}
-                    </span>
-
-                    <span onClick={() => openCommentModal(poem.id)} style={{ cursor: "pointer" }}>
-                      💬 {poem.commentCount}
-                    </span>
-
-                    <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>
-                      Xem bài thơ →
-                    </a>
-                  </div>
-                </div>
-              ))}
+                )
+              })}
             </div>
             {/* Thành tựu và thống kê */}
-            <div style={{ flex: 1 }}>
+            <div style={{
+              display: "flex",
+              flexDirection: "column",
+              maxWidth: "328px",
+              flex: 3 
+            }}>
               <div
                 style={{
                   backgroundColor: "white",
@@ -307,7 +505,7 @@ const YourPoem = ({displayName, avatar, statisticBorder, achievementBorder }) =>
         poemId={selectedPoemForComment}
       />
 
-    </div>
+    </div >
   );
 };
 
