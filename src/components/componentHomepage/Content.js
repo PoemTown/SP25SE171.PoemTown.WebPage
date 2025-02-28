@@ -5,17 +5,29 @@ import { BiLike, BiSolidLike, BiCommentDetail } from "react-icons/bi";
 import { IoIosMore } from "react-icons/io";
 import { Modal } from "antd";
 import { useNavigate } from "react-router-dom";
+import { LuBook } from "react-icons/lu";
+import { MdOutlineKeyboardVoice } from "react-icons/md";
+import CollectionCard from "./CollectionCard";
+import PoemCard from "./PoemCard";
 
 const Content = ({ activeTab }) => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [data, setData] = useState([]);
+  const [collections, setCollections] = useState([]);
   const [bookmarkedPosts, setBookmarkedPosts] = useState({});
   const [isHovered, setIsHovered] = useState(false);
   const [likedPosts, setLikedPosts] = useState({});
   const [isBookmarkTab, setIsBookmarkTab] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBookmarkCollectionTab, setIsBookmarkCollectionTab] = useState(false);
+  const [bookmarkedCollections, setBookmarkedCollections] = useState({});
+  const [isCollection, setIsCollection] = useState(false);
+  const [selectedCollection, setSelectedCollection] = useState(null);
+
   const accessToken = localStorage.getItem("accessToken");
+
 
   const navigate = useNavigate();
 
@@ -33,6 +45,10 @@ const Content = ({ activeTab }) => {
   const handleCancel = () => {
     setIsModalOpen(false);
   }
+
+  const handleMoveToDetail = (collection) => {
+    setSelectedCollection(collection); // Chuyển sang trang chi tiết
+  };
 
   const authors = [
     { rank: 1, name: "KalenGuy34", avatar: "🧑‍💼", color: "#f7d42d" },
@@ -56,36 +72,54 @@ const Content = ({ activeTab }) => {
     Authorization: `Bearer ${accessToken}`
   };
 
-  const handleBookmark = async (postId) => {
-    if (isLoggedIn === false) {
+  const handleBookmark = async (id, isCollection = false) => {
+    if (!isLoggedIn) {
       showModal();
       return;
     }
-    const isCurrentlyBookmarked = bookmarkedPosts[postId];
-    const method = isCurrentlyBookmarked ? "DELETE" : "POST";
+
+    const endpoint = isCollection
+      ? `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection/${id}`
+      : `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
+
+    const currentState = isCollection
+      ? bookmarkedCollections[id]
+      : bookmarkedPosts[id];
 
     try {
-      const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${postId}`,
-        { method, headers }
-      );
+      const response = await fetch(endpoint, {
+        method: currentState ? "DELETE" : "POST",
+        headers
+      });
 
       if (response.ok) {
-        setBookmarkedPosts(prev => ({
-          ...prev,
-          [postId]: !isCurrentlyBookmarked
-        }));
-
-        setData(prevData => prevData.map(item =>
-          item.id === postId ? {
-            ...item,
-          } : item
-        ));
+        if (isCollection) {
+          setBookmarkedCollections(prev => ({
+            ...prev,
+            [id]: !currentState
+          }));
+        } else {
+          setBookmarkedPosts(prev => ({
+            ...prev,
+            [id]: !currentState
+          }));
+        }
       }
     } catch (error) {
-      console.error("Error updating like:", error);
+      console.error("Error updating bookmark:", error);
     }
   };
+
+  const handleChangeToBookmarkPoem = () => {
+    setIsBookmarkCollectionTab(false)
+    fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem");
+  }
+
+
+  const handleChangeToBookmarkCollection = () => {
+    setIsBookmarkCollectionTab(true)
+    fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection");
+  }
 
 
   const handleLike = async (postId) => {
@@ -122,43 +156,81 @@ const Content = ({ activeTab }) => {
   };
 
   const fetchData = async (apiUrl) => {
+    let abortController;
     try {
+      abortController = new AbortController();
+      setIsLoading(true);
+      setError(null);
+
       const requestHeaders = {
         "Content-Type": "application/json",
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
       };
-      const response = await fetch(apiUrl, { headers: requestHeaders });
+
+      const response = await fetch(apiUrl, { headers: requestHeaders, signal: abortController.signal });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
 
       const data = await response.json();
-      console.log(data)
-      const initialBookmarkedState = {};
-      const initialLikedState = {};
-      data.data.forEach(item => {
-        initialLikedState[item.id] = !!item.like;
-        initialBookmarkedState[item.id] = !!item.targetMark;
-      });
 
-      setBookmarkedPosts(initialBookmarkedState);
-      setLikedPosts(initialLikedState);
-      setData(data.data);
+      if (!abortController.signal.aborted) {
+        // Determine data type based on API URL instead of isCollection state
+        if (apiUrl.includes('/collections/') || apiUrl.includes('target-marks/v1/collection')) {
+          // Handle collections data
+          const initialCollectionBookmarks = {};
+          data.data.forEach(item => {
+            initialCollectionBookmarks[item.id] = !!item.targetMark;
+          });
+          setBookmarkedCollections(initialCollectionBookmarks);
+          setCollections(data.data);
+          setData([]); // Clear poem data
+        } else {
+          // Handle poems data
+          const initialBookmarkedState = {};
+          const initialLikedState = {};
+          data.data.forEach(item => {
+            initialLikedState[item.id] = !!item.like;
+            initialBookmarkedState[item.id] = !!item.targetMark;
+          });
+          setBookmarkedPosts(initialBookmarkedState);
+          setLikedPosts(initialLikedState);
+          setData(data.data);
+          setCollections([]); // Clear collection data
+        }
+      }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      if (!abortController.signal.aborted) {
+        console.error("Error fetching data:", error);
+        setError(error.message);
+      }
+    } finally {
+      if (!abortController.signal.aborted) {
+        setIsLoading(false);
+      }
     }
   };
 
   useEffect(() => {
+    let abortController = new AbortController();
     let apiUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts";
+
     switch (activeTab) {
       case "trending":
         apiUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/trending";
         setIsBookmarkTab(false);
         break;
       case "collections":
-        apiUrl = "/api/collections";
+        apiUrl = "https://api-poemtown-staging.nodfeather.win/api/collections/v1/trending";
         setIsBookmarkTab(false);
         break;
       case "bookmark":
-        apiUrl = "https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem"
+        if (isBookmarkCollectionTab) {
+          apiUrl = "https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection"
+        } else {
+          apiUrl = "https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem";
+        }
         setIsBookmarkTab(true);
         break;
       default:
@@ -168,13 +240,11 @@ const Content = ({ activeTab }) => {
     }
 
     fetchData(apiUrl);
-  }, [activeTab]);
 
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    const options = { day: 'numeric', month: 'long', year: 'numeric' };
-    return date.toLocaleDateString('vi-VN', options);
-  };
+    return () => {
+      abortController.abort();
+    };
+  }, [activeTab]);
 
   return (
     <div style={styles.contentContainer}>
@@ -189,103 +259,62 @@ const Content = ({ activeTab }) => {
 
         </>
       )}>
+
         <h2 style={{ textAlign: "center", color: "red", fontSize: "1.8rem" }}>Vui lòng đăng nhập để sử dụng</h2>
         <img alt="Access Denied" style={{ margin: "0 15%", width: "70%" }} src="./access_denied_nofitication.png" />
       </Modal>
       <div style={styles.leftColumn}>
         <div style={styles.poemsList}>
           <h2 style={styles.contentTitle}>{activeTab.toUpperCase()}</h2>
+          {isLoading && (
+            <div style={styles.loading}>
+              Loading...
+            </div>
+          )}
+          {error && (
+            <div style={styles.error}>
+              Error: {error}
+              <button onClick={() => fetchData()}>Retry</button>
+            </div>
+          )}
           {isBookmarkTab && (
             <div>
-            <button style={isBookmarkCollectionTab ? styles.toggleBookmarkPoem : styles.toggleBookmarkPoemActive}
-              onClick={() => setIsBookmarkCollectionTab(false)}
-            >
-              Bài thơ
-            </button>
-            <button style={isBookmarkCollectionTab ? styles.toggleBookmarkCollectionActive : styles.toggleBookmarkCollection}
-              onClick={() => setIsBookmarkCollectionTab(true)}
-            >
-              Tập thơ
-            </button>
-            <hr style={{ border: "2px solid #FFD557", borderRadius: "5px"  }}/>
-          </div>
-          )}
-          {data.map((item) => (
-            <div key={item.id} style={styles.poemCard}>
-              <div style={styles.avatarContainer}>
-                <img
-                  src={item.author?.avatar || "./default_avatar.png"}
-                  alt="avatar"
-                  style={styles.avatar}
-                  onError={(e) => {
-                    e.target.src = "./default_avatar.png";
-                  }}
-                />
-              </div>
-              <div style={styles.contentRight}>
-                <div style={styles.cardHeader}>
-                  <div style={styles.headerLeft}>
-                    <span style={styles.author}>@{item.author?.username || 'Anonymous'}</span>
-                    <span style={styles.postDate}>–{formatDate(item.createdAt)}</span>
-                  </div>
-                  <div style={styles.headerRight}>
-                    <button
-                      style={styles.iconButton}
-                      onClick={() => handleBookmark(item.id)}
-                    >
-                      {bookmarkedPosts[item.id] ? <IoBookmark color="#FFCE1B" /> : <CiBookmark />}
-                    </button>
-                    <button style={styles.iconButton}>
-                      <IoIosMore />
-                    </button>
-                  </div>
-                </div>
-
-                <h3 style={styles.poemTitle}>{item.title}</h3>
-
-                <p style={styles.poemDescription}>
-                  Mô tả: {item.description}
-                </p>
-
-                <div style={styles.poemContent}>
-                  {item.content?.split('\n').map((line, index) => (
-                    <p key={index} style={styles.poemLine}>"{line}"</p>
-                  ))}
-                </div>
-
-                <div style={styles.footerContainer}>
-                  <div style={styles.statsContainer}>
-                    <button
-                      style={styles.likeButton}
-                      onClick={() => handleLike(item.id)}
-                    >
-                      {likedPosts[item.id] ? (
-                        <BiSolidLike color="#2a7fbf" />
-                      ) : (
-                        <BiLike />
-                      )}
-                      <span style={styles.statItem}>{item.likeCount || 0}</span>
-                    </button>
-                    <div style={styles.commentStat}>
-                      <BiCommentDetail />
-                      <span style={styles.statItem}>{item.commentCount || 0}</span>
-                    </div>
-                  </div>
-
-                  <button
-                    style={{
-                      ...styles.viewButton,
-                      ...(isHovered && styles.viewButtonHover)
-                    }}
-                    onMouseEnter={() => setIsHovered(true)}
-                    onMouseLeave={() => setIsHovered(false)}
-                  >
-                    Xem bài thơ &gt;
-                  </button>
-                </div>
-              </div>
+              <button style={isBookmarkCollectionTab ? styles.toggleBookmarkPoem : styles.toggleBookmarkPoemActive}
+                onClick={handleChangeToBookmarkPoem}
+              >
+                Bài thơ
+              </button>
+              <button style={isBookmarkCollectionTab ? styles.toggleBookmarkCollectionActive : styles.toggleBookmarkCollection}
+                onClick={handleChangeToBookmarkCollection}
+              >
+                Tập thơ
+              </button>
+              <hr style={{ border: "2px solid #FFD557", borderRadius: "5px" }} />
             </div>
-          ))}
+          )}
+          {!isLoading && !error && (
+            <div>
+              {data.map((item) => (
+                <PoemCard
+                  key={item.id}
+                  item={item}
+                  liked={likedPosts[item.id]}
+                  bookmarked={bookmarkedPosts[item.id]}
+                  onBookmark={handleBookmark}
+                  onLike={handleLike}
+                  onHover={setIsHovered}
+                />
+              ))}
+              {collections.map((item) => (
+                <CollectionCard
+                  key={item.id}
+                  item={item}
+                  onBookmark={handleBookmark}
+                  isBookmarked={bookmarkedCollections[item.id] || false}
+                />
+              ))}
+            </div>
+          )}
         </div>
       </div>
       <div style={styles.rightColumn}>
@@ -338,11 +367,22 @@ const Content = ({ activeTab }) => {
           </a>
         </div>
       </div>
-    </div>
+    </div >
   );
 };
 
 const styles = {
+  loading: {
+    textAlign: 'center',
+    padding: '20px',
+    fontSize: '1.2rem'
+  },
+  error: {
+    color: 'red',
+    textAlign: 'center',
+    padding: '20px',
+    fontSize: '1.2rem'
+  },
   loginButton: {
     backgroundColor: "#4A90E2",
     color: "#fff",
@@ -362,31 +402,11 @@ const styles = {
     fontWeight: "bold",
     marginRight: "20px"
   },
-  authorInfo: {
-    display: "flex",
-    alignItems: "center",
-    gap: "12px",
-  },
-
-  avatarContainer: {
-    flexGrow: "1",
-  },
-
-  avatar: {
-    width: "52px",
-    height: "52px",
-    borderRadius: "50%",
-    objectFit: "cover",
-    border: "2px solid #eee",
-    marginTop: "4px",
-  },
 
   contentContainer: {
-   
     maxWidth: "100%",
-    
     display: "flex",
-    gap: "20px"
+    gap: "40px"
   },
 
   contentTitle: {
@@ -394,168 +414,29 @@ const styles = {
     marginBottom: "30px",
     textAlign: "center",
   },
-  contentRight: {
-    flexBasis: "100%",
-  },
-
-  poemsList: {
-    display: "grid",
-    gap: "25px",
-  },
-
-  poemCard: {
-    display: "flex",
-    gap: "10px",
-    background: "white",
-    borderRadius: "12px",
-    padding: "20px",
-    boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
-    alignItems: "flex-start",
-  },
-
-  cardHeader: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: "5px",
-    fontSize: "0.9rem",
-    color: "#666",
-  },
-
-  author: {
-    fontWeight: "600",
-    color: "#2a7fbf",
-  },
-
-  poemTitle: {
-    color: "#222",
-    margin: "0",
-    fontSize: "1.4rem",
-  },
-
-  poemDescription: {
-    color: "#444",
-    fontSize: "0.95rem",
-    marginTop: "5px",
-    lineHeight: "1.4",
-  },
-
-  poemContent: {
-    color: "#333",
-    fontStyle: "italic",
-    margin: "15px 0",
-    borderLeft: "3px solid #eee",
-    paddingLeft: "15px",
-  },
-
-  poemLine: {
-    margin: "8px 0",
-    lineHeight: "1.6",
-  },
-
-  poemStats: {
-    display: "flex",
-    alignItems: "center",
-    gap: "20px",
-    marginTop: "20px",
-    color: "#666",
-    fontSize: "0.9rem",
-  },
-
-  statItem: {
-    display: "flex",
-    alignItems: "center",
-  },
-
-  viewButton: {
-    background: "none",
-    border: "1px solid #2a7fbf",
-    color: "#2a7fbf",
-    cursor: "pointer",
-    padding: "8px 16px",
-    borderRadius: "20px",
-    transition: "all 0.2s",
-    fontWeight: "500",
-  },
-
-  viewButtonHover: {
-    background: "#2a7fbf",
-    color: "white",
-  },
-
-  postDate: {
-    color: "#888",
-    fontSize: "0.85rem",
-    textAlign: "right",
-  },
-
-  headerLeft: {
-    display: "flex",
-    alignItems: "flex-start",
-    gap: "8px",
-    flexDirection: "row",
-  },
-  headerRight: {
-    display: "flex",
-    gap: "12px",
-    alignItems: "center",
-  },
-
-  iconButton: {
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    padding: "4px",
-    fontSize: "1.2rem",
-    color: "#666",
-    display: "flex",
-    alignItems: "center",
-  },
-
-  footerContainer: {
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: "20px",
-  },
-
-  statsContainer: {
-    display: "flex",
-    gap: "20px",
-    alignItems: "center",
-  },
-
-  likeButton: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-    background: "none",
-    border: "none",
-    cursor: "pointer",
-    padding: "4px 8px",
-    borderRadius: "4px",
-    transition: "background 0.2s",
-
-    "&:hover": {
-      background: "#f0f0f0",
-    }
-  },
-
-  commentStat: {
-    display: "flex",
-    alignItems: "center",
-    gap: "6px",
-  },
 
   leftColumn: {
     display: "flex",
     flexDirection: "column",
-    flex: "7",
+    flex: "6",
+
+  },
+  contentContainer: {
+    maxWidth: "100%",
+    display: "flex",
+    gap: "40px"
+  },
+
+  contentTitle: {
+    color: "#333",
+    marginBottom: "30px",
+    textAlign: "center",
   },
 
   rightColumn: {
     display: "flex",
     flexDirection: "column",
+    maxWidth: "328px",
     flex: "3"
   },
   topSection: {

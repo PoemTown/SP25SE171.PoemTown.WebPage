@@ -6,7 +6,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
     const [collectionFile, setCollectionFile] = useState(null);
 
     const [data, setData] = useState({
-        id: null,  // Nếu update có ID, create không có ID
+        id: null,  
         collectionName: "",
         collectionDescription: "",
         collectionImage: ""
