@@ -156,7 +156,7 @@ const UserPage = () => {
                     ))}
                 </nav>
                 {/* Nội dung hiển thị theo Tab */}
-                <div style={{ marginTop: "20px", padding: "15px", borderRadius: "10px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
+                <div style={{ borderRadius: "10px", boxShadow: "0 2px 5px rgba(0,0,0,0.1)" }}>
                     {activeTab === "Thơ của bạn" && (
                         <div>
                             <YourPoem displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />

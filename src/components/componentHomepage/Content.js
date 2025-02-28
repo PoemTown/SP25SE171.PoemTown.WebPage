@@ -421,6 +421,17 @@ const styles = {
     flex: "6",
 
   },
+  contentContainer: {
+    maxWidth: "100%",
+    display: "flex",
+    gap: "40px"
+  },
+
+  contentTitle: {
+    color: "#333",
+    marginBottom: "30px",
+    textAlign: "center",
+  },
 
   rightColumn: {
     display: "flex",
