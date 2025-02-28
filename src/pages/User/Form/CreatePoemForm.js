@@ -1,28 +1,42 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios"; 
 
-const CreatePoemForm = ({ onBack }) => {
+const CreatePoemForm = ({ onBack, initialData }) => {
   const [poemData, setPoemData] = useState({
     title: "",
     description: "",
-    chapter: "",
+    chapterNumber: "",
     collection: "",
     content: "",
-    status: 0, 
   });
+
+
+  useEffect(() => {
+    if (initialData) {
+      setPoemData({
+        title: initialData.title || "",
+        description: initialData.description || "",
+        chapterNumber: initialData.chapterNumber || "",
+        collection: initialData.collection || "",
+        content: initialData.content || "",
+      });
+    }
+  }, [initialData]);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPoemData({ ...poemData, [name]: value });
   };
 
-  const handleSave = () => {
-    alert("Bài thơ đã được lưu nháp!");
+  const handleSave = async () => {
+    try {
+      await handleSubmit(0); 
+    } catch (error) {
+      console.error("Lỗi khi lưu nháp:", error);
+    }
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
+  const handleSubmit = async (status) => {
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
       alert("Vui lòng đăng nhập để đăng bài.");
@@ -35,7 +49,7 @@ const CreatePoemForm = ({ onBack }) => {
       description: poemData.description,
       chapterNumber: isNaN(poemData.chapter) ? 0 : Number(poemData.chapter),
       chapterName: poemData.chapter || null,
-      status: Number(poemData.status), 
+      status: status, 
       collectionId: poemData.collection ? poemData.collection : null,
       sourceCopyRightId: null,
       poemImageUrl: null,
@@ -57,7 +71,7 @@ const CreatePoemForm = ({ onBack }) => {
       );
 
       if (response.status === 200) {
-        alert("Bài thơ đã được đăng thành công!");
+        alert(status === 1 ? "Bài thơ đã được đăng thành công!" : "Bài thơ đã được lưu nháp!");
       } else {
         alert("Có lỗi xảy ra, vui lòng thử lại.");
       }
@@ -87,7 +101,7 @@ const CreatePoemForm = ({ onBack }) => {
 
       <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Sáng Tác Bài Thơ</h2>
 
-      <form onSubmit={handleSubmit} style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px" }}>
+      <form style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px" }}>
         <div style={{ marginBottom: "15px" }}>
           <label style={{ display: "block", fontWeight: "bold" }}>Tiêu đề</label>
           <input
@@ -118,7 +132,7 @@ const CreatePoemForm = ({ onBack }) => {
           <input
             type="text"
             name="chapter"
-            value={poemData.chapter}
+            value={poemData.chapterNumber}
             onChange={handleInputChange}
             placeholder="Ex: 1, 2, 3 or I, II, III"
             style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
@@ -140,19 +154,6 @@ const CreatePoemForm = ({ onBack }) => {
         </div>
 
         <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", fontWeight: "bold" }}>Trạng thái</label>
-          <select
-            name="status"
-            value={poemData.status}
-            onChange={handleInputChange}
-            style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-          >
-            <option value="0">Nháp</option>
-            <option value="1">Đã đăng</option>
-          </select>
-        </div>
-
-        <div style={{ marginBottom: "15px" }}>
           <label style={{ display: "block", fontWeight: "bold" }}>Nội dung</label>
           <div
             name="content"
@@ -166,6 +167,7 @@ const CreatePoemForm = ({ onBack }) => {
               backgroundColor: "white",
             }}
             onInput={(e) => setPoemData({ ...poemData, content: e.currentTarget.innerHTML })}
+            dangerouslySetInnerHTML={{ __html: poemData.content }}
           ></div>
         </div>
 
@@ -175,10 +177,11 @@ const CreatePoemForm = ({ onBack }) => {
             onClick={handleSave}
             style={{ backgroundColor: "#ffc107", color: "white", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
           >
-            LƯU
+            LƯU VÀO NHÁP
           </button>
           <button
-            type="submit"
+            type="button"
+            onClick={() => handleSubmit(1)}
             style={{ backgroundColor: "#28a745", color: "white", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
           >
             ĐĂNG BÀI

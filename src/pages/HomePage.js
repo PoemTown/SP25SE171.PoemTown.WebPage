@@ -4,20 +4,56 @@ import Headerdefault from "../components/Headerdefault";
 import Headeruser from "../components/Headeruser";
 import Footer from "../components/Footer";
 import Content from "../components/componentHomepage/Content";
+import { useParams } from "react-router-dom";
+import { Modal } from "antd";
 
 const Homepage = () => {
   const [activeTab, setActiveTab] = useState("latest");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
+
+  const { tab } = useParams();
+  const currentTab = tab || "lastest";
+
+  useEffect(() => {
+    const currentTab = window.location.pathname.split('/')[1] || 'latest';
+    setActiveTab(currentTab);
+  }, [currentTab]);
 
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     setIsLoggedIn(!!token);
   }, []);
 
-  const handleTabClick = (tab) => {
-    setActiveTab(tab);
-    if (tab === "yourpage") {
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+  const handleLogin = () => {
+    navigate("/login");
+  };
+
+  const handleSignup = () => {
+    navigate("/signup");
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  }
+
+
+  const handleTabClick = (newTab) => {
+    console.log(newTab);
+
+    if ((newTab === "bookmark" || newTab === "yourpage") && isLoggedIn === false) {
+      showModal();
+      return;
+    }
+
+    navigate(`/${newTab}`);
+    setActiveTab(newTab);
+
+    if (newTab === "yourpage") {
       navigate("/userpage");
     }
   };
@@ -25,48 +61,64 @@ const Homepage = () => {
   return (
     <div style={styles.container}>
       {isLoggedIn ? <Headeruser /> : <Headerdefault />}
+      <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
+        <>
+          <button style={styles.signupButton} onClick={handleSignup}>
+            Đăng ký
+          </button>
+          <button style={styles.loginButton} onClick={handleLogin}>
+            Đăng nhập
+          </button>
+
+        </>
+      )}>
+        <h2 style={{ textAlign: "center", color: "red", fontSize: "1.8rem" }}>Vui lòng đăng nhập để sử dụng</h2>
+        <img alt="Access Denied" style={{ margin: "0 15%", width: "70%" }} src="./access_denied_nofitication.png" />
+      </Modal>
       <section style={styles.heroSection}>
         <div style={styles.heroContent}>
           <h1 style={styles.title}>PoemTown</h1>
           <p style={styles.subtitle}>
             Thị trấn mơ mộng kết nối những người có tâm hồn yêu thơ
           </p>
-          <div style={styles.searchBox}>
-            <input
-              type="text"
-              placeholder="Search"
-              style={styles.searchInput}
-            />
-          </div>
+
+        </div>
+        <div style={styles.searchBox}>
+          <input
+            type="text"
+            placeholder="Search"
+            style={styles.searchInput}
+          />
         </div>
       </section>
 
       <nav style={styles.navbar}>
         <ul style={styles.navList}>
-          {navTabs.map((tab) => (
+          {navTabs.map((tabItem) => (
             <li
-              key={tab.key}
+              key={tabItem.key}
               style={{
                 ...styles.navItem,
-                ...(activeTab === tab.key ? styles.navLinkActive : {}),
+                ...(activeTab === tabItem.key ? styles.navLinkActive : {}),
               }}
             >
               <a
-                href={tab.key === "yourpage" ? undefined : tab.href}
+                href={`/${tabItem.key}`}
                 style={styles.navLink}
                 onClick={(e) => {
                   e.preventDefault();
-                  handleTabClick(tab.key);
+                  handleTabClick(tabItem.key);
                 }}
               >
-                {tab.label}
+                {tabItem.label}
               </a>
             </li>
           ))}
         </ul>
       </nav>
-
-      <Content />
+      <div style={styles.content}>
+        <Content activeTab={activeTab} />
+      </div>
       <Footer />
     </div>
   );
@@ -84,8 +136,29 @@ const navTabs = [
 
 // CSS Styles
 const styles = {
+  loginButton: {
+    backgroundColor: "#4A90E2",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+  },
+  signupButton: {
+    backgroundColor: "#F5A623",
+    color: "#fff",
+    border: "none",
+    padding: "10px 20px",
+    borderRadius: "8px",
+    cursor: "pointer",
+    fontWeight: "bold",
+    marginRight: "20px"
+  },
+
   container: {
     fontFamily: "'Arial', sans-serif",
+    margin: "0",
   },
   main: {
     padding: "20px",
@@ -102,26 +175,31 @@ const styles = {
     lineHeight: "1.6",
   },
   heroSection: {
-    position: "relative",
-    height: "30vh",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    maxHeight: "295px",
+    height: "26vh",
     backgroundImage: "url('./background.png')",
     backgroundSize: "cover",
     backgroundPosition: "center",
+    padding: "40px",
     color: "#fff",
-    padding: "20px",
   },
   heroContent: {
-    position: "absolute",
-    top: "20px",
-    left: "20px",
     display: "flex",
     flexDirection: "column",
     gap: "10px",
     maxWidth: "400px",
   },
+
   title: {
     fontSize: "36px",
     fontWeight: "bold",
+    borderBottom: "1px solid #ffffff",
+    paddingBottom: "10px",
+    marginBottom: "10px",
     margin: "0",
   },
   subtitle: {
@@ -131,7 +209,7 @@ const styles = {
   searchBox: {
     marginTop: "10px",
     display: "flex",
-    width: "100%",
+    width: "50%",
   },
   searchInput: {
     width: "100%",
@@ -144,10 +222,10 @@ const styles = {
   navbar: {
     display: "flex",
     justifyContent: "center",
+    alignItems: "stretch",
     backgroundColor: "#fff",
-    boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
-    padding: "10px 20px",
-    marginTop: "10px",
+    borderBottom: "1px solid #ccc",
+    minHeight: "60px",
   },
   navList: {
     listStyleType: "none",
@@ -159,6 +237,11 @@ const styles = {
   },
   navItem: {
     fontSize: "14px",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    height: "93%",
+
   },
   navLink: {
     textDecoration: "none",
@@ -168,10 +251,14 @@ const styles = {
     transition: "border-bottom 0.3s",
   },
   navLinkActive: {
-    borderBottom: "2px solid #000",
+    borderBottom: "5px solid #4E9FE5",
+    borderRadius: "0px",
     color: "#000",
     fontWeight: "bolder",
   },
+  content: {
+    margin: "0px 129px"
+  }
 };
 
 export default Homepage;
