@@ -13,7 +13,7 @@ const Homepage = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const {tab} = useParams();
+  const { tab } = useParams();
   const currentTab = tab || "lastest";
 
   useEffect(() => {
@@ -44,15 +44,15 @@ const Homepage = () => {
 
   const handleTabClick = (newTab) => {
     console.log(newTab);
-    
+
     if ((newTab === "bookmark" || newTab === "yourpage") && isLoggedIn === false) {
       showModal();
       return;
-    } 
-    
+    }
+
     navigate(`/${newTab}`);
     setActiveTab(newTab);
-    
+
     if (newTab === "yourpage") {
       navigate("/userpage");
     }
@@ -81,15 +81,15 @@ const Homepage = () => {
           <p style={styles.subtitle}>
             Thị trấn mơ mộng kết nối những người có tâm hồn yêu thơ
           </p>
-          
+
         </div>
         <div style={styles.searchBox}>
-            <input
-              type="text"
-              placeholder="Search"
-              style={styles.searchInput}
-            />
-          </div>
+          <input
+            type="text"
+            placeholder="Search"
+            style={styles.searchInput}
+          />
+        </div>
       </section>
 
       <nav style={styles.navbar}>
@@ -117,7 +117,7 @@ const Homepage = () => {
         </ul>
       </nav>
       <div style={styles.content}>
-      <Content activeTab={activeTab} />
+        <Content activeTab={activeTab} />
       </div>
       <Footer />
     </div>
@@ -178,7 +178,7 @@ const styles = {
     display: "flex",
     flexDirection: "column",
     justifyContent: "center",
-    alignItems: "flex-start", 
+    alignItems: "flex-start",
     maxHeight: "295px",
     height: "26vh",
     backgroundImage: "url('./background.png')",
@@ -193,7 +193,7 @@ const styles = {
     gap: "10px",
     maxWidth: "400px",
   },
-  
+
   title: {
     fontSize: "36px",
     fontWeight: "bold",
@@ -240,8 +240,8 @@ const styles = {
     display: "flex",
     alignItems: "center",
     justifyContent: "center",
-    height: "93%", 
-    
+    height: "93%",
+
   },
   navLink: {
     textDecoration: "none",
@@ -257,7 +257,7 @@ const styles = {
     fontWeight: "bolder",
   },
   content: {
-      margin: "0px 129px"
+    margin: "0px 129px"
   }
 };
 

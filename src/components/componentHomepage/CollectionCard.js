@@ -16,10 +16,10 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
             borderRadius: "5px"
         }}
     >
-        <div style={{ flex: 1, width: "120px", height: "120px" }}>
+        <div style={{ flex: 1, width: "260px", height: "146px" }}>
             <img
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                src="./@.png"
+                style={{ width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px" }}
+                src={item.image ? item.image : "/collection1.png"}
                 alt="Ảnh cá nhân"
             />
         </div>
@@ -88,7 +88,7 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
                 alignItems: "center",
                 marginTop: "auto",
             }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "20px"}}>
+                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                         <LuBook />
                         <span>{item.totalChapter}</span>
@@ -100,9 +100,9 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
                 </div>
                 {/* Xem chi tiết bộ sưu tập */}
                 <div
-                    style={{ color: "#007bff", fontWeight: "500", cursor: "pointer"}}
+                    style={{ color: "#007bff", fontWeight: "500", cursor: "pointer" }}
                 >
-                    <spa>Xem tuyển tập &gt;</spa>
+                    <span>Xem tuyển tập &gt;</span>
                 </div>
             </div>
         </div>
