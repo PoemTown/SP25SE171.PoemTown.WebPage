@@ -14,6 +14,8 @@ import { MoreOutlined } from "@ant-design/icons";
 
 const YourCollection = ({ avatar }) => {
     const [collections, setCollection] = useState([]);
+    const [statistic, setStatistic] = useState(null);
+
     const [selectedCollection, setSelectedCollection] = useState(null);
     const [reloadTrigger, setReloadTrigger] = useState(false);
     const accessToken = localStorage.getItem("accessToken");
@@ -31,16 +33,21 @@ const YourCollection = ({ avatar }) => {
     useEffect(() => {
         const fetchCollections = async () => {
             try {
-                const response = await fetch(
-                    "https://api-poemtown-staging.nodfeather.win/api/collections/v1",
-                    {
+                const [collectionsResponse, statisticResponse] = await Promise.all([
+                    fetch("https://api-poemtown-staging.nodfeather.win/api/collections/v1", {
                         headers: { Authorization: `Bearer ${accessToken}` },
-                    }
-                );
-                const data = await response.json();
-                if (data.statusCode === 200) {
+                    }),
+                    fetch("https://api-poemtown-staging.nodfeather.win/api/statistics/v1", {
+                        headers: { Authorization: `Bearer ${accessToken}` },
+                    }),
+                ]);
+                const [collectionsData, statisticData] = await Promise.all([
+                    collectionsResponse.json(),
+                    statisticResponse.json(),
+                ]);
+                if (collectionsData.statusCode === 200) {
                     const bookmarkedIds = new Set();
-                    const formattedData = data.data.map((collection) => {
+                    const formattedData = collectionsData.data.map((collection) => {
                         if (collection.targetMark) bookmarkedIds.add(collection.id);
                         return {
                             id: collection.id,
@@ -49,13 +56,17 @@ const YourCollection = ({ avatar }) => {
                             image: collection.collectionImage,
                             totalPoem: collection.totalChapter,
                             totalRecord: collection.totalRecord,
-                            displayName: collection.user.displayName
+                            displayName: collection.user.displayName,
+                            rowVersion: collection.rowVersion
                         };
                     });
-
                     setCollection(formattedData);
                     setBookmarkedCollections(bookmarkedIds);
                 }
+                if (statisticData.statusCode === 200) {
+                    setStatistic(statisticData.data);
+                }
+
             } catch (error) {
                 console.error("Error fetching collections:", error);
             }
@@ -99,13 +110,16 @@ const YourCollection = ({ avatar }) => {
     const handleCreate = () => {
         setSelectedCollection(1); // Chuyển sang giao diện tạo bộ sưu tập
     };
-    const handleDelete = async (id) => {
+    const handleDelete = async (id, rowVersion) => {
 
         try {
             const response = await axios.delete(`https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}`, {
                 headers: {
                     Authorization: `Bearer ${accessToken}`,
                     "Content-Type": "application/json"
+                },
+                params: {
+                    rowVersion: rowVersion
                 }
             });
 
@@ -127,7 +141,7 @@ const YourCollection = ({ avatar }) => {
         setReloadTrigger((prev) => !prev); // Quay lại danh sách
     };
 
-    const showDeleteConfirm = (id) => {
+    const showDeleteConfirm = (id, rowVersion) => {
         Modal.confirm({
             title: "Bạn có chắc chắn muốn xóa?",
             content: "Hành động này không thể hoàn tác!",
@@ -135,14 +149,14 @@ const YourCollection = ({ avatar }) => {
             cancelText: "Hủy",
             okType: "danger",
             onOk() {
-                handleDelete(id);
+                handleDelete(id, rowVersion);
             },
         });
     };
 
     //----------------------------------------------------------------------------------//
     return (
-        <div style={{margin: "20px 129px"}}>
+        <div style={{ margin: "20px 129px" }}>
             {selectedCollection === null ? (
                 // ✅ Hiển thị danh sách bộ sưu tập
                 <div style={{ display: 'flex', gap: "40px" }}>
@@ -166,7 +180,7 @@ const YourCollection = ({ avatar }) => {
                                 <div style={{ flex: 1, width: "260px", height: "146px" }}>
                                     <img
                                         style={{ width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px" }}
-                                        src={collection.image ? collection.image : "./collection1.png"}
+                                        src={collection.image ? collection.image : "./default_collection.jpg"}
                                         alt="Ảnh cá nhân"
                                     />
                                 </div>
@@ -214,7 +228,7 @@ const YourCollection = ({ avatar }) => {
                                                                 <IoIosLink color="#666" size={"16"} /><div> Sao chép liên kết </div>
                                                             </div>
                                                         </Menu.Item>
-                                                        <Menu.Item key="delete" onClick={() => showDeleteConfirm(collection.id)}>
+                                                        <Menu.Item key="delete" onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}>
                                                             ❌ Xóa
                                                         </Menu.Item>
                                                     </Menu>
@@ -322,15 +336,12 @@ const YourCollection = ({ avatar }) => {
                         >
                             <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
                             <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
-                                <li>Tổng bài viết: 2</li>
-                                <li>Tổng bộ sưu tập: 5</li>
-                                <li>Tổng audio cá nhân: 16</li>
-                                <li>Tổng lượt xem: 662</li>
-                                <li>Tổng lượt thích: 233</li>
-                                <li>Đang theo dõi: 60</li>
-                                <li>Người theo dõi: 1,585</li>
-                                <li>Bookmark bài viết: 35</li>
-                                <li>Bookmark bộ sưu tập: 12</li>
+                                <li>Tổng bài viết: {statistic?.totalPoems ?? 0}</li>
+                                <li>Tổng bộ sưu tập: {statistic?.totalCollections ?? 0}</li>
+                                <li>Tổng audio cá nhân: {statistic?.totalPersonalAudios ?? 0}</li>
+                                <li>Tổng lượt thích: {statistic?.totalLikes ?? 0}</li>
+                                <li>Bookmark bài viết: {statistic?.totalPoems ?? 0}</li>
+                                <li>Bookmark bộ sưu tập: {statistic?.poemBookmarks ?? 0}</li>
                             </ul>
                             <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
                         </div>
