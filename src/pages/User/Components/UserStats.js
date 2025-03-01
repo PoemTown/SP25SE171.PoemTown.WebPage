@@ -11,40 +11,50 @@ const UserStats = ({ achievementBorder, statisticBorder }) => {
             {/* Thành tựu cá nhân */}
             <div
                 style={{
+                    position: "relative",
                     backgroundColor: "white",
                     padding: "15px",
                     borderRadius: "10px",
                     border: `2px solid ${achievementBorder}`,
-                    marginBottom: "15px",
-                    position: "relative",
+                    boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
                 }}
             >
-                {/* Tiêu đề và Icon */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontWeight: "bold" }}>Thành tựu cá nhân</h3>
-                    <button
-                        style={{
-                            position: "absolute",
-                            top: "10px",
-                            right: "10px",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                        }}
-                        onClick={() => setShowPopup1(true)}
-                    >
-                        <Settings size={20} color="black" />
-                    </button>
-                </div>
-
-                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                <h3
+                    style={{
+                        fontWeight: "bold",
+                        backgroundColor: "#FFD700",
+                        padding: "5px 10px",
+                        borderRadius: "8px 8px 0 0",
+                        margin: "-15px -15px 10px -15px",
+                        textAlign: "center",
+                    }}
+                >
+                    Thành tựu cá nhân
+                </h3>
+                <button
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                    }}
+                    onClick={() => setShowPopup1(true)}
+                >
+                    <Settings size={15} color="black" />
+                </button>
+                <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
                     <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
                     <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
                     <li>🏆 Cúp vàng bài viết tháng 7/2024</li>
                     <li>🥈 Cúp bạc tác giả tháng 6/2024</li>
                 </ul>
-                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
+                <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
+                    Xem thêm &gt;
+                </a>
             </div>
+
             {showPopup1 && (
                 <div style={{
                     position: "fixed",
@@ -132,32 +142,42 @@ const UserStats = ({ achievementBorder, statisticBorder }) => {
             {/* Thống kê người dùng */}
             <div
                 style={{
+                    position: "relative",
                     backgroundColor: "white",
                     padding: "15px",
                     borderRadius: "10px",
                     border: `2px solid ${statisticBorder}`,
-                    position: "relative",
+                    boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
+                    marginTop:"20px"
                 }}
             >
-                {/* Tiêu đề và Icon */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
-                    <button
-                        style={{
-                            position: "absolute",
-                            top: "10px",
-                            right: "10px",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                        }}
-                        onClick={() => setShowPopup2(true)}
-                    >
-                        <Settings size={20} color="black" />
-                    </button>
-                </div>
-
-                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                <h3
+                    style={{
+                        fontWeight: "bold",
+                        backgroundColor: "#888",
+                        color: "white",
+                        padding: "5px 10px",
+                        borderRadius: "8px 8px 0 0",
+                        margin: "-15px -15px 10px -15px",
+                        textAlign: "center",
+                    }}
+                >
+                    Thống kê người dùng
+                </h3>
+                <button
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                    }}
+                    onClick={() => setShowPopup2(true)}
+                >
+                    <Settings size={15} color="black" />
+                </button>
+                <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
                     <li>Tổng bài viết: 2</li>
                     <li>Tổng bộ sưu tập: 5</li>
                     <li>Tổng audio cá nhân: 16</li>
@@ -168,8 +188,11 @@ const UserStats = ({ achievementBorder, statisticBorder }) => {
                     <li>Bookmark bài viết: 35</li>
                     <li>Bookmark bộ sưu tập: 12</li>
                 </ul>
-                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
-                {showPopup2 && (
+                <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
+                    Xem thêm &gt;
+                </a>
+            </div>
+            {showPopup2 && (
                 <div style={{
                     position: "fixed",
                     top: "0",
@@ -252,7 +275,6 @@ const UserStats = ({ achievementBorder, statisticBorder }) => {
                     </div>
                 </div>
             )}
-            </div>
         </div>
     );
 };
