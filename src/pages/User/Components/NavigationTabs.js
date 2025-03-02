@@ -1,6 +1,6 @@
 import React from "react";
 
-const NavigationTabs = ({ activeTab, setActiveTab, NavBorder }) => {
+const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navBackground }) => {
     const tabs = [
         "Thơ của bạn",
         "Bộ sưu tập của bạn",
@@ -16,7 +16,10 @@ const NavigationTabs = ({ activeTab, setActiveTab, NavBorder }) => {
         <nav
             style={{
                 marginTop: "0px",
-                backgroundColor: "white",
+                backgroundImage: navBackground ? `url(${navBackground})` : "none",
+                backgroundSize: "cover",  
+                backgroundPosition: "center",  
+                backgroundRepeat: "no-repeat",
                 padding: "10px",
                 borderRadius: "10px",
                 display: "flex",

@@ -9,7 +9,7 @@ const UserCoverEditModal = ({
     closeModal
 }) => {
     const [showConfirm, setShowConfirm] = useState(false);
-    const [selectedImageId, setSelectedImageId] = useState(null); 
+    const [selectedImageId, setSelectedImageId] = useState(null);
 
     const handleConfirm = () => {
         const selectedTheme = themes.find(theme =>
@@ -23,30 +23,30 @@ const UserCoverEditModal = ({
     };
     const handleConfirmApiCall = async () => {
         const coverImageId = sessionStorage.getItem("coverImageId");
-    
+
         if (!selectedImageId) {
             alert("Vui lòng chọn một hình nền!");
             return;
         }
-    
+
         if (!coverImageId) {
             alert("Không tìm thấy coverImageId!");
             return;
         }
-    
+
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
             alert("Bạn chưa đăng nhập!");
             return;
         }
-    
+
         const payload = [
             {
-                previousUserTemplateDetailId: coverImageId, 
+                previousUserTemplateDetailId: coverImageId,
                 newUserTemplateDetailId: selectedImageId,
             },
         ];
-    
+
         try {
             const response = await fetch(
                 `https://api-poemtown-staging.nodfeather.win/api/template/v1/theme/${sessionStorage.getItem("selectedTemplateId")}/user-template-detail`,
@@ -59,11 +59,11 @@ const UserCoverEditModal = ({
                     body: JSON.stringify(payload),
                 }
             );
-    
+
             if (!response.ok) {
                 throw new Error("Cập nhật thất bại!");
             }
-    
+
             alert("Cập nhật thành công!");
             setShowConfirm(false);
             closeModal();
@@ -72,8 +72,8 @@ const UserCoverEditModal = ({
             alert(error.message);
         }
     };
-    
-    
+
+
     const selectedTemplate = sessionStorage.getItem("selectedTemplate") || "mặc định";
 
     return (
@@ -129,68 +129,79 @@ const UserCoverEditModal = ({
                     Nền của Mái nhà
                 </h4>
 
-                {themes.some(theme =>
-                    theme.userTemplateDetails.some(detail => detail.userTemplate.tagName !== "Default")
-                ) ? (
-                    themes.map((theme) => (
-                        <div key={theme.id} style={{ marginBottom: "10px" }}>
-                            {theme.userTemplateDetails
-                                .filter(detail => detail.userTemplate.tagName !== "Default")
-                                .map((detail) => (
-                                    <label
-                                        key={detail.id}
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            background: selectedTemplateId === detail.id ? "#EAF6FF" : "white",
-                                            border: selectedTemplateId === detail.id ? "2px solid #007BFF" : "1px solid #ddd",
-                                            boxShadow: selectedTemplateId === detail.id ? "0px 0px 10px rgba(0, 123, 255, 0.5)" : "none",
-                                            borderRadius: "8px",
-                                            padding: "5px",
-                                            cursor: "pointer",
-                                            position: "relative",
-                                        }}
-                                        onClick={() => setSelectedImageId(detail.id)}
-                                    >
-                                        <input
-                                            type="radio"
-                                            name="background"
-                                            value={detail.id}
-                                            checked={selectedTemplateId === detail.id}
-                                            onChange={() => {
-                                                setSelectedTemplateId(detail.id);
-                                                setTempCoverImage(detail.image || coverImage);
+                <div
+                    style={{
+                        maxHeight: "300px", 
+                        overflowY: "auto", 
+                        padding: "5px",
+                        border: "1px solid #ddd",
+                        borderRadius: "8px",
+                    }}
+                >
+                    {themes.some(theme =>
+                        theme.userTemplateDetails.some(detail => detail.userTemplate.tagName !== "Default")
+                    ) ? (
+                        themes.map((theme) => (
+                            <div key={theme.id} style={{ marginBottom: "10px" }}>
+                                {theme.userTemplateDetails
+                                    .filter(detail => detail.userTemplate.tagName !== "Default")
+                                    .map((detail) => (
+                                        <label
+                                            key={detail.id}
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                background: selectedTemplateId === detail.id ? "#EAF6FF" : "white",
+                                                border: selectedTemplateId === detail.id ? "2px solid #007BFF" : "1px solid #ddd",
+                                                boxShadow: selectedTemplateId === detail.id ? "0px 0px 10px rgba(0, 123, 255, 0.5)" : "none",
+                                                borderRadius: "8px",
+                                                padding: "5px",
+                                                cursor: "pointer",
+                                                position: "relative",
                                             }}
-                                            style={{ display: "none" }}
-                                        />
-                                        {detail.image ? (
-                                            <img
-                                                src={detail.image}
-                                                alt={theme.name}
-                                                style={{
-                                                    width: "100%",
-                                                    height: "50px",
-                                                    borderRadius: "5px",
-                                                    objectFit: "cover",
+                                            onClick={() => setSelectedImageId(detail.id)}
+                                        >
+                                            <input
+                                                type="radio"
+                                                name="background"
+                                                value={detail.id}
+                                                checked={selectedTemplateId === detail.id}
+                                                onChange={() => {
+                                                    setSelectedTemplateId(detail.id);
+                                                    setTempCoverImage(detail.image || coverImage);
                                                 }}
+                                                style={{ display: "none" }}
                                             />
-                                        ) : (
-                                            <div
-                                                style={{
-                                                    width: "100%",
-                                                    height: "50px",
-                                                    backgroundColor: detail.colorCode || "#ddd",
-                                                    borderRadius: "5px",
-                                                }}
-                                            />
-                                        )}
-                                    </label>
-                                ))}
-                        </div>
-                    ))
-                ) : (
-                    <p style={{ color: "#999" }}>Không có chủ đề nào đang sử dụng</p>
-                )}
+                                            {detail.image ? (
+                                                <img
+                                                    src={detail.image}
+                                                    alt={theme.name}
+                                                    style={{
+                                                        width: "100%",
+                                                        height: "50px",
+                                                        borderRadius: "5px",
+                                                        objectFit: "cover",
+                                                    }}
+                                                />
+                                            ) : (
+                                                <div
+                                                    style={{
+                                                        width: "100%",
+                                                        height: "50px",
+                                                        backgroundColor: detail.colorCode || "#ddd",
+                                                        borderRadius: "5px",
+                                                    }}
+                                                />
+                                            )}
+                                        </label>
+                                    ))}
+                            </div>
+                        ))
+                    ) : (
+                        <p style={{ color: "#999" }}>Không có chủ đề nào đang sử dụng</p>
+                    )}
+                </div>
+
 
                 <button
                     style={{
@@ -237,7 +248,7 @@ const UserCoverEditModal = ({
                                 borderRadius: "5px",
                                 cursor: "pointer",
                             }}
-                            onClick={handleConfirmApiCall} 
+                            onClick={handleConfirmApiCall}
                         >
                             Đồng ý
                         </button>
