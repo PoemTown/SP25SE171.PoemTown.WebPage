@@ -161,7 +161,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
   };
 
   return (
-    <div style={{ margin: "20px 129px"}}>
+    <div style={{  maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
       {!isCreatingPoem ? (
         <>
           <button
