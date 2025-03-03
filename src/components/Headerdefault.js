@@ -22,7 +22,7 @@ const Headerdefault = () => {
         />
       </div>
       <nav style={styles.nav}>
-        <a href="#home" style={styles.navLink}>
+        <a href="/latest" style={styles.navLink}>
           Trang chủ
         </a>
         <a href="#about-poemtown" style={styles.navLink}>

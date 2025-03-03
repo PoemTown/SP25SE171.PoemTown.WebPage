@@ -14,11 +14,15 @@ import YourBookmark from "./Bookmark/YourBookmark";
 const UserPage = () => {
     const [coverImage, setCoverImage] = useState(null);
     const [backgroundImage, setBackgroundImage] = useState(null);
+    const [navBackground, setNavBackground] = useState(null);
     const [achievementBorder, setAchievementBorder] = useState("white");
+    const [achievementBackground, setAchievementBackground] = useState(null);
     const [statisticBorder, setStatisticBorder] = useState("#FFD700");
+    const [statisticBackground, setStatisticBackground] = useState(null);
     const [NavBorder, setNavBorder] = useState("white");
     const [displayName, setDisplayName] = useState("");
-
+    const [achievementTitleBackground, setAchievementTitleBackground] = useState(null);
+    const [statisticTitleBackground, setStatisticTitleBackground] = useState(null);
     useEffect(() => {
         const fetchImage = async () => {
             try {
@@ -36,19 +40,62 @@ const UserPage = () => {
                 if (response.ok && Array.isArray(result.data)) {
                     const cover = result.data.find(item => item.type === 1);
                     if (cover) {
-                        setCoverImage(cover.image || null);
+                        setCoverImage(cover.image ? encodeURI(cover.image) : null);
                         sessionStorage.setItem("coverImageId", cover.id);
                     }
     
-                    const background = result.data.find(item => item.type === 4);
-                if (background) {
-                    setBackgroundImage(background.image || null);
-                    sessionStorage.setItem("backgroundImageId", background.id);
-                }
+                    const navBackground = result.data.find(item => item.type === 2);
+                    if (navBackground) {
+                        setNavBackground(navBackground.image ? encodeURI(navBackground.image) : null);
+                        sessionStorage.setItem("navBackgroundId", navBackground.id);
+                    }
+    
+                    const navBorder = result.data.find(item => item.type === 3);
+                    if (navBorder) {
+                        setNavBorder(navBorder.colorCode || "#FFD700");
+                        sessionStorage.setItem("navBorderId", navBorder.id);
+                    }
+    
+                    const mainBackground = result.data.find(item => item.type === 4);
+                    if (mainBackground) {
+                        setBackgroundImage(mainBackground.image || null);
+                        sessionStorage.setItem("mainBackgroundId", mainBackground.id);
+                    }
+    
+                    const achievementBorder = result.data.find(item => item.type === 5);
+                    if (achievementBorder) {
+                        setAchievementBorder(achievementBorder.colorCode || "#FFD700");
+                        sessionStorage.setItem("achievementBorderId", achievementBorder.id);
+                    }
+    
+                    const achievementBackground = result.data.find(item => item.type === 6);
+                    if (achievementBackground) {
+                        setAchievementBackground(achievementBackground.image || null);
+                        sessionStorage.setItem("achievementBackgroundId", achievementBackground.id);
+                    }
+    
+                    const statisticBorder = result.data.find(item => item.type === 7);
+                    if (statisticBorder) {
+                        setStatisticBorder(statisticBorder.colorCode || "#FFD700");
+                        sessionStorage.setItem("statisticBorderId", statisticBorder.id);
+                    }
+    
+                    const statisticBackground = result.data.find(item => item.type === 8);
+                    if (statisticBackground) {
+                        setStatisticBackground(statisticBackground.image || null);
+                        sessionStorage.setItem("statisticBackgroundId", statisticBackground.id);
+                    }
+                    const achievementTitleBackgroundData = result.data.find(item => item.type === 9);
+                    if (achievementTitleBackgroundData) {
+                        setAchievementTitleBackground(achievementTitleBackgroundData.image || null);
+                        sessionStorage.setItem("achievementTitleBackgroundId", achievementTitleBackgroundData.id);
+                    }
 
-                    setNavBorder(result.data.find(item => item.type === 3)?.colorCode || "#FFD700");
-                    setAchievementBorder(result.data.find(item => item.type === 5)?.colorCode || "#FFD700");
-                    setStatisticBorder(result.data.find(item => item.type === 7)?.colorCode || "#FFD700");
+                    const statisticTitleBackgroundData = result.data.find(item => item.type === 10);
+                    if (statisticTitleBackgroundData) {
+                        setStatisticTitleBackground(statisticTitleBackgroundData.image || null);
+                        sessionStorage.setItem("statisticTitleBackgroundId", statisticTitleBackgroundData.id);
+                    }
                 } else {
                     console.error("Lỗi khi lấy dữ liệu hình ảnh:", result.message);
                 }
@@ -59,6 +106,7 @@ const UserPage = () => {
     
         fetchImage();
     }, []);
+    
     
 
     const [userData, setUserData] = useState({
@@ -128,9 +176,9 @@ const UserPage = () => {
             >
                 {/* Navigation Tabs */}
                 {activeTab === "Trang trí" ? (
-                    <NavigationTabsEdit activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} />
+                    <NavigationTabsEdit activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground}/>
                 ) : (
-                    <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} />
+                    <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground}/>
                 )}
 
                 {/* Nội dung hiển thị theo Tab */}
