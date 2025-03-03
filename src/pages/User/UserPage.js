@@ -23,6 +23,10 @@ const UserPage = () => {
     const [displayName, setDisplayName] = useState("");
     const [achievementTitleBackground, setAchievementTitleBackground] = useState(null);
     const [statisticTitleBackground, setStatisticTitleBackground] = useState(null);
+    const [achievementTitleColor, setAchievementTitleColor] = useState(null);
+    const [statisticTitleColor, setStatisticTitleColor] = useState(null);
+    const [achievementBackgroundColor, setAchievementBackgroundColor] = useState(null);
+    const [statisticBackgroundColor, setStatisticBackgroundColor] = useState(null);
     useEffect(() => {
         const fetchImage = async () => {
             try {
@@ -58,7 +62,7 @@ const UserPage = () => {
     
                     const mainBackground = result.data.find(item => item.type === 4);
                     if (mainBackground) {
-                        setBackgroundImage(mainBackground.image || null);
+                        setBackgroundImage(mainBackground.image ? encodeURI(mainBackground.image) : null);
                         sessionStorage.setItem("mainBackgroundId", mainBackground.id);
                     }
     
@@ -70,8 +74,9 @@ const UserPage = () => {
     
                     const achievementBackground = result.data.find(item => item.type === 6);
                     if (achievementBackground) {
-                        setAchievementBackground(achievementBackground.image || null);
+                        setAchievementBackground(achievementBackground.image ? encodeURI(achievementBackground.image) : null);
                         sessionStorage.setItem("achievementBackgroundId", achievementBackground.id);
+                        setAchievementBackgroundColor(achievementBackground?.colorCode || null);
                     }
     
                     const statisticBorder = result.data.find(item => item.type === 7);
@@ -82,21 +87,29 @@ const UserPage = () => {
     
                     const statisticBackground = result.data.find(item => item.type === 8);
                     if (statisticBackground) {
-                        setStatisticBackground(statisticBackground.image || null);
+                        setStatisticBackground(statisticBackground.image ? encodeURI(statisticBackground.image) : null);
                         sessionStorage.setItem("statisticBackgroundId", statisticBackground.id);
+                        setStatisticBackgroundColor(statisticBackground?.colorCode || null);
                     }
+    
                     const achievementTitleBackgroundData = result.data.find(item => item.type === 9);
                     if (achievementTitleBackgroundData) {
-                        setAchievementTitleBackground(achievementTitleBackgroundData.image || null);
+                        setAchievementTitleBackground(achievementTitleBackgroundData.image ? encodeURI(achievementTitleBackgroundData.image) : null);
                         sessionStorage.setItem("achievementTitleBackgroundId", achievementTitleBackgroundData.id);
+                        setAchievementTitleColor(achievementTitleBackgroundData?.colorCode || null);
                     }
-
+    
                     const statisticTitleBackgroundData = result.data.find(item => item.type === 10);
                     if (statisticTitleBackgroundData) {
-                        setStatisticTitleBackground(statisticTitleBackgroundData.image || null);
-                        sessionStorage.setItem("statisticTitleBackgroundId", statisticTitleBackgroundData.id);
-                    }
+                        setStatisticTitleBackground(statisticTitleBackgroundData.image ? encodeURI(statisticTitleBackgroundData.image) : null);
+                        sessionStorage.setItem("statisticTitleBackgroundId", statisticTitleBackgroundData.id); 
+                        setStatisticTitleColor(statisticTitleBackgroundData?.colorCode || null);
                 } else {
+                    }
+                    
+
+                    
+                   
                     console.error("Lỗi khi lấy dữ liệu hình ảnh:", result.message);
                 }
             } catch (error) {
@@ -106,6 +119,7 @@ const UserPage = () => {
     
         fetchImage();
     }, []);
+    
     
     
 
@@ -189,7 +203,7 @@ const UserPage = () => {
                     }}
                 >
                     {activeTab === "Thơ của bạn" && (
-                        <YourPoem displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />
+                        <YourPoem displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} />
                     )}
 
                     {activeTab === "Bộ sưu tập của bạn" && (
@@ -207,12 +221,13 @@ const UserPage = () => {
                     )}
                     {activeTab === "Lịch sử chỉnh sửa" && <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>}
                     {activeTab === "Quản lý Bản Quyền" && <p>Thông tin về bản quyền các tác phẩm của bạn sẽ được hiển thị tại đây.</p>}
-                    {activeTab === "Trang trí" && <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage}/>}
+                    {activeTab === "Trang trí" && 
+                        <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor}/>}
                     {activeTab === "Quản lý ví" && <p>Thông tin về tài chính và ví điện tử sẽ hiển thị ở đây.</p>}
                 </div>
             </div>
 
-            <Footer />
+            <Footer style={{ marginBottom : "0px"}}/>
         </div>
     );
 };

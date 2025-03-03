@@ -97,7 +97,7 @@ const NavigationModal = ({
                                     style={{
                                         width: "300px",
                                         marginBottom: "20px",
-                                        height: "4px",
+                                        height: "7px",
                                         backgroundColor: theme.colorCode,
                                         cursor: "pointer",
                                         border: selectedBorderTheme === theme.id ? "2px solid blue" : "none",

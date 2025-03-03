@@ -11,6 +11,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
     const [selectedTheme, setSelectedTheme] = useState(null);
     const [tempNavBackground, setTempNavBackground] = useState(navBackground);
     const [tempNavBorder, setTempNavBorder] = useState(NavBorder);
+    const [navTextColor, setNavTextColor] = useState("#555");
     const accessToken = localStorage.getItem("accessToken");
     const tabs = [
         "Thơ của bạn",
@@ -123,6 +124,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
             const activeTemplate = availableColors.find((theme) => theme.isInUse);
             if (activeTemplate) {
                 setSelectedTheme(activeTemplate.id);
+                setNavTextColor(activeTemplate.colorCode || "#555"); 
             }
         } catch (error) {
             console.error("Error fetching navigation themes:", error);
@@ -173,7 +175,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
                             background: "none",
                             cursor: "pointer",
                             fontWeight: activeTab === tab ? "bold" : "normal",
-                            color: activeTab === tab ? "#007bff" : "#555",
+                            color: activeTab === tab ? "#007bff" : navTextColor,
                             borderBottom: activeTab === tab ? "2px solid #007bff" : "none",
                         }}
                     >
