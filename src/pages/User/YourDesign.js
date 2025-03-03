@@ -3,7 +3,7 @@ import { Settings } from "lucide-react";
 import UserStats from "./Components/UserStats";
 import UserBackgroundEditModal from "./Form/UserBackgroundEditModal";
 
-const YourDesign = ({ statisticBorder, achievementBorder, setBackgroundImage }) => {
+const YourDesign = ({ statisticBorder, achievementBorder, setBackgroundImage, achievementBackground, statisticBackground, achievementTitleBackground, statisticTitleBackground, achievementTitleColor, statisticTitleColor, achievementBackgroundColor, statisticBackgroundColor}) => {
     const [selectedTemplate, setSelectedTemplate] = useState("");
     const [selectedTemplateId, setSelectedTemplateId] = useState("");
     const [templates, setTemplates] = useState([]);
@@ -101,7 +101,7 @@ const YourDesign = ({ statisticBorder, achievementBorder, setBackgroundImage }) 
     };
 
     return (
-        <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px" }}>
+        <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
             <div style={{ display: "flex", gap: "20px" }}>
                 <div style={{ flex: 2, backgroundColor: "white", padding: "20px", borderRadius: "10px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -152,7 +152,7 @@ const YourDesign = ({ statisticBorder, achievementBorder, setBackgroundImage }) 
                 </div>
 
                 <div style={{ flex: 1 }}>
-                    <UserStats achievementBorder={achievementBorder} statisticBorder={statisticBorder} />
+                    <UserStats achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor}/>
                 </div>
             </div>
 
