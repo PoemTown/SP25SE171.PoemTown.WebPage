@@ -52,7 +52,7 @@ const styles = {
     padding: "10px 20px",
     backgroundColor: "#fff",
     borderBottom: "1px solid #ddd",
-    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+    boxShadow: "0px 3px 6px 0px #0000004D",
     flexWrap: "wrap",
     gap: "10px",
   },
