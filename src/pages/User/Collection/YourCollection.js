@@ -340,8 +340,8 @@ const YourCollection = ({ avatar }) => {
                                 <li>Tổng bộ sưu tập: {statistic?.totalCollections ?? 0}</li>
                                 <li>Tổng audio cá nhân: {statistic?.totalPersonalAudios ?? 0}</li>
                                 <li>Tổng lượt thích: {statistic?.totalLikes ?? 0}</li>
-                                <li>Bookmark bài viết: {statistic?.totalPoems ?? 0}</li>
-                                <li>Bookmark bộ sưu tập: {statistic?.poemBookmarks ?? 0}</li>
+                                <li>Bookmark bài viết: {statistic?.poemBookmarks ?? 0}</li>
+                                <li>Bookmark bộ sưu tập: {statistic?.collectionBookmarks ?? 0}</li>
                             </ul>
                             <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
                         </div>
