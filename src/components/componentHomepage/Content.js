@@ -1,12 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { CiBookmark } from "react-icons/ci";
-import { IoBookmark } from "react-icons/io5";
-import { BiLike, BiSolidLike, BiCommentDetail } from "react-icons/bi";
-import { IoIosMore } from "react-icons/io";
 import { Modal } from "antd";
 import { useNavigate } from "react-router-dom";
-import { LuBook } from "react-icons/lu";
-import { MdOutlineKeyboardVoice } from "react-icons/md";
 import CollectionCard from "./CollectionCard";
 import PoemCard from "./PoemCard";
 
@@ -23,8 +17,12 @@ const Content = ({ activeTab }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isBookmarkCollectionTab, setIsBookmarkCollectionTab] = useState(false);
   const [bookmarkedCollections, setBookmarkedCollections] = useState({});
-  const [isCollection, setIsCollection] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState(null);
+  const [isCommunity, setIsCommunity] = useState(false);
+  const [title, setTitle] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize] = useState(5);
+  const [totalPages, setTotalPages] = useState(1);
 
   const accessToken = localStorage.getItem("accessToken");
 
@@ -66,6 +64,10 @@ const Content = ({ activeTab }) => {
     const token = localStorage.getItem("accessToken");
     setIsLoggedIn(!!token);
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, isBookmarkCollectionTab]);
 
   const headers = {
     "Content-Type": "application/json",
@@ -112,13 +114,13 @@ const Content = ({ activeTab }) => {
 
   const handleChangeToBookmarkPoem = () => {
     setIsBookmarkCollectionTab(false)
-    fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem");
+    fetchData(`https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`);
   }
 
 
   const handleChangeToBookmarkCollection = () => {
     setIsBookmarkCollectionTab(true)
-    fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection");
+    fetchData(`https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`);
   }
 
 
@@ -174,8 +176,11 @@ const Content = ({ activeTab }) => {
       }
 
       const data = await response.json();
-
+      console.log(data)
       if (!abortController.signal.aborted) {
+        if (data.totalPages) {
+          setTotalPages(data.totalPages);
+        }
         // Determine data type based on API URL instead of isCollection state
         if (apiUrl.includes('/collections/') || apiUrl.includes('target-marks/v1/collection')) {
           // Handle collections data
@@ -218,24 +223,44 @@ const Content = ({ activeTab }) => {
 
     switch (activeTab) {
       case "trending":
-        apiUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/trending";
+        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
+        setTitle("Đạt được lượng tương tác lớn trong thời gian gần 📈");
+        setIsCommunity(false);
         break;
       case "collections":
-        apiUrl = "https://api-poemtown-staging.nodfeather.win/api/collections/v1/trending";
+        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/collections/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
+        setTitle("Các Tập thơ của người dùng được yêu thích gần đây 📚");
+        setIsCommunity(false);
         break;
       case "bookmark":
         if (isBookmarkCollectionTab) {
-          apiUrl = "https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection"
+          apiUrl = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`
         } else {
-          apiUrl = "https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem";
+          apiUrl = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`;
         }
         setIsBookmarkTab(true);
+        setTitle("");
+        setIsCommunity(false);
+        break;
+      case "community":
+        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/collections/v1/community?pageNumber=${currentPage}&pageSize=${pageSize}`;
+        setIsBookmarkTab(false);
+        setTitle("Hãy cùng nhau chung tay đóng góp cho cộng đồng Thị trấn thơ 🏡")
+        setIsCommunity(true);
+        break;
+      case "audioread":
+        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts?filterOptions.audio=1&pageNumber=${currentPage}&pageSize=${pageSize}`;
+        setIsBookmarkTab(false);
+        setTitle("Lắng nghe và cảm nhận sẽ mang đến bức tranh toàn cảnh️ ▶️")
+        setIsCommunity(false);
         break;
       default:
-        apiUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts";
+        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
+        setTitle("Những bài thơ nóng hổi, vừa thổi vừa đọc 📰")
+        setIsCommunity(false);
         break;
     }
 
@@ -244,134 +269,177 @@ const Content = ({ activeTab }) => {
     return () => {
       abortController.abort();
     };
-  }, [activeTab]);
+  }, [activeTab, currentPage, pageSize, isBookmarkCollectionTab]);
 
   return (
-    <div style={styles.contentContainer}>
-      <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
-        <>
-          <button style={styles.signupButton} onClick={handleSignup}>
-            Đăng ký
-          </button>
-          <button style={styles.loginButton} onClick={handleLogin}>
-            Đăng nhập
-          </button>
+    <div>
+      <div style={styles.contentContainer}>
+        <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
+          <>
+            <button style={styles.signupButton} onClick={handleSignup}>
+              Đăng ký
+            </button>
+            <button style={styles.loginButton} onClick={handleLogin}>
+              Đăng nhập
+            </button>
 
-        </>
-      )}>
+          </>
+        )}>
 
-        <h2 style={{ textAlign: "center", color: "red", fontSize: "1.8rem" }}>Vui lòng đăng nhập để sử dụng</h2>
-        <img alt="Access Denied" style={{ margin: "0 15%", width: "70%" }} src="./access_denied_nofitication.png" />
-      </Modal>
-      <div style={styles.leftColumn}>
-        <div style={styles.poemsList}>
-          <h2 style={styles.contentTitle}>{activeTab.toUpperCase()}</h2>
-          {isLoading && (
-            <div style={styles.loading}>
-              Loading...
+          <h2 style={{ textAlign: "center", color: "red", fontSize: "1.8rem" }}>Vui lòng đăng nhập để sử dụng</h2>
+          <img alt="Access Denied" style={{ margin: "0 15%", width: "70%" }} src="./access_denied_nofitication.png" />
+        </Modal>
+        <div style={styles.leftColumn}>
+          <div style={styles.poemsList}>
+            <h2 style={styles.contentTitle}>{title}</h2>
+            {!isBookmarkTab && (
+              <div style={styles.idea}>
+                <p style={{ fontWeight: "bold", marginTop: "5px", marginLeft: "10px" }}>Thông điệp của ngày: </p>
+                <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Ngôn từ chỉ đóng góp, Tâm hồn của bạn mới là nơi cảm xúc bắt đầu</p>
+              </div>
+            )}
+            {isLoading && (
+              <div style={styles.loading}>
+                Loading...
+              </div>
+            )}
+            {error && (
+              <div style={styles.error}>
+                Error: {error}
+                <button onClick={() => fetchData()}>Retry</button>
+              </div>
+            )}
+            {isBookmarkTab && (
+              <div>
+                <button style={isBookmarkCollectionTab ? styles.toggleBookmarkPoem : styles.toggleBookmarkPoemActive}
+                  onClick={handleChangeToBookmarkPoem}
+                >
+                  Bài thơ
+                </button>
+                <button style={isBookmarkCollectionTab ? styles.toggleBookmarkCollectionActive : styles.toggleBookmarkCollection}
+                  onClick={handleChangeToBookmarkCollection}
+                >
+                  Tập thơ
+                </button>
+                <hr style={{ border: "2px solid #FFD557", borderRadius: "5px" }} />
+              </div>
+            )}
+            {!isLoading && !error && (
+              <div>
+                {data.map((item) => (
+                  <PoemCard
+                    key={item.id}
+                    item={item}
+                    liked={likedPosts[item.id]}
+                    bookmarked={bookmarkedPosts[item.id]}
+                    onBookmark={handleBookmark}
+                    onLike={handleLike}
+                    onHover={setIsHovered}
+                  />
+                ))}
+                {collections.map((item) => (
+                  <CollectionCard
+                    key={item.id}
+                    item={item}
+                    onBookmark={handleBookmark}
+                    isBookmarked={bookmarkedCollections[item.id] || false}
+                    isCommunity={isCommunity}
+                  />
+                ))}
+              </div>
+            )}
+            {totalPages > 1 && (
+              <div style={styles.pagination}>
+                <button
+                  onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                  disabled={currentPage === 1}
+                  style={styles.paginationButton}
+                >
+                  Previous
+                </button>
+                <span style={styles.pageInfo}>
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(prev => prev + 1)}
+                  disabled={currentPage >= totalPages}
+                  style={styles.paginationButton}
+                >
+                  Next
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+        <div style={styles.rightColumn}>
+          {/* Top tác giả */}
+          <div style={styles.topSection}>
+            <div style={styles.topTitle}>
+              Top các tác giả được yêu thích 👑
             </div>
-          )}
-          {error && (
-            <div style={styles.error}>
-              Error: {error}
-              <button onClick={() => fetchData()}>Retry</button>
-            </div>
-          )}
-          {isBookmarkTab && (
-            <div>
-              <button style={isBookmarkCollectionTab ? styles.toggleBookmarkPoem : styles.toggleBookmarkPoemActive}
-                onClick={handleChangeToBookmarkPoem}
-              >
-                Bài thơ
-              </button>
-              <button style={isBookmarkCollectionTab ? styles.toggleBookmarkCollectionActive : styles.toggleBookmarkCollection}
-                onClick={handleChangeToBookmarkCollection}
-              >
-                Tập thơ
-              </button>
-              <hr style={{ border: "2px solid #FFD557", borderRadius: "5px" }} />
-            </div>
-          )}
-          {!isLoading && !error && (
-            <div>
-              {data.map((item) => (
-                <PoemCard
-                  key={item.id}
-                  item={item}
-                  liked={likedPosts[item.id]}
-                  bookmarked={bookmarkedPosts[item.id]}
-                  onBookmark={handleBookmark}
-                  onLike={handleLike}
-                  onHover={setIsHovered}
-                />
+            <ul style={styles.topList}>
+              {authors.map((author, index) => (
+                <li key={index} style={styles.topItem}>
+                  <span style={{ ...styles.topItemRank, color: author.color }}>
+                    #{author.rank}
+                  </span>
+                  <span style={styles.topItemAvatar}>{author.avatar}</span>
+                  <div>
+                    <span style={styles.topItemName}>{author.name}</span>
+                    <div style={styles.topItemLine} />
+                  </div>
+                </li>
               ))}
-              {collections.map((item) => (
-                <CollectionCard
-                  key={item.id}
-                  item={item}
-                  onBookmark={handleBookmark}
-                  isBookmarked={bookmarkedCollections[item.id] || false}
-                />
-              ))}
+            </ul>
+            <a href="#see-more" style={styles.seeMore}>
+              Xem thêm &gt;
+            </a>
+          </div>
+
+          {/* Top bài thơ */}
+          <div style={styles.topSection}>
+            <div style={styles.topTitle}>
+              Top các bài thơ được yêu thích 📖
             </div>
-          )}
+            <ul style={styles.topList}>
+              {topPoems.map((poem, index) => (
+                <li key={index} style={styles.topItem}>
+                  <span style={{ ...styles.topItemRank, color: "#f7d42d" }}>
+                    #{poem.rank}
+                  </span>
+                  <div>
+                    <span style={styles.topItemName}>{poem.title}</span>
+                    <br />
+                    <small style={{ color: "#555" }}>{poem.author}</small>
+                    <div style={styles.topItemLine} />
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <a href="#see-more" style={styles.seeMore}>
+              Xem thêm &gt;
+            </a>
+          </div>
         </div>
       </div>
-      <div style={styles.rightColumn}>
-        {/* Top tác giả */}
-        <div style={styles.topSection}>
-          <div style={styles.topTitle}>
-            Top các tác giả được yêu thích 👑
-          </div>
-          <ul style={styles.topList}>
-            {authors.map((author, index) => (
-              <li key={index} style={styles.topItem}>
-                <span style={{ ...styles.topItemRank, color: author.color }}>
-                  #{author.rank}
-                </span>
-                <span style={styles.topItemAvatar}>{author.avatar}</span>
-                <div>
-                  <span style={styles.topItemName}>{author.name}</span>
-                  <div style={styles.topItemLine} />
-                </div>
-              </li>
-            ))}
-          </ul>
-          <a href="#see-more" style={styles.seeMore}>
-            Xem thêm &gt;
-          </a>
-        </div>
-
-        {/* Top bài thơ */}
-        <div style={styles.topSection}>
-          <div style={styles.topTitle}>
-            Top các bài thơ được yêu thích 📖
-          </div>
-          <ul style={styles.topList}>
-            {topPoems.map((poem, index) => (
-              <li key={index} style={styles.topItem}>
-                <span style={{ ...styles.topItemRank, color: "#f7d42d" }}>
-                  #{poem.rank}
-                </span>
-                <div>
-                  <span style={styles.topItemName}>{poem.title}</span>
-                  <br />
-                  <small style={{ color: "#555" }}>{poem.author}</small>
-                  <div style={styles.topItemLine} />
-                </div>
-              </li>
-            ))}
-          </ul>
-          <a href="#see-more" style={styles.seeMore}>
-            Xem thêm &gt;
-          </a>
-        </div>
-      </div>
-    </div >
+    </div>
   );
 };
 
 const styles = {
+  idea: {
+    display: "flex",
+    width: "100%",
+    height: "60px",
+    backgroundImage: `url('./background_idea.png')`,
+    backgroundRepeat: "no-repeat",
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    border: "1px solid #000000",
+    borderBottomLeftRadius: "100px",
+    borderTopRightRadius: "100px",
+    marginBottom: "20px",
+  },
   loading: {
     textAlign: 'center',
     padding: '20px',
@@ -406,37 +474,30 @@ const styles = {
   contentContainer: {
     maxWidth: "100%",
     display: "flex",
-    gap: "40px"
+    gap: "40px",
+    justifyContent: "center",
+    maxWidth: "1600px",
+    margin: "0 auto"
   },
 
   contentTitle: {
     color: "#333",
-    marginBottom: "30px",
-    textAlign: "center",
+    marginTop: "30px",
+    marginBottom: "20px",
+    fontSize: "20px",
+
   },
 
   leftColumn: {
     display: "flex",
     flexDirection: "column",
-    flex: "6",
+    flex: "7",
 
-  },
-  contentContainer: {
-    maxWidth: "100%",
-    display: "flex",
-    gap: "40px"
-  },
-
-  contentTitle: {
-    color: "#333",
-    marginBottom: "30px",
-    textAlign: "center",
   },
 
   rightColumn: {
     display: "flex",
     flexDirection: "column",
-    maxWidth: "328px",
     flex: "3"
   },
   topSection: {
@@ -528,7 +589,29 @@ const styles = {
     padding: "10px",
     borderRadius: "0 10px 10px 0",
     fontSize: "16px",
+  },
 
+  pagination: {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: '20px',
+    margin: '20px 0',
+  },
+  paginationButton: {
+    padding: '8px 16px',
+    borderRadius: '4px',
+    border: '1px solid #ddd',
+    backgroundColor: '#fff',
+    cursor: 'pointer',
+    '&:disabled': {
+      backgroundColor: '#f5f5f5',
+      cursor: 'not-allowed',
+    },
+  },
+  pageInfo: {
+    fontSize: '14px',
+    color: '#666',
   },
 };
 

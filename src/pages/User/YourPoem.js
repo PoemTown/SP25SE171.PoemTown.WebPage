@@ -161,7 +161,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
   };
 
   return (
-    <div style={{ margin: "20px 129px"}}>
+    <div style={{  maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
       {!isCreatingPoem ? (
         <>
           <button
@@ -181,8 +181,8 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
             SÁNG TÁC THƠ
           </button>
 
-          <div style={{ display: "flex", gap: "20px", flexDirection: "row" }}>
-            <div style={{ display: "flex", flexDirection: "column", flex: 6  }}>
+          <div style={{ display: "flex", gap: "60px" }}>
+            <div style={{ flex: 2 }}>
               {poems.map((poem) => {
                 const lines = poem.content?.split('\n') || [];
                 const displayedLines = lines.slice(0, 4);
@@ -390,7 +390,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
                             onClick={() => handleLikePoem(poem.id)}
                           >
                             {likedPoems.has(poem.id) ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
-                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em"}}>{poem.likeCount || 0}</span>
+                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em" }}>{poem.likeCount || 0}</span>
                           </button>
                           <button style={{
                             display: "flex",
@@ -408,7 +408,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
                             }
                           }} onClick={() => openCommentModal(poem.id)}>
                             <BiCommentDetail size={20} />
-                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em"}}>{poem.commentCount || 0}</span>
+                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em" }}>{poem.commentCount || 0}</span>
                           </button>
                         </div>
                         <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>
@@ -422,41 +422,64 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
               })}
             </div>
             {/* Thành tựu và thống kê */}
-            <div style={{
-              display: "flex",
-              flexDirection: "column",
-              maxWidth: "328px",
-              flex: 3 
-            }}>
+            <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+              {/* Thành tựu cá nhân */}
               <div
                 style={{
                   backgroundColor: "white",
                   padding: "15px",
                   borderRadius: "10px",
                   border: `2px solid ${achievementBorder}`,
-                  marginBottom: "15px",
+                  boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
                 }}
               >
-                <h3 style={{ fontWeight: "bold" }}>Thành tựu cá nhân</h3>
-                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                <h3
+                  style={{
+                    fontWeight: "bold",
+                    backgroundColor: "#FFD700",
+                    padding: "5px 10px",
+                    borderRadius: "8px 8px 0 0",
+                    margin: "-15px -15px 10px -15px",
+                    textAlign: "center",
+                  }}
+                >
+                  Thành tựu cá nhân
+                </h3>
+                <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
                   <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
                   <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
                   <li>🏆 Cúp vàng bài viết tháng 7/2024</li>
                   <li>🥈 Cúp bạc tác giả tháng 6/2024</li>
                 </ul>
-                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
+                <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
+                  Xem thêm &gt;
+                </a>
               </div>
 
+              {/* Thống kê người dùng */}
               <div
                 style={{
                   backgroundColor: "white",
                   padding: "15px",
                   borderRadius: "10px",
                   border: `2px solid ${statisticBorder}`,
+                  boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
                 }}
               >
-                <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
-                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                <h3
+                  style={{
+                    fontWeight: "bold",
+                    backgroundColor: "#888",
+                    color: "white",
+                    padding: "5px 10px",
+                    borderRadius: "8px 8px 0 0",
+                    margin: "-15px -15px 10px -15px",
+                    textAlign: "center",
+                  }}
+                >
+                  Thống kê người dùng
+                </h3>
+                <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
                   <li>Tổng bài viết: 2</li>
                   <li>Tổng bộ sưu tập: 5</li>
                   <li>Tổng audio cá nhân: 16</li>
@@ -467,7 +490,9 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
                   <li>Bookmark bài viết: 35</li>
                   <li>Bookmark bộ sưu tập: 12</li>
                 </ul>
-                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
+                <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
+                  Xem thêm &gt;
+                </a>
               </div>
             </div>
           </div>

@@ -1,163 +1,469 @@
-import React, { useState } from "react";
-import { Settings, X } from "lucide-react";
+import React, { useState,useEffect } from "react";
+import { Settings } from "lucide-react";
+import StatisticModal from "../Form/StatisticModal";
+import AchievementModal from "../Form/AchievementModal";
 
-const UserStats = ({ achievementBorder, statisticBorder }) => {
+const UserStats = ({ achievementBorder, statisticBorder, achievementBackground, statisticBackground, achievementTitleBackground, statisticTitleBackground, achievementTitleColor, statisticTitleColor, achievementBackgroundColor, statisticBackgroundColor}) => {
     const [showPopup1, setShowPopup1] = useState(false);
     const [showPopup2, setShowPopup2] = useState(false);
-    const [step1, setStep1] = useState(1);
-    const [step2, setStep2] = useState(1)
+    const [tempAchievementBackground, setTempAchievementBackground] = useState(achievementBackground);
+    const [tempAchievementBorder, setTempAchievementBorder] = useState(achievementBorder);
+    const [tempAchievementBackgroundTitle, setTempAchievementBackgroundTitle] = useState(achievementTitleBackground);
+    const [tempStatisticBackground, setTempStatisticBackground] = useState(statisticBackground);
+    const [tempStatisticBorder, setTempStatisticBorder] = useState(statisticBorder);
+    const [tempStatisticTitleBackground, setTempStatisticTitleBackground] = useState(statisticTitleBackground);
+    const handleCloseModal = () => {
+        setTempAchievementBackground(achievementBackground);
+        setTempAchievementBorder(achievementBorder);
+        setTempAchievementBackgroundTitle(achievementTitleBackground);
+        setTempStatisticBackground(statisticBackground);
+        setTempStatisticBorder(statisticBorder);
+        setTempStatisticTitleBackground(statisticTitleBackground);
+        setShowPopup1(false);
+        setShowPopup2(false);
+    };
+    const [setNavThemeImages] = useState([]);
+    const [setSelectedTheme] = useState(null);
+    const accessToken = localStorage.getItem("accessToken");
+    const fetchNavigationThemes = async () => {
+        if (!accessToken) {
+            console.error("Access token is missing");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=6",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
+            }
+
+            const data = await response.json();
+
+            if (!data?.data || !Array.isArray(data.data)) {
+                console.error("Invalid data format received:", data);
+                return;
+            }
+
+            const activeThemes = data.data.filter((theme) => theme.isInUse);
+
+            const availableThemes = activeThemes.flatMap((theme) =>
+                Array.isArray(theme.userTemplateDetails)
+                    ? theme.userTemplateDetails
+                        .filter((detail) => detail.userTemplate?.tagName !== "Default")
+                        .map((detail) => ({
+                            id: detail.id,
+                            image: encodeURI(detail.image),
+                            colorCode: detail.colorCode,
+                            isInUse: detail.isInUse,
+                        }))
+                    : []
+            );
+
+            setNavThemeImages([...availableThemes]);
+
+            const activeTemplate = availableThemes.find((theme) => theme.isInUse);
+            if (activeTemplate) {
+                setSelectedTheme(activeTemplate.id);
+            }
+        } catch (error) {
+            console.error("Error fetching navigation themes:", error);
+        }
+    };
+    const fetchNavigationThemes2 = async () => {
+        if (!accessToken) {
+            console.error("Access token is missing");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=5",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
+            }
+
+            const data = await response.json();
+
+            if (!data?.data || !Array.isArray(data.data)) {
+                console.error("Invalid data format received:", data);
+                return;
+            }
+
+            const activeThemes = data.data.filter((theme) => theme.isInUse);
+
+            const availableThemes = activeThemes.flatMap((theme) =>
+                Array.isArray(theme.userTemplateDetails)
+                    ? theme.userTemplateDetails
+                        .filter((detail) => detail.userTemplate?.tagName !== "Default")
+                        .map((detail) => ({
+                            id: detail.id,
+                            image: encodeURI(detail.image),
+                            colorCode: detail.colorCode,
+                            isInUse: detail.isInUse,
+                        }))
+                    : []
+            );
+
+            setNavThemeImages([...availableThemes]);
+
+            const activeTemplate = availableThemes.find((theme) => theme.isInUse);
+            if (activeTemplate) {
+                setSelectedTheme(activeTemplate.id);
+            }
+        } catch (error) {
+            console.error("Error fetching navigation themes:", error);
+        }
+    };
+    const fetchNavigationThemes3 = async () => {
+        if (!accessToken) {
+            console.error("Access token is missing");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=9",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
+            }
+
+            const data = await response.json();
+
+            if (!data?.data || !Array.isArray(data.data)) {
+                console.error("Invalid data format received:", data);
+                return;
+            }
+
+            const activeThemes = data.data.filter((theme) => theme.isInUse);
+
+            const availableThemes = activeThemes.flatMap((theme) =>
+                Array.isArray(theme.userTemplateDetails)
+                    ? theme.userTemplateDetails
+                        .filter((detail) => detail.userTemplate?.tagName !== "Default")
+                        .map((detail) => ({
+                            id: detail.id,
+                            image: encodeURI(detail.image),
+                            colorCode: detail.colorCode,
+                            isInUse: detail.isInUse,
+                        }))
+                    : []
+            );
+
+            setNavThemeImages([...availableThemes]);
+
+            const activeTemplate = availableThemes.find((theme) => theme.isInUse);
+            if (activeTemplate) {
+                setSelectedTheme(activeTemplate.id);
+            }
+        } catch (error) {
+            console.error("Error fetching navigation themes:", error);
+        }
+    };
+    const fetchNavigationThemes4 = async () => {
+        if (!accessToken) {
+            console.error("Access token is missing");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=8",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
+            }
+
+            const data = await response.json();
+
+            if (!data?.data || !Array.isArray(data.data)) {
+                console.error("Invalid data format received:", data);
+                return;
+            }
+
+            const activeThemes = data.data.filter((theme) => theme.isInUse);
+
+            const availableThemes = activeThemes.flatMap((theme) =>
+                Array.isArray(theme.userTemplateDetails)
+                    ? theme.userTemplateDetails
+                        .filter((detail) => detail.userTemplate?.tagName !== "Default")
+                        .map((detail) => ({
+                            id: detail.id,
+                            image: encodeURI(detail.image),
+                            colorCode: detail.colorCode,
+                            isInUse: detail.isInUse,
+                        }))
+                    : []
+            );
+
+            setNavThemeImages([...availableThemes]);
+
+            const activeTemplate = availableThemes.find((theme) => theme.isInUse);
+            if (activeTemplate) {
+                setSelectedTheme(activeTemplate.id);
+            }
+        } catch (error) {
+            console.error("Error fetching navigation themes:", error);
+        }
+    };
+    const fetchNavigationThemes5 = async () => {
+        if (!accessToken) {
+            console.error("Access token is missing");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=7",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
+            }
+
+            const data = await response.json();
+
+            if (!data?.data || !Array.isArray(data.data)) {
+                console.error("Invalid data format received:", data);
+                return;
+            }
+
+            const activeThemes = data.data.filter((theme) => theme.isInUse);
+
+            const availableThemes = activeThemes.flatMap((theme) =>
+                Array.isArray(theme.userTemplateDetails)
+                    ? theme.userTemplateDetails
+                        .filter((detail) => detail.userTemplate?.tagName !== "Default")
+                        .map((detail) => ({
+                            id: detail.id,
+                            image: encodeURI(detail.image),
+                            colorCode: detail.colorCode,
+                            isInUse: detail.isInUse,
+                        }))
+                    : []
+            );
+
+            setNavThemeImages([...availableThemes]);
+
+            const activeTemplate = availableThemes.find((theme) => theme.isInUse);
+            if (activeTemplate) {
+                setSelectedTheme(activeTemplate.id);
+            }
+        } catch (error) {
+            console.error("Error fetching navigation themes:", error);
+        }
+    };
+    const fetchNavigationThemes6 = async () => {
+        if (!accessToken) {
+            console.error("Access token is missing");
+            return;
+        }
+
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=10",
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
+            }
+
+            const data = await response.json();
+
+            if (!data?.data || !Array.isArray(data.data)) {
+                console.error("Invalid data format received:", data);
+                return;
+            }
+
+            const activeThemes = data.data.filter((theme) => theme.isInUse);
+
+            const availableThemes = activeThemes.flatMap((theme) =>
+                Array.isArray(theme.userTemplateDetails)
+                    ? theme.userTemplateDetails
+                        .filter((detail) => detail.userTemplate?.tagName !== "Default")
+                        .map((detail) => ({
+                            id: detail.id,
+                            image: encodeURI(detail.image),
+                            colorCode: detail.colorCode,
+                            isInUse: detail.isInUse,
+                        }))
+                    : []
+            );
+
+            setNavThemeImages([...availableThemes]);
+
+            const activeTemplate = availableThemes.find((theme) => theme.isInUse);
+            if (activeTemplate) {
+                setSelectedTheme(activeTemplate.id);
+            }
+        } catch (error) {
+            console.error("Error fetching navigation themes:", error);
+        }
+    };
+    useEffect(() => {
+        if (showPopup1) {
+            fetchNavigationThemes();
+            fetchNavigationThemes2();
+            fetchNavigationThemes3();
+            fetchNavigationThemes4();
+            fetchNavigationThemes5();
+            fetchNavigationThemes6();
+        } else {
+            setTempAchievementBackground(achievementBackground);
+            setTempAchievementBorder(achievementBorder);
+            setTempAchievementBackgroundTitle(achievementTitleBackground);
+            setTempStatisticBackground(statisticBackground);
+            setTempStatisticBorder(statisticBorder);
+            setTempStatisticTitleBackground(statisticTitleBackground);
+        }
+    }, [showPopup1, setShowPopup2, achievementBackground, achievementBorder, achievementTitleBackground, statisticBackground, statisticBorder, statisticTitleBackground ]);
     return (
         <div>
             {/* Thành tựu cá nhân */}
             <div
                 style={{
-                    backgroundColor: "white",
+                    position: "relative",
+                    backgroundImage: tempAchievementBackground ? `url(${tempAchievementBackground})` : "none",
                     padding: "15px",
                     borderRadius: "10px",
-                    border: `2px solid ${achievementBorder}`,
-                    marginBottom: "15px",
-                    position: "relative",
+                    border: `2px solid ${tempAchievementBorder}`,
+                    boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
                 }}
             >
-                {/* Tiêu đề và Icon */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontWeight: "bold" }}>Thành tựu cá nhân</h3>
-                    <button
-                        style={{
-                            position: "absolute",
-                            top: "10px",
-                            right: "10px",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                        }}
-                        onClick={() => setShowPopup1(true)}
-                    >
-                        <Settings size={20} color="black" />
-                    </button>
-                </div>
-
-                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                <h3
+                    style={{
+                        fontWeight: "bold",
+                        backgroundImage: tempAchievementBackgroundTitle ? `url(${tempAchievementBackgroundTitle})` : "none",
+                        padding: "5px 10px",
+                        borderRadius: "8px 8px 0 0",
+                        margin: "-15px -15px 10px -15px",
+                        textAlign: "center",
+                        color: achievementTitleColor,
+                    }}
+                >
+                    Thành tựu cá nhân
+                </h3>
+                <button
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                    }}
+                    onClick={() => setShowPopup1(true)}
+                >
+                    <Settings size={15} color="black" />
+                </button>
+                <ul style={{ fontSize: "14px", color: achievementBackgroundColor, listStyle: "none", padding: 0 }}>
                     <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
                     <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
                     <li>🏆 Cúp vàng bài viết tháng 7/2024</li>
                     <li>🥈 Cúp bạc tác giả tháng 6/2024</li>
                 </ul>
-                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
+                <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
+                    Xem thêm &gt;
+                </a>
             </div>
-            {showPopup1 && (
-                <div style={{
-                    position: "fixed",
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 1000,
-                }}>
-                    <div style={{
-                        background: "white",
-                        padding: "20px",
-                        borderRadius: "10px",
-                        boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
-                        minWidth: "300px",
-                        zIndex: 1001,
-                        textAlign: "center",
-                        position: "relative"
-                    }}>
-                        <button
-                            style={{
-                                position: "absolute",
-                                top: "10px",
-                                right: "10px",
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                            }}
-                            onClick={() => setShowPopup1(false)}
-                        >
-                            <X size={20} color="black" />
-                        </button>
-                        <h3 style={{ marginBottom: "10px" }}>Kho của bạn</h3>
-                        <p style={{ color: "#666" }}>Cùng thiết kế một ngôi nhà thật đậm chất riêng của mình.</p>
-                        <p style={{ color: "#666" }}>Hãy ghé thăm cửa hàng để mua sắm bất cứ lúc nào.</p>
 
-                        {step1 === 1 ? (
-                            <div>
-                                <p>Nền của Kệ thành tựu</p>
-                                <input type="text" style={{ width: "100%", padding: "5px" }} />
-                                <div style={{ height: "20px", background: "linear-gradient(to right, red, pink)", margin: "10px 0" }}></div>
-                            </div>
-                        ) : (
-                            <div>
-                                <p>Viền của Kệ thành tựu</p>
-                                <input type="range" style={{ width: "100%" }} />
-                                <div style={{ height: "2px", background: "linear-gradient(to right, red, blue)", margin: "10px 0" }}></div>
-                            </div>
-                        )}
-
-                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px" }}>
-                            {step1 > 1 && (
-                                <button
-                                    style={{ padding: "10px", backgroundColor: "#FFC107", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                                    onClick={() => setStep1(step1 - 1)}
-                                >
-                                    TRỞ VỀ
-                                </button>
-                            )}
-                            <span>{step1} / 2</span>
-                            {step1 < 2 ? (
-                                <button
-                                    style={{ padding: "10px", backgroundColor: "#28A745", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                                    onClick={() => setStep1(step1 + 1)}
-                                >
-                                    TIẾP THEO
-                                </button>
-                            ) : (
-                                <button
-                                    style={{ padding: "10px", backgroundColor: "#28A745", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                                    onClick={() => setShowPopup1(false)}
-                                >
-                                    XÁC NHẬN
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+            {showPopup1 && <AchievementModal
+                onClose={handleCloseModal}
+                onChangeBackground={setTempAchievementBackground}
+                onChangeBorder={setTempAchievementBorder}
+                onChangeBackgroundTitle={setTempAchievementBackgroundTitle}
+                achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor}
+            />}
 
             {/* Thống kê người dùng */}
             <div
                 style={{
-                    backgroundColor: "white",
+                    position: "relative",
+                    backgroundImage: tempStatisticBackground ? `url(${tempStatisticBackground})` : "none",
                     padding: "15px",
                     borderRadius: "10px",
-                    border: `2px solid ${statisticBorder}`,
-                    position: "relative",
+                    border: `2px solid ${tempStatisticBorder}`,
+                    boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
+                    marginTop: "20px"
                 }}
             >
-                {/* Tiêu đề và Icon */}
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
-                    <button
-                        style={{
-                            position: "absolute",
-                            top: "10px",
-                            right: "10px",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                        }}
-                        onClick={() => setShowPopup2(true)}
-                    >
-                        <Settings size={20} color="black" />
-                    </button>
-                </div>
-
-                <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
+                <h3
+                    style={{
+                        fontWeight: "bold",
+                        backgroundImage: tempStatisticTitleBackground ? `url(${tempStatisticTitleBackground})` : "none",
+                        color: "white",
+                        padding: "5px 10px",
+                        borderRadius: "8px 8px 0 0",
+                        margin: "-15px -15px 10px -15px",
+                        textAlign: "center",
+                        color: statisticTitleColor
+                    }}
+                >
+                    Thống kê người dùng
+                </h3>
+                <button
+                    style={{
+                        position: "absolute",
+                        top: "10px",
+                        right: "10px",
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                    }}
+                    onClick={() => setShowPopup2(true)}
+                >
+                    <Settings size={15} color="black" />
+                </button>
+                <ul style={{ fontSize: "14px", color: statisticBackgroundColor, listStyle: "none", padding: 0 }}>
                     <li>Tổng bài viết: 2</li>
                     <li>Tổng bộ sưu tập: 5</li>
                     <li>Tổng audio cá nhân: 16</li>
@@ -168,91 +474,16 @@ const UserStats = ({ achievementBorder, statisticBorder }) => {
                     <li>Bookmark bài viết: 35</li>
                     <li>Bookmark bộ sưu tập: 12</li>
                 </ul>
-                <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
-                {showPopup2 && (
-                <div style={{
-                    position: "fixed",
-                    top: "0",
-                    left: "0",
-                    width: "100%",
-                    height: "100%",
-                    backgroundColor: "rgba(0, 0, 0, 0.5)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    zIndex: 1000,
-                }}>
-                    <div style={{
-                        background: "white",
-                        padding: "20px",
-                        borderRadius: "10px",
-                        boxShadow: "0px 0px 10px rgba(0, 0, 0, 0.1)",
-                        minWidth: "300px",
-                        zIndex: 1001,
-                        textAlign: "center",
-                        position: "relative"
-                    }}>
-                        <button
-                            style={{
-                                position: "absolute",
-                                top: "10px",
-                                right: "10px",
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                            }}
-                            onClick={() => setShowPopup2(false)}
-                        >
-                            <X size={20} color="black" />
-                        </button>
-                        <h3 style={{ marginBottom: "10px" }}>Kho của bạn</h3>
-                        <p style={{ color: "#666" }}>Cùng thiết kế một ngôi nhà thật đậm chất riêng của mình.</p>
-                        <p style={{ color: "#666" }}>Hãy ghé thăm cửa hàng để mua sắm bất cứ lúc nào.</p>
-
-                        {step2 === 1 ? (
-                            <div>
-                                <p>Nền của Kệ thống kê </p>
-                                <input type="text" style={{ width: "100%", padding: "5px" }} />
-                                <div style={{ height: "20px", background: "linear-gradient(to right, red, pink)", margin: "10px 0" }}></div>
-                            </div>
-                        ) : (
-                            <div>
-                                <p>Viền của Kệ thống kê</p>
-                                <input type="range" style={{ width: "100%" }} />
-                                <div style={{ height: "2px", background: "linear-gradient(to right, red, blue)", margin: "10px 0" }}></div>
-                            </div>
-                        )}
-
-                        <div style={{ display: "flex", justifyContent: "space-between", marginTop: "15px" }}>
-                            {step2 > 1 && (
-                                <button
-                                    style={{ padding: "10px", backgroundColor: "#FFC107", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                                    onClick={() => setStep2(step2 - 1)}
-                                >
-                                    TRỞ VỀ
-                                </button>
-                            )}
-                            <span>{step2} / 2</span>
-                            {step2 < 2 ? (
-                                <button
-                                    style={{ padding: "10px", backgroundColor: "#28A745", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                                    onClick={() => setStep2(step2 + 1)}
-                                >
-                                    TIẾP THEO
-                                </button>
-                            ) : (
-                                <button
-                                    style={{ padding: "10px", backgroundColor: "#28A745", color: "white", border: "none", borderRadius: "5px", cursor: "pointer" }}
-                                    onClick={() => setShowPopup2(false)}
-                                >
-                                    XÁC NHẬN
-                                </button>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            )}
+                <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
+                    Xem thêm &gt;
+                </a>
             </div>
+            {showPopup2 && <StatisticModal 
+            onClose={handleCloseModal}
+            onChangeBackground={setTempStatisticBackground}
+            onChangeBorder={setTempStatisticBorder}
+            onChangeBackgroundTitle={setTempStatisticTitleBackground}
+            achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} />}
         </div>
     );
 };
