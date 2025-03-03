@@ -201,7 +201,6 @@ const styles = {
         borderLeft: "3px solid #eee",
         paddingLeft: "15px",
         marginBottom: "auto",
-        flexGrow: 1,
         position: 'relative',
     },
     poemTextContainer: {

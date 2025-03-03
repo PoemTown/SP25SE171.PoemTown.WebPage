@@ -4,7 +4,7 @@ import { IoBookmark } from "react-icons/io5";
 import { LuBook } from "react-icons/lu";
 import { MdOutlineKeyboardVoice } from "react-icons/md";
 
-const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
+const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity }) => (
     <div
         key={item.id}
         style={{
@@ -16,10 +16,10 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
             borderRadius: "5px"
         }}
     >
-        <div style={{ flex: 1, width: "120px", height: "120px" }}>
+        <div style={{ flex: 1, width: "260px", height: "146px" }}>
             <img
-                style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                src="./@.png"
+                style={{ width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px" }}
+                src={item.collectionImage ? item.collectionImage : "/collection1.png"}
                 alt="Ảnh cá nhân"
             />
         </div>
@@ -30,8 +30,8 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
                 alignItems: "center",
             }}>
                 <p style={{ marginBottom: '1%', fontWeight: 'bold', marginTop: 0 }}>
-                    {item.collectionName} - <span style={{ color: "#007bff", fontWeight: "600", fontStyle: "italic", textDecoration: "underline", cursor: "pointer" }}>
-                        {item.user?.displayName || "Anonymous"}
+                    {item.collectionName} {isCommunity ? "" : "-" } <span style={{ color: "#007bff", fontWeight: "600", fontStyle: "italic", textDecoration: "underline", cursor: "pointer" }}>
+                        {isCommunity ? "" :  item.user?.displayName || "Anonymous"}
                     </span>
                 </p>
                 <div style={{
@@ -69,7 +69,7 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
                 </div>
             </div>
             <p style={{
-                marginRight: '2%',
+                marginRight: "20%",
                 marginBottom: 'auto',
                 marginTop: 0,
                 overflow: "hidden",
@@ -78,9 +78,9 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
                 WebkitLineClamp: 2,
                 WebkitBoxOrient: "vertical",
                 maxWidth: "100%",
-                flexGrow: 1
+                
             }}>
-                {item.collectionDescription}
+                <span style={{fontWeight: 500}}>Mô tả:</span> <span style={{color: "#444"}}> {item.collectionDescription} </span>
             </p>
             <div style={{
                 display: "flex",
@@ -88,7 +88,7 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
                 alignItems: "center",
                 marginTop: "auto",
             }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "20px"}}>
+                <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                         <LuBook />
                         <span>{item.totalChapter}</span>
@@ -100,9 +100,9 @@ const CollectionCard = ({ item, onBookmark, isBookmarked }) => (
                 </div>
                 {/* Xem chi tiết bộ sưu tập */}
                 <div
-                    style={{ color: "#007bff", fontWeight: "500", cursor: "pointer"}}
+                    style={{ color: "#007bff", fontWeight: "500", cursor: "pointer" }}
                 >
-                    <spa>Xem tuyển tập &gt;</spa>
+                    <span>Xem tuyển tập &gt;</span>
                 </div>
             </div>
         </div>

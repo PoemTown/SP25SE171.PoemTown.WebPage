@@ -10,6 +10,7 @@ import UserCover from "./Components/UserCover";
 import UserCoverEdit from "./Components/UserCoverEdit";
 import NavigationTabs from "./Components/NavigationTabs";
 import NavigationTabsEdit from "./Components/NavigationTabsEdit";
+import YourBookmark from "./Bookmark/YourBookmark";
 const UserPage = () => {
     const [coverImage, setCoverImage] = useState(null);
     const [backgroundImage, setBackgroundImage] = useState(null);
@@ -197,8 +198,6 @@ const UserPage = () => {
                 {/* Nội dung hiển thị theo Tab */}
                 <div
                     style={{
-                        marginTop: "20px",
-                        padding: "15px",
                         borderRadius: "10px",
                         boxShadow: "0 2px 5px rgba(0,0,0,0.1)",
                     }}
@@ -214,8 +213,7 @@ const UserPage = () => {
                     )}
                     {activeTab === "Bookmark của bạn" && (
                         <div>
-                            <h3>Bookmark của bạn</h3>
-                            <p>Các bài thơ bạn đã đánh dấu yêu thích sẽ hiển thị tại đây.</p>
+                           <YourBookmark />
                         </div>
                     )}
                     {activeTab === "Bản nháp của bạn" && (

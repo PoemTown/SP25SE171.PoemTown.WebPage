@@ -172,10 +172,10 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                                 gap: '2%'
                             }}
                         >
-                            <div style={{ flex: 1, width: "120px", height: "120px" }}>
+                            <div style={{ flex: 1, width: "260px", height: "146px" }}>
                                 <img
-                                    style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                                    src={collectionDetails.collectionImage ? collectionDetails.collectionImage : "/default.png"}
+                                    style={{ width: "260px", height: "146px", objectFit: "cover" }}
+                                    src={collectionDetails.collectionImage ? collectionDetails.collectionImage : "./collection1.png"}
                                     alt="Ảnh cá nhân"
                                 />
                             </div>

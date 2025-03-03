@@ -131,7 +131,9 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
                     backgroundImage: `url(${collectionFile ? collectionFile : data.collectionImage ? data.collectionImage : '/check.png'})`,
                     backgroundSize: "cover", 
                     backgroundPosition: "center",
-                    height: "200px",
+                    height: "146px",
+                    width: "260px",
+                    objectFit: "cover",
                     borderRadius: "10px",
                     position: "relative"
                 }}
