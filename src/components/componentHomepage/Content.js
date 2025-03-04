@@ -114,13 +114,13 @@ const Content = ({ activeTab }) => {
 
   const handleChangeToBookmarkPoem = () => {
     setIsBookmarkCollectionTab(false)
-    fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem");
+    fetchData(`https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`);
   }
 
 
   const handleChangeToBookmarkCollection = () => {
     setIsBookmarkCollectionTab(true)
-    fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection");
+    fetchData(`https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`);
   }
 
 
@@ -474,7 +474,10 @@ const styles = {
   contentContainer: {
     maxWidth: "100%",
     display: "flex",
-    gap: "40px"
+    gap: "40px",
+    justifyContent: "center",
+    maxWidth: "1600px",
+    margin: "0 auto"
   },
 
   contentTitle: {
@@ -488,14 +491,13 @@ const styles = {
   leftColumn: {
     display: "flex",
     flexDirection: "column",
-    flex: "6",
+    flex: "7",
 
   },
 
   rightColumn: {
     display: "flex",
     flexDirection: "column",
-    maxWidth: "328px",
     flex: "3"
   },
   topSection: {

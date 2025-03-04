@@ -134,7 +134,6 @@ const navTabs = [
   { key: "yourpage", label: "Trang của bạn", href: "#yourpage" },
 ];
 
-// CSS Styles
 const styles = {
   loginButton: {
     backgroundColor: "#4A90E2",

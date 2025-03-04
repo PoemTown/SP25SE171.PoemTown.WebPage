@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from "react";
-import axios from "axios"; 
+import axios from "axios";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css"; 
 
 const CreatePoemForm = ({ onBack, initialData }) => {
   const [poemData, setPoemData] = useState({
@@ -9,7 +11,6 @@ const CreatePoemForm = ({ onBack, initialData }) => {
     collection: "",
     content: "",
   });
-
 
   useEffect(() => {
     if (initialData) {
@@ -30,7 +31,7 @@ const CreatePoemForm = ({ onBack, initialData }) => {
 
   const handleSave = async () => {
     try {
-      await handleSubmit(0); 
+      await handleSubmit(0);
     } catch (error) {
       console.error("Lỗi khi lưu nháp:", error);
     }
@@ -49,7 +50,7 @@ const CreatePoemForm = ({ onBack, initialData }) => {
       description: poemData.description,
       chapterNumber: isNaN(poemData.chapter) ? 0 : Number(poemData.chapter),
       chapterName: poemData.chapter || null,
-      status: status, 
+      status: status,
       collectionId: poemData.collection ? poemData.collection : null,
       sourceCopyRightId: null,
       poemImageUrl: null,
@@ -79,6 +80,10 @@ const CreatePoemForm = ({ onBack, initialData }) => {
       console.error("Lỗi khi đăng bài:", error);
       alert("Không thể đăng bài. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.");
     }
+  };
+
+  const handleContentChange = (value) => {
+    setPoemData({ ...poemData, content: value });
   };
 
   return (
@@ -153,22 +158,13 @@ const CreatePoemForm = ({ onBack, initialData }) => {
           </select>
         </div>
 
-        <div style={{ marginBottom: "15px" }}>
+        <div style={{ marginBottom: "50px" }}>
           <label style={{ display: "block", fontWeight: "bold" }}>Nội dung</label>
-          <div
-            name="content"
-            contentEditable
-            style={{
-              width: "100%",
-              minHeight: "150px",
-              padding: "10px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-              backgroundColor: "white",
-            }}
-            onInput={(e) => setPoemData({ ...poemData, content: e.currentTarget.innerHTML })}
-            dangerouslySetInnerHTML={{ __html: poemData.content }}
-          ></div>
+          <ReactQuill
+            value={poemData.content}
+            onChange={handleContentChange}
+            style={{ height: "100px" }} 
+          />
         </div>
 
         <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>

@@ -10,6 +10,8 @@ import YourPoem from "./pages/User/YourPoem";
 import CreatePoem from "./pages/User/CreatePoem"; 
 import ProfilePage from "./pages/ProfilePage";
 import YourDesign from "./pages/User/YourDesign";
+import Shop from "./pages/ShopPage";
+import TemplateDetail from "./pages/TemplateDetail";
 function App() {
   return (
     <Router>
@@ -21,6 +23,8 @@ function App() {
         <Route path="/confirm-email" element={<EmailConfirmationPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/shop/:masterTemplateId" element={<TemplateDetail />} />
         {/* Nested Route trong UserPage */}
         <Route path="/userpage" element={<UserPage />}>
           <Route index element={<YourPoem borderColor="#ddd" />} /> 
