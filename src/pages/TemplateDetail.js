@@ -11,6 +11,7 @@ const TemplateDetail = () => {
     const [activeTab, setActiveTab] = useState("Thơ của bạn");
     const [hover, setHover] = useState(false);
     const [hoverBuy, setHoverBuy] = useState(false);
+    const [imagesLoaded, setImagesLoaded] = useState(false);
 
     const navigate = useNavigate();
     const token = localStorage.getItem("accessToken");
@@ -40,7 +41,32 @@ const TemplateDetail = () => {
         const data = await response.json();
         console.log(data);
         setTemplate(data.data);
+        const imageUrls = data.data
+            .filter(item => item.image)
+            .map(item => item.image);
+
+        // Preload images
+        if (imageUrls.length > 0) {
+            await preloadImages(imageUrls);
+        }
+        setImagesLoaded(true);
     };
+
+    
+    const preloadImages = (urls) => {
+        return Promise.all(
+            urls.map(url =>
+                new Promise((resolve, reject) => {
+                    const img = new Image();
+                    img.src = url;
+                    img.onload = resolve;
+                    img.onerror = reject;
+                })
+            )
+        );
+    };
+
+    if (!template || !imagesLoaded) return <p>Loading...</p>;
 
     const handleBuyTemplate = async () => {
         console.log(masterTemplateId)
@@ -276,7 +302,6 @@ const TemplateDetail = () => {
                     </div>
                 </div>
             </div>
-            <button onClick={() => console.log(`"${template.find(item => item.type === 3).colorCode}"`)}>adsasd </button>
         </div>
     );
 };
