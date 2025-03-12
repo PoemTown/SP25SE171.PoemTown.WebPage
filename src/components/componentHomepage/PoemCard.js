@@ -27,7 +27,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover }) => {
     return (
         <div style={styles.poemCard}>
             <div style={styles.poemImageContainer}>
-                <img src={item.image || "./anhminhhoa.png"} alt="anh minh hoa" style={styles.poemImage} />
+                <img src={item.poemImage || "./anhminhhoa.png"} alt="anh minh hoa" style={styles.poemImage} />
             </div>
             <div style={styles.avatarContainer}>
                 <img
@@ -224,6 +224,7 @@ const styles = {
         color: '#666',
     },
     poemLine: {
+        whiteSpace: 'pre-wrap',
         margin: "0 0 0 0",
         lineHeight: "1.6",
         fontSize: "1rem",

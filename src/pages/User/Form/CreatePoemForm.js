@@ -1,27 +1,29 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
+import { message } from "antd";
 
 const CreatePoemForm = ({ onBack, initialData }) => {
   const [poemData, setPoemData] = useState({
     title: "",
     description: "",
     chapterNumber: "",
+    poemImage: "",
     collection: "",
     content: "",
   });
-  const [selectedType, setSelectedType] = useState("");
+  const [selectedType, setSelectedType] = useState("1");
   const [collections, setCollections] = useState([]);
-
+  const [poemFile, setPoemFile] = useState(null);
 
   const poemType = {
     1: "Thơ tự do",
-    2: "Lục bát",
-    3: "Song thất lục bát",
-    4: "Thất ngôn tứ tuyệt",
-    5: "Ngũ ngôn tứ tuyệt",
-    6: "Thất ngôn bát cú",
+    2: "Thơ Lục bát",
+    3: "Thơ Song thất lục bát",
+    4: "Thơ Thất ngôn tứ tuyệt",
+    5: "Thơ Ngũ ngôn tứ tuyệt",
+    6: "Thơ Thất ngôn bát cú",
     7: "Thơ bốn chữ",
     8: "Thơ năm chữ",
     9: "Thơ sáu chữ",
@@ -57,6 +59,7 @@ const CreatePoemForm = ({ onBack, initialData }) => {
       setPoemData({
         title: initialData.title || "",
         description: initialData.description || "",
+        poemImage: initialData.poemImage || "",
         chapterNumber: initialData.chapterNumber || "",
         collection: initialData.collection || "",
         content: initialData.content || "",
@@ -80,14 +83,137 @@ const CreatePoemForm = ({ onBack, initialData }) => {
   const handleSubmit = async (status) => {
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
-      alert("Vui lòng đăng nhập để đăng bài.");
+      message.error("Vui lòng đăng nhập để đăng bài.");
       return;
     }
-  
+
+    const validatePoemStructure = () => {
+      const lines = formatContent(poemData.content, selectedType)
+        .split('\n')
+        .filter(line => line.trim() !== '');
+
+      if (lines.length === 0) {
+        message.error("Thơ chưa được soạn");
+        return false;
+      };
+
+      switch (selectedType) {
+        case '2': // Lục bát
+          // Must end with 8-word line
+          const lastLineWords = lines[lines.length - 1].trim().split(/\s+/).length;
+          if (lastLineWords !== 8) {
+            message.error("Lục bát phải kết thúc bằng câu 8 chữ!");
+            return false;
+          }
+
+          // Check alternating 6-8 pattern
+          const isValid = lines.every((line, index) => {
+            const wordCount = line.trim().split(/\s+/).length;
+            return index % 2 === 0 ? wordCount === 6 : wordCount === 8;
+          });
+
+          if (!isValid) {
+            message.error("Lục bát phải theo đúng luật: câu 6 chữ - câu 8 chữ luân phiên!");
+            return false;
+          }
+          return true;
+
+        case '3': // Song thất lục bát
+          if (lines.length % 4 !== 0) {
+            message.error("Song thất lục bát phải có kết thúc bằng câu số 4, 8, 12, 16...!");
+            return false;
+          }
+
+          // Check 7-7-6-8 pattern for each stanza
+          const pattern = [7, 7, 6, 8];
+          const isValidSongThat = lines.every((line, index) => {
+            const stanzaIndex = index % 4;
+            const expectedWords = pattern[stanzaIndex];
+            return line.trim().split(/\s+/).length === expectedWords;
+          });
+
+          if (!isValidSongThat) {
+            message.error("Song thất lục bát phải theo đúng luật: 7-7-6-8 cho mỗi khổ!");
+            return false;
+          }
+          return true;
+
+
+        case '4': // Thất ngôn tứ tuyệt
+          if (lines.length !== 4) {
+            message.error("Thất ngôn tứ tuyệt phải có đúng 4 câu 7 chữữ!");
+            return false;
+          }
+          if (lines.some(line => line.trim().split(/\s+/).length !== 7)) {
+            message.error("Mỗi câu Thất ngôn tứ tuyệt phải có đúng 7 chữ!");
+            return false;
+          }
+          return true;
+
+        case '5': // Ngũ ngôn tứ tuyệt
+          if (lines.length !== 4) {
+            message.error("Ngũ ngôn tứ tuyệt phải có đúng 4 câu 5 chữ!");
+            return false;
+          }
+          if (lines.some(line => line.trim().split(/\s+/).length !== 5)) {
+            message.error("Mỗi câu Ngũ ngôn tứ tuyệt phải có đúng 5 chữ!");
+            return false;
+          }
+          return true;
+
+        case '6': // Thất ngôn bát cú
+          if (lines.length !== 8) {
+            message.error("Thất ngôn bát cú phải có đúng 8 câu 7 chữ!");
+            return false;
+          }
+          if (lines.some(line => line.trim().split(/\s+/).length !== 7)) {
+            message.error("Mỗi câu Thất ngôn bát cú phải có đúng 7 chữ!");
+            return false;
+          }
+          return true;
+        case '7': // Thơ bốn chữ (4 words/line)
+          return lines.every(line =>
+            line.trim().split(/\s+/).length === 4
+          );
+
+        case '8': // Thơ năm chữ (5 words/line)
+          return lines.every(line =>
+            line.trim().split(/\s+/).length === 5
+          );
+
+        case '9': // Thơ sáu chữ (6 words/line)
+          return lines.every(line =>
+            line.trim().split(/\s+/).length === 6
+          );
+
+        case '10': // Thơ bảy chữ (7 words/line)
+          return lines.every(line =>
+            line.trim().split(/\s+/).length === 7
+          );
+
+        case '11': // Thơ tám chữ (8 words/line)
+          return lines.every(line =>
+            line.trim().split(/\s+/).length === 8
+          );
+
+        default:
+          return true;
+      }
+    };
+
+    if (!validatePoemStructure()) {
+      // Add specific error messages for fixed-word types
+      if (selectedType >= 7 && selectedType <= 11) {
+        const requiredWords = [4, 5, 6, 7, 8][selectedType - 7];
+        message.error(`${poemType[selectedType]} yêu cầu mỗi câu đủ ${requiredWords} chữ!`);
+      }
+      return;
+    }
+
+
     // Get formatted content from textarea preview
     const formattedContent = formatContent(poemData.content, selectedType);
-    console.log(formattedContent)
-    
+
     const requestData = {
       title: poemData.title,
       content: formattedContent,  // Use formatted textarea content
@@ -97,12 +223,12 @@ const CreatePoemForm = ({ onBack, initialData }) => {
       status: status,
       collectionId: poemData.collection ? poemData.collection : null,
       sourceCopyRightId: null,
-      poemImageUrl: null,
+      poemImage: poemData.poemImage || null,
       recordFiles: [],
       type: 0,
       isPublic: true,
     };
-
+    console.log()
     try {
       const response = await axios.post(
         "https://api-poemtown-staging.nodfeather.win/api/poems/v1",
@@ -116,13 +242,14 @@ const CreatePoemForm = ({ onBack, initialData }) => {
       );
 
       if (response.status === 200) {
-        alert(status === 1 ? "Bài thơ đã được đăng thành công!" : "Bài thơ đã được lưu nháp!");
+        message.success(status === 1 ? "Bài thơ đã được đăng thành công!" : "Bài thơ đã được lưu nháp!");
+        window.location.reload();
       } else {
-        alert("Có lỗi xảy ra, vui lòng thử lại.");
+        message.error("Có lỗi xảy ra, vui lòng thử lại.");
       }
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
-      alert("Không thể đăng bài. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.");
+      message.error("Không thể đăng bài. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.");
     }
   };
 
@@ -218,6 +345,50 @@ const CreatePoemForm = ({ onBack, initialData }) => {
   // };
 
   const formatContent = (content, type) => {
+    if (type === '1') {
+      // Parse HTML content while preserving structure
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(content, 'text/html');
+      const lines = [];
+  
+      // Process each node in the content
+      doc.body.childNodes.forEach((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          let lineContent = '';
+          
+          // Process child nodes including text and <br> elements
+          node.childNodes.forEach((child) => {
+            if (child.nodeType === Node.TEXT_NODE) {
+              // Preserve non-breaking spaces and regular spaces
+              lineContent += child.textContent.replace(/\u00A0/g, ' ');
+            } else if (child.nodeName === 'BR') {
+              lineContent += '\n';
+            }
+          });
+  
+          // Split line content by manual newlines
+          lineContent.split('\n').forEach((subLine) => {
+            lines.push(subLine);
+          });
+        }
+      });
+  
+      // Process each line to preserve formatting
+      return lines
+        .map((line) => {
+          // Preserve leading whitespace
+          const leadingWhitespace = line.match(/^\s*/)[0];
+          const content = line.slice(leadingWhitespace.length);
+          
+          // Collapse multiple spaces between words only
+          return (
+            leadingWhitespace +
+            content.replace(/\s+/g, ' ').replace(/\s*$/, '')
+          );
+        })
+        .join('\n');
+    }
+
     // Convert HTML to plain text
     const plainText = content.replace(/<[^>]+>/g, '\n').replace(/\n+/g, '\n');
     const allWords = plainText.split(/\s+/).filter(word => word.trim() !== '');
@@ -370,6 +541,45 @@ const CreatePoemForm = ({ onBack, initialData }) => {
     }
   };
 
+  const handleUploadImage = async (event) => {
+    const accessToken = localStorage.getItem("accessToken");
+    const file = event.target.files[0];
+    if (file) {
+      const imageUrl = URL.createObjectURL(file);
+      setPoemFile(imageUrl);
+
+      const formData = new FormData();
+      formData.append("file", file);
+      try {
+        const response = await fetch(
+          "https://api-poemtown-staging.nodfeather.win/api/poems/v1/image",
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+            },
+            body: formData,
+          }
+        );
+
+        if (!response.ok) {
+          throw new Error("Failed to upload image");
+        }
+
+        const data = await response.json();
+        const uploadedImageUrl = data.data;
+
+        message.success("Poem Image updated successfully!");
+        sessionStorage.setItem("poemImage", uploadedImageUrl);
+        setPoemData((prev) => ({ ...prev, poemImage: uploadedImageUrl }));
+        setPoemFile(uploadedImageUrl);
+      } catch (error) {
+        message.error("Error uploading image!");
+        console.error(error);
+      }
+    }
+  }
+
   return (
     <div>
       <button
@@ -390,61 +600,112 @@ const CreatePoemForm = ({ onBack, initialData }) => {
 
       <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Sáng Tác Bài Thơ</h2>
 
-      <form style={{ backgroundColor: "#f9f9f9", padding: "20px", borderRadius: "10px" }}>
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", fontWeight: "bold" }}>Tiêu đề</label>
-          <input
-            type="text"
-            name="title"
-            value={poemData.title}
-            onChange={handleInputChange}
-            placeholder="Enter Poem's Title"
-            style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-            required
-          />
-        </div>
+      <form style={{ backgroundColor: "#f9f9f9", borderRadius: "10px" }}>
+        <div style={{ display: "flex", gap: "20px" }}>
+          <div style={{ flex: 7 }}>
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", fontWeight: "bold" }}>Tiêu đề</label>
+              <input
+                type="text"
+                name="title"
+                value={poemData.title}
+                onChange={handleInputChange}
+                placeholder="Enter Poem's Title"
+                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
+                required
+              />
+            </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", fontWeight: "bold" }}>Mô tả</label>
-          <input
-            type="text"
-            name="description"
-            value={poemData.description}
-            onChange={handleInputChange}
-            placeholder="Enter Poem's Description"
-            style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-          />
-        </div>
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", fontWeight: "bold" }}>Mô tả</label>
+              <input
+                type="text"
+                name="description"
+                value={poemData.description}
+                onChange={handleInputChange}
+                placeholder="Enter Poem's Description"
+                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
+              />
+            </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", fontWeight: "bold" }}>Chương số</label>
-          <input
-            type="text"
-            name="chapter"
-            value={poemData.chapterNumber}
-            onChange={handleInputChange}
-            placeholder="Ex: 1, 2, 3 or I, II, III"
-            style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-          />
-        </div>
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", fontWeight: "bold" }}>Chương số</label>
+              <input
+                type="text"
+                name="chapter"
+                value={poemData.chapterNumber}
+                onChange={handleInputChange}
+                placeholder="Ex: 1, 2, 3 or I, II, III"
+                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
+              />
+            </div>
 
-        <div style={{ marginBottom: "15px" }}>
-          <label style={{ display: "block", fontWeight: "bold" }}>Tập thơ</label>
-          <select
-            name="collection"
-            value={poemData.collection}
-            onChange={handleInputChange}
-            style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc" }}
-          >
-            <option value="">Choose existing collection</option>
-            {collections.map(collection => (
-              <option key={collection.id} value={collection.id}>
-                {collection.collectionName}
-              </option>
-            ))}
-          </select>
+            <div style={{ marginBottom: "15px" }}>
+              <label style={{ display: "block", fontWeight: "bold" }}>Tập thơ</label>
+              <select
+                name="collection"
+                value={poemData.collection}
+                onChange={handleInputChange}
+                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
+              >
+                <option value="">Choose existing collection</option>
+                {collections.map(collection => (
+                  <option key={collection.id} value={collection.id}>
+                    {collection.collectionName}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div style={{
+            flex: 3,
+            display: "flex",
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: "10px"
+          }}>
+            <div
+              size={80}
+              style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundImage: `url(${poemFile ? poemFile : poemData.poemImage ? poemData.poemImage : '/check.png'})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                height: "268px",
+                width: "168px",
+                objectFit: "cover",
+                border: "1px solid #000",
+                
+              }}
+            ></div>
+            {/* Nút tải ảnh */}
+            <div>
+              <label
+                style={{
+                  backgroundColor: '#3A86FF',
+                  color: '#FBFBFB',
+                  padding: "1rem 1rem",
+                  borderRadius: "5px",
+                  cursor: "pointer",
+                  boxSizing: "border-box",
+                  display: "block",
+                  fontSize: "0.9rem"
+                }}
+              >
+                Tải ảnh lên
+                <input
+                  type="file"
+                  accept="image/*"
+                  style={{ display: "none" }}
+                  onChange={handleUploadImage}
+                />
+              </label>
+            </div>
+          </div>
         </div>
-
         <label style={{ display: "block", fontWeight: "bold" }}>Nội dung</label>
         <div style={{ marginBottom: "60px", display: "flex", gap: "20px", height: "300px" }}>
           <div style={{ flex: 7, height: "100%" }}>
@@ -466,7 +727,6 @@ const CreatePoemForm = ({ onBack, initialData }) => {
                 border: "1px solid #ccc",
               }}
             >
-              <option value="">Tất cả loại</option>
               {Object.entries(poemType).map(([key, value]) => (
                 <option key={key} value={key}>{value}</option>
               ))}
@@ -486,6 +746,7 @@ const CreatePoemForm = ({ onBack, initialData }) => {
                   fontFamily: "Arial, sans-serif",
                   lineHeight: "1.5",
                   resize: "none", // optional: prevent manual resizing
+                  boxSizing: "border-box",
                 }}
                 value={formatContent(poemData.content, selectedType)}
                 readOnly
