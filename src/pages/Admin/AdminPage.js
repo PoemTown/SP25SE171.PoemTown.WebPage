@@ -10,7 +10,7 @@ import {
 } from "@mui/icons-material";
 import TransactionsManagement from "./Tabs/TransactionsManagement";
 import OrderManagement from "./Tabs/OrderManagement";
-
+import AccountManagement from "./Tabs/AccountManagement";
 const drawerWidth = 280;
 
 const AdminPage = () => {
@@ -85,6 +85,7 @@ const AdminPage = () => {
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>Trang: {currentPage}</Typography>
                 {currentPage === "transactions" && <TransactionsManagement />}
                 {currentPage === "orders" && <OrderManagement />}
+                {currentPage === "accounts" && <AccountManagement />}
             </Box>
         </Box>
     );
