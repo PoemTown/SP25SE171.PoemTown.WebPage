@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { message } from "antd";
+import { Button, message, Modal } from "antd";
+import { FcIdea } from "react-icons/fc";
 
 const CreatePoemForm = ({ onBack, initialData }) => {
   const [poemData, setPoemData] = useState({
@@ -16,6 +17,10 @@ const CreatePoemForm = ({ onBack, initialData }) => {
   const [selectedType, setSelectedType] = useState("1");
   const [collections, setCollections] = useState([]);
   const [poemFile, setPoemFile] = useState(null);
+  const [suggestion, setSuggestion] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isModalContentCompleteOpen, setIsModalContentCompleteOpen] = useState(false);
+  const accessToken = localStorage.getItem("accessToken");
 
   const poemType = {
     1: "Thơ tự do",
@@ -260,135 +265,42 @@ const CreatePoemForm = ({ onBack, initialData }) => {
     }));
   };
 
-  // const formatContent = (content, type) => {
-  //   // Convert HTML to formatted plain text
-  //   const getFormattedText = (html) => {
-  //     const tempDiv = document.createElement('div');
-  //     tempDiv.innerHTML = html;
-
-  //     const processNode = (node) => {
-  //       if (node.nodeType === Node.TEXT_NODE) {
-  //         return node.textContent;
-  //       }
-
-  //       const tag = node.tagName.toLowerCase();
-  //       const children = Array.from(node.childNodes)
-  //         .map(processNode)
-  //         .join('');
-
-  //       switch(tag) {
-  //         case 'strong': return `**${children}**`;
-  //         case 'em': return `*${children}*`;
-  //         case 'u': return `_${children}_`;
-  //         case 'p': return `${children}\n`;
-  //         case 'br': return '\n';
-  //         default: return children;
-  //       }
-  //     };
-
-  //     return Array.from(tempDiv.childNodes)
-  //       .map(processNode)
-  //       .join(' ')
-  //       .replace(/\n\s+/g, '\n'); // Clean up extra spaces after newlines
-  //   };
-
-  //   // Get plain text with markdown-style formatting
-  //   const plainText = getFormattedText(content)
-  //     .replace(/\n+/g, '\n')
-  //     .trim();
-
-  //   // Split into words considering formatting markers
-  //   const wordGroups = plainText.split(/(\*\*.*?\*\*|\*.*?\*|_.*?_|\S+)/g)
-  //     .filter(g => g && g.trim() !== '');
-
-  //   switch (type) {
-  //     case '1': // Lục bát
-  //       let lucBatLines = [];
-  //       let currentLine = [];
-  //       let currentLineType = 6;
-
-  //       wordGroups.forEach(word => {
-  //         currentLine.push(word);
-  //         if (currentLine.length === currentLineType) {
-  //           lucBatLines.push({
-  //             text: currentLine.join(' '),
-  //             type: currentLineType === 6 ? 'luc' : 'bat'
-  //           });
-  //           currentLine = [];
-  //           currentLineType = currentLineType === 6 ? 8 : 6;
-  //         }
-  //       });
-
-  //       if (currentLine.length > 0) {
-  //         lucBatLines.push({
-  //           text: currentLine.join(' '),
-  //           type: currentLineType === 6 ? 'luc' : 'bat'
-  //         });
-  //       }
-
-  //       return lucBatLines.map(line => 
-  //         (line.type === 'bat' ? '       ' : '') + line.text
-  //       ).join('\n');
-
-  //     case '3': // Thất ngôn tứ tuyệt
-  //       const thatNgonLines = [];
-  //       for (let i = 0; i < wordGroups.length; i += 7) {
-  //         const line = wordGroups.slice(i, i + 7).join(' ');
-  //         thatNgonLines.push(line);
-  //         if ((i / 7 + 1) % 4 === 0) thatNgonLines.push('');
-  //       }
-  //       return thatNgonLines.join('\n').trim();
-
-  //     default:
-  //       return plainText;
-  //   }
-  // };
-
   const formatContent = (content, type) => {
+
     if (type === '1') {
-      // Parse HTML content while preserving structure
+      // Parse content while preserving structure
       const parser = new DOMParser();
       const doc = parser.parseFromString(content, 'text/html');
       const lines = [];
-  
+
       // Process each node in the content
       doc.body.childNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
           let lineContent = '';
-          
-          // Process child nodes including text and <br> elements
+
           node.childNodes.forEach((child) => {
             if (child.nodeType === Node.TEXT_NODE) {
-              // Preserve non-breaking spaces and regular spaces
-              lineContent += child.textContent.replace(/\u00A0/g, ' ');
+              lineContent += child.textContent;
             } else if (child.nodeName === 'BR') {
               lineContent += '\n';
             }
           });
-  
-          // Split line content by manual newlines
+
           lineContent.split('\n').forEach((subLine) => {
             lines.push(subLine);
           });
         }
       });
-  
-      // Process each line to preserve formatting
+
+      // Process lines with preserved formatting
       return lines
         .map((line) => {
-          // Preserve leading whitespace
           const leadingWhitespace = line.match(/^\s*/)[0];
           const content = line.slice(leadingWhitespace.length);
-          
-          // Collapse multiple spaces between words only
-          return (
-            leadingWhitespace +
-            content.replace(/\s+/g, ' ').replace(/\s*$/, '')
-          );
+          return leadingWhitespace + content.replace(/\s+/g, ' ').replace(/\s*$/, '');
         })
         .join('\n');
     }
-
     // Convert HTML to plain text
     const plainText = content.replace(/<[^>]+>/g, '\n').replace(/\n+/g, '\n');
     const allWords = plainText.split(/\s+/).filter(word => word.trim() !== '');
@@ -542,7 +454,6 @@ const CreatePoemForm = ({ onBack, initialData }) => {
   };
 
   const handleUploadImage = async (event) => {
-    const accessToken = localStorage.getItem("accessToken");
     const file = event.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
@@ -580,8 +491,152 @@ const CreatePoemForm = ({ onBack, initialData }) => {
     }
   }
 
+  const handleAISuggest = async () => {
+    const content = formatContent(poemData.content, selectedType);
+
+    let question = null;
+
+    if (selectedType === 4 || selectedType === 5 || selectedType === 6) {
+      question = "Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh"
+    } else if (selectedType === 3) {
+      question = "Hãy sáng tác tiếp đoạn thơ trên hoàn chỉnh cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh"
+    } else {
+      question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh"
+    }
+
+    const requestBody = {
+      type: parseInt(selectedType),
+      poemContent: content,
+      chatContent: question,
+      maxToken: 1000
+    }
+
+    const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/ai-chat-completion`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody),
+    })
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
+    }
+    const data = await response.json();
+
+    setSuggestion(data.data);
+    showModal();
+  }
+
+  const showModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const handleCancel = () => {
+    setIsModalOpen(false);
+  }
+
+  const handleCopyToContent = () => {
+    const formattedContent = suggestion
+      .split('\n')
+      .map(line => `<p>${line}</p>`)
+      .join('');
+    setPoemData(prev => ({
+      ...prev,
+      content: formattedContent,
+    }));
+    setIsModalOpen(false);
+  }
+
+  const showModalContentComplete = () => {
+    setIsModalContentCompleteOpen(true);
+  }
+
+  const handleCancelModalContentComplete = () => {
+    setIsModalContentCompleteOpen(false);
+  }
+
+  const handleAIRenderImage = async () => {
+    const content = formatContent(poemData.content, selectedType);
+    console.log(content)
+
+    const requestBodyImage = {
+      imageSize: 4,
+      poemText: content,
+      prompt: "Render an image base on the poem content for me",
+      negativePrompt: "Image response must not contain any text",
+      numberInferenceSteps: 5,
+      guidanceScale: 5,
+      numberOfImages: 1,
+      outPutFormat: 2,
+      outPutQuality: 100
+    }
+
+    const responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBodyImage),
+    })
+
+    const data = await responseImage.json();
+    const uploadedImageUrl = data.data.output[0].url;
+    console.log(data.data.output[0].url);
+    message.success("Poem Image updated successfully!");
+    setPoemData((prev) => ({ ...prev, poemImage: uploadedImageUrl }));
+    setPoemFile(uploadedImageUrl);
+    setIsModalContentCompleteOpen(false);
+  }
+
   return (
     <div>
+      <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
+        <>
+          <Button color="danger" variant="solid" onClick={handleCancel}>
+            Đóng
+          </Button>
+          <Button color="primary" variant="solid" onClick={handleCopyToContent}>
+            Dán
+          </Button>
+
+        </>
+      )}>
+        <div>
+          <h2 style={{ textAlign: "center", fontSize: "1.8rem", marginBottom: "0px" }}>Gợi ý nội dung từ AI</h2>
+          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>Đây là nội dung chúng tôi sử dụng AI để gợi ý cho bạn. Hãy bấm <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Dán"</span> để áp dụng vào bài thơ của bạn nhé.</p>
+          <textarea
+            style={{ width: "100%", height: "300px" }}
+            value={suggestion} x
+          >
+          </textarea>
+        </div>
+
+      </Modal>
+
+      <Modal open={isModalContentCompleteOpen} onCancel={handleCancelModalContentComplete} footer={() => (
+        <>
+          <Button color="danger" variant="solid" onClick={handleCancelModalContentComplete}>
+            Đóng
+          </Button>
+          <Button color="primary" variant="solid" onClick={handleAIRenderImage}>
+            Xác nhận
+          </Button>
+
+        </>
+      )}>
+        <div>
+          <h2 style={{ textAlign: "center", fontSize: "1.8rem", marginBottom: "0px" }}>AI tạo hình ảnh 🏞</h2>
+          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>Hãy đảm bảo rằng bạn muốn AI tạo hình ảnh dựa trên <span style={{ color: "#3A86ff", fontWeight: "bold" }}>nội dung hiện tại</span> dưới đây . Hãy bấm <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Xác nhận"</span> để AI bắt đầu tạo hình ảnh cho bài thơ của bạn nhé.</p>
+          <textarea
+            style={{ width: "100%", height: "300px" }}
+            value={formatContent(poemData.content, selectedType)}
+          >
+          </textarea>
+        </div>
+
+      </Modal>
       <button
         onClick={onBack}
         style={{
@@ -627,6 +682,7 @@ const CreatePoemForm = ({ onBack, initialData }) => {
                 style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
               />
             </div>
+
 
             <div style={{ marginBottom: "15px" }}>
               <label style={{ display: "block", fontWeight: "bold" }}>Chương số</label>
@@ -678,20 +734,20 @@ const CreatePoemForm = ({ onBack, initialData }) => {
                 width: "168px",
                 objectFit: "cover",
                 border: "1px solid #000",
-                
+
               }}
             ></div>
             {/* Nút tải ảnh */}
-            <div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
               <label
                 style={{
                   backgroundColor: '#3A86FF',
                   color: '#FBFBFB',
-                  padding: "1rem 1rem",
+                  padding: "10px",
                   borderRadius: "5px",
                   cursor: "pointer",
                   boxSizing: "border-box",
-                  display: "block",
+                  textAlign: "center",
                   fontSize: "0.9rem"
                 }}
               >
@@ -703,18 +759,22 @@ const CreatePoemForm = ({ onBack, initialData }) => {
                   onChange={handleUploadImage}
                 />
               </label>
+              <Button onClick={showModalContentComplete} color="default" variant="solid" style={{ padding: "20px" }}>AI tạo hình 🏞</Button>
             </div>
           </div>
         </div>
         <label style={{ display: "block", fontWeight: "bold" }}>Nội dung</label>
         <div style={{ marginBottom: "60px", display: "flex", gap: "20px", height: "300px" }}>
-          <div style={{ flex: 7, height: "100%" }}>
+          <div style={{ flex: 7, display: "flex", height: "100%", flexDirection: "column", gap: "5px" }}>
             <ReactQuill
               modules={{ toolbar: false }}
               value={poemData.content}
               onChange={handleInputContent}
               style={{ height: "100%" }}
             />
+            <Button onClick={handleAISuggest} color="default" variant="solid" style={{ alignSelf: "flex-end", padding: "10px" }}>Gợi ý nội dung từ AI<FcIdea /></Button>
+            {/* <div style={{flex: 1}}>
+            </div> */}
           </div>
           <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "5px", height: "100%" }}>
             <select
