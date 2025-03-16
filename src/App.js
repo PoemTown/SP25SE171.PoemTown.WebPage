@@ -11,6 +11,8 @@ import CreatePoem from "./pages/User/CreatePoem";
 import ProfilePage from "./pages/ProfilePage";
 import YourDesign from "./pages/User/YourDesign";
 import AdminPage from "./pages/Admin/AdminPage";
+import Shop from "./pages/ShopPage";
+import TemplateDetail from "./pages/TemplateDetail";
 
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
