@@ -294,6 +294,7 @@ const styles = {
   },
   avatar: {
     border: "2px solid #ddd",
+    cursor: "pointer"
   },
   form: {
     width: "80%",
