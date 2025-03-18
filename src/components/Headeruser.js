@@ -5,6 +5,7 @@ import { Dropdown, Menu } from "antd";
 
 const Headeruser = () => {
   const navigate = useNavigate();
+  const roles = JSON.parse(localStorage.getItem("role")) || [];
 
   const menuItems = [
     {
@@ -28,7 +29,7 @@ const Headeruser = () => {
   return (
     <header style={styles.header}>
       {/* Logo Section */}
-      <div style={styles.logo} onClick={() => navigate("/")} >
+      <div style={styles.logo} onClick={() => navigate("/")}>
         <img src="./logo.png" alt="PoemTown Logo" style={styles.logoImage} />
       </div>
 
@@ -43,13 +44,18 @@ const Headeruser = () => {
         <a href="#about-us" style={styles.navLink}>
           Về chúng tôi
         </a>
+        {roles.includes("ADMIN") && (
+          <a style={styles.navLink} onClick={() => navigate("/admin")}>
+            Dành cho quản trị viên
+          </a>
+        )}
       </nav>
 
       {/* Icons Section */}
       <div style={styles.icons}>
         <ShoppingCartOutlined style={styles.icon} onClick={() => navigate("/cart")} />
         <NotificationOutlined style={styles.icon} onClick={() => navigate("/notifications")} />
-        <Dropdown overlay={menu} trigger={['click']}>
+        <Dropdown overlay={menu} trigger={["click"]}>
           <UserOutlined style={{ ...styles.icon, cursor: "pointer" }} />
         </Dropdown>
       </div>
@@ -76,7 +82,6 @@ const styles = {
     display: "flex",
     justifyContent: "flex-start",
     cursor: "pointer",
-    
   },
   logoImage: {
     height: "60px",
