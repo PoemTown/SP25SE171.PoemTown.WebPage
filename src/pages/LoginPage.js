@@ -59,7 +59,7 @@ const LoginPage = () => {
                 if (role.includes("USER")) {
                     window.location.href = "/";
                 } else if (role.includes("ADMIN")) {
-                    window.location.href = "/admin";
+                    window.location.href = "/";
                 } else {
                     setError("Vai trò không hợp lệ.");
                 }

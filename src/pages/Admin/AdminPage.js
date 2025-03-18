@@ -11,6 +11,8 @@ import {
 import TransactionsManagement from "./Tabs/TransactionsManagement";
 import OrderManagement from "./Tabs/OrderManagement";
 import AccountManagement from "./Tabs/AccountManagement";
+import TemplateManagement from "./Tabs/TemplateManagement";
+
 const drawerWidth = 280;
 
 const AdminPage = () => {
@@ -86,6 +88,7 @@ const AdminPage = () => {
                 {currentPage === "transactions" && <TransactionsManagement />}
                 {currentPage === "orders" && <OrderManagement />}
                 {currentPage === "accounts" && <AccountManagement />}
+                {currentPage === "templates" && <TemplateManagement />}
             </Box>
         </Box>
     );
