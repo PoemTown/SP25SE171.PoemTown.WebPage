@@ -168,13 +168,13 @@ const UserCoverEditModal = ({
                                                 checked={selectedTemplateId === detail.id}
                                                 onChange={() => {
                                                     setSelectedTemplateId(detail.id);
-                                                    setTempCoverImage(detail.image || coverImage);
+                                                    setTempCoverImage(encodeURI(detail.image) || coverImage);
                                                 }}
                                                 style={{ display: "none" }}
                                             />
                                             {detail.image ? (
                                                 <img
-                                                    src={detail.image}
+                                                src={encodeURI(detail.image)} 
                                                     alt={theme.name}
                                                     style={{
                                                         width: "100%",

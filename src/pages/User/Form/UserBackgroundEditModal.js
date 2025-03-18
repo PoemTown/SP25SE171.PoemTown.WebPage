@@ -60,7 +60,7 @@ const UserBackgroundEditModal = ({ showModal, setShowModal, selectedBackground, 
     };
 
     const handleConfirmApiCall = async () => {
-        const backgroundImageId = sessionStorage.getItem("backgroundImageId");
+        const backgroundImageId = sessionStorage.getItem("mainBackgroundId");
     
         if (!selectedBackground) {
             alert("Vui lòng chọn một hình nền!");
@@ -68,7 +68,7 @@ const UserBackgroundEditModal = ({ showModal, setShowModal, selectedBackground, 
         }
     
         if (!backgroundImageId) {
-            alert("Không tìm thấy coverImageId!");
+            alert("Không tìm thấy backgroundImageId!");
             return;
         }
     
@@ -186,11 +186,11 @@ const UserBackgroundEditModal = ({ showModal, setShowModal, selectedBackground, 
                                     }}
                                     onClick={() => {
                                         setSelectedBackground(bg.id);
-                                        setBackgroundImage(bg.imageUrl);
+                                        setBackgroundImage(encodeURI(bg.imageUrl));
                                     }}
                                 >
                                     <img
-                                        src={bg.imageUrl}
+                                        src={encodeURI(bg.imageUrl)}
                                         alt="Background"
                                         width="80"
                                         height="80"
