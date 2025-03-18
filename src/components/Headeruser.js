@@ -6,6 +6,7 @@ import { Dropdown, Menu } from "antd";
 
 const Headeruser = () => {
   const navigate = useNavigate();
+  const roles = JSON.parse(localStorage.getItem("role")) || [];
 
   const menuItems = [
     {
@@ -44,6 +45,11 @@ const Headeruser = () => {
         <a href="#about-us" style={styles.navLink}>
           Về chúng tôi
         </a>
+        {roles.includes("ADMIN") && (
+          <a style={styles.navLink} onClick={() => navigate("/admin")}>
+            Dành cho quản trị viên
+          </a>
+        )}
       </nav>
 
       {/* Icons Section */}
@@ -77,7 +83,6 @@ const styles = {
     display: "flex",
     justifyContent: "flex-start",
     cursor: "pointer",
-    
   },
   logoImage: {
     height: "60px",

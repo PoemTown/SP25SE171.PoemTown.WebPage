@@ -56,7 +56,13 @@ const LoginPage = () => {
 
                 console.log("Login successful:", response.data.message);
 
-                window.location.href = "/";
+                if (role.includes("USER")) {
+                    window.location.href = "/";
+                } else if (role.includes("ADMIN")) {
+                    window.location.href = "/";
+                } else {
+                    setError("Vai trò không hợp lệ.");
+                }
             }
         } catch (err) {
             console.error("Login failed:", err.response?.data || err.message);
