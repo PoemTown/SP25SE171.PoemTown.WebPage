@@ -27,7 +27,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover }) => {
     return (
         <div style={styles.poemCard}>
             <div style={styles.poemImageContainer}>
-                <img src={item.image || "./anhminhhoa.png"} alt="anh minh hoa" style={styles.poemImage} />
+                <img src={item.poemImage || "./anhminhhoa.png"} alt="anh minh hoa" style={styles.poemImage} />
             </div>
             <div style={styles.avatarContainer}>
                 <img
@@ -125,6 +125,7 @@ const styles = {
         width: "168x",
         height: "268px",
         border: "1px solid #000",
+        marginLeft: "20px"
     },
 
     poemImage: {
@@ -151,8 +152,8 @@ const styles = {
     contentRight: {
         flexBasis: "100%",
         display: "flex",
-        flexDirection: "column"
-
+        flexDirection: "column",
+        marginRight: "20px"
     },
 
     poemCard: {
@@ -160,13 +161,12 @@ const styles = {
         gap: "10px",
         background: "white",
         borderRadius: "12px",
-        padding: "20px",
         border: "1px solid #ccc",
         boxShadow: "0px 3px 6px 0px #0000004D",
         alignItems: "stretch",
-        maxWidth: "850px", // Add max-width constraint
         width: "100%", // Ensure it takes available width
-        marginBottom: "40px"
+        marginBottom: "40px",
+        padding: "20px 0"
     },
     cardHeader: {
         display: "flex",
@@ -224,6 +224,7 @@ const styles = {
         color: '#666',
     },
     poemLine: {
+        whiteSpace: 'pre-wrap',
         margin: "0 0 0 0",
         lineHeight: "1.6",
         fontSize: "1rem",
@@ -291,6 +292,7 @@ const styles = {
         justifyContent: "space-between",
         alignItems: "center",
         marginTop: "auto",
+        marginRight: "20px"
     },
 
     statsContainer: {

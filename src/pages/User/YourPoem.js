@@ -31,6 +31,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
         if (data.statusCode === 200) {
           const likedPoemIds = new Set();
           const bookmarkedPoemIds = new Set();
+          console.log("from user", data)
           const poemsWithId = data.data.map((poem) => {
             if (poem.like) {
               likedPoemIds.add(poem.id);
@@ -43,12 +44,13 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
               title: poem.title,
               description: poem.description,
               content: poem.content,
+              poemImage: poem.poemImage,
               likeCount: poem.likeCount,
               commentCount: poem.commentCount,
               createdTime: poem.createdTime,
             };
           });
-
+          console.log(poemsWithId)
           setPoems(poemsWithId);
           setLikedPoems(likedPoemIds);
           setBookmarkedPoems(bookmarkedPoemIds);
@@ -161,7 +163,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
   };
 
   return (
-    <div style={{  maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
+    <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
       {!isCreatingPoem ? (
         <>
           <button
@@ -213,7 +215,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
                       height: "268px",
                       border: "1px solid #000",
                     }}>
-                      <img src={poem.image || "./anhminhhoa.png"} alt="anh minh hoa" style={{
+                      <img src={poem.poemImage || "./anhminhhoa.png"} alt="anh minh hoa" style={{
                         width: "168px",
                         maxWidth: "168px",
                         height: "100%",
@@ -338,6 +340,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
                               lineHeight: "1.6",
                               fontSize: "1rem",
                               textIndent: '0.8rem',
+                              whiteSpace: 'pre-wrap',
                             }}>{line}</p>
                           ))}
                           <p style={{

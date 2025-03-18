@@ -1,7 +1,8 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { ShoppingCartOutlined, NotificationOutlined, UserOutlined } from "@ant-design/icons";
+import { ShopOutlined , BellOutlined , UserOutlined } from "@ant-design/icons";
 import { Dropdown, Menu } from "antd";
+
 
 const Headeruser = () => {
   const navigate = useNavigate();
@@ -29,8 +30,8 @@ const Headeruser = () => {
   return (
     <header style={styles.header}>
       {/* Logo Section */}
-      <div style={styles.logo} onClick={() => navigate("/")}>
-        <img src="./logo.png" alt="PoemTown Logo" style={styles.logoImage} />
+      <div style={styles.logo} onClick={() => navigate("/")} >
+        <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="PoemTown Logo" style={styles.logoImage} />
       </div>
 
       {/* Navigation Links */}
@@ -53,9 +54,9 @@ const Headeruser = () => {
 
       {/* Icons Section */}
       <div style={styles.icons}>
-        <ShoppingCartOutlined style={styles.icon} onClick={() => navigate("/cart")} />
-        <NotificationOutlined style={styles.icon} onClick={() => navigate("/notifications")} />
-        <Dropdown overlay={menu} trigger={["click"]}>
+        <ShopOutlined style={styles.icon} onClick={() => navigate("/shop")}  />
+        <BellOutlined style={styles.icon} onClick={() => navigate("/notifications")} />
+        <Dropdown overlay={menu} trigger={['click']}>
           <UserOutlined style={{ ...styles.icon, cursor: "pointer" }} />
         </Dropdown>
       </div>

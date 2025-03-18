@@ -9,7 +9,8 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
         id: null,  
         collectionName: "",
         collectionDescription: "",
-        collectionImage: ""
+        collectionImage: "",
+        rowVersion: ""
     });
 
 
@@ -22,7 +23,8 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection }) => {
                 id: collection.id,
                 collectionName: collection.collectionName,
                 collectionDescription: collection.collectionDescription,
-                collectionImage: collection.collectionImage
+                collectionImage: collection.collectionImage,
+                rowVersion: collection.rowVersion
             });
         }
     }, [collection]);
