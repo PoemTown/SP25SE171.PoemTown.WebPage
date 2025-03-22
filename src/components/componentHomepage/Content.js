@@ -3,6 +3,8 @@ import { Modal } from "antd";
 import { useNavigate } from "react-router-dom";
 import CollectionCard from "./CollectionCard";
 import PoemCard from "./PoemCard";
+import { BiCommentDetail, BiLike } from "react-icons/bi";
+import { HiUsers } from "react-icons/hi2";
 
 const Content = ({ activeTab }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +25,8 @@ const Content = ({ activeTab }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(5);
   const [totalPages, setTotalPages] = useState(1);
+  const [poemLeaderBoard, setPoemLeaderBoard] = useState({ topPoems: [] });
+  const [userLeaderBoard, setUserLeaderBoard] = useState({ topUsers: [] });
 
   const accessToken = localStorage.getItem("accessToken");
 
@@ -48,11 +52,12 @@ const Content = ({ activeTab }) => {
     setSelectedCollection(collection); // Chuyển sang trang chi tiết
   };
 
-  const authors = [
-    { rank: 1, name: "KalenGuy34", avatar: "🧑‍💼", color: "#f7d42d" },
-    { rank: 2, name: "Tabooq253", avatar: "👤", color: "#0d6efd" },
-    { rank: 3, name: "KaBoow254", avatar: "👩", color: "#d63384" },
-  ];
+  const getRankColor = (rank) => {
+    if (rank === 1) return "#f7d42d";
+    if (rank === 2) return "#0d6efd";
+    if (rank === 3) return "#d63384";
+    return "#000"; // default color for other ranks
+  };
 
   const topPoems = [
     { rank: 1, title: "Để cooking bài nhạc làm miếng bò áp chảo", author: "KalenGuy34" },
@@ -271,6 +276,50 @@ const Content = ({ activeTab }) => {
     };
   }, [activeTab, currentPage, pageSize, isBookmarkCollectionTab]);
 
+  useEffect(() => {
+    const fetchLeaderBoard = async () => {
+      const requestHeaders = {
+        "Content-Type": "application/json",
+      };
+
+      const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/leaderboards/v1/poem-leaderboard`, {
+        headers: requestHeaders
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      setPoemLeaderBoard(data.data); // set the entire object
+    };
+
+    fetchLeaderBoard();
+  }, []);
+
+  useEffect(() => {
+    const fetchUserLeaderBoard = async () => {
+      const requestHeaders = {
+        "Content-Type": "application/json",
+      };
+
+      const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/leaderboards/v1/user-leaderboard`, {
+        headers: requestHeaders
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log(data.data);
+      setUserLeaderBoard(data.data); // set the entire object
+    };
+
+    fetchUserLeaderBoard();
+  }, []);
+
+
   return (
     <div>
       <div style={styles.contentContainer}>
@@ -378,17 +427,26 @@ const Content = ({ activeTab }) => {
               Top các tác giả được yêu thích 👑
             </div>
             <ul style={styles.topList}>
-              {authors.map((author, index) => (
-                <li key={index} style={styles.topItem}>
-                  <span style={{ ...styles.topItemRank, color: author.color }}>
-                    #{author.rank}
-                  </span>
-                  <span style={styles.topItemAvatar}>{author.avatar}</span>
-                  <div>
-                    <span style={styles.topItemName}>{author.name}</span>
-                    <div style={styles.topItemLine} />
-                  </div>
-                </li>
+              {userLeaderBoard && userLeaderBoard.topUsers.slice(0, 3).map((user) => (
+                <div style={{marginBottom: "20px"}}>
+                  <li key={user.id} style={styles.topItem}>
+                    <span style={{ ...styles.topItemRank, color: getRankColor(user.rank) }}>
+                      #{user.rank}
+                    </span>
+                    <img style={styles.topItemAvatar} src={user.user.avatar ?? "./default_avatar.png"} alt="avatar user" />
+                    <div style={{ display: "flex", flexDirection: "column" }}>
+                      <span style={styles.topItemName}>{user.user.displayName}</span>
+                      <div style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                      }}>
+                        <HiUsers /> <span style={{ fontSize: "0.9rem" }}>{user.user.totalFollower}</span>
+                      </div>
+                    </div>
+                  </li>
+                  <div style={styles.topItemLine} />
+                </div>
               ))}
             </ul>
             <a href="#see-more" style={styles.seeMore}>
@@ -402,18 +460,41 @@ const Content = ({ activeTab }) => {
               Top các bài thơ được yêu thích 📖
             </div>
             <ul style={styles.topList}>
-              {topPoems.map((poem, index) => (
-                <li key={index} style={styles.topItem}>
-                  <span style={{ ...styles.topItemRank, color: "#f7d42d" }}>
-                    #{poem.rank}
-                  </span>
-                  <div>
-                    <span style={styles.topItemName}>{poem.title}</span>
-                    <br />
-                    <small style={{ color: "#555" }}>{poem.author}</small>
-                    <div style={styles.topItemLine} />
-                  </div>
-                </li>
+              {poemLeaderBoard && poemLeaderBoard.topPoems.slice(0, 3).map((poem) => (
+                <div style={{marginBottom: "20px"}}>
+                  <li key={poem.id} style={styles.topItem}>
+                    <span style={{ ...styles.topItemRank, color: getRankColor(poem.rank) }}>
+                      #{poem.rank}
+                    </span>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "5px", justifyContent: "center", width: "100%" }}>
+                      <span style={styles.topItemName}>{poem.poem.title}</span>
+                      <div>
+                        <small style={{ margin: 0 }}>
+                          Mô tả:{" "}
+                          <span style={{ color: "#222" }}>
+                            {poem.poem.description.length > 50
+                              ? `${poem.poem.description.substring(0, 50)}...`
+                              : poem.poem.description}
+                          </span>
+                        </small>
+                      </div>
+                      <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-start", gap: "30px" }}>
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}><BiLike /> {poem.poem.likeCount}</div>
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}><BiCommentDetail /> {poem.poem.commentCount}</div>
+                      </div>
+                      <small style={{ color: "#555", alignSelf: 'flex-end' }}>{poem.poem.user.displayName || "annoymous"}</small>
+                    </div>
+                  </li>
+                  <div style={styles.topItemLine} />
+                </div>
               ))}
             </ul>
             <a href="#see-more" style={styles.seeMore}>
@@ -510,14 +591,13 @@ const styles = {
   },
   topTitle: {
     fontWeight: "bold",
-    marginBottom: "10px",
-    display: "flex",
-    alignItems: "center",
-    fontSize: "18px",
+    textAlign: "center",
+    fontSize: "1.1rem",
+    margin: "0 auto 20px"
   },
   topList: {
     listStyle: "none",
-    padding: "0",
+    padding: "0px 30px",
     margin: "0",
   },
   topItem: {
@@ -537,7 +617,8 @@ const styles = {
     marginRight: "10px",
   },
   topItemName: {
-    fontSize: "14px",
+    fontSize: "0.9rem",
+    fontWeight: "bold"
   },
   topItemLine: {
     borderTop: "1px solid #ddd",
