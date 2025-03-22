@@ -21,11 +21,11 @@ const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navBackground }) =
                 backgroundPosition: "center",  
                 backgroundRepeat: "no-repeat",
                 padding: "10px",
-                borderRadius: "10px",
                 display: "flex",
                 gap: "10px",
                 flexWrap: "wrap",
                 border: `3px solid ${NavBorder}`,
+                position: "relative",
             }}
         >
             {tabs.map((tab, index) => (

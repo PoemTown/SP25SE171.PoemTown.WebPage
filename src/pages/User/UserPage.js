@@ -41,6 +41,7 @@ const UserPage = () => {
                     }
                 );
                 const result = await response.json();
+                console.log(result)
                 if (response.ok && Array.isArray(result.data)) {
                     const cover = result.data.find(item => item.type === 1);
                     if (cover) {
