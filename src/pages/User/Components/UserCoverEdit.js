@@ -1,12 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Settings } from "lucide-react";
 import UserCoverEditModal from "../Form/UserCoverEditModal";
+import { HiUsers } from "react-icons/hi2";
+import { FaUserPlus } from "react-icons/fa";
 
 const UserCoverEdit = ({ coverImage, userData }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [themes, setThemes] = useState([]);
     const [selectedTemplateId, setSelectedTemplateId] = useState(null);
-    const [tempCoverImage, setTempCoverImage] = useState(coverImage); 
+    const [tempCoverImage, setTempCoverImage] = useState(coverImage);
 
     useEffect(() => {
         const fetchThemes = async () => {
@@ -42,7 +44,7 @@ const UserCoverEdit = ({ coverImage, userData }) => {
 
                 if (activeTemplate) {
                     setSelectedTemplateId(activeTemplate.id);
-                    setTempCoverImage(activeTemplate.image || coverImage); 
+                    setTempCoverImage(activeTemplate.image || coverImage);
                 }
             } catch (error) {
                 console.error("Error fetching themes:", error);
@@ -52,24 +54,38 @@ const UserCoverEdit = ({ coverImage, userData }) => {
         if (showPopup) {
             fetchThemes();
         } else {
-            setTempCoverImage(coverImage); 
+            setTempCoverImage(coverImage);
         }
     }, [showPopup, coverImage]);
 
     return (
-        <div style={{ width: "100%", position: "relative" }}>
+        <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
+            {/* Render the full cover image */}
+            {tempCoverImage && (
+                <img
+                    src={tempCoverImage}
+                    alt="Cover"
+                    style={{
+                        width: "100%",
+                        display: "block",
+                        borderRadius: "10px"
+                    }}
+                />
+            )}
+
+            {/* Overlay for user details and settings button */}
             <div
                 style={{
-                    backgroundColor: "#FFD700",
-                    padding: "15px",
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "100%",
+                    height: "100%",
+                    padding: "1em 6em",
+                    boxSizing: "border-box",
                     borderRadius: "10px",
-                    position: "relative",
-                    backgroundImage: tempCoverImage ? `url(${tempCoverImage})` : "none",
-                    backgroundSize: "cover",
-                    backgroundPosition: "center",
                 }}
             >
-                {/* Settings button */}
                 <button
                     style={{
                         position: "absolute",
@@ -84,7 +100,7 @@ const UserCoverEdit = ({ coverImage, userData }) => {
                     <Settings size={20} color="black" />
                 </button>
 
-                <div style={{ display: "flex", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
                     <img
                         src={userData.avatar || "./default-avatar.png"}
                         alt="Avatar"
@@ -96,10 +112,18 @@ const UserCoverEdit = ({ coverImage, userData }) => {
                         }}
                     />
                     <div style={{ marginLeft: "15px" }}>
-                        <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>{userData.displayName}</h2>
+                        <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>
+                            {userData.displayName}
+                        </h2>
                         <p style={{ color: "#555" }}>{userData.email}</p>
-                        <div style={{ fontSize: "14px", color: "#333" }}>
-                            👀 {userData.totalFollowers} Người theo dõi • 📌 {userData.totalFollowings} Đang theo dõi
+                        <div style={{ fontSize: "14px", color: "#333", display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
+                                <HiUsers /> <span>{userData.totalFollowers} Người theo dõi</span>
+                            </div>
+                            <div>•</div>
+                            <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
+                                <FaUserPlus /> <span>{userData.totalFollowings} Đang theo dõi</span>
+                            </div>
                         </div>
                     </div>
                 </div>
