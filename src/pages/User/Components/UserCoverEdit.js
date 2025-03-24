@@ -4,7 +4,7 @@ import UserCoverEditModal from "../Form/UserCoverEditModal";
 import { HiUsers } from "react-icons/hi2";
 import { FaUserPlus } from "react-icons/fa";
 
-const UserCoverEdit = ({ coverImage, userData }) => {
+const UserCoverEdit = ({ coverImage, coverColorCode, userData }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [themes, setThemes] = useState([]);
     const [selectedTemplateId, setSelectedTemplateId] = useState(null);
@@ -68,7 +68,6 @@ const UserCoverEdit = ({ coverImage, userData }) => {
                     style={{
                         width: "100%",
                         display: "block",
-                        borderRadius: "10px"
                     }}
                 />
             )}
@@ -97,7 +96,7 @@ const UserCoverEdit = ({ coverImage, userData }) => {
                     }}
                     onClick={() => setShowPopup(true)}
                 >
-                    <Settings size={20} color="black" />
+                    <Settings size={20} color={coverColorCode} />
                 </button>
 
                 <div style={{ display: "flex", alignItems: "center", height: "100%" }}>
@@ -111,18 +110,18 @@ const UserCoverEdit = ({ coverImage, userData }) => {
                             border: "2px solid white",
                         }}
                     />
-                    <div style={{ marginLeft: "15px" }}>
-                        <h2 style={{ fontSize: "20px", fontWeight: "bold" }}>
-                            {userData.displayName}
-                        </h2>
-                        <p style={{ color: "#555" }}>{userData.email}</p>
-                        <div style={{ fontSize: "14px", color: "#333", display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
+                    <div style={{ marginLeft: "15px", display: "flex", flexDirection: "column", gap: "15px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
+                            <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: coverColorCode }}>{userData.displayName}</h2>
+                            <p style={{ color: coverColorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
+                        </div>
+                        <div style={{ fontSize: "14px", color: coverColorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
                             <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                                <HiUsers /> <span>{userData.totalFollowers} Người theo dõi</span>
+                                <HiUsers color={coverColorCode} /> <span style={{color: coverColorCode}}>{userData.totalFollowers} Người theo dõi</span>
                             </div>
-                            <div>•</div>
+                            <div style={{color: coverColorCode}}>•</div>
                             <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                                <FaUserPlus /> <span>{userData.totalFollowings} Đang theo dõi</span>
+                                <FaUserPlus color={coverColorCode} /> <span style={{color: coverColorCode}}>{userData.totalFollowings} Đang theo dõi</span>
                             </div>
                         </div>
                     </div>

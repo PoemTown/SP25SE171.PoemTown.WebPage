@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
-import ReactQuill from "react-quill";
+import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { Button, message, Modal } from "antd";
 import { FcIdea } from "react-icons/fc";
+import { FaSpellCheck } from "react-icons/fa6";
 
 const CreatePoemForm = ({ onBack, initialData }) => {
   const [poemData, setPoemData] = useState({
@@ -21,6 +22,7 @@ const CreatePoemForm = ({ onBack, initialData }) => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalContentCompleteOpen, setIsModalContentCompleteOpen] = useState(false);
   const accessToken = localStorage.getItem("accessToken");
+  const [plagiarismResult, setPlagiarismResult] = useState(null);
 
   const poemType = {
     1: "Thơ tự do",
@@ -557,8 +559,10 @@ const CreatePoemForm = ({ onBack, initialData }) => {
   }
 
   const handleAIRenderImage = async () => {
-    const content = formatContent(poemData.content, selectedType);
-    console.log(content)
+    let content = formatContent(poemData.content, selectedType);
+    // Limit to the first 900 characters
+    content = content.substring(0, 600);
+    console.log(content);
 
     const requestBodyImage = {
       imageSize: 4,
@@ -589,6 +593,50 @@ const CreatePoemForm = ({ onBack, initialData }) => {
     setPoemFile(uploadedImageUrl);
     setIsModalContentCompleteOpen(false);
   }
+
+  const handleAICheckPlagiarism = async () => {
+    const content = formatContent(poemData.content, selectedType);
+    const requestBody = {
+      poemContent: content
+    }
+    const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/plagiarism`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(requestBody)
+    })
+
+    const data = await response.json();
+    setPlagiarismResult(data.data.score);
+  }
+
+  const quillRef = useRef(null);
+
+  useEffect(() => {
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      const Delta = Quill.import("delta");
+      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
+        // Process each op in the pasted delta:
+        const newOps = delta.ops.map((op) => {
+          if (typeof op.insert === "string") {
+            // If the inserted text is exactly a space or newline, leave it as is.
+            if (op.insert === " " || op.insert === "\n") {
+              return op;
+            }
+            // Otherwise, insert the text without any formatting attributes.
+            return { insert: op.insert };
+          }
+          // For non-string inserts (e.g. images) you might decide to keep them or remove them.
+          return op;
+        });
+        return new Delta(newOps);
+      });
+    }
+  }, []);
+
 
   return (
     <div>
@@ -767,12 +815,24 @@ const CreatePoemForm = ({ onBack, initialData }) => {
         <div style={{ marginBottom: "60px", display: "flex", gap: "20px", height: "300px" }}>
           <div style={{ flex: 7, display: "flex", height: "100%", flexDirection: "column", gap: "5px" }}>
             <ReactQuill
+              ref={quillRef}
+              formats={"none"}
               modules={{ toolbar: false }}
               value={poemData.content}
               onChange={handleInputContent}
               style={{ height: "100%" }}
+
             />
-            <Button onClick={handleAISuggest} color="default" variant="solid" style={{ alignSelf: "flex-end", padding: "10px" }}>Gợi ý nội dung từ AI<FcIdea /></Button>
+            {plagiarismResult != null ? plagiarismResult > 0.5 ?
+              <p style={{ color: "#f00", fontWeight: "bold", alignSelf: "flex-end" }}>
+                Nội dung của bạn đang dính đạo văn ở mức {plagiarismResult * 100}%. Vui lòng chỉnh sửa nội dung!
+              </p> : <p style={{ color: "#0f0", fontWeight: "bold", alignSelf: "flex-end" }}>
+                Chúc mừng! Nội dung của bạn hiện tại không dính đạo văn.
+              </p> : <></>}
+            <div style={{ display: "flex", flexDirection: "row", alignSelf: "flex-end", gap: "10px" }}>
+              <Button onClick={handleAICheckPlagiarism} color="default" variant="solid" style={{ alignSelf: "flex-end", padding: "10px" }}>Kiểm tra đạo văn<FaSpellCheck /></Button>
+              <Button onClick={handleAISuggest} color="default" variant="solid" style={{ padding: "10px" }}>Gợi ý nội dung từ AI<FcIdea /></Button>
+            </div>
             {/* <div style={{flex: 1}}>
             </div> */}
           </div>

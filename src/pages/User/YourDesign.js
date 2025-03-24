@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Settings } from "lucide-react";
 import UserStats from "./Components/UserStats";
 import UserBackgroundEditModal from "./Form/UserBackgroundEditModal";
+import { message } from "antd";
 
 const YourDesign = ({
     statisticBorder,
@@ -76,17 +77,13 @@ const YourDesign = ({
         setSelectedTemplateId(id);
         sessionStorage.setItem("selectedTemplate", name);
         sessionStorage.setItem("selectedTemplateId", id);
+        handleUseTemplate(name, id)
     };
 
-    const handleUseTemplate = async () => {
+    const handleUseTemplate = async (name, id) => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
             console.error("Access token không tồn tại");
-            return;
-        }
-
-        if (!selectedTemplateId) {
-            console.error("Không tìm thấy template được chọn");
             return;
         }
 
@@ -98,23 +95,23 @@ const YourDesign = ({
                     "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    id: selectedTemplateId,
-                    name: selectedTemplate,
+                    id: id,
+                    name: name,
                     isInUse: true,
                 }),
             });
 
             const data = await response.json();
             if (data?.statusCode === 200) {
-                alert("Cập nhật thành công!");
+                message.success("Cập nhật thành công");
                 window.location.reload();
             } else {
                 console.error("Lỗi từ API:", data);
-                alert("Cập nhật thất bại!");
+               message.error("Cập nhật thất bại");
             }
         } catch (error) {
             console.error("Lỗi khi gọi API:", error);
-            alert("Đã xảy ra lỗi, vui lòng thử lại!");
+            message.error("Đã xảy ra lỗi, vui lòng thử lại!");
         }
     };
 
@@ -126,7 +123,7 @@ const YourDesign = ({
         }
 
         if (!newTemplateName.trim()) {
-            alert("Vui lòng nhập tên bản mẫu!");
+            message.error("Vui lòng nhập tên bản mẫu!");
             return;
         }
 
@@ -145,17 +142,17 @@ const YourDesign = ({
 
             const data = await response.json();
             if (response.ok) {
-                alert("Tạo bản mẫu thành công!");
+                message.success("Tạo bản mẫu thành công!");
                 setShowAddTemplateModal(false);
                 setNewTemplateName("");
                 window.location.reload();
             } else {
                 console.error("Lỗi từ API:", data);
-                alert("Tạo bản mẫu thất bại!");
+                message.error("Tạo bản mẫu thất bại!");
             }
         } catch (error) {
             console.error("Lỗi khi gọi API:", error);
-            alert("Đã xảy ra lỗi, vui lòng thử lại!");
+            message.error("Đã xảy ra lỗi, vui lòng thử lại!");
         }
     };
     const handleDeleteTemplate = async () => {
@@ -184,22 +181,22 @@ const YourDesign = ({
 
             const data = await response.json();
             if (response.ok) {
-                alert("Xóa bản mẫu thành công!");
+                message.success("Xóa bản mẫu thành công!");
                 window.location.reload();
             } else {
                 console.error("Lỗi từ API:", data);
-                alert("Xóa bản mẫu thất bại!");
+                message.error("Xóa bản mẫu thất bại!");
             }
         } catch (error) {
             console.error("Lỗi khi gọi API:", error);
-            alert("Đã xảy ra lỗi, vui lòng thử lại!");
+            message.error("Đã xảy ra lỗi, vui lòng thử lại!");
         }
     };
 
     return (
         <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
-            <div style={{ display: "flex", gap: "20px" }}>
-                <div style={{ flex: 2, backgroundColor: "white", padding: "20px", borderRadius: "10px" }}>
+            <div style={{ display: "flex", gap: "20px", alignItems: "flex-start" }}>
+                <div style={{ flex: 2, backgroundColor: "#ffffff66", padding: "20px", borderRadius: "10px", }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <h3 style={{ fontWeight: "bold" }}>Bản mẫu của bạn</h3>
                         <Settings size={20} color="black" style={{ cursor: "pointer" }} onClick={() => setShowModal(true)} />
@@ -248,19 +245,6 @@ const YourDesign = ({
                             }}
                         >
                             XÓA
-                        </button>
-                        <button
-                            onClick={handleUseTemplate}
-                            style={{
-                                backgroundColor: "#6aad5e",
-                                color: "white",
-                                padding: "10px 15px",
-                                borderRadius: "5px",
-                                marginTop: "10px",
-                                cursor: "pointer",
-                            }}
-                        >
-                            SỬ DỤNG
                         </button>
                     </div>
 

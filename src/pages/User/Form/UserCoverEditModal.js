@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 const UserCoverEditModal = ({
     themes,
@@ -22,38 +22,39 @@ const UserCoverEditModal = ({
         }
     };
     const handleConfirmApiCall = async () => {
-        const coverImageId = sessionStorage.getItem("coverImageId");
+        // const coverImageId = sessionStorage.getItem("coverImageId");
 
-        if (!selectedImageId) {
-            alert("Vui lòng chọn một hình nền!");
-            return;
-        }
+        // if (!selectedImageId) {
+        //     alert("Vui lòng chọn một hình nền!");
+        //     return;
+        // }
 
-        if (!coverImageId) {
-            alert("Không tìm thấy coverImageId!");
-            return;
-        }
+        // if (!coverImageId) {
+        //     alert("Không tìm thấy coverImageId!");
+        //     return;
+        // }
+        const selectedThemeId = themes.find(theme => theme.isInUse === true).id;
 
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
             alert("Bạn chưa đăng nhập!");
             return;
         }
-
+        
         const payload = [
             {
-                previousUserTemplateDetailId: coverImageId,
+                previousUserTemplateDetailId: coverImage.id,
                 newUserTemplateDetailId: selectedImageId,
             },
         ];
-
+        console.log(payload)
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/template/v1/theme/${sessionStorage.getItem("selectedTemplateId")}/user-template-detail`,
+                `https://api-poemtown-staging.nodfeather.win/api/template/v1/theme/${selectedThemeId}/user-template-detail`,
                 {
                     method: "PUT",
                     headers: {
-                        "Content-Type": "application/json",
+                        "Content-Type": "application/json", 
                         Authorization: `Bearer ${accessToken}`,
                     },
                     body: JSON.stringify(payload),

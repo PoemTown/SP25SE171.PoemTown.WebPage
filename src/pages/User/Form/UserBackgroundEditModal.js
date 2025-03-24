@@ -177,7 +177,7 @@ const UserBackgroundEditModal = ({ showModal, setShowModal, selectedBackground, 
                             <label key={bg.id} style={{ cursor: "pointer" }}>
                                 <div
                                     style={{
-                                        border: selectedBackground === bg.id ? "2px solid #4CAF50" : "2px solid transparent",
+                                        border: selectedBackground === bg.id ? "2px solid #4CAF50" : "2px solid #ccc",
                                         borderRadius: "8px",
                                         padding: "4px",
                                         display: "flex",

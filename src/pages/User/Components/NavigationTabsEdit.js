@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Settings, X } from "lucide-react";
 import NavigationModal from "../Form/NavigationModal";
 
-const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground, setNavBackground }) => {
+const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground, navColorCode ,setNavBackground }) => {
     const [showPopup, setShowPopup] = useState(false);
     const [step, setStep] = useState(1);
     const [navThemes, setNavThemes] = useState([]);
@@ -11,7 +11,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
     const [selectedTheme, setSelectedTheme] = useState(null);
     const [tempNavBackground, setTempNavBackground] = useState(navBackground);
     const [tempNavBorder, setTempNavBorder] = useState(NavBorder);
-    const [navTextColor, setNavTextColor] = useState("#555");
+    const [navTextColor, setNavTextColor] = useState(navColorCode);
     const accessToken = localStorage.getItem("accessToken");
     const tabs = [
         "Thơ của bạn",
@@ -51,9 +51,9 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
                 console.error("Invalid data format received:", data);
                 return;
             }
-
+            
             const activeThemes = data.data.filter((theme) => theme.isInUse);
-
+            console.log("active theme",activeThemes);
             const availableThemes = activeThemes.flatMap((theme) =>
                 Array.isArray(theme.userTemplateDetails)
                     ? theme.userTemplateDetails
@@ -66,12 +66,14 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
                         }))
                     : []
             );
-
+            console.log("availableThemes", availableThemes)
             setNavThemeImages([...availableThemes]);
 
             const activeTemplate = availableThemes.find((theme) => theme.isInUse);
             if (activeTemplate) {
                 setSelectedTheme(activeTemplate.id);
+                setNavBackground(activeTemplate.image)
+                setNavTextColor(activeTemplate.colorCode);
             }
         } catch (error) {
             console.error("Error fetching navigation themes:", error);
@@ -124,7 +126,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
             const activeTemplate = availableColors.find((theme) => theme.isInUse);
             if (activeTemplate) {
                 setSelectedTheme(activeTemplate.id);
-                setNavTextColor(activeTemplate.colorCode || "#555"); 
+                setTempNavBorder(activeTemplate.colorCode || "#cccccc"); 
             }
         } catch (error) {
             console.error("Error fetching navigation themes:", error);
@@ -137,6 +139,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
             fetchNavigationThemes2();
         } else {
             setTempNavBackground(navBackground);
+            setNavTextColor(navColorCode);
             setTempNavBorder(NavBorder)
         }
     }, [showPopup, navBackground, NavBorder]);
@@ -156,7 +159,6 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
                     backgroundPosition: "center",
                     backgroundRepeat: "no-repeat",
                     padding: "10px",
-                    borderRadius: "10px",
                     display: "flex",
                     gap: "10px",
                     flexWrap: "wrap",
@@ -195,7 +197,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
                 }}
                 onClick={() => setShowPopup(true)}
             >
-                <Settings size={20} color="black" />
+                <Settings size={20} color={navTextColor} />
             </button>
             <NavigationModal
                 showPopup={showPopup}
@@ -206,10 +208,12 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
                 navThemeColors={navThemeColors}
                 selectedTheme={selectedTheme}
                 setSelectedTheme={setSelectedTheme}
+                setNavTextColor={setNavTextColor}
                 setTempNavBackground={setTempNavBackground}
                 setTempNavBorder={setTempNavBorder}
                 setNavBackground={setNavBackground}
                 onUpdateSuccess={handleUpdateSuccess}
+                currentNavBackground={tempNavBackground}
             />
 
         </div>

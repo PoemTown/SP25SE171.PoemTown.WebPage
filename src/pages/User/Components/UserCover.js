@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { FaUserPlus } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi2";
 
-const UserCover = ({ coverImage, userData }) => {
+const UserCover = ({ coverImage, coverColorCode, userData }) => {
     return (
         <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
             {coverImage && (
@@ -39,16 +39,16 @@ const UserCover = ({ coverImage, userData }) => {
                 />
                 <div style={{ marginLeft: "15px", display: "flex", flexDirection: "column", gap: "15px" }}>
                     <div style={{display: "flex", flexDirection: "column", gap: "0px"}}>
-                        <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0"  }}>{userData.displayName}</h2>
-                        <p style={{ color: "#555", margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
+                        <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: coverColorCode  }}>{userData.displayName}</h2>
+                        <p style={{ color: coverColorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
                     </div>
-                    <div style={{ fontSize: "14px", color: "#333", display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
+                    <div style={{ fontSize: "14px", color: coverColorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                            <HiUsers /> <span>{userData.totalFollowers} Người theo dõi</span>
+                            <HiUsers color={coverColorCode} /> <span style={{color: coverColorCode}}>{userData.totalFollowers} Người theo dõi</span>
                         </div>
-                        <div>•</div>
+                        <div style={{color: coverColorCode}}>•</div>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                            <FaUserPlus /> <span>{userData.totalFollowings} Đang theo dõi</span>
+                            <FaUserPlus color={coverColorCode} /> <span style={{color: coverColorCode}}>{userData.totalFollowings} Đang theo dõi</span>
                         </div>
                     </div>
                 </div>
