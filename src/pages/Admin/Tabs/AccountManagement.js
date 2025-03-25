@@ -38,7 +38,7 @@ const AccountManagement = () => {
     const fetchAccounts = async () => {
         try {
             const response = await axios.get(
-                "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts",
+                "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts?filterOptions.roleId=89fca251-f021-425b-de62-08dcdfcdb851",
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -88,7 +88,7 @@ const AccountManagement = () => {
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
             <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
-                Danh sách giao dịch
+                Danh sách người dùng
             </Typography>
 
             {accountGroups.length > 0 && (
