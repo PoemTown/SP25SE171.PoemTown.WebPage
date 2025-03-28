@@ -2,10 +2,46 @@ import { useEffect, useState } from "react";
 import Headeruser from "../../components/Headeruser";
 import { HiUsers } from "react-icons/hi2";
 import { FaUserPlus } from "react-icons/fa6";
-import { message } from "antd";
+import { Button, ConfigProvider, message, Space } from "antd";
 import UserCoverEditModal from "./Form/UserCoverEditModal";
+import NavigationEditModal from "./Components/NavigationEditModal";
+import AchievementEditModal from "./Components/AchievementEditModal ";
+import StatisticEditModal from "./Components/StatisticEditModal";
+import AchievementTitleEditModal from "./Components/AchievementTitleEditModal";
+import StatisticTitleEditModal from "./Components/StatisticTitleEditModal";
+import MainBackgroundEditModal from "./Components/MainBackgroundEditModal";
+import { createStyles } from "antd-style";
+import { useNavigate } from "react-router-dom";
+import { DoubleRightOutlined } from "@ant-design/icons";
+
+const useStyle = createStyles(({ prefixCls, css }) => ({
+    linearGradientButton: css`
+      &.${prefixCls}-btn-primary:not([disabled]):not(.${prefixCls}-btn-dangerous) {
+        > span {
+          position: relative;
+        }
+  
+        &::before {
+          content: '';
+          background: linear-gradient(135deg,rgb(0, 201, 43),rgb(106, 255, 56));
+          position: absolute;
+          inset: -1px;
+          opacity: 1;
+          transition: all 0.3s;
+          border-radius: inherit;
+        }
+  
+        &:hover::before {
+          opacity: 0;
+        }
+      }
+    `,
+}));
 
 const DesignPage = () => {
+    const { styles } = useStyle();
+    const navigate = useNavigate();
+
     const [userData, setUserData] = useState({
         displayName: "Anonymous",
         email: "",
@@ -37,12 +73,30 @@ const DesignPage = () => {
     const [isHoverStatisticContent, setIsHoverStatisticContent] = useState(false);
     const [isHoverThemeEdit, setIsHoverThemeEdit] = useState(false);
 
+    const [originalNav, setOriginalNav] = useState(inUseNav);
+    const [originalNavBorder, setOriginalNavBorder] = useState(inUseNavBorder);
+    const [originalMainBackground, setOriginalMainBackground] = useState(inUseMainBackground);
+    const [originalAchievementTitle, setOriginalAchievementTitle] = useState(inUseAchievementTitle);
+    const [originalAchievement, setOriginalAchievement] = useState(inUseAchievement);
+    const [originalAchievementBorder, setOriginalAchievementBorder] = useState(inUseAchievementBorder);
+    const [originalStatisticTitle, setOriginalStatisticTitle] = useState(inUseStatisticTitle);
+    const [originalStatistic, setOriginalStatistic] = useState(inUseStatistic);
+    const [originalStatisticBorder, setOriginalStatisticBorder] = useState(inUseStatisticBorder);
+
     const [themes, setThemes] = useState([])
     const [selectedTemplateId, setSelectedTemplateId] = useState(null);
 
     const [tempHeaderImage, setTempHeaderImage] = useState(null);
+    const [tempHeaderColorCode, setTempHeaderColorCode] = useState(inUseHeader.colorCode);
 
     const [showPopupModalHeader, setShowPopupModalHeader] = useState(false);
+    const [showPopupModalNav, setShowPopupModalNav] = useState(false);
+    const [showPopupModalMainBackground, setShowPopupModalMainBackground] = useState(false);
+    const [showPopupModalAchievementTitle, setShowPopupModalAchievementTitle] = useState(false);
+    const [showPopupModalAchievement, setShowPopupModalAchievement] = useState(false);
+    const [showPopupModalStatisticTitle, setShowPopupModalStatisticTitle] = useState(false);
+    const [showPopupModalStatistic, setShowPopupModalStatistic] = useState(false);
+
 
     const tabs = [
         "Thơ của bạn",
@@ -51,7 +105,7 @@ const DesignPage = () => {
         "Bản nháp của bạn",
         "Lịch sử chỉnh sửa",
         "Quản lý Bản Quyền",
-        "Trang trí",
+        // "Trang trí",
         "Quản lý ví",
     ];
 
@@ -245,6 +299,7 @@ const DesignPage = () => {
             if (activeTemplate) {
                 setSelectedTemplateId(activeTemplate.id);
                 setTempHeaderImage(activeTemplate.image || inUseHeader.image);
+                setTempHeaderColorCode(activeTemplate.colorCode || inUseHeader.color);
             }
         } catch (error) {
             console.error("Error fetching themes:", error);
@@ -274,7 +329,7 @@ const DesignPage = () => {
                 <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
                     {inUseHeader && (
                         <img
-                            src={tempHeaderImage? tempHeaderImage : inUseHeader.image}
+                            src={tempHeaderImage ? tempHeaderImage : inUseHeader.image}
                             alt="Cover"
                             style={{
                                 width: "100%",
@@ -306,16 +361,16 @@ const DesignPage = () => {
                         />
                         <div style={{ marginLeft: "15px", display: "flex", flexDirection: "column", gap: "15px" }}>
                             <div style={{ display: "flex", flexDirection: "column", gap: "0px", alignItems: "flex-start" }}>
-                                <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: inUseHeader.colorCode }}>{userData.displayName || "Annoymous"}</h2>
-                                <p style={{ color: inUseHeader.colorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
+                                <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode }}>{userData.displayName || "Annoymous"}</h2>
+                                <p style={{ color: tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
                             </div>
-                            <div style={{ fontSize: "14px", color: inUseHeader.colorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
+                            <div style={{ fontSize: "14px", color: tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
                                 <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                                    <HiUsers color={inUseHeader.colorCode} /> <span style={{ color: inUseHeader.colorCode }}>{userData.totalFollowers} Người theo dõi</span>
+                                    <HiUsers color={tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode} /> <span style={{ color: tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode }}>{userData.totalFollowers} Người theo dõi</span>
                                 </div>
-                                <div style={{ color: inUseHeader.colorCode }}>•</div>
+                                <div style={{ color: tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode }}>•</div>
                                 <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                                    <FaUserPlus color={inUseHeader.colorCode} /> <span style={{ color: inUseHeader.colorCode }}>{userData.totalFollowings} Đang theo dõi</span>
+                                    <FaUserPlus color={tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode} /> <span style={{ color: tempHeaderColorCode ? tempHeaderColorCode : inUseHeader.colorCode }}>{userData.totalFollowings} Đang theo dõi</span>
                                 </div>
                             </div>
                         </div>
@@ -324,7 +379,11 @@ const DesignPage = () => {
             </div>
             {/*Nav */}
             <div
-                // onClick={showModalNavNav}
+                onClick={() => {
+                    setOriginalNav(inUseNav);
+                    setOriginalNavBorder(inUseNavBorder);
+                    setShowPopupModalNav(true);
+                }}
                 onMouseEnter={() => setIsHoveredNav(true)}
                 onMouseLeave={() => setIsHoveredNav(false)}
                 style={{
@@ -384,7 +443,10 @@ const DesignPage = () => {
                 }}
                 onMouseEnter={() => setIsHoverMainBackground(true)}
                 onMouseLeave={() => setIsHoverMainBackground(false)}
-                onClick={() => alert("askjdl")}
+                onClick={() => {
+                    setShowPopupModalMainBackground(true);
+                    setOriginalMainBackground(inUseMainBackground);
+                }}
             >
                 {/* Background element */}
                 <div
@@ -488,15 +550,17 @@ const DesignPage = () => {
                         {/* Other content */}
                         <div
                             style={{
-                                backgroundColor: "white",
                                 borderRadius: "10px",
-                                border: `1px solid ${inUseAchievementBorder.colorCode}`,
+                                border: `2px solid ${inUseAchievementBorder.colorCode}`,
                                 boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div
-                                onClick={() => alert("Title achievement")}
+                                onClick={() => {
+                                    setShowPopupModalAchievementTitle(true);
+                                    setOriginalAchievementTitle(inUseAchievementTitle);
+                                }}
                                 onMouseEnter={() => {
                                     setIsHoverAchievementTitle(true);
                                     setIsHoverMainBackground(false)
@@ -518,7 +582,7 @@ const DesignPage = () => {
                             >
                                 <div
                                     style={{
-                                        background: inUseAchievementTitle.image ? `url("${inUseAchievementTitle.image}")` : "none",
+                                        backgroundImage: inUseAchievementTitle.image ? `url("${inUseAchievementTitle.image}")` : "none",
                                         height: 53,
                                         borderRadius: "10px 10px 0 0",
                                         display: "flex",
@@ -534,7 +598,11 @@ const DesignPage = () => {
                                 </div>
                             </div>
                             <div
-                                onClick={() => alert("Content achievement")}
+                                onClick={() => {
+                                    setOriginalAchievement(inUseAchievement);
+                                    setOriginalAchievementBorder(inUseAchievementBorder);
+                                    setShowPopupModalAchievement(true)
+                                }}
                                 onMouseEnter={() => {
                                     setIsHoverAchievementContent(true);
                                     setIsHoverMainBackground(false)
@@ -554,7 +622,7 @@ const DesignPage = () => {
                                     opacity: isHoverAchievementContent ? 0.5 : 1, // inline hover effect
                                 }}
                             >
-                                <div style={{ background: inUseAchievement.image ? `url("${inUseAchievement.image}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px" }}>
+                                <div style={{ backgroundImage: inUseAchievement.image ? `url("${inUseAchievement.image}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px" }}>
                                     <ul style={{ fontSize: "14px", color: inUseAchievement.colorCode, listStyle: "none", padding: 0, margin: 0 }}>
                                         <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
                                         <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
@@ -571,7 +639,6 @@ const DesignPage = () => {
                         {/* Thống kê người dùng */}
                         <div
                             style={{
-                                backgroundColor: "white",
                                 borderRadius: "10px",
                                 border: `2px solid ${inUseStatisticBorder.colorCode}`,
                                 boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
@@ -580,7 +647,10 @@ const DesignPage = () => {
                             onClick={(e) => e.stopPropagation()}
                         >
                             <div
-                                onClick={() => alert("Title statistic")}
+                                onClick={() => {
+                                    setShowPopupModalStatisticTitle(true);
+                                    setOriginalStatisticTitle(inUseStatisticTitle);
+                                }}
                                 onMouseEnter={() => {
                                     setIsHoverStatisticTitle(true);
                                     setIsHoverMainBackground(false)
@@ -602,7 +672,7 @@ const DesignPage = () => {
                             >
                                 <div
                                     style={{
-                                        background: inUseStatisticTitle.image ? `url("${inUseStatisticTitle.image}")` : "none",
+                                        backgroundImage: inUseStatisticTitle.image ? `url("${inUseStatisticTitle.image}")` : "none",
                                         height: 53,
                                         borderRadius: "10px 10px 0 0",
                                         display: "flex",
@@ -617,7 +687,11 @@ const DesignPage = () => {
                                 </div>
                             </div>
                             <div
-                                onClick={() => alert("Content statistic")}
+                                onClick={() => {
+                                    setShowPopupModalStatistic(true);
+                                    setOriginalStatistic(inUseStatistic);
+                                    setOriginalStatisticBorder(inUseStatisticBorder);
+                                }}
                                 onMouseEnter={() => {
                                     setIsHoverStatisticContent(true);
                                     setIsHoverMainBackground(false)
@@ -637,7 +711,7 @@ const DesignPage = () => {
                                     opacity: isHoverStatisticContent ? 0.5 : 1, // inline hover effect
                                 }}
                             >
-                                <div style={{ background: inUseStatistic.image ? `url("${inUseStatistic.image}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px" }}>
+                                <div style={{ backgroundImage: inUseStatistic.image ? `url("${inUseStatistic.image}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px" }}>
                                     <ul style={{ fontSize: "14px", color: inUseStatistic.colorCode, listStyle: "none", padding: 0, margin: 0 }}>
                                         <li>Tổng bài viết: 2</li>
                                         <li>Tổng bộ sưu tập: 5</li>
@@ -664,10 +738,80 @@ const DesignPage = () => {
                     selectedTemplateId={selectedTemplateId}
                     setSelectedTemplateId={setSelectedTemplateId}
                     setTempCoverImage={setTempHeaderImage}
-                    coverImage={inUseHeader}
+                    setTempCoverColorCode={setTempHeaderColorCode}
+                    coverImage={inUseHeader}  // original in-use cover/header
                     closeModal={() => setShowPopupModalHeader(false)}
                 />
             )}
+            <NavigationEditModal
+                show={showPopupModalNav}
+                onClose={() => setShowPopupModalNav(false)}
+                inUseNav={originalNav}
+                inUseNavBorder={originalNavBorder}
+                setTempNavBackground={(temp) =>
+                    setInUseNav((prev) => ({ ...prev, image: temp.image, colorCode: temp.colorCode }))
+                }
+                setTempNavBorder={(color) =>
+                    setInUseNavBorder((prev) => ({ ...prev, colorCode: color }))
+                }
+            />
+            <MainBackgroundEditModal
+                show={showPopupModalMainBackground}
+                onClose={() => setShowPopupModalMainBackground(false)}
+                inUseMainBackground={originalMainBackground} // object for type=4
+                setTempMainBackground={(temp) =>
+                    setInUseMainBackground((prev) => ({ ...prev, image: temp.image, colorCode: temp.colorCode }))
+                }
+            />
+
+            <AchievementTitleEditModal
+                show={showPopupModalAchievementTitle}
+                onClose={() => setShowPopupModalAchievementTitle(false)}
+                inUseAchievementTitle={originalAchievementTitle} // object for type=9
+                setTempAchievementTitle={(temp) =>
+                    setInUseAchievementTitle((prev) => ({ ...prev, image: temp.image, colorCode: temp.colorCode }))
+                }
+            />
+            <AchievementEditModal
+                show={showPopupModalAchievement}
+                onClose={() => setShowPopupModalAchievement(false)}
+                inUseAchievement={originalAchievement} // object for type=6
+                inUseAchievementBorder={originalAchievementBorder} // object for type=5
+                // optional to preview changes:
+                setTempAchievement={(temp) => setInUseAchievement((prev) => ({ ...prev, image: temp.image, colorCode: temp.colorCode }))}
+                setTempAchievementBorder={(color) => setInUseAchievementBorder((prev) => ({ ...prev, colorCode: color }))}
+            />
+            <StatisticTitleEditModal
+                show={showPopupModalStatisticTitle}
+                onClose={() => setShowPopupModalStatisticTitle(false)}
+                inUseStatisticTitle={originalStatisticTitle}  // object for type=10
+                setTempStatisticTitle={(temp) =>
+                    setInUseStatisticTitle((prev) => ({ ...prev, image: temp.image, colorCode: temp.colorCode }))
+                }
+            />
+            <StatisticEditModal
+                show={showPopupModalStatistic}
+                onClose={() => setShowPopupModalStatistic(false)}
+                inUseStatistic={originalStatistic}            // object for type=8
+                inUseStatisticBorder={originalStatisticBorder}  // object for type=7
+                setTempStatistic={(temp) =>
+                    setInUseStatistic((prev) => ({ ...prev, image: temp.image, colorCode: temp.colorCode }))
+                }
+                setTempStatisticBorder={(color) =>
+                    setInUseStatisticBorder((prev) => ({ ...prev, colorCode: color }))
+                }
+            />
+             <ConfigProvider
+                button={{
+                    className: styles.linearGradientButton,
+                }}
+            >
+                <Space style={{ position: "fixed", right: 0, bottom: 60, zIndex: 3, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}>
+                    <Button type="primary" size="large" iconPosition="end" icon={<DoubleRightOutlined />} style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }} onClick={() => { navigate('/userpage') }}>
+                        Về trang của bạn 
+                    </Button>
+                </Space>
+            </ConfigProvider>
         </div>
     )
 }

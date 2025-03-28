@@ -20,7 +20,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
         "Bản nháp của bạn",
         "Lịch sử chỉnh sửa",
         "Quản lý Bản Quyền",
-        "Trang trí",
+        // "Trang trí",
         "Quản lý ví",
     ];
     const fetchNavigationThemes = async () => {

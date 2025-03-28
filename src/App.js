@@ -38,11 +38,12 @@ function App() {
               <Route path="/admin" element={<AdminRoute element={<AdminPage />} />} />
 
               {/* User Page với nested routes */}
-              <Route path="/userpage" element={<UserPage />}>
+              {/* <Route path="/userpage" element={<UserPage />}>
                   <Route index element={<YourPoem borderColor="#ddd" />} />
                   <Route path="create-poem" element={<CreatePoem />} />
-              </Route>
+              </Route> */}
               <Route path="/design" element={<DesignPage />} />
+              <Route path="/user/:username" element={<UserPage />} />
           </Routes>
       </Router>
       

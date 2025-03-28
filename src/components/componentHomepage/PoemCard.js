@@ -6,6 +6,7 @@ import { IoBookmark } from "react-icons/io5";
 import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
 import { FaUserPlus } from "react-icons/fa";
+import { useNavigate } from "react-router-dom";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -15,11 +16,11 @@ const formatDate = (dateString) => {
 
 
 
-const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover }) => {
+const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHover }) => {
     const lines = item.content?.split('\n') || [];
     const displayedLines = lines.slice(0, 4);
     const hasMoreLines = lines.length > 4;
-
+    const navigate = useNavigate();
     const truncatedDescription = item.description?.length > 102
         ? `${item.description.substring(0, 102)}...`
         : item.description;
@@ -40,7 +41,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover }) => {
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
-                        <span style={styles.author}>{item.user?.displayName || 'Anonymous'}</span>
+                        <span style={styles.author} onClick={() => navigate}>{item.user?.displayName || 'Anonymous'}</span>
                         <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>

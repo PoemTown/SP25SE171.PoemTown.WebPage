@@ -6,9 +6,8 @@ import CommentModal from "./Form/CommentModal";
 import { IoBookmark } from "react-icons/io5";
 import { CiBookmark } from "react-icons/ci";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
-import AchievementAndStatistic from "./AchievementAndStatistic/AchievementAndStatistic";
 
-const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) => {
+const YourPoem = ({ isMine, displayName, avatar}) => {
   const [isCreatingPoem, setIsCreatingPoem] = useState(false);
   const [poems, setPoems] = useState([]);
   const [likedPoems, setLikedPoems] = useState(new Set());
@@ -19,6 +18,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
   const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
 
   useEffect(() => {
+    console.log("isMine",isMine)
     const fetchPoems = async () => {
       const accessToken = localStorage.getItem("accessToken");
       try {
@@ -62,7 +62,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
     };
 
     fetchPoems();
-  }, []);
+  }, [isMine]);
 
   const handleBookmark = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -164,28 +164,29 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
   };
 
   return (
-    <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
+    <div style={{ width: "100%", maxWidth: "1200px" }}>
       {!isCreatingPoem ? (
         <>
-          <button
-            onClick={() => setIsCreatingPoem(true)}
-            style={{
-              backgroundColor: "#007bff",
-              color: "white",
-              padding: "12px 20px",
-              borderRadius: "5px",
-              border: "none",
-              fontWeight: "bold",
-              cursor: "pointer",
-              display: "block",
-              marginBottom: "20px",
-            }}
-          >
-            SÁNG TÁC THƠ
-          </button>
-
+          {isMine ?
+            <button
+              onClick={() => setIsCreatingPoem(true)}
+              style={{
+                backgroundColor: "#007bff",
+                color: "white",
+                padding: "12px 20px",
+                borderRadius: "5px",
+                border: "none",
+                fontWeight: "bold",
+                cursor: "pointer",
+                display: "block",
+                marginBottom: "20px",
+              }}
+            >
+              SÁNG TÁC THƠ
+            </button>
+            : <></>}
           <div style={{ display: "flex", gap: "40px" }}>
-            <div style={{ flex: 7 }}>
+            <div style={{ width: "100%" }}>
               {poems.map((poem) => {
                 const lines = poem.content?.split('\n') || [];
                 const displayedLines = lines.slice(0, 4);
@@ -205,7 +206,6 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
                       border: "1px solid #ccc",
                       boxShadow: "0px 3px 6px 0px #0000004D",
                       alignItems: "stretch",
-                      maxWidth: "850px",
                       width: "100%",
                       flexDirection: "row",
                       marginBottom: "40px",
@@ -427,10 +427,7 @@ const YourPoem = ({ displayName, avatar, statisticBorder, achievementBorder }) =
               })}
             </div>
             {/* Thành tựu và thống kê */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "15px", flex: 3 }}>
-              {/* Thành tựu cá nhân */}
-              <AchievementAndStatistic statisticBorder={statisticBorder} achievementBorder={achievementBorder} />
-            </div>
+         
           </div>
         </>
       ) : (

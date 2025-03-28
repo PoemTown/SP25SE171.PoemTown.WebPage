@@ -8,7 +8,7 @@ const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navColorCode, navB
         "Bản nháp của bạn",
         "Lịch sử chỉnh sửa",
         "Quản lý Bản Quyền",
-        "Trang trí",
+        // "Trang trí",
         "Quản lý ví",
     ];
 
