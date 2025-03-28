@@ -14,6 +14,7 @@ import AccountManagement from "./Tabs/AccountManagement";
 import TemplateManagement from "./Tabs/TemplateManagement";
 import DashboardPage from "./Tabs/Dashboard";
 import ModeratorManager from "./Tabs/ModeratorManager";
+import PoemManagement from "./Tabs/PoemManagement";
 
 const drawerWidth = 280;
 
@@ -93,6 +94,7 @@ const AdminPage = () => {
                 {currentPage === "templates" && <TemplateManagement />}
                 {currentPage === "dashboard" && <DashboardPage />}
                 {currentPage === "moderators" && <ModeratorManager />}
+                {currentPage === "poems" && <PoemManagement />}
             </Box>
         </Box>
     );
