@@ -15,6 +15,7 @@ import { Button, ConfigProvider, Space } from "antd";
 import { createStyles } from 'antd-style';
 import { DoubleRightOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import YourRecordFile from "./RecordFile/YourRecordFile";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -234,7 +235,7 @@ const UserPage = () => {
                     <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground} navColorCode={navColorCode} />
                 )}
 
-                {/* Nội dung hiển thị theo Tab */}
+                {/* Nội dung hiển thị theo Tab */}  
                 <div
                     style={{
                         borderRadius: "10px",
@@ -244,10 +245,12 @@ const UserPage = () => {
                     {activeTab === "Thơ của bạn" && (
                         <YourPoem displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} />
                     )}
-
+                    {activeTab === "Bản ghi âm" && (
+                        <YourRecordFile achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground}/>
+                    )}
                     {activeTab === "Bộ sưu tập của bạn" && (
                         <div>
-                            <YourCollection avatar={userData.avatar} />
+                            <YourCollection avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground}/>
                         </div>
                     )}
                     {activeTab === "Bookmark của bạn" && (

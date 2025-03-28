@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, Menu, message } from 'antd';
+import { Button, Dropdown, Menu, message, Modal, Spin } from 'antd';
 import { FaRegUser } from "react-icons/fa6";
 import { LuBook } from "react-icons/lu";
 import { MdEdit } from "react-icons/md";
@@ -9,6 +9,7 @@ import { FiThumbsUp, FiBookmark, FiArrowLeft } from "react-icons/fi";
 import { FaRegComment } from "react-icons/fa";
 import CreateCollection from "./CreateCollection";
 import axios from "axios";
+
 const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     const [poems, setPoem] = useState([]);
     const [collectionDetails, setCollectionDetails] = useState([]);
@@ -18,10 +19,11 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     const [moveMenuItems, setMoveMenuItems] = useState([]);
     const [selectedPoemId, setSelectedPoemId] = useState(null);
     const accessToken = localStorage.getItem("accessToken");
+    const [isLoading, setIsLoading] = useState(true); // <-- Thêm state isLoading
+
     useEffect(() => {
         const fetchData = async () => {
             console.log(collection);
-
 
             try {
                 //  Gọi API lấy chi tiết bộ sưu tập
@@ -45,15 +47,15 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                     setPoem(data2.data);
                     console.log("Poems:", data2.data);
                 }
-
             } catch (error) {
                 console.error("Error fetching data:", error);
+            } finally {
+                setIsLoading(false); // <-- Tắt loading sau khi fetch xong
             }
         };
 
         fetchData();
     }, [reloadTrigger]);
-
 
     const fetchCollections = async () => {
         try {
@@ -74,17 +76,17 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
         } catch (error) {
             console.error("Error fetching collections:", error);
         }
-    }
+    };
+
     const handleDelete = () => {
         console.log("Xóa bài thơ:");
     };
 
     const handleMove = async (collectionId, poemId) => {
         try {
-
             const response = await axios.post(
                 `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collectionId}/${poemId}`,
-                {}, // Body request, để trống nếu không cần
+                {},
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
@@ -97,29 +99,25 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             message.success("Cập nhật tập thơ thành công!");
         } catch (error) {
             console.error("Error:", error.response?.data || error.errorMessage);
-             message.error(error.response?.data.errorMessage);
+            message.error(error.response?.data.errorMessage);
         }
 
         setReloadTrigger((prev) => !prev);
         console.log("Chuyển bài thơ:", collectionId, poemId);
     };
 
-
-    //----------------------------------------------------------------------------------------//
     function formatDate(isoString) {
         const date = new Date(isoString);
-        const day = String(date.getUTCDate()).padStart(2, '0'); // Lấy ngày (DD)
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Lấy tháng (MM)
-        const year = date.getUTCFullYear(); // Lấy năm (YYYY)
-
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
         return `${day}-${month}-${year}`;
     }
 
     const handleMouseEnter = (poemId) => {
         console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
         fetchCollections();
-        console.log("aaaa" + collections)
-        // Giả sử gọi API để lấy danh sách bộ sưu tập
+        console.log("aaaa" + collections);
         setMoveMenuItems(
             collections.map((collection) => (
                 <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
@@ -134,7 +132,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             <Menu.Item key="delete" onClick={handleDelete}>
                 ❌ Xóa bài thơ
             </Menu.Item>
-            {/* Sử dụng hàm callback để tránh gọi ngay lập tức */}
             <Menu.SubMenu key="move" title="🔄 Chuyển bài thơ" onTitleMouseEnter={() => handleMouseEnter(poemId)}>
                 {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
             </Menu.SubMenu>
@@ -149,10 +146,16 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
         setReloadTrigger((prev) => !prev);
     };
 
+    if (isLoading) {
+        return (
+            <div style={{ textAlign: "center", padding: "50px 0" }}>
+                <Spin size="large" tip="Đang tải dữ liệu..." />
+            </div>
+        );
+    }
 
     return (
         <div>
-
             {selectedCollection === 0 ? (
                 <div>
                     <div
@@ -216,7 +219,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                     </div>
 
                     <div style={{ display: "flex", gap: "20px" }}>
-                        {/* Phần danh sách bài thơ (BÊN TRÁI) */}
                         <div style={{ flex: 2, display: "flex", flexDirection: "column", gap: "15px" }}>
                             {poems.map((poem) => (
                                 <div key={poem.id} style={{ flex: "1" }}>
@@ -228,7 +230,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                                         fontFamily: "Arial, sans-serif",
                                         boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)"
                                     }}>
-                                        {/* Header */}
                                         <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
                                             <img
                                                 src={avatar || "./default-avatar.png"}
@@ -245,7 +246,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                                             </Dropdown>
                                         </div>
 
-                                        {/* Content */}
                                         <h3 style={{ margin: "5px 0" }}>{poem.title}</h3>
                                         <p style={{ color: "#555", fontSize: "14px" }}>
                                             {poem.description}
@@ -258,11 +258,11 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                                             color: "#444",
                                             fontSize: "14px",
                                             maxWidth: "100%",
-                                            whiteSpace: "pre-line", // Giữ dấu xuống dòng
+                                            whiteSpace: "pre-line",
                                             lineHeight: "1.6",
                                             display: "-webkit-box",
                                             WebkitBoxOrient: "vertical",
-                                            WebkitLineClamp: 4, // Giới hạn 4 dòng
+                                            WebkitLineClamp: 4,
                                             overflow: "hidden",
                                             textOverflow: "ellipsis"
                                         }}>
@@ -271,7 +271,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
 
                                         <p style={{ fontWeight: "bold", color: "#007bff", fontSize: "14px" }}>Tập thơ: {collection.name}</p>
 
-                                        {/* Footer */}
                                         <div style={{
                                             display: "flex",
                                             alignItems: "center",
@@ -292,7 +291,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                             ))}
                         </div>
 
-                        {/* Phần thống kê (BÊN PHẢI) */}
                         <div style={{ flex: 1, minWidth: "300px" }}>
                             <div style={{
                                 backgroundColor: "white",
@@ -305,7 +303,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                                 <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
                                     <li>Tổng bài viết: <span>{collectionDetails.totalChapter}</span></li>
                                     <li>Tổng audio : <span>{collectionDetails.totalRecord}</span></li>
-
                                     <li>Ngày phát hành: <span>{formatDate(collectionDetails.createdTime)}</span></li>
                                     <li>Cập nhật gần nhất: <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
                                 </ul>
@@ -320,7 +317,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             )}
         </div>
     );
-
 };
 
 export default YourCollectionDetail;

@@ -15,6 +15,7 @@ const NavigationTabsEdit = ({ activeTab, setActiveTab, NavBorder, navBackground,
     const accessToken = localStorage.getItem("accessToken");
     const tabs = [
         "Thơ của bạn",
+        "Bản ghi âm",
         "Bộ sưu tập của bạn",
         "Bookmark của bạn",
         "Bản nháp của bạn",
