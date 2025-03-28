@@ -54,7 +54,8 @@ const Homepage = () => {
     setActiveTab(newTab);
 
     if (newTab === "yourpage") {
-      navigate("/userpage");
+      const username = localStorage.getItem("username");
+      navigate(`/user/${username}`);
     }
   };
 

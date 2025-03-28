@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { FaUserPlus } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi2";
 
-const UserCover = ({ coverImage, coverColorCode, userData }) => {
+const UserCover = ({ isMine, coverImage, coverColorCode, userData }) => {
     return (
         <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
             {coverImage && (

@@ -142,8 +142,8 @@ const YourBookmark = () => {
     }
 
     return (
-        <div style={{display: "flex", gap: "40px", margin: "20px 129px" }}>
-            <div style={{flex: 2}}>
+        <div style={{display: "flex", gap: "40px", margin: "0", width: "100%" }}>
+            <div style={{width: "100%"}}>
                 <div>
                     <button style={isBookmarkCollectionTab ? styles.toggleBookmarkPoem : styles.toggleBookmarkPoemActive}
                         onClick={handleChangeToBookmarkPoem}
@@ -157,7 +157,7 @@ const YourBookmark = () => {
                     </button>
                     <hr style={{ border: "2px solid #FFD557", borderRadius: "5px" }} />
                 </div>
-                <div>
+                <div style={{}}>
                     {data.map((item) => (
                         <PoemCard
                             key={item.id}
@@ -179,54 +179,7 @@ const YourBookmark = () => {
                     ))}
                 </div>
             </div >
-            <div style={{
-                display: "flex",
-                flexDirection: "column",
-                maxWidth: "328px",
-                flex: 1
-            }}>
-                <div
-                    style={{
-                        backgroundColor: "white",
-                        padding: "15px",
-                        borderRadius: "10px",
-                        border: `1px solid black`,
-                        marginBottom: "15px",
-                    }}
-                >
-                    <h3 style={{ fontWeight: "bold" }}>Thành tựu cá nhân</h3>
-                    <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
-                        <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
-                        <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
-                        <li>🏆 Cúp vàng bài viết tháng 7/2024</li>
-                        <li>🥈 Cúp bạc tác giả tháng 6/2024</li>
-                    </ul>
-                    <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
-                </div>
-
-                <div
-                    style={{
-                        backgroundColor: "white",
-                        padding: "15px",
-                        borderRadius: "10px",
-                        border: `1px solid black`,
-                    }}
-                >
-                    <h3 style={{ fontWeight: "bold" }}>Thống kê người dùng</h3>
-                    <ul style={{ marginTop: "5px", fontSize: "14px", color: "#555" }}>
-                        <li>Tổng bài viết: 2</li>
-                        <li>Tổng bộ sưu tập: 5</li>
-                        <li>Tổng audio cá nhân: 16</li>
-                        <li>Tổng lượt xem: 662</li>
-                        <li>Tổng lượt thích: 233</li>
-                        <li>Đang theo dõi: 60</li>
-                        <li>Người theo dõi: 1,585</li>
-                        <li>Bookmark bài viết: 35</li>
-                        <li>Bookmark bộ sưu tập: 12</li>
-                    </ul>
-                    <a href="#" style={{ color: "#007bff", fontSize: "12px" }}>Xem thêm &gt;</a>
-                </div>
-            </div>
+          
         </div>
 
 

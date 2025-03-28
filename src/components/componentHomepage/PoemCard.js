@@ -16,7 +16,7 @@ const formatDate = (dateString) => {
 
 
 
-const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHover }) => {
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover }) => {
     const lines = item.content?.split('\n') || [];
     const displayedLines = lines.slice(0, 4);
     const hasMoreLines = lines.length > 4;
@@ -28,7 +28,16 @@ const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHov
     return (
         <div style={styles.poemCard}>
             <div style={styles.poemImageContainer}>
-                <img src={item.poemImage || "./anhminhhoa.png"} alt="anh minh hoa" style={styles.poemImage} />
+                <img
+                    src={item.poemImage || "/anhminhhoa.png"}
+                    alt="anh minh hoa"
+                    style={styles.poemImage}
+                    onError={(e) => {
+                        console.log("Image failed to load, switching to fallback");
+                        e.target.onerror = null;
+                        e.target.src = "/anhminhhoa.png";
+                    }}
+                />
             </div>
             <div style={styles.avatarContainer}>
                 <img
@@ -41,7 +50,7 @@ const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHov
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
-                        <span style={styles.author} onClick={() => navigate}>{item.user?.displayName || 'Anonymous'}</span>
+                        <span style={styles.author} onClick={() => navigate(`/user/${item.user?.userName}`)}>{item.user?.displayName || 'Anonymous'}</span>
                         <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
@@ -112,6 +121,7 @@ const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHov
                         }}
                         onMouseEnter={() => onHover(true)}
                         onMouseLeave={() => onHover(false)}
+                        onClick={() => navigate(`/poem/${item.id}`)}
                     >
                         Xem bài thơ &gt;
                     </button>
@@ -180,6 +190,7 @@ const styles = {
     author: {
         fontWeight: "600",
         color: "#2a7fbf",
+        cursor: "pointer"
     },
 
     poemTitle: {
