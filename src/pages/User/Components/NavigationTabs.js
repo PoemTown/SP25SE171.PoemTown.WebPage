@@ -1,6 +1,6 @@
 import React from "react";
 
-const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navBackground }) => {
+const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navColorCode, navBackground }) => {
     const tabs = [
         "Thơ của bạn",
         "Bộ sưu tập của bạn",
@@ -8,7 +8,7 @@ const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navBackground }) =
         "Bản nháp của bạn",
         "Lịch sử chỉnh sửa",
         "Quản lý Bản Quyền",
-        "Trang trí",
+        // "Trang trí",
         "Quản lý ví",
     ];
 
@@ -39,7 +39,7 @@ const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navBackground }) =
                         background: "none",
                         cursor: "pointer",
                         fontWeight: activeTab === tab ? "bold" : "normal",
-                        color: activeTab === tab ? "#007bff" : "#555",
+                        color: activeTab === tab ? "#007bff" : navColorCode,
                         borderBottom: activeTab === tab ? "2px solid #007bff" : "none",
                     }}
                 >

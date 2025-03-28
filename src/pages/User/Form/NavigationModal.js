@@ -10,6 +10,7 @@ const NavigationModal = ({
     setStep,
     navThemeColors,
     navThemeImages,
+    setNavTextColor,
     setTempNavBackground,
     setTempNavBorder,
     onUpdateSuccess
@@ -65,39 +66,43 @@ const NavigationModal = ({
                 {step === 1 ? (
                     <div>
                         <p>Chọn hình ảnh nền</p>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px", maxHeight: "300px", overflowY: "auto" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px", maxHeight: "300px", overflowY: "auto", }}>
                             {navThemeImages.map((theme) => (
-                                <img
+                                <div
                                     key={theme.id}
-                                    src={theme.image}
                                     alt="Theme Preview"
                                     style={{
                                         width: "350px",
                                         height: "60px",
                                         cursor: "pointer",
-                                        border: selectedBackgroundTheme === theme.id ? "2px solid #4CAF50" : "1px solid transparent",
+                                        margin: "0 auto",
+                                        border: selectedBackgroundTheme === theme.id ? "2px solid #4CAF50" : "1px solid #ccc",
                                         transition: "border 0.2s ease-in-out",
                                         borderRadius: "5px",
+                                        background: `url("${theme.image}")`
                                     }}
                                     onClick={() => {
                                         setSelectedBackgroundTheme(theme.id);
                                         setTempNavBackground(theme.image);
+                                        setNavTextColor(theme.colorCode);
                                     }}
-                                />
+                                >
+                                    <p style={{color: theme.colorCode}}>abcxyz</p>
+                                </div>
                             ))}
                         </div>
                     </div>
                 ) : (
                     <div>
                         <p>Chọn màu viền</p>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "10px" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr", gap: "30px" }}>
                             {navThemeColors.map((theme) => (
                                 <div
                                     key={theme.id}
                                     style={{
                                         width: "300px",
-                                        marginBottom: "20px",
-                                        height: "7px",
+                                        height: "10px",
+                                        margin: "0 auto",
                                         backgroundColor: theme.colorCode,
                                         cursor: "pointer",
                                         border: selectedBorderTheme === theme.id ? "2px solid blue" : "none",

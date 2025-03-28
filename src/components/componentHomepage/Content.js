@@ -572,7 +572,7 @@ const styles = {
   leftColumn: {
     display: "flex",
     flexDirection: "column",
-    flex: "7",
+    flex: "8",
 
   },
 

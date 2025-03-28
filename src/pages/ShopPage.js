@@ -90,7 +90,7 @@ const Shop = () => {
                             <h3 style={{margin: "0 0 20px 0"}}>{item.templateName}</h3>
                         </div>
                         <div style={styles.templateCardImage}>
-                            <img style={styles.templateImage} alt="template default" src={item.image ? item.image : "./template_default.png"} />
+                            <img style={styles.templateImage} alt="template default" src={item.coverImage ? item.coverImage : "./template_default.png"} />
                         </div>
                         <div style={styles.templateCardFooter}>
                             <p style={styles.templateType}>{templateType[item.type] || "Không xác định"}</p>
