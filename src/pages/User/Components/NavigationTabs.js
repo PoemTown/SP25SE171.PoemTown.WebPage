@@ -3,6 +3,7 @@ import React from "react";
 const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navColorCode, navBackground }) => {
     const tabs = [
         "Thơ của bạn",
+        "Bản ghi âm",
         "Bộ sưu tập của bạn",
         "Bookmark của bạn",
         "Bản nháp của bạn",

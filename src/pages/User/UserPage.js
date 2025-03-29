@@ -16,6 +16,7 @@ import { createStyles } from 'antd-style';
 import { DoubleRightOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import AchievementAndStatistic from "./AchievementAndStatistic/AchievementAndStatistic";
+import YourRecordFile from "./RecordFile/YourRecordFile";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -300,7 +301,9 @@ const UserPage = () => {
                         {activeTab === "Thơ của bạn" && (
                             <YourPoem isMine={userData.isMine} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitle={achievementTitleBackground} statisticTitle={statisticTitleBackground} />
                         )}
-
+                        {activeTab === "Bản ghi âm" && (
+                            <YourRecordFile achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} />
+                        )}
                         {activeTab === "Bộ sưu tập của bạn" && (
                             <div>
                                 <YourCollection avatar={userData.avatar} />

@@ -1,4 +1,5 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { Spin } from "antd";
 
 const AchievementAndStatistic = ({
   statisticBorder,
@@ -12,14 +13,43 @@ const AchievementAndStatistic = ({
   achievementTitleColorCode,
   statisticTitleColorCode,
 }) => {
+  const [statistic, setStatistic] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const accessToken = localStorage.getItem("accessToken");
+
+  useEffect(() => {
+    const fetchStatistic = async () => {
+      try {
+        const response = await fetch(
+          "https://api-poemtown-staging.nodfeather.win/api/statistics/v1",
+          {
+            headers: { Authorization: `Bearer ${accessToken}` },
+          }
+        );
+        const statisticData = await response.json();
+        if (statisticData.statusCode === 200) {
+          setStatistic(statisticData.data);
+        }
+      } catch (error) {
+        console.error("Error fetching statistic:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchStatistic();
+  }, [accessToken]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "30px", width: "100%" }}>
-      <div style={{
-        borderRadius: "10px",
-        border: `2px solid ${achievementBorder}`,
-        boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
-      }}>
+      {/* Thành tựu cá nhân */}
+      <div
+        style={{
+          borderRadius: "10px",
+          border: `2px solid ${achievementBorder}`,
+          boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
+        }}
+      >
         <div
           style={{
             backgroundImage: achievementTitleBackground ? `url("${achievementTitleBackground}")` : "none",
@@ -36,7 +66,13 @@ const AchievementAndStatistic = ({
             Thành tựu cá nhân
           </h3>
         </div>
-        <div style={{ backgroundImage: achievementBackground ? `url("${achievementBackground}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px" }}>
+        <div
+          style={{
+            backgroundImage: achievementBackground ? `url("${achievementBackground}")` : "none",
+            padding: "10px 20px",
+            borderRadius: "0 0 10px 10px",
+          }}
+        >
           <ul style={{ fontSize: "14px", color: achievementBackgroundColorCode, listStyle: "none", padding: 0, margin: 0 }}>
             <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
             <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
@@ -52,39 +88,44 @@ const AchievementAndStatistic = ({
       {/* Thống kê người dùng */}
       <div
         style={{
+          backgroundColor: "white",
+          padding: "15px",
           borderRadius: "10px",
           border: `2px solid ${statisticBorder}`,
           boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
         }}
       >
-        <div style={{
-          backgroundImage: statisticTitleBackground ? `url("${statisticTitleBackground}")` : "none",
-          height: 53,
-          borderRadius: "10px 10px 0 0",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          borderBottom: `2px solid ${statisticBorder}`,
-        }}>
-          <h3
-            style={{
-              fontWeight: "bold", color: statisticTitleColorCode, margin: 0, textAlign: "center"
-            }}
-          >
+        <div
+          style={{
+            backgroundImage: statisticTitleBackground ? `url("${statisticTitleBackground}")` : "none",
+            height: 53,
+            borderRadius: "10px 10px 0 0",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            borderBottom: `2px solid ${statisticBorder}`,
+          }}
+        >
+          <h3 style={{ fontWeight: "bold", color: statisticTitleColorCode, margin: 0, textAlign: "center" }}>
             Thống kê người dùng
           </h3>
         </div>
-        <div style={{backgroundImage: statisticBackground ? `url("${statisticBackground}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px"}}>
+        <div
+          style={{
+            backgroundImage: statisticBackground ? `url("${statisticBackground}")` : "none",
+            padding: "10px 20px",
+            borderRadius: "0 0 10px 10px",
+          }}
+        >
           <ul style={{ fontSize: "14px", color: statisticBackgroundColorCode, listStyle: "none", padding: 0, margin: 0 }}>
-            <li>Tổng bài viết: 2</li>
-            <li>Tổng bộ sưu tập: 5</li>
-            <li>Tổng audio cá nhân: 16</li>
-            <li>Tổng lượt xem: 662</li>
-            <li>Tổng lượt thích: 233</li>
-            <li>Đang theo dõi: 60</li>
-            <li>Người theo dõi: 1,585</li>
-            <li>Bookmark bài viết: 35</li>
-            <li>Bookmark bộ sưu tập: 12</li>
+            <li>Tổng bài viết: {isLoading ? <Spin size="small" /> : statistic?.totalPoems || 0}</li>
+            <li>Tổng bộ sưu tập: {isLoading ? <Spin size="small" /> : statistic?.totalCollections || 0}</li>
+            <li>Tổng audio cá nhân: {isLoading ? <Spin size="small" /> : statistic?.totalPersonalAudios || 0}</li>
+            <li>Tổng lượt thích: {isLoading ? <Spin size="small" /> : statistic?.totalLikes || 0}</li>
+            <li>Đang theo dõi: {isLoading ? <Spin size="small" /> : statistic?.following || 0}</li>
+            <li>Người theo dõi: {isLoading ? <Spin size="small" /> : statistic?.followers || 0}</li>
+            <li>Bookmark bài viết: {isLoading ? <Spin size="small" /> : statistic?.poemBookmarks || 0}</li>
+            <li>Bookmark bộ sưu tập: {isLoading ? <Spin size="small" /> : statistic?.collectionBookmarks || 0}</li>
           </ul>
           <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
             Xem thêm &gt;
@@ -92,7 +133,7 @@ const AchievementAndStatistic = ({
         </div>
       </div>
     </div>
-  )
-}
+  );
+};
 
 export default AchievementAndStatistic;
