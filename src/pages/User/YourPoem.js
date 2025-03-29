@@ -6,9 +6,10 @@ import CommentModal from "./Form/CommentModal";
 import { IoBookmark } from "react-icons/io5";
 import { CiBookmark } from "react-icons/ci";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
+import { MdReport } from "react-icons/md";
+import { IoIosLink } from "react-icons/io";
 
-const YourPoem = ({ isMine, displayName, avatar}) => {
-  const [isCreatingPoem, setIsCreatingPoem] = useState(false);
+const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, isCreatingPoem }) => {
   const [poems, setPoems] = useState([]);
   const [likedPoems, setLikedPoems] = useState(new Set());
   const [selectedPoemId, setSelectedPoemId] = useState(null);
@@ -18,46 +19,57 @@ const YourPoem = ({ isMine, displayName, avatar}) => {
   const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
 
   useEffect(() => {
-    console.log("isMine",isMine)
+    console.log("isMine", isMine)
     const fetchPoems = async () => {
       const accessToken = localStorage.getItem("accessToken");
-      try {
-        const response = await fetch(
-          "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine?filterOptions.status=1",
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
+      if (isMine !== null) {
+        try {
+          if (isMine === true) {
+            const response = await fetch(
+              "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine?filterOptions.status=1",
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }
+            );
+            const data = await response.json();
+            if (data.statusCode === 200) {
+              const likedPoemIds = new Set();
+              const bookmarkedPoemIds = new Set();
+              console.log("from user", data)
+              const poemsWithId = data.data.map((poem) => {
+                if (poem.like) {
+                  likedPoemIds.add(poem.id);
+                }
+                if (poem.targetMark) {
+                  bookmarkedPoemIds.add(poem.id);
+                }
+                return {
+                  id: poem.id,
+                  title: poem.title,
+                  description: poem.description,
+                  content: poem.content,
+                  poemImage: poem.poemImage,
+                  likeCount: poem.likeCount,
+                  commentCount: poem.commentCount,
+                  createdTime: poem.createdTime,
+                };
+              });
+              console.log(poemsWithId)
+              setPoems(poemsWithId);
+              setLikedPoems(likedPoemIds);
+              setBookmarkedPoems(bookmarkedPoemIds);
+            }
+          } else {
+            const response = await fetch(
+              `https://api-poemtown-staging.nodfeather.win/api/poems/v1/user/${username}`, {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }
+            );
+
           }
-        );
-        const data = await response.json();
-        if (data.statusCode === 200) {
-          const likedPoemIds = new Set();
-          const bookmarkedPoemIds = new Set();
-          console.log("from user", data)
-          const poemsWithId = data.data.map((poem) => {
-            if (poem.like) {
-              likedPoemIds.add(poem.id);
-            }
-            if (poem.targetMark) {
-              bookmarkedPoemIds.add(poem.id);
-            }
-            return {
-              id: poem.id,
-              title: poem.title,
-              description: poem.description,
-              content: poem.content,
-              poemImage: poem.poemImage,
-              likeCount: poem.likeCount,
-              commentCount: poem.commentCount,
-              createdTime: poem.createdTime,
-            };
-          });
-          console.log(poemsWithId)
-          setPoems(poemsWithId);
-          setLikedPoems(likedPoemIds);
-          setBookmarkedPoems(bookmarkedPoemIds);
+        } catch (error) {
+          console.error("Error fetching poems:", error);
         }
-      } catch (error) {
-        console.error("Error fetching poems:", error);
       }
     };
 
@@ -217,13 +229,21 @@ const YourPoem = ({ isMine, displayName, avatar}) => {
                       height: "268px",
                       border: "1px solid #000",
                     }}>
-                      <img src={poem.poemImage || "./anhminhhoa.png"} alt="anh minh hoa" style={{
-                        width: "168px",
-                        maxWidth: "168px",
-                        height: "100%",
-                        objectFit: "cover",
-                        objectPosition: "center"
-                      }} />
+                      <img
+                        src={poem.poemImage || "/anhminhhoa.png"}
+                        alt="anh minh hoa"
+                        style={{
+                          width: "168px",
+                          maxWidth: "168px",
+                          height: "100%",
+                          objectFit: "cover",
+                          objectPosition: "center"
+                        }}
+                        onError={(e) => {
+                          e.target.onerror = null;
+                          e.target.src = "/anhminhhoa.png";
+                        }}
+                      />
                     </div>
                     <div style={{ flexGrow: "1", }}>
                       <img
@@ -279,8 +299,7 @@ const YourPoem = ({ isMine, displayName, avatar}) => {
                           }} onClick={() => handleBookmark(poem.id)}>
                             {bookmarkedPoems.has(poem.id) ? (<IoBookmark color="#FFCE1B" />) : (<CiBookmark />)}
                           </button>
-
-                          <Dropdown
+                          {isMine ? <Dropdown
                             overlay={
                               <Menu>
                                 <Menu.Item key="edit">
@@ -297,7 +316,32 @@ const YourPoem = ({ isMine, displayName, avatar}) => {
                               style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
                               onClick={(e) => e.preventDefault()}
                             />
-                          </Dropdown>
+                          </Dropdown> :
+                            <Dropdown
+                              overlay={
+                                <Menu>
+                                  <Menu.Item key="report" >
+                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                      <MdReport color="red" size={"16"} /><div> Báo cáo </div>
+                                    </div>
+                                  </Menu.Item>
+                                  <Menu.Item key="copylink">
+                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                      <IoIosLink color="#666" size={"16"} /><div> Sao chép liên kết </div>
+                                    </div>
+                                  </Menu.Item>
+                                </Menu>
+                              }
+                              trigger={["click"]}
+                            >
+                              <MoreOutlined
+                                style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
+                                onClick={(e) => e.preventDefault()}
+                              />
+                            </Dropdown>
+                          }
+
+
                         </div>
                       </div>
                       <h3 style={{
@@ -427,11 +471,11 @@ const YourPoem = ({ isMine, displayName, avatar}) => {
               })}
             </div>
             {/* Thành tựu và thống kê */}
-         
+
           </div>
         </>
       ) : (
-        <CreatePoemForm onBack={() => setIsCreatingPoem(false)} />
+        <CreatePoemForm setDrafting={false} onBack={() => setIsCreatingPoem(false)} />
       )}
 
       {/* Modal Xác nhận Xóa */}

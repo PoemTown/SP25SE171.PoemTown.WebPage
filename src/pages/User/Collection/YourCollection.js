@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, Menu, message, Modal, Spin } from "antd";
+import { Button, Dropdown, Menu, message, Modal, Spin, Pagination } from "antd";
 import { FiArrowLeft } from "react-icons/fi";
 import { FaRegUser } from "react-icons/fa6";
 import { LuBook } from "react-icons/lu";
-import { IoIosClose, IoIosLink, IoIosMore } from "react-icons/io";
+import { MdEdit } from "react-icons/md";
+import { IoIosLink, IoIosMore } from "react-icons/io";
 import { MdOutlineKeyboardVoice } from "react-icons/md";
-import YourCollectionDetail from "./YourCollectionDetail";
 import CreateCollection from "./CreateCollection";
 import axios from "axios";
 import { IoBookmark } from "react-icons/io5";
 import { CiBookmark } from "react-icons/ci";
 import { MoreOutlined } from "@ant-design/icons";
-import UserStats from "../Components/UserStats";
-import AchievementAndStatistic from "../AchievementAndStatistic/AchievementAndStatistic";
+import YourCollectionDetail from "./YourCollectionDetail";
 
 const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
   const [collections, setCollection] = useState([]);
@@ -23,7 +22,12 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
   const [reloadTrigger, setReloadTrigger] = useState(false);
   const accessToken = localStorage.getItem("accessToken");
   const [bookmarkedCollections, setBookmarkedCollections] = useState(new Set());
-  const [isLoading, setIsLoading] = useState(true); // State loading
+  const [isLoading, setIsLoading] = useState(true);
+
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(3);
+  const [totalRecords, setTotalRecords] = useState(0);
 
   const keys = [
     "achievementBackgroundId",
@@ -52,13 +56,15 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
         const sessionValues = getSessionData(keys);
         setSessionData(sessionValues);
 
-        // Bật loading trước khi gọi API
         setIsLoading(true);
-
+        // Gọi API với phân trang
         const [collectionsResponse, statisticResponse] = await Promise.all([
-          fetch("https://api-poemtown-staging.nodfeather.win/api/collections/v1", {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }),
+          fetch(
+            `https://api-poemtown-staging.nodfeather.win/api/collections/v1?pageNumber=${currentPage}&pageSize=${pageSize}`,
+            {
+              headers: { Authorization: `Bearer ${accessToken}` },
+            }
+          ),
           fetch("https://api-poemtown-staging.nodfeather.win/api/statistics/v1", {
             headers: { Authorization: `Bearer ${accessToken}` },
           }),
@@ -79,11 +85,15 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
               totalPoem: collection.totalChapter,
               totalRecord: collection.totalRecord,
               displayName: collection.user.displayName,
-              rowVersion: collection.rowVersion
+              rowVersion: collection.rowVersion,
             };
           });
           setCollection(formattedData);
           setBookmarkedCollections(bookmarkedIds);
+          // Nếu API trả về totalPages, tính tổng số record
+          if (collectionsData.totalPages) {
+            setTotalRecords(collectionsData.totalPages * pageSize);
+          }
         }
         if (statisticData.statusCode === 200) {
           setStatistic(statisticData.data);
@@ -91,12 +101,11 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
       } catch (error) {
         console.error("Error fetching collections:", error);
       } finally {
-        // Tắt loading sau khi dữ liệu đã được load (hoặc có lỗi)
         setIsLoading(false);
       }
     };
     fetchCollections();
-  }, [reloadTrigger]);
+  }, [reloadTrigger, currentPage, pageSize]);
 
   const handleBookmark = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -112,12 +121,12 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
           method,
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
 
-      setBookmarkedCollections(prev => {
+      setBookmarkedCollections((prev) => {
         const newSet = new Set(prev);
         if (isBookmarked) {
           newSet.delete(id);
@@ -132,36 +141,37 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
   };
 
   const handleCreate = () => {
-    setSelectedCollection(1); // Chuyển sang giao diện tạo bộ sưu tập
+    setSelectedCollection(1);
   };
+
   const handleDelete = async (id, rowVersion) => {
     try {
       const response = await axios.delete(`https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         params: {
-          rowVersion: rowVersion
-        }
+          rowVersion: rowVersion,
+        },
       });
 
       console.log("Response:", response.data);
-      setReloadTrigger((prev) => !prev); // Quay lại danh sách
+      setReloadTrigger((prev) => !prev);
       message.success("Xóa tập thơ thành công!");
     } catch (error) {
       console.error("Error:", error);
       message.error("Có lỗi xảy ra khi xóa tập thơ!");
     }
   };
-  //----------------------------------------------------------------------------------------//
+
   const handleMoveToDetail = (collection) => {
-    setSelectedCollection(collection); // Chuyển sang trang chi tiết
+    setSelectedCollection(collection);
   };
 
   const handleBack = () => {
     setSelectedCollection(null);
-    setReloadTrigger((prev) => !prev); // Quay lại danh sách và reload data
+    setReloadTrigger((prev) => !prev);
   };
 
   const showDeleteConfirm = (id, rowVersion) => {
@@ -177,9 +187,13 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
     });
   };
 
-  //----------------------------------------------------------------------------------//
+  const handlePageChange = (page, size) => {
+    setCurrentPage(page);
+    setPageSize(size);
+  };
+
   return (
-    <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
+    <div style={{ maxWidth: "1200px", minHeight: "650px" }}>
       {isLoading ? (
         <div style={{ textAlign: "center", padding: "50px 0" }}>
           <Spin size="large" tip="Đang tải dữ liệu..." />
@@ -215,19 +229,27 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
                         border: "1px solid #ccc",
                         display: "flex",
                         marginBottom: "2%",
-                        boxShadow: "0px 3px 6px 0px #0000004D"
+                        boxShadow: "0px 3px 6px 0px #0000004D",
                       }}
                     >
                       <div style={{ flex: 1, width: "260px", height: "146px" }}>
                         <img
                           style={{ width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px" }}
-                          src={collection.image ? collection.image : "./default_collection.jpg"}
+                          src={collection.image ? collection.image : "/anhminhhoa.png"}
                           alt="Ảnh bộ sưu tập"
                         />
                       </div>
-                      <div style={{ flex: 4, display: "flex", flexDirection: "column", padding: "16px", position: "relative" }}>
+                      <div style={{
+                        flex: 4,
+                        minWidth: 0,                  // Cho phép co hẹp lại
+                        display: "flex",
+                        flexDirection: "column",
+                        padding: "16px",
+                        position: "relative",
+                        overflow: "hidden"
+                      }}>
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                          <p style={{ marginBottom: '1%', fontWeight: 'bold', marginTop: 0 }}>
+                          <p style={{ marginBottom: "1%", fontWeight: "bold", marginTop: 0 }}>
                             {collection.name} -{" "}
                             <span style={{ color: "#007bff", fontWeight: "600" }}>
                               {collection?.displayName || "Anonymous"}
@@ -258,7 +280,7 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
                                 <Menu>
                                   <Menu.Item key="edit">
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                      <IoIosLink color="#666" size={"16"} />
+                                      <IoIosLink color="#666" size={16} />
                                       <div>Sao chép liên kết</div>
                                     </div>
                                   </Menu.Item>
@@ -276,20 +298,24 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
                             </Dropdown>
                           </div>
                         </div>
-                        <p style={{
-                          marginRight: '2%',
-                          marginBottom: 'auto',
-                          marginTop: 0,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          display: "-webkit-box",
-                          WebkitLineClamp: 2,
-                          WebkitBoxOrient: "vertical",
-                          maxWidth: "100%",
-                          flexGrow: 1
-                        }}>
-                          {collection.description}
+                        <p
+                          style={{
+                            display: "-webkit-box",
+                            WebkitLineClamp: 2,
+                            WebkitBoxOrient: "vertical",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",  
+                            whiteSpace: "normal",  //  Cho phép xuống dòng
+                            wordBreak: "break-word",  //  Bắt buộc nếu có từ dài
+                          }}
+                        >
+
+                          {collection.description} 
                         </p>
+
+
+
+
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -305,14 +331,22 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
                             <span>Xem tuyển tập &gt;</span>
                           </div>
                         </div>
-                        
                       </div>
                     </div>
                   ))}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", gap: "15px", flex: 3 }}>
-                  <AchievementAndStatistic statisticBorder={statisticBorder} achievementBorder={achievementBorder} />
-                </div>
+              </div>
+
+              {/* Phân trang */}
+              <div style={{ textAlign: "center", marginTop: "20px" ,display:"flex", justifyContent:"flex-end"}}>
+                <Pagination
+                  current={currentPage}
+                  pageSize={pageSize}
+                  total={totalRecords}
+                  onChange={handlePageChange}
+                  showSizeChanger
+                  pageSizeOptions={["8", "16", "24"]}
+                />
               </div>
             </>
           ) : selectedCollection === 1 ? (
@@ -320,9 +354,7 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
               <CreateCollection handleBack={handleBack} />
             </div>
           ) : (
-            <div style={{ padding: "0px" }}>
-              <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} avatar={avatar} />
-            </div>
+            <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} avatar={avatar} />
           )}
         </>
       )}

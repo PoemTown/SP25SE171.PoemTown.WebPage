@@ -1,35 +1,40 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, Modal, message, Spin, Switch, Input } from "antd";
-import { FcFolder } from "react-icons/fc";
-import { FcVideoFile } from "react-icons/fc";
+import { Button, Modal, message, Spin, Switch, Input, Dropdown, Menu, Pagination } from "antd";
+import { FcFolder, FcVideoFile } from "react-icons/fc";
+import { DownOutlined } from "@ant-design/icons"; // Icon mũi tên chỉ xuống
 import CreateRecord from "./CreateRecord";
-import AchievementAndStatistic from "../AchievementAndStatistic/AchievementAndStatistic";
+import RecordCard from "../../../components/componentHomepage/RecordCard";
 
 export default function YourRecordFile({ statisticBorder, achievementBorder }) {
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
   const [activeButton, setActiveButton] = useState("mine");
   const [recordFiles, setRecordFiles] = useState([]);
   const accessToken = localStorage.getItem("accessToken");
-  const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRecord, setSelectedRecord] = useState(null);
-  const [isLoading, setIsLoading] = useState(false); // Thêm state isLoading
+  const [isLoading, setIsLoading] = useState(false);
   const [price, setPrice] = useState("");
   const [reloadTrigger, setReloadTrigger] = useState(false);
-  useEffect(() => {
-    fetchRecords("mine");
-  }, [isCreatingRecord,reloadTrigger]);
 
-  async function fetchRecords(type, pageNumber = 1, pageSize = 8) {
+  // State phân trang
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(8);
+  const [totalRecords, setTotalRecords] = useState(0);
+
+  useEffect(() => {
+    fetchRecords(activeButton, currentPage, pageSize);
+  }, [isCreatingRecord, reloadTrigger, activeButton, currentPage, pageSize]);
+
+  async function fetchRecords(type, pageNumber, pageSize) {
     const baseUrl = "https://api-poemtown-staging.nodfeather.win/api/record-files/v1";
     const url = `${baseUrl}/${type}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
 
-    setIsLoading(true); // Bật loading trước khi fetch
+    setIsLoading(true);
     try {
       const response = await fetch(url, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}` // Đảm bảo accessToken có giá trị
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -38,33 +43,32 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
       }
 
       const data = await response.json();
+      // Nếu API chỉ trả về totalPages, tính tổng số record:
+      if (data.totalPages) {
+        setTotalRecords(data.totalPages * pageSize);
+      }
       setRecordFiles(data.data);
-      console.log(recordFiles);
+      console.log(data.data);
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
       return null;
     } finally {
-      setIsLoading(false); // Tắt loading sau khi fetch xong
+      setIsLoading(false);
     }
   }
 
   const handleClick = (type) => {
     setActiveButton(type);
-    fetchRecords(type).then((data) => {
+    setCurrentPage(1); // Reset trang khi đổi loại
+    fetchRecords(type, 1, pageSize).then((data) => {
       console.log(`Dữ liệu từ API ${type}:`, data);
     });
   };
 
-  const showModal = (record) => {
-    setSelectedRecord(record);
-    setIsModalOpen(true);
-  };
-
-
-
-  const handleToggleStatus = async (recordId) => {
-    // Nếu bản ghi đang công khai, tức là người dùng muốn chuyển sang riêng tư.
-    if (selectedRecord.isPublic) {
+// Hàm xử lý chuyển đổi trạng thái của bản ghi (ví dụ: chuyển từ công khai sang riêng tư)
+  const handleToggleStatus = async (record) => {
+    const recordId = record.id;
+    if (record.isPublic) {
       Modal.confirm({
         title: "Nhập giá để chuyển sang Riêng tư",
         content: (
@@ -75,8 +79,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
         ),
         onOk: async () => {
           if (!price) {
-            message.error("Vui lòng nhập giá!");
-            // Không chuyển trạng thái nếu không nhập giá.
+            message.error("Vui lòng nhập giá!" + price);
             return;
           }
           try {
@@ -88,7 +91,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${accessToken}`,
                 },
-                body: JSON.stringify({ recordId, price }),
+                body: JSON.stringify({ recordId , price }),
               }
             );
             if (!response.ok) {
@@ -96,9 +99,8 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
             }
             await response.json();
             message.success("Trạng thái cập nhật thành công!");
-            // Cập nhật trạng thái bản ghi: chuyển sang riêng tư
             setSelectedRecord((prev) => ({ ...prev, isPublic: false }));
-            setReloadTrigger(prev => !prev);
+            setReloadTrigger((prev) => !prev);
           } catch (err) {
             console.error("Lỗi khi cập nhật trạng thái:", err);
             message.error("Cập nhật trạng thái thất bại!");
@@ -106,28 +108,38 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
         },
       });
     } else {
-      // Nếu bản ghi đang riêng tư, không cho chuyển sang công khai.
       message.info("Không cho chuyển từ riêng tư sang công khai");
     }
   };
-  const getButtonStyle = (buttonName) => ({
-    padding: "12px 20px",
-    border: "1px solid #0d47a1",
-    backgroundColor: activeButton === buttonName ? "#FDD835" : "white",
-    color: "#0d47a1",
-    borderRadius: "5px",
-    fontWeight: "bold",
-    cursor: "pointer",
-    transition: "all 0.3s",
-  });
+
+  // Menu cho Dropdown.Button
+  const menu = (
+    <Menu>
+      <Menu.Item key="mine" onClick={() => handleClick("mine")}>
+        Của tôi
+      </Menu.Item>
+      <Menu.Item key="bought" onClick={() => handleClick("bought")}>
+        Đã mua
+      </Menu.Item>
+      <Menu.Item key="sold" onClick={() => handleClick("sold")}>
+        Đã bán
+      </Menu.Item>
+    </Menu>
+  );
+
+  const handlePageChange = (page, size) => {
+    setCurrentPage(page);
+    setPageSize(size);
+    fetchRecords(activeButton, page, size);
+  };
 
   return (
     <>
-      <div style={{ maxWidth: "1200px", margin: "auto", padding: "20px", minHeight: "650px" }}>
+      <div style={{ maxWidth: "1200px", minHeight: "650px", margin: "0 auto" }}>
         {!isCreatingRecord ? (
           <>
             {/* Nút tạo bản ghi mới */}
-            <div style={{ position: "relative", marginBottom: "20px" }}>
+            <div style={{ position: "relative", marginBottom: "10px" }}>
               <button
                 onClick={() => setIsCreatingRecord(true)}
                 style={{
@@ -135,7 +147,6 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
                   color: "white",
                   padding: "12px 20px",
                   borderRadius: "5px",
-                  marginLeft: "1em",
                   border: "none",
                   fontWeight: "bold",
                   cursor: "pointer",
@@ -147,102 +158,67 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
             </div>
 
             {/* Bố cục chính */}
-            <div style={{ display: "flex", gap: "40px", flexGrow: 1 }}>
-              {/* Khu vực danh sách thư mục + nút chọn */}
-              <div style={{ flex: 7 }}>
-                {/* Nhóm nút "Bài thơ" & "Tập thơ" */}
-                <div
+            <div style={{}}>
+              <div style={{
+                display: "flex",
+                width: "100%",
+                justifyContent: "flex-end",
+                alignItems: "center",
+                marginBottom: "20px",
+                minHeight: "50px",
+                
+              }}>
+                <Dropdown.Button
+                  overlay={menu}
+                  trigger={["click"]}
+                  icon={<DownOutlined />}
                   style={{
                     display: "flex",
-                    justifyContent: "center",
-                    gap: "10px",
-                    marginBottom: "20px",
+                    width: "100%",
+                    justifyContent: "flex-end",
                   }}
                 >
-                  <button onClick={() => handleClick("mine")} style={getButtonStyle("mine")}>
-                    Của tôi
-                  </button>
-                  <button onClick={() => handleClick("bought")} style={getButtonStyle("bought")}>
-                    Đã mua
-                  </button>
-                  <button onClick={() => handleClick("sold")} style={getButtonStyle("sold")}>
-                    Đã bán
-                  </button>
+                  {activeButton === "mine"
+                    ? "Của tôi"
+                    : activeButton === "bought"
+                      ? "Đã mua"
+                      : "Đã bán"}
+                </Dropdown.Button>
+              </div>
+
+              {/* Danh sách folder */}
+              {isLoading ? (
+                <div style={{ textAlign: "center", padding: "50px 0" }}>
+                  <Spin size="large" tip="Đang tải dữ liệu..." />
                 </div>
+              ) : (
+                <div style={{
+                  display: "flex",
+                  flexWrap: "wrap",
+                  gap: "40px",
+                  minHeight: "200px",
+                }}>
+                  {recordFiles.map((record) => (
+                    
+                    <RecordCard
+                      key={record.id}
+                      record={record}
+                      handleToggleStatus={handleToggleStatus} />
+                  ))}
+                </div>
+              )}
+            </div>
 
-                {/* Danh sách folder */}
-                {isLoading ? (
-                  <div style={{ textAlign: "center", padding: "50px 0" }}>
-                    <Spin size="large" tip="Đang tải dữ liệu..." />
-                  </div>
-                ) : (
-                  <div
-                    style={{
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: "20px",
-                      minHeight: "200px",
-                    }}
-                  >
-                    {recordFiles.map((record) => (
-                      <div
-                        key={record.key}
-                        style={{
-                          position: "relative",
-                          textAlign: "center",
-                          width: "180px",
-                          height: "180px",
-                          cursor: "pointer",
-                        }}
-                        onClick={() => showModal(record)}
-                      >
-                        {/* Container icon */}
-                        <div style={{ position: "relative" }}>
-                          <FcVideoFile
-                            size={130}
-                            style={{ filter: "drop-shadow(2px 4px 6px rgba(0,0,0,0.2))" }}
-                            title={record.poem.title}
-                          />
-                          {/* Dot indicator */}
-                          <div
-                            style={{
-                              position: "absolute",
-                              top: "9%",
-                              left: "28%",
-                              width: "8px",
-                              height: "8px",
-                              backgroundColor: record.isPublic ? "#00C853" : "#9E9E9E",
-                              borderRadius: "50%",
-                              zIndex: 1,
-                            }}
-                          ></div>
-                        </div>
-                        <div
-                          style={{
-                            fontSize: "14px",
-                            fontWeight: "bold",
-                            color: "#333",
-                            position: "absolute",
-                            whiteSpace: "nowrap",
-                            overflow: "hidden",
-                            top: "75%",
-                            textOverflow: "ellipsis",
-                            width: "100%",
-                          }}
-                          title={record.fileName}
-                        >
-                          {record.fileName}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Thành tựu & Thống kê */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "15px", flex: 3 }}>
-                <AchievementAndStatistic statisticBorder={statisticBorder} achievementBorder={achievementBorder} />
-              </div>
+            {/* Phân trang */}
+            <div style={{ textAlign: "center", marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
+              <Pagination
+                current={currentPage}
+                pageSize={pageSize}
+                total={totalRecords} // Tổng số record được tính từ totalPages * pageSize
+                onChange={handlePageChange}
+                showSizeChanger
+                pageSizeOptions={["8", "16", "24"]}
+              />
             </div>
           </>
         ) : (
@@ -250,55 +226,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
         )}
       </div>
 
-      {/* Modal hiển thị chi tiết record */}
-      <Modal
-        title={selectedRecord ? selectedRecord.fileName : "Chi tiết bản ghi"}
-        open={isModalOpen}
-        onCancel={() => setIsModalOpen(false)}
-        footer={null} // Bỏ footer (nút Cancel/OK)
-      >
-        {selectedRecord ? (
-          <div>
-            <h3 style={{ textAlign: "center" }}>
-              <strong>Tiêu đề bài thơ:</strong> {selectedRecord.poem.title}
-            </h3>
-            <h4>
-              Owner:{" "}
-              {selectedRecord.Owner
-                ? selectedRecord.Owner.displayName
-                : selectedRecord.poem.user.displayName}
-            </h4>
-            {selectedRecord.buyer && (
-              <h4>Buyer: {selectedRecord.Buyer.displayName}</h4>
-            )}
-            {/* Công tắc bật/tắt trạng thái */}
-            <div style={{ marginTop: "15px", display: "flex", alignItems: "center", gap: "10px" }}>
-              <strong>Trạng thái:</strong>
-              <Switch
-                checked={selectedRecord.isPublic}
-                onChange={() => handleToggleStatus(selectedRecord.id)}
-              />
-              <span>{selectedRecord.isPublic ? "Công khai" : "Riêng tư"}</span>
-            </div>
-            {/* Hiển thị file audio nếu có, nếu chưa có thì hiển thị spinner loading */}
-            {selectedRecord.fileUrl ? (
-              <audio
-                controls
-                style={{ width: "100%", marginTop: "1em" }}
-                src={selectedRecord.fileUrl}
-              >
-                Your browser does not support the audio element.
-              </audio>
-            ) : (
-              <div style={{ textAlign: "center", marginTop: "1em" }}>
-                <Spin size="large" />
-              </div>
-            )}
-          </div>
-        ) : (
-          <p>Không có thông tin.</p>
-        )}
-      </Modal>
+     
     </>
   );
 }
