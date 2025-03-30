@@ -11,11 +11,12 @@ import UserCoverEdit from "./Components/UserCoverEdit";
 import NavigationTabs from "./Components/NavigationTabs";
 import NavigationTabsEdit from "./Components/NavigationTabsEdit";
 import YourBookmark from "./Bookmark/YourBookmark";
-import { Button, ConfigProvider, Space } from "antd";
+import { Button, ConfigProvider, Space, Spin } from "antd";
 import { createStyles } from 'antd-style';
 import { DoubleRightOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import AchievementAndStatistic from "./AchievementAndStatistic/AchievementAndStatistic";
+import YourRecordFile from "./RecordFile/YourRecordFile";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -59,10 +60,12 @@ const UserPage = () => {
     const [statisticTitleColorCode, setStatisticTitleColorCode] = useState(null);
     const [achievementBackgroundColorCode, setAchievementBackgroundColorCode] = useState(null);
     const [statisticBackgroundColorCode, setStatisticBackgroundColorCode] = useState(null);
+    const [isCreatingPoem, setIsCreatingPoem] = useState(false);
     const { styles } = useStyle();
     const { username } = useParams();
     const navigate = useNavigate();
 
+    const [isLoading, setIsLoading] = useState(true);
 
     const fetchImage = async () => {
         try {
@@ -182,6 +185,8 @@ const UserPage = () => {
                         isMine: result.data.isMine,
                         totalFollowers: result.data.totalFollowers,
                         totalFollowings: result.data.totalFollowings,
+                        userStatistic: result.data.userStatistic,
+                        achievements: result.data.achievements
                     });
                     setDisplayName(result.data.displayName);
                     const cover = result.data.userTemplateDetails.find(item => item.type === 1);
@@ -246,14 +251,29 @@ const UserPage = () => {
             }
         };
 
-        fetchUserProfile();
+        Promise.all([fetchUserProfile()]).finally(() => {
+            setIsLoading(false);
+        });
     }, []);
 
     const [activeTab, setActiveTab] = useState(() => localStorage.getItem("activeTab") || "Thơ của bạn");
 
     useEffect(() => {
         localStorage.setItem("activeTab", activeTab);
+        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab  === "Quản lý ví") {
+            setIsCreatingPoem(false);
+        } 
     }, [activeTab]);
+
+
+    if (isLoading) {
+        // Display a spinner or loading message until data is loaded
+        return (
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+                <Spin size="large" tip="Đang tải dữ liệu..." />
+            </div>
+        );
+    }
 
     return (
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
@@ -263,14 +283,14 @@ const UserPage = () => {
             {/* {activeTab === "Trang trí" ? (
                 <UserCoverEdit coverImage={coverImage} coverColorCode={coverColorCode} userData={userData} />
             ) : ( */}
-            <UserCover coverImage={coverImage} coverColorCode={coverColorCode} userData={userData} />
+            <UserCover isMine={userData.isMine} coverImage={coverImage} coverColorCode={coverColorCode} userData={userData} />
             {/* )} */}
 
             {/* Navigation Tabs */}
             {/* {activeTab === "Trang trí" ? (
                     <NavigationTabsEdit activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground} navColorCode={navColorCode} />
                 ) : ( */}
-            <NavigationTabs activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground} navColorCode={navColorCode} />
+            <NavigationTabs isMine={userData.isMine} activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground} navColorCode={navColorCode} />
             {/* )} */}
 
             {/* Nội dung hiển thị theo Tab */}
@@ -296,23 +316,21 @@ const UserPage = () => {
                     gap: "40px"
                 }}>
 
-                    <div style={{ flex: 8, display: "flex", }}>
+                    <div style={{ flex: 8 }}>
                         {activeTab === "Thơ của bạn" && (
-                            <YourPoem isMine={userData.isMine} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitle={achievementTitleBackground} statisticTitle={statisticTitleBackground} />
+                            <YourPoem isCreatingPoem={isCreatingPoem} setIsCreatingPoem={setIsCreatingPoem} username={username} isMine={userData.isMine} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitle={achievementTitleBackground} statisticTitle={statisticTitleBackground} />
                         )}
-
+                        {activeTab === "Bản ghi âm" && (
+                            <YourRecordFile achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} />
+                        )}
                         {activeTab === "Bộ sưu tập của bạn" && (
-                            <div>
                                 <YourCollection avatar={userData.avatar} />
-                            </div>
                         )}
                         {activeTab === "Bookmark của bạn" && (
-                            <div>
-                                <YourBookmark />
-                            </div>
+                            <YourBookmark />
                         )}
                         {activeTab === "Bản nháp của bạn" && (
-                            <YourDraft displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />
+                            <YourDraft isCreatingPoem={isCreatingPoem} setIsCreatingPoem={setIsCreatingPoem} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />
                         )}
                         {activeTab === "Lịch sử chỉnh sửa" && <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>}
                         {activeTab === "Quản lý Bản Quyền" && <p>Thông tin về bản quyền các tác phẩm của bạn sẽ được hiển thị tại đây.</p>}
@@ -320,15 +338,17 @@ const UserPage = () => {
                         <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor} />} */}
                         {activeTab === "Quản lý ví" && <p>Thông tin về tài chính và ví điện tử sẽ hiển thị ở đây.</p>}
                     </div>
-                    <div style={{ display: "flex", flex: 3 }}>
-                        {/* Thành tựu cá nhân */}
-                        <AchievementAndStatistic statisticBorder={statisticBorder} achievementBorder={achievementBorder} statisticBackground={statisticBackground} statisticBackgroundColorCode={statisticBackgroundColorCode} achievementBackgroundColorCode={achievementBackgroundColorCode} statisticTitleBackground={statisticTitleBackground} achievementBackground={achievementBackground} achievementTitleBackground={achievementTitleBackground} achievementTitleColorCode={achievementTitleColorCode} statisticTitleColorCode={statisticTitleColorCode} />
-                    </div>
+                    {!isCreatingPoem &&
+                        <div style={{ display: "flex", flex: 3 }}>
+                            {/* Thành tựu cá nhân */}
+                            <AchievementAndStatistic totalFollowings={userData.totalFollowings} totalFollowers={userData.totalFollowers} userStatistic={userData.userStatistic} achievements={userData.achievements} statisticBorder={statisticBorder} achievementBorder={achievementBorder} statisticBackground={statisticBackground} statisticBackgroundColorCode={statisticBackgroundColorCode} achievementBackgroundColorCode={achievementBackgroundColorCode} statisticTitleBackground={statisticTitleBackground} achievementBackground={achievementBackground} achievementTitleBackground={achievementTitleBackground} achievementTitleColorCode={achievementTitleColorCode} statisticTitleColorCode={statisticTitleColorCode} />
+                        </div>
+                    }
                 </div>
             </div>
 
 
-            {userData.isMine && (
+            {!isCreatingPoem && userData.isMine && (
                 <ConfigProvider
                     button={{
                         className: styles.linearGradientButton,

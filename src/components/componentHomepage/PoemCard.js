@@ -7,6 +7,7 @@ import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
 import { FaUserPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -16,7 +17,10 @@ const formatDate = (dateString) => {
 
 
 
-const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHover }) => {
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove}) => {
+
+    const [moveMenuItems, setMoveMenuItems] = useState([]);
+
     const lines = item.content?.split('\n') || [];
     const displayedLines = lines.slice(0, 4);
     const hasMoreLines = lines.length > 4;
@@ -25,10 +29,79 @@ const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHov
         ? `${item.description.substring(0, 102)}...`
         : item.description;
 
+
+
+    // Menu dropdown mặc định (cho trường hợp action khác "collection")
+    const defaultMenu = (
+        <Menu>
+            <Menu.Item key="report">
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <MdReport color="red" size={16} /><div> Báo cáo </div>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="copylink">
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <IoIosLink color="#666" size={16} /><div> Sao chép liên kết </div>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="follow">
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <FaUserPlus color="#666" size={16} /><div> Theo dõi người dùng </div>
+                </div>
+            </Menu.Item>
+        </Menu>
+    );
+
+
+       const handleMouseEnter = (poemId) => {
+            console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
+            console.log("aaaa" + collections);
+            setMoveMenuItems(
+                collections.map((collection) => (
+                    <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
+                        📂 {collection.name}
+                    </Menu.Item>
+                ))
+            );
+        };
+    
+
+    const collectionMenu = (
+        <Menu>
+            <Menu.Item key="delete" >
+                ❌ Xóa bài thơ
+            </Menu.Item>
+            <Menu.SubMenu
+                key="move"
+                title="🔄 Chuyển bài thơ"
+                onTitleMouseEnter={() => handleMouseEnter(item.id)}
+            >
+                {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
+
+            </Menu.SubMenu>
+        </Menu>
+    );
+
+    // Chọn overlay menu dựa trên prop action
+    const overlayMenu = collections && collections.length > 0
+        ? collectionMenu
+        : defaultMenu;
+
+
+
     return (
         <div style={styles.poemCard}>
             <div style={styles.poemImageContainer}>
-                <img src={item.poemImage || "./anhminhhoa.png"} alt="anh minh hoa" style={styles.poemImage} />
+                <img
+                    src={item.poemImage || "/anhminhhoa.png"}
+                    alt="anh minh hoa"
+                    style={styles.poemImage}
+                    onError={(e) => {
+                        console.log("Image failed to load, switching to fallback");
+                        e.target.onerror = null;
+                        e.target.src = "/anhminhhoa.png";
+                    }}
+                />
             </div>
             <div style={styles.avatarContainer}>
                 <img
@@ -41,7 +114,7 @@ const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHov
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
-                        <span style={styles.author} onClick={() => navigate}>{item.user?.displayName || 'Anonymous'}</span>
+                        <span style={styles.author} onClick={() => navigate(`/user/${item.user?.userName}`)}>{item.user?.displayName || 'Anonymous'}</span>
                         <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
@@ -50,28 +123,7 @@ const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHov
                         </button>
 
 
-                        <Dropdown
-                            overlay={
-                                <Menu>
-                                    <Menu.Item key="report" >
-                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                            <MdReport color="red" size={"16"} /><div> Báo cáo </div>
-                                        </div>
-                                    </Menu.Item>
-                                    <Menu.Item key="copylink">
-                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                            <IoIosLink color="#666" size={"16"} /><div> Sao chép liên kết </div>
-                                        </div>
-                                    </Menu.Item>
-                                    <Menu.Item key="follow">
-                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                            <FaUserPlus color="#666" size={"16"} /><div> Theo dõi người dùng </div>
-                                        </div>
-                                    </Menu.Item>
-                                </Menu>
-                            }
-                            trigger={["click"]}
-                        >
+                        <Dropdown overlay={overlayMenu} trigger={["click"]}>
                             <button style={styles.iconButton}>
                                 <IoIosMore />
                             </button>
@@ -112,6 +164,7 @@ const PoemCard = ({ userData, item, bookmarked, liked, onBookmark, onLike, onHov
                         }}
                         onMouseEnter={() => onHover(true)}
                         onMouseLeave={() => onHover(false)}
+                        onClick={() => navigate(`/poem/${item.id}`)}
                     >
                         Xem bài thơ &gt;
                     </button>
@@ -180,6 +233,7 @@ const styles = {
     author: {
         fontWeight: "600",
         color: "#2a7fbf",
+        cursor: "pointer"
     },
 
     poemTitle: {

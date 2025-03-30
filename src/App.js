@@ -14,6 +14,7 @@ import AdminPage from "./pages/Admin/AdminPage";
 import Shop from "./pages/ShopPage";
 import TemplateDetail from "./pages/TemplateDetail";
 import DesignPage from "./pages/User/DesignPage";
+import PoemDetail from "./pages/PoemDetail";
 
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
@@ -44,6 +45,7 @@ function App() {
               </Route> */}
               <Route path="/design" element={<DesignPage />} />
               <Route path="/user/:username" element={<UserPage />} />
+              <Route path="/poem/:id" element={<PoemDetail />} />
           </Routes>
       </Router>
       

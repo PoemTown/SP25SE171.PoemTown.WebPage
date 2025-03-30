@@ -1,8 +1,9 @@
 import React from "react";
 
-const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navColorCode, navBackground }) => {
-    const tabs = [
+const NavigationTabs = ({ isMine, activeTab, setActiveTab, NavBorder, navColorCode, navBackground }) => {
+    const tabs = isMine ? [
         "Thơ của bạn",
+        "Bản ghi âm",
         "Bộ sưu tập của bạn",
         "Bookmark của bạn",
         "Bản nháp của bạn",
@@ -10,6 +11,9 @@ const NavigationTabs = ({ activeTab, setActiveTab, NavBorder, navColorCode, navB
         "Quản lý Bản Quyền",
         // "Trang trí",
         "Quản lý ví",
+    ] : [
+        "Thơ của bạn",
+        "Bộ sưu tập của bạn",
     ];
 
     return (

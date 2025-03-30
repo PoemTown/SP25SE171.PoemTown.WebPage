@@ -29,7 +29,7 @@ const Content = ({ activeTab }) => {
   const [userLeaderBoard, setUserLeaderBoard] = useState({ topUsers: [] });
 
   const accessToken = localStorage.getItem("accessToken");
-
+  const [hoveredUserLdb, setHoveredUserLdb] = useState(null);
 
   const navigate = useNavigate();
 
@@ -198,7 +198,7 @@ const Content = ({ activeTab }) => {
           setData([]); // Clear poem data
         } else {
           // Handle poems data
-          const initialBookmarkedState = {};
+          const initialBookmarkedState = {}; 
           const initialLikedState = {};
           data.data.forEach(item => {
             initialLikedState[item.id] = !!item.like;
@@ -428,7 +428,20 @@ const Content = ({ activeTab }) => {
             </div>
             <ul style={styles.topList}>
               {userLeaderBoard && userLeaderBoard.topUsers.slice(0, 3).map((user) => (
-                <div style={{marginBottom: "20px"}}>
+                <div
+                  key={user.id}
+                  style={{
+                    marginBottom: "20px",
+                    opacity: hoveredUserLdb === user.id ? 0.8 : 1,
+                    cursor: "pointer",
+                    transition: "opacity 0.3s",
+                    backgroundColor: hoveredUserLdb === user.id ? "#f1f1f1" : "",
+                    borderRadius: "20px 20px 0 0"
+                  }}
+                  onMouseEnter={() => setHoveredUserLdb(user.id)}
+                  onMouseLeave={() => setHoveredUserLdb(null)}
+                  onClick={() => navigate(`/user/${user.user.userName}`)}
+                >
                   <li key={user.id} style={styles.topItem}>
                     <span style={{ ...styles.topItemRank, color: getRankColor(user.rank) }}>
                       #{user.rank}
@@ -461,7 +474,7 @@ const Content = ({ activeTab }) => {
             </div>
             <ul style={styles.topList}>
               {poemLeaderBoard && poemLeaderBoard.topPoems.slice(0, 3).map((poem) => (
-                <div style={{marginBottom: "20px"}}>
+                <div style={{ marginBottom: "20px" }}>
                   <li key={poem.id} style={styles.topItem}>
                     <span style={{ ...styles.topItemRank, color: getRankColor(poem.rank) }}>
                       #{poem.rank}

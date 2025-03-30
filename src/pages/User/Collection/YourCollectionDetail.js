@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Button, Dropdown, Menu, message } from 'antd';
+import { Button, Dropdown, Menu, message, Modal, Spin } from 'antd';
 import { FaRegUser } from "react-icons/fa6";
 import { LuBook } from "react-icons/lu";
 import { MdEdit } from "react-icons/md";
@@ -9,19 +9,33 @@ import { FiThumbsUp, FiBookmark, FiArrowLeft } from "react-icons/fi";
 import { FaRegComment } from "react-icons/fa";
 import CreateCollection from "./CreateCollection";
 import axios from "axios";
+import PoemCard from "../../../components/componentHomepage/PoemCard";
+
 const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     const [poems, setPoem] = useState([]);
     const [collectionDetails, setCollectionDetails] = useState([]);
     const [reloadTrigger, setReloadTrigger] = useState(false);
     const [selectedCollection, setSelectedCollection] = useState(0);
-    const [collections, setCollection] = useState([]);
+    const [collections, setCollections] = useState([]);
+    const [isHovered, setIsHovered] = useState(false);
+    const [data, setData] = useState([]);
+
     const [moveMenuItems, setMoveMenuItems] = useState([]);
     const [selectedPoemId, setSelectedPoemId] = useState(null);
+    const [bookmarkedPosts, setBookmarkedPosts] = useState({});
+    const [likedPosts, setLikedPosts] = useState({});
+
+
     const accessToken = localStorage.getItem("accessToken");
+    const headers = {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${accessToken}`
+    };
+    const [isLoading, setIsLoading] = useState(true); // <-- Thêm state isLoading
+
     useEffect(() => {
         const fetchData = async () => {
             console.log(collection);
-
 
             try {
                 //  Gọi API lấy chi tiết bộ sưu tập
@@ -42,18 +56,28 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                 );
                 const data2 = await response2.json();
                 if (data2.statusCode === 200) {
+                    const initialBookmarkedState = {};
+                    const initialLikedState = {};
+
+                    data2.data.forEach(item => {
+                        initialLikedState[item.id] = !!item.like;
+                        initialBookmarkedState[item.id] = !!item.targetMark;
+                    });
                     setPoem(data2.data);
+                    setBookmarkedPosts(initialBookmarkedState);
+                    setLikedPosts(initialLikedState);
+
                     console.log("Poems:", data2.data);
                 }
-
             } catch (error) {
                 console.error("Error fetching data:", error);
+            } finally {
+                setIsLoading(false); // <-- Tắt loading sau khi fetch xong
             }
         };
-
+        fetchCollections();
         fetchData();
-    }, [reloadTrigger]);
-
+    }, [collection, reloadTrigger]);
 
     const fetchCollections = async () => {
         try {
@@ -66,25 +90,26 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             const data = await response.json();
             if (data.statusCode === 200) {
                 console.log("Response:", data.data);
-                setCollection(data.data.map((collection) => ({
+                setCollections(data.data.map((collection) => ({
                     id: collection.id,
                     name: collection.collectionName,
                 })));
+                console.log(collections)
             }
         } catch (error) {
             console.error("Error fetching collections:", error);
         }
-    }
+    };
+
     const handleDelete = () => {
         console.log("Xóa bài thơ:");
     };
 
     const handleMove = async (collectionId, poemId) => {
         try {
-
             const response = await axios.post(
                 `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collectionId}/${poemId}`,
-                {}, // Body request, để trống nếu không cần
+                {},
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
@@ -97,29 +122,25 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             message.success("Cập nhật tập thơ thành công!");
         } catch (error) {
             console.error("Error:", error.response?.data || error.errorMessage);
-             message.error(error.response?.data.errorMessage);
+            message.error(error.response?.data.errorMessage);
         }
 
         setReloadTrigger((prev) => !prev);
         console.log("Chuyển bài thơ:", collectionId, poemId);
     };
 
-
-    //----------------------------------------------------------------------------------------//
     function formatDate(isoString) {
         const date = new Date(isoString);
-        const day = String(date.getUTCDate()).padStart(2, '0'); // Lấy ngày (DD)
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0'); // Lấy tháng (MM)
-        const year = date.getUTCFullYear(); // Lấy năm (YYYY)
-
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
         return `${day}-${month}-${year}`;
     }
 
     const handleMouseEnter = (poemId) => {
         console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
         fetchCollections();
-        console.log("aaaa" + collections)
-        // Giả sử gọi API để lấy danh sách bộ sưu tập
+        console.log("aaaa" + collections);
         setMoveMenuItems(
             collections.map((collection) => (
                 <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
@@ -134,7 +155,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             <Menu.Item key="delete" onClick={handleDelete}>
                 ❌ Xóa bài thơ
             </Menu.Item>
-            {/* Sử dụng hàm callback để tránh gọi ngay lập tức */}
             <Menu.SubMenu key="move" title="🔄 Chuyển bài thơ" onTitleMouseEnter={() => handleMouseEnter(poemId)}>
                 {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
             </Menu.SubMenu>
@@ -150,9 +170,70 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     };
 
 
+    const handleLike = async (postId) => {
+
+        const isCurrentlyLiked = likedPosts[postId];
+        const method = isCurrentlyLiked ? "DELETE" : "POST";
+
+        try {
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/likes/v1/${postId}`,
+                { method, headers }
+            );
+
+            if (response.ok) {
+                setLikedPosts(prev => ({
+                    ...prev,
+                    [postId]: !isCurrentlyLiked
+                }));
+
+
+                setPoem(prevData => prevData.map(item =>
+                    item.id === postId ? {
+                        ...item,
+                        likeCount: isCurrentlyLiked ? item.likeCount - 1 : item.likeCount + 1
+                    } : item
+                ));
+            }
+        } catch (error) {
+            console.error("Error updating like:", error);
+        }
+    };
+
+
+    const handleBookmark = async (id) => {
+
+        const endpoint = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
+
+        const currentState = bookmarkedPosts[id];
+
+        try {
+            const response = await fetch(endpoint, {
+                method: currentState ? "DELETE" : "POST",
+                headers
+            });
+
+            if (response.ok) {
+                setBookmarkedPosts(prev => ({
+                    ...prev,
+                    [id]: !currentState
+                }));
+            }
+        } catch (error) {
+            console.error("Error updating bookmark:", error);
+        }
+    };
+
+    if (isLoading) {
+        return (
+            <div style={{ textAlign: "center", padding: "50px 0" }}>
+                <Spin size="large" tip="Đang tải dữ liệu..." />
+            </div>
+        );
+    }
+
     return (
         <div>
-
             {selectedCollection === 0 ? (
                 <div>
                     <div
@@ -161,44 +242,75 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                     >
                         <FiArrowLeft /> Quay về
                     </div>
-                    <div style={{ width: '80%', margin: '0 auto', padding: '5px' }}>
+                    <div style={{ margin: '0 auto', padding: '5px' }}>
                         <div
                             key={collection.id}
                             style={{
                                 display: 'flex',
-                                paddingRight: "2%",
-                                marginBottom: "2%",
+                                padding: "16px",
+                                marginBottom: "20px",
                                 position: 'relative',
-                                gap: '2%'
+                                gap: '16px',
+                                border: '1px solid #ddd',
+                                borderRadius: '12px',
+                                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                                backgroundColor: '#fff',
                             }}
                         >
-                            <div style={{ flex: 1, width: "260px", height: "146px" }}>
+                            <div
+                                style={{
+                                    flex: 1,
+                                    width: "260px",
+                                    height: "146px",
+                                    display: "flex",
+                                    justifyContent: "center", // căn giữa theo chiều ngang
+                                    alignItems: "center",     // căn giữa theo chiều dọc
+                                }}
+                            >
                                 <img
-                                    style={{ width: "260px", height: "146px", objectFit: "cover" }}
                                     src={collectionDetails.collectionImage ? collectionDetails.collectionImage : "./collection1.png"}
-                                    alt="Ảnh cá nhân"
+                                    alt="Ảnh bộ sưu tập"
+                                    style={{
+                                        maxHeight: "100%",
+                                        objectFit: "cover",
+                                        borderRadius: "8px",
+                                    }}
                                 />
                             </div>
-                            <div style={{ flex: 4, position: 'relative' }}>
+
+                            <div style={{ flex: 4, position: 'relative', paddingBottom: '50px' /* thêm padding dưới */ }}>
                                 <div>
-                                    <p style={{ marginBottom: '1%', fontWeight: 'bold' }}>
-                                        {collectionDetails.collectionName}
+                                    <p style={{ marginBottom: '2%', fontWeight: 'bold', fontSize: '1.2rem', marginTop: "0" }}>
+                                        Bộ sưu tập: {collectionDetails.collectionName}
                                     </p>
-                                    <p style={{
-                                        marginRight: '2%',
-                                        marginBottom: '1%',
-                                        marginTop: 0,
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        display: "-webkit-box",
-                                        WebkitLineClamp: 2,
-                                        WebkitBoxOrient: "vertical",
-                                        maxWidth: "100%",
-                                    }}>
-                                        {collectionDetails.collectionDescription}
+                                    <p
+                                        style={{
+                                            marginRight: '2%',
+                                            marginBottom: '1%',
+                                            marginTop: '1%',
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            display: "-webkit-box",
+                                            WebkitLineClamp: 2,
+                                            WebkitBoxOrient: "vertical",
+                                            maxWidth: "100%",
+                                            fontSize: '1rem',
+                                            color: "#555"
+                                        }}
+                                    >
+                                        Mô tả: {collectionDetails.collectionDescription}
                                     </p>
                                 </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "20px", position: 'absolute', bottom: 10, width: '100%' }}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: "20px",
+                                        position: 'absolute',
+                                        bottom: 10,
+                                        width: '100%',
+                                    }}
+                                >
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                         <LuBook />
                                         <span>{collectionDetails.totalChapter}</span>
@@ -209,91 +321,32 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                                     </div>
                                 </div>
                             </div>
-                            <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer' }}>
+
+                            <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer', fontSize: '1rem' }}>
                                 Chỉnh sửa <span><MdEdit /></span>
                             </div>
                         </div>
                     </div>
 
-                    <div style={{ display: "flex", gap: "20px" }}>
-                        {/* Phần danh sách bài thơ (BÊN TRÁI) */}
-                        <div style={{ flex: 2, display: "flex", flexDirection: "column", gap: "15px" }}>
-                            {poems.map((poem) => (
-                                <div key={poem.id} style={{ flex: "1" }}>
-                                    <div style={{
-                                        border: "1px solid #ddd",
-                                        borderRadius: "10px",
-                                        padding: "15px",
-                                        backgroundColor: "#fff",
-                                        fontFamily: "Arial, sans-serif",
-                                        boxShadow: "0px 2px 5px rgba(0, 0, 0, 0.1)"
-                                    }}>
-                                        {/* Header */}
-                                        <div style={{ display: "flex", alignItems: "center", marginBottom: "10px" }}>
-                                            <img
-                                                src={avatar || "./default-avatar.png"}
-                                                alt="Avatar"
-                                                style={{ width: "40px", height: "40px", borderRadius: "50%", marginRight: "10px" }}
-                                            />
-                                            <div>
-                                                <strong>{poem.user.displayName} -</strong> <span style={{ color: "#777" }}> {formatDate(poem.createdTime)}</span>
-                                            </div>
-                                            <Dropdown overlay={menu(poem.id)} trigger={["click"]}>
-                                                <div style={{ marginLeft: "auto", cursor: "pointer" }} onClick={fetchCollections}>
-                                                    <IoIosMore size={20} />
-                                                </div>
-                                            </Dropdown>
-                                        </div>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
+                        {poems.map((poem) => (
 
-                                        {/* Content */}
-                                        <h3 style={{ margin: "5px 0" }}>{poem.title}</h3>
-                                        <p style={{ color: "#555", fontSize: "14px" }}>
-                                            {poem.description}
-                                        </p>
+                            <PoemCard
+                                key={poem.id} 
+                                item={poem}
+                                liked={likedPosts[poem.id]}
+                                bookmarked={bookmarkedPosts[poem.id]}
+                                onBookmark={handleBookmark}
+                                onLike={handleLike}
+                                onHover={setIsHovered}
+                                collections={collections}
+                                handleMove={handleMove}
+                            />
 
-                                        <blockquote style={{
-                                            fontStyle: "italic",
-                                            borderRadius: "5px",
-                                            paddingLeft: '10px',
-                                            color: "#444",
-                                            fontSize: "14px",
-                                            maxWidth: "100%",
-                                            whiteSpace: "pre-line", // Giữ dấu xuống dòng
-                                            lineHeight: "1.6",
-                                            display: "-webkit-box",
-                                            WebkitBoxOrient: "vertical",
-                                            WebkitLineClamp: 4, // Giới hạn 4 dòng
-                                            overflow: "hidden",
-                                            textOverflow: "ellipsis"
-                                        }}>
-                                            {poem.content}
-                                        </blockquote>
+                        ))}
+                    </div>
 
-                                        <p style={{ fontWeight: "bold", color: "#007bff", fontSize: "14px" }}>Tập thơ: {collection.name}</p>
-
-                                        {/* Footer */}
-                                        <div style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "space-between",
-                                            marginTop: "10px",
-                                            fontSize: "14px",
-                                            color: "#777"
-                                        }}>
-                                            <div style={{ display: "flex", gap: "15px" }}>
-                                                <span><FiThumbsUp /> 3.150</span>
-                                                <span><FaRegComment /> 1.253</span>
-                                                <span><FiBookmark /> 675</span>
-                                            </div>
-                                            <a href="#" style={{ color: "#007bff", textDecoration: "none" }}>Xem bài thơ &gt;</a>
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-
-                        {/* Phần thống kê (BÊN PHẢI) */}
-                        <div style={{ flex: 1, minWidth: "300px" }}>
+                    {/* <div style={{ flex: 1, minWidth: "300px" }}>
                             <div style={{
                                 backgroundColor: "white",
                                 borderRadius: "10px",
@@ -305,13 +358,11 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                                 <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
                                     <li>Tổng bài viết: <span>{collectionDetails.totalChapter}</span></li>
                                     <li>Tổng audio : <span>{collectionDetails.totalRecord}</span></li>
-
                                     <li>Ngày phát hành: <span>{formatDate(collectionDetails.createdTime)}</span></li>
                                     <li>Cập nhật gần nhất: <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
                                 </ul>
                             </div>
-                        </div>
-                    </div>
+                        </div> */}
                 </div>
             ) : (
                 <div style={{ padding: "0px" }}>
@@ -320,7 +371,6 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             )}
         </div>
     );
-
 };
 
 export default YourCollectionDetail;

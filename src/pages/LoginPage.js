@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { jwtDecode } from 'jwt-decode';
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ email: "", password: "" });
@@ -55,6 +56,9 @@ const LoginPage = () => {
                 localStorage.setItem("role", JSON.stringify(role));
 
                 console.log("Login successful:", response.data.message);
+
+                const decodedToken = jwtDecode(accessToken);
+                localStorage.setItem("username", decodedToken.UserName);
 
                 if (role.includes("USER")) {
                     window.location.href = "/";
