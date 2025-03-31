@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Headeruser from "../../components/Headeruser";
 import { HiUsers } from "react-icons/hi2";
 import { FaUserPlus } from "react-icons/fa6";
-import { Button, ConfigProvider, message, Space } from "antd";
+import { Button, ConfigProvider, message, Modal, Space } from "antd";
 import UserCoverEditModal from "./Form/UserCoverEditModal";
 import NavigationEditModal from "./Components/NavigationEditModal";
 import AchievementEditModal from "./Components/AchievementEditModal ";
@@ -72,6 +72,8 @@ const DesignPage = () => {
     const [isHoverStatisticTitle, setIsHoverStatisticTitle] = useState(false);
     const [isHoverStatisticContent, setIsHoverStatisticContent] = useState(false);
     const [isHoverThemeEdit, setIsHoverThemeEdit] = useState(false);
+    const [showAddTemplateModal, setShowAddTemplateModal] = useState(false);
+    const [newTemplateName, setNewTemplateName] = useState("");
 
     const [originalNav, setOriginalNav] = useState(inUseNav);
     const [originalNavBorder, setOriginalNavBorder] = useState(inUseNavBorder);
@@ -239,36 +241,84 @@ const DesignPage = () => {
         }
     };
 
+    const handleAddTemplate = async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            console.error("Access token không tồn tại");
+            return;
+        }
+
+        if (!newTemplateName.trim()) {
+            message.error("Vui lòng nhập tên bản mẫu!");
+            return;
+        }
+
+        try {
+            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/themes/v1/user", {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: newTemplateName,
+                    isInUse: false,
+                }),
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+                message.success("Tạo bản mẫu thành công!");
+                setShowAddTemplateModal(false);
+                setNewTemplateName("");
+                window.location.reload();
+            } else {
+                console.error("Lỗi từ API:", data);
+                message.error("Tạo bản mẫu thất bại!");
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+            message.error("Đã xảy ra lỗi, vui lòng thử lại!");
+        }
+    };
+
     const handleDeleteTemplate = async () => {
         if (!myInUseTemplate) {
             console.error("Không tìm thấy template để xóa");
             return;
         }
 
-        const confirmDelete = window.confirm(`Bạn có chắc muốn xóa bản mẫu "${myInUseTemplate.id}" không?`);
-        if (!confirmDelete) return;
+        Modal.confirm({
+            title: `Bạn có chắc muốn xóa bản mẫu "${myInUseTemplate.name}" không?`,
+            okText: "Xóa",
+            cancelText: "Hủy",
+            onOk: async () => {
+                try {
+                    const response = await fetch(
+                        `https://api-poemtown-staging.nodfeather.win/api/themes/v1/user/${myInUseTemplate.id}`,
+                        {
+                            method: "DELETE",
+                            headers: {
+                                Authorization: `Bearer ${accessToken}`,
+                                "Content-Type": "application/json",
+                            },
+                        }
+                    );
 
-        try {
-            const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/themes/v1/user/${myInUseTemplate.id}`, {
-                method: "DELETE",
-                headers: {
-                    "Authorization": `Bearer ${accessToken}`,
-                    "Content-Type": "application/json",
-                },
-            });
-
-            const data = await response.json();
-            if (response.ok) {
-                message.success("Xóa bản mẫu thành công!");
-                window.location.reload();
-            } else {
-                console.error("Lỗi từ API:", data);
-                message.error("Xóa bản mẫu thất bại!");
-            }
-        } catch (error) {
-            console.error("Lỗi khi gọi API:", error);
-            message.error("Đã xảy ra lỗi, vui lòng thử lại!");
-        }
+                    const data = await response.json();
+                    if (response.ok) {
+                        message.success("Xóa bản mẫu thành công!");
+                        window.location.reload();
+                    } else {
+                        console.error("Lỗi từ API:", data);
+                        message.error("Xóa bản mẫu thất bại!");
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi gọi API:", error);
+                    message.error("Đã xảy ra lỗi, vui lòng thử lại!");
+                }
+            },
+        });
     };
 
     const handleModalHeader = async () => {
@@ -524,6 +574,7 @@ const DesignPage = () => {
                                     borderRadius: "5px",
                                     cursor: "pointer",
                                 }}
+                                onClick={() => { setShowAddTemplateModal(true) }}
                             >
                                 +
                             </button>
@@ -801,17 +852,50 @@ const DesignPage = () => {
                     setInUseStatisticBorder((prev) => ({ ...prev, colorCode: color }))
                 }
             />
-             <ConfigProvider
+            <ConfigProvider
                 button={{
                     className: styles.linearGradientButton,
                 }}
             >
                 <Space style={{ position: "fixed", right: 0, bottom: 60, zIndex: 3, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}>
                     <Button type="primary" size="large" iconPosition="end" icon={<DoubleRightOutlined />} style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }} onClick={() => { navigate('/userpage') }}>
-                        Về trang của bạn 
+                        Về trang của bạn
                     </Button>
                 </Space>
             </ConfigProvider>
+            {showAddTemplateModal && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: "50%",
+                        left: "50%",
+                        backgroundColor: "white",
+                        transform: "translate(-50%, -50%)",
+                        padding: "20px",
+                        borderRadius: "10px",
+                        boxShadow: "0 0 10px rgba(0,0,0,0.6)",
+                        zIndex: 1000,
+                        width: "300px"
+                    }}
+                >
+                    <h3>Tạo bản mẫu mới</h3>
+                    <input
+                        type="text"
+                        value={newTemplateName}
+                        onChange={(e) => setNewTemplateName(e.target.value)}
+                        placeholder="Nhập tên bản mẫu"
+                        style={{ display: "block", padding: "10px", width: "250px", margin: "0 auto 10px auto", }}
+                    />
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                        <button onClick={() => setShowAddTemplateModal(false)} style={{ padding: "10px", borderRadius: "5px" }}>
+                            Hủy
+                        </button>
+                        <button onClick={handleAddTemplate} style={{ padding: "10px", borderRadius: "5px", backgroundColor: "#6aad5e", color: "white" }}>
+                            Lưu
+                        </button>
+                    </div>
+                </div>
+            )}
         </div>
     )
 }

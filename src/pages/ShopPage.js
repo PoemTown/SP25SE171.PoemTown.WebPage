@@ -3,15 +3,16 @@ import Headerdefault from "../components/Headerdefault";
 import Headeruser from "../components/Headeruser";
 import { Button, Pagination } from "antd";
 import { useNavigate } from "react-router-dom";
+import { FaCheck } from "react-icons/fa";
 
 const Shop = () => {
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [templates, setTemplates] = useState([]);
-    const [selectedType, setSelectedType] = useState(""); 
+    const [selectedType, setSelectedType] = useState("");
     const [selectedSort, setSelectedSort] = useState("2");
     const [pageNumber, setPageNumber] = useState(1);
-    const [totalItems, setTotalItems] = useState(0); 
+    const [totalItems, setTotalItems] = useState(0);
     const pageSize = 16;
     const accessToken = localStorage.getItem("accessToken");
 
@@ -22,7 +23,7 @@ const Shop = () => {
 
     useEffect(() => {
         fetchData();
-    },  [selectedType, selectedSort, pageNumber])
+    }, [selectedType, selectedSort, pageNumber])
 
     const fetchData = async () => {
         const requestHeaders = {
@@ -33,12 +34,13 @@ const Shop = () => {
 
         const response = await fetch(apiUrl, { headers: requestHeaders });
         const data = await response.json();
+        console.log(data)
         setTemplates(data.data || null);
         setTotalItems(data.totalRecords || 0);
     }
 
     const handleViewDetail = (id) => {
-        navigate(`/shop/${id}`);  
+        navigate(`/shop/${id}`);
     };
 
     const templateType = {
@@ -87,15 +89,23 @@ const Shop = () => {
                 {templates.map((item) => (
                     <div style={styles.templateCard} key={item.id}>
                         <div style={styles.templateCardHeader}>
-                            <h3 style={{margin: "0 0 20px 0"}}>{item.templateName}</h3>
+                            <h3 style={{ margin: "0 0 20px 0" }}>{item.templateName}</h3>
                         </div>
                         <div style={styles.templateCardImage}>
                             <img style={styles.templateImage} alt="template default" src={item.coverImage ? item.coverImage : "./template_default.png"} />
                         </div>
                         <div style={styles.templateCardFooter}>
-                            <p style={styles.templateType}>{templateType[item.type] || "Không xác định"}</p>
-                            <p><span>Tag: </span><span style={{color: "#666"}}>#{item.tagName}</span></p>
-                            <p><span>Trạng thái: </span><span style={{color: item.status === 1 ? "#00dd66" : "#ff0000", fontWeight: "bold" }}>{templateStatus[item.status]}</span></p>
+                            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
+                                <p style={styles.templateType}>{templateType[item.type] || "Không xác định"}</p>
+                                {item.isBought ? (
+                                    <p style={styles.isBought}>
+                                        <span>Đã mua</span>
+                                        <FaCheck />
+                                    </p>
+                                ) : <></>}
+                            </div>
+                            <p><span>Tag: </span><span style={{ color: "#666" }}>#{item.tagName}</span></p>
+                            <p><span>Trạng thái: </span><span style={{ color: item.status === 1 ? "#00dd66" : "#ff0000", fontWeight: "bold" }}>{templateStatus[item.status]}</span></p>
                             <p><span>Giá: </span><span style={{ color: "#0066ff" }}>0</span></p>
                         </div>
                         <Button style={styles.buttonViewDetail} onClick={() => handleViewDetail(item.id)}>Xem chi tiết</Button>
@@ -141,22 +151,34 @@ const styles = {
         borderRadius: "5px",
         border: "1px solid #ccc",
     },
-
+    isBought: {
+        display: "flex",
+        alignItems: "center",
+        gap: "6px",
+        background: "none",
+        border: "none",
+        cursor: "pointer",
+        color: "#5cb85c"
+    },
     templateContainer: {
         display: "grid",
-        alignItems: "center",
-        gridTemplateColumns: "1fr 1fr 1fr 1fr",
-        justifyContent: "space-evenly",
+        gridTemplateColumns: "repeat(4, 1fr)",
+        gridAutoRows: "1fr", // ensures that rows have equal height
         gap: "40px",
         padding: "20px 100px",
         maxWidth: "1600px",
-        margin: "0 auto"
+        margin: "0 auto",
     },
     templateCard: {
-        padding: "20px 20px",
+        boxSizing: "border-box",
+        display: "flex",          // enable flex layout
+        flexDirection: "column",  // arrange children vertically
+        justifyContent: "space-between", // distribute space if needed
+        padding: "20px",
         border: "1px solid #ccc",
         boxShadow: "0px 3px 6px 0px #0000004D",
         borderRadius: "10px",
+        height: "100%",           // let card fill the grid row height
     },
     templateCardHeader: {
         textAlign: "center"
@@ -172,7 +194,7 @@ const styles = {
         objectFit: "cover",
         objectPosition: "center",
     },
-    
+
     templateType: {
         display: "inline",
         padding: "5px 10px",

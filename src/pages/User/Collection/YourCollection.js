@@ -13,11 +13,10 @@ import { CiBookmark } from "react-icons/ci";
 import { MoreOutlined } from "@ant-design/icons";
 import YourCollectionDetail from "./YourCollectionDetail";
 
-const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
+const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar, isMine, displayName, username }) => {
   const [collections, setCollection] = useState([]);
   const [statistic, setStatistic] = useState(null);
   const [sessionData, setSessionData] = useState({});
-  const [isCreatingPoem, setIsCreatingPoem] = useState(false);
   const [selectedCollection, setSelectedCollection] = useState(null);
   const [reloadTrigger, setReloadTrigger] = useState(false);
   const accessToken = localStorage.getItem("accessToken");
@@ -51,61 +50,96 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
   };
 
   useEffect(() => {
+    console.log("isMine", isMine)
     const fetchCollections = async () => {
-      try {
-        const sessionValues = getSessionData(keys);
-        setSessionData(sessionValues);
+      if (isMine != null) {
+        try {
+          const sessionValues = getSessionData(keys);
+          setSessionData(sessionValues);
 
-        setIsLoading(true);
-        // Gọi API với phân trang
-        const [collectionsResponse, statisticResponse] = await Promise.all([
-          fetch(
-            `https://api-poemtown-staging.nodfeather.win/api/collections/v1?pageNumber=${currentPage}&pageSize=${pageSize}`,
-            {
-              headers: { Authorization: `Bearer ${accessToken}` },
+          setIsLoading(true);
+          // Gọi API với phân trang
+          if (isMine === true) {
+            const [collectionsResponse, statisticResponse] = await Promise.all([
+              fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/collections/v1?pageNumber=${currentPage}&pageSize=${pageSize}`,
+                {
+                  headers: { Authorization: `Bearer ${accessToken}` },
+                }
+              ),
+              fetch("https://api-poemtown-staging.nodfeather.win/api/statistics/v1", {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }),
+            ]);
+            const [collectionsData, statisticData] = await Promise.all([
+              collectionsResponse.json(),
+              statisticResponse.json(),
+            ]);
+            if (collectionsData.statusCode === 200) {
+              const bookmarkedIds = new Set();
+              const formattedData = collectionsData.data.map((collection) => {
+                if (collection.targetMark) bookmarkedIds.add(collection.id);
+                return {
+                  id: collection.id,
+                  name: collection.collectionName,
+                  description: collection.collectionDescription,
+                  image: collection.collectionImage,
+                  totalPoem: collection.totalChapter,
+                  totalRecord: collection.totalRecord,
+                  displayName: collection.user.displayName,
+                  rowVersion: collection.rowVersion,
+                };
+              });
+              setCollection(formattedData);
+              setBookmarkedCollections(bookmarkedIds);
+              // Nếu API trả về totalPages, tính tổng số record
+              if (collectionsData.totalPages) {
+                setTotalRecords(collectionsData.totalPages * pageSize);
+              }
             }
-          ),
-          fetch("https://api-poemtown-staging.nodfeather.win/api/statistics/v1", {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }),
-        ]);
-        const [collectionsData, statisticData] = await Promise.all([
-          collectionsResponse.json(),
-          statisticResponse.json(),
-        ]);
-        if (collectionsData.statusCode === 200) {
-          const bookmarkedIds = new Set();
-          const formattedData = collectionsData.data.map((collection) => {
-            if (collection.targetMark) bookmarkedIds.add(collection.id);
-            return {
-              id: collection.id,
-              name: collection.collectionName,
-              description: collection.collectionDescription,
-              image: collection.collectionImage,
-              totalPoem: collection.totalChapter,
-              totalRecord: collection.totalRecord,
-              displayName: collection.user.displayName,
-              rowVersion: collection.rowVersion,
-            };
-          });
-          setCollection(formattedData);
-          setBookmarkedCollections(bookmarkedIds);
-          // Nếu API trả về totalPages, tính tổng số record
-          if (collectionsData.totalPages) {
-            setTotalRecords(collectionsData.totalPages * pageSize);
+            if (statisticData.statusCode === 200) {
+              setStatistic(statisticData.data);
+            }
+          } else if (isMine === false) {
+            const collectionsResponse = await fetch(`https://api-poemtown-staging.nodfeather.win/api/collections/v1/user/${username}?pageNumber=${currentPage}&pageSize=${pageSize}`,
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }
+            );
+            const collectionsData = await collectionsResponse.json();
+            if (collectionsData.statusCode === 200) {
+              console.log(collectionsData)
+              const bookmarkedIds = new Set();
+              const formattedData = collectionsData.data.map((collection) => {
+                if (collection.targetMark) bookmarkedIds.add(collection.id);
+                return {
+                  id: collection.id,
+                  name: collection.collectionName,
+                  description: collection.collectionDescription,
+                  image: collection.collectionImage,
+                  totalPoem: collection.totalChapter,
+                  totalRecord: collection.totalRecord,
+                  displayName: collection.user.displayName,
+                  rowVersion: collection.rowVersion,
+                };
+              });
+              setCollection(formattedData);
+              setBookmarkedCollections(bookmarkedIds);
+              // Nếu API trả về totalPages, tính tổng số record
+              if (collectionsData.totalPages) {
+                setTotalRecords(collectionsData.totalPages * pageSize);
+              }
+            }
           }
+        } catch (error) {
+          console.error("Error fetching collections:", error);
+        } finally {
+          setIsLoading(false);
         }
-        if (statisticData.statusCode === 200) {
-          setStatistic(statisticData.data);
-        }
-      } catch (error) {
-        console.error("Error fetching collections:", error);
-      } finally {
-        setIsLoading(false);
       }
     };
     fetchCollections();
-  }, [reloadTrigger, currentPage, pageSize]);
+  }, [reloadTrigger, currentPage, pageSize, isMine]);
 
   const handleBookmark = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -141,7 +175,7 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
   };
 
   const handleCreate = () => {
-    setSelectedCollection(1);
+    setIsCreatingCollection(true);
   };
 
   const handleDelete = async (id, rowVersion) => {
@@ -170,7 +204,7 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
   };
 
   const handleBack = () => {
-    setSelectedCollection(null);
+    setIsCreatingCollection(false);
     setReloadTrigger((prev) => !prev);
   };
 
@@ -193,31 +227,33 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
   };
 
   return (
-    <div style={{ maxWidth: "1200px", minHeight: "650px" }}>
+    <div style={{ maxWidth: "1200px", minHeight: "650px", margin: "0 auto" }}>
       {isLoading ? (
         <div style={{ textAlign: "center", padding: "50px 0" }}>
           <Spin size="large" tip="Đang tải dữ liệu..." />
         </div>
       ) : (
         <>
-          {selectedCollection === null ? (
+          {isCreatingCollection === false ? (
             <>
-              <button
-                onClick={handleCreate}
-                style={{
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  padding: "12px 20px",
-                  borderRadius: "5px",
-                  border: "none",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  display: "block",
-                  marginBottom: "20px",
-                }}
-              >
-                BỘ SƯU TẬP MỚI
-              </button>
+              {isMine === true ? (
+                <button
+                  onClick={handleCreate}
+                  style={{
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    padding: "12px 20px",
+                    borderRadius: "5px",
+                    border: "none",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    display: "block",
+                    marginBottom: "20px",
+                  }}
+                >
+                  BỘ SƯU TẬP MỚI
+                </button>
+              ) : <></>}
 
               <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
                 <div style={{ flex: 7 }}>
@@ -229,6 +265,7 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
                         border: "1px solid #ccc",
                         display: "flex",
                         marginBottom: "2%",
+                        background: "#fff",
                         boxShadow: "0px 3px 6px 0px #0000004D",
                       }}
                     >
@@ -304,13 +341,13 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
                             overflow: "hidden",
-                            textOverflow: "ellipsis",  
+                            textOverflow: "ellipsis",
                             whiteSpace: "normal",  //  Cho phép xuống dòng
                             wordBreak: "break-word",  //  Bắt buộc nếu có từ dài
                           }}
                         >
 
-                          {collection.description} 
+                          {collection.description}
                         </p>
 
 
@@ -338,7 +375,7 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
               </div>
 
               {/* Phân trang */}
-              <div style={{ textAlign: "center", marginTop: "20px" ,display:"flex", justifyContent:"flex-end"}}>
+              <div style={{ textAlign: "center", marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
                 <Pagination
                   current={currentPage}
                   pageSize={pageSize}
@@ -349,16 +386,17 @@ const YourCollection = ({ avatar, statisticBorder, achievementBorder }) => {
                 />
               </div>
             </>
-          ) : selectedCollection === 1 ? (
+          ) : isCreatingCollection === true ? (
             <div style={{ padding: "0px" }}>
-              <CreateCollection handleBack={handleBack} />
+              <CreateCollection handleBack={handleBack} setIsCreatingCollection={setIsCreatingCollection} />
             </div>
           ) : (
-            <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} avatar={avatar} />
+            <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} avatar={avatar}  />
           )}
         </>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
 

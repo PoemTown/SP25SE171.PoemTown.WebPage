@@ -19,7 +19,6 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
 
   useEffect(() => {
-    console.log("isMine", isMine)
     const fetchPoems = async () => {
       const accessToken = localStorage.getItem("accessToken");
       if (isMine !== null) {
@@ -35,7 +34,6 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             if (data.statusCode === 200) {
               const likedPoemIds = new Set();
               const bookmarkedPoemIds = new Set();
-              console.log("from user", data)
               const poemsWithId = data.data.map((poem) => {
                 if (poem.like) {
                   likedPoemIds.add(poem.id);
@@ -54,18 +52,43 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                   createdTime: poem.createdTime,
                 };
               });
-              console.log(poemsWithId)
               setPoems(poemsWithId);
               setLikedPoems(likedPoemIds);
               setBookmarkedPoems(bookmarkedPoemIds);
             }
           } else {
             const response = await fetch(
-              `https://api-poemtown-staging.nodfeather.win/api/poems/v1/user/${username}`, {
-              headers: { Authorization: `Bearer ${accessToken}` },
-            }
+              `https://api-poemtown-staging.nodfeather.win/api/poems/v1/user/${username}`,
+              {
+                headers: { Authorization: `Bearer ${accessToken}` },
+              }
             );
-
+            const data = await response.json();
+            if (data.statusCode === 200) {
+              const likedPoemIds = new Set();
+              const bookmarkedPoemIds = new Set();
+              const poemsWithId = data.data.map((poem) => {
+                if (poem.like) {
+                  likedPoemIds.add(poem.id);
+                }
+                if (poem.targetMark) {
+                  bookmarkedPoemIds.add(poem.id);
+                }
+                return {
+                  id: poem.id,
+                  title: poem.title,
+                  description: poem.description,
+                  content: poem.content,
+                  poemImage: poem.poemImage,
+                  likeCount: poem.likeCount,
+                  commentCount: poem.commentCount,
+                  createdTime: poem.createdTime,
+                };
+              });
+              setPoems(poemsWithId);
+              setLikedPoems(likedPoemIds);
+              setBookmarkedPoems(bookmarkedPoemIds);
+            }
           }
         } catch (error) {
           console.error("Error fetching poems:", error);

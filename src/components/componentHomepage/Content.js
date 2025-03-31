@@ -427,7 +427,7 @@ const Content = ({ activeTab }) => {
               Top các tác giả được yêu thích 👑
             </div>
             <ul style={styles.topList}>
-              {userLeaderBoard && userLeaderBoard.topUsers.slice(0, 3).map((user) => (
+              {userLeaderBoard && userLeaderBoard.topUsers?.slice(0, 3).map((user) => (
                 <div
                   key={user.id}
                   style={{
@@ -473,7 +473,7 @@ const Content = ({ activeTab }) => {
               Top các bài thơ được yêu thích 📖
             </div>
             <ul style={styles.topList}>
-              {poemLeaderBoard && poemLeaderBoard.topPoems.slice(0, 3).map((poem) => (
+              {poemLeaderBoard && poemLeaderBoard.topPoems?.slice(0, 3).map((poem) => (
                 <div style={{ marginBottom: "20px" }}>
                   <li key={poem.id} style={styles.topItem}>
                     <span style={{ ...styles.topItemRank, color: getRankColor(poem.rank) }}>

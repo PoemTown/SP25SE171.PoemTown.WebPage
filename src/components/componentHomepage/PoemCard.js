@@ -176,7 +176,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 
 const styles = {
     poemImageContainer: {
-        width: "168x",
+        width: "168px",
         height: "268px",
         border: "1px solid #000",
         marginLeft: "20px"

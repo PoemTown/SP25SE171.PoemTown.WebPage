@@ -2,18 +2,20 @@ import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import Headeruser from "../components/Headeruser";
 import Headerdefault from "../components/Headerdefault";
-import { Button } from "antd";
+import { Button, message } from "antd";
 import { HiUsers } from "react-icons/hi2";
-import { FaUserPlus } from "react-icons/fa";
+import { FaCheck, FaUserPlus } from "react-icons/fa";
 
 const TemplateDetail = () => {
     const { masterTemplateId } = useParams();
     const [template, setTemplate] = useState(null);
+    const [templates, setTemplates] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeTab, setActiveTab] = useState("Thơ của bạn");
     const [hover, setHover] = useState(false);
     const [hoverBuy, setHoverBuy] = useState(false);
     const [imagesLoaded, setImagesLoaded] = useState(false);
+    const [isBought, setIsBought] = useState(false);
     // For header (type 1)
     const [headerbackground, setHeaderBackground] = useState(null);
     const [headerColorCode, setHeaderColorCode] = useState("#000");
@@ -65,6 +67,25 @@ const TemplateDetail = () => {
     useEffect(() => {
         fetchTemplateDetail();
     }, []);
+
+    useEffect(() => {
+        fetchData();
+    }, [])
+
+    const fetchData = async () => {
+        const requestHeaders = {
+            "Content-Type": "application/json",
+            ...(token && { Authorization: `Bearer ${token}` })
+        };
+        const apiUrl = `https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates?pageSize=250&allowExceedPageSize=true`;
+
+        const response = await fetch(apiUrl, { headers: requestHeaders });
+        const data = await response.json();
+        const foundOne = data.data.find((item) => item.id === masterTemplateId);
+        setIsBought(foundOne.isBought);
+        setTemplates(data.data || null);
+    }
+
 
     const fetchTemplateDetail = async () => {
         const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/${masterTemplateId}?pageSize=250&allowExceedPageSize=true`);
@@ -177,7 +198,7 @@ const TemplateDetail = () => {
         });
         console.log(response)
         const data = await response.json();
-        alert(data.message);
+        message.success(data.message);
     }
 
     const buttonStyle = {
@@ -365,14 +386,23 @@ const TemplateDetail = () => {
                         onMouseLeave={() => setHover(false)}
                         onClick={() => navigate(-1)}>Trở về
                     </button>
-                    <button
-                        style={buyButtonStyle}
-                        onMouseEnter={() => setHoverBuy(true)}
-                        onMouseLeave={() => setHoverBuy(false)}
-                        onClick={handleBuyTemplate}
-                    >
-                        Mua bản thiết kế này
-                    </button>
+                    {isBought ?
+                        <button style={buyButtonStyle}>
+                            <div style={{display: "flex", alignItems: "center", gap: "6px"}}>
+                                <span>Đã mua</span>
+                                <FaCheck />
+                            </div>
+                        </button>
+                        :
+                        <button
+                            style={buyButtonStyle}
+                            onMouseEnter={() => setHoverBuy(true)}
+                            onMouseLeave={() => setHoverBuy(false)}
+                            onClick={handleBuyTemplate}
+                        >
+                            Mua bản thiết kế này
+                        </button>
+                    }
                 </div>
                 <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "20px" }}>
                     <div

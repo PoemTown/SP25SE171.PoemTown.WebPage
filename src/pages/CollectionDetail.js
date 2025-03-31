@@ -1,46 +1,44 @@
-import React, { useEffect, useState } from "react";
-import { Button, Dropdown, Menu, message, Modal, Spin } from 'antd';
-import { FaRegUser } from "react-icons/fa6";
-import { LuBook } from "react-icons/lu";
-import { MdEdit } from "react-icons/md";
-import { IoIosMore } from "react-icons/io";
-import { MdOutlineKeyboardVoice } from "react-icons/md";
-import { FiThumbsUp, FiBookmark, FiArrowLeft } from "react-icons/fi";
-import { FaRegComment } from "react-icons/fa";
-import CreateCollection from "./CreateCollection";
+import { message, Spin } from "antd";
 import axios from "axios";
-import PoemCard from "../../../components/componentHomepage/PoemCard";
+import { useEffect, useState } from "react";
+import { FiArrowLeft } from "react-icons/fi";
+import { LuBook } from "react-icons/lu";
+import { MdEdit, MdOutlineKeyboardVoice } from "react-icons/md";
+import { useNavigate, useParams } from "react-router-dom";
+import PoemCard from "../components/componentHomepage/PoemCard";
+import Headeruser from "../components/Headeruser";
+import Headerdefault from "../components/Headerdefault";
 
-const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
-    const [poems, setPoem] = useState([]);
-    const [collectionDetails, setCollectionDetails] = useState([]);
-    const [reloadTrigger, setReloadTrigger] = useState(false);
-    const [selectedCollection, setSelectedCollection] = useState(0);
-    const [collections, setCollections] = useState([]);
-    const [isHovered, setIsHovered] = useState(false);
-    const [data, setData] = useState([]);
-
-    const [moveMenuItems, setMoveMenuItems] = useState([]);
-    const [selectedPoemId, setSelectedPoemId] = useState(null);
-    const [bookmarkedPosts, setBookmarkedPosts] = useState({});
-    const [likedPosts, setLikedPosts] = useState({});
-
-
+const CollectionDetail = () => {
+    const { id } = useParams();
     const accessToken = localStorage.getItem("accessToken");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+
     const headers = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`
     };
-    const [isLoading, setIsLoading] = useState(true); // <-- Thêm state isLoading
+    const [poems, setPoem] = useState([]);
+    const [collections, setCollections] = useState([]);
+    const [collectionDetails, setCollectionDetails] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [bookmarkedPosts, setBookmarkedPosts] = useState({});
+    const [likedPosts, setLikedPosts] = useState({});
+    const [isHovered, setIsHovered] = useState(false);
+    const navigate = useNavigate();
+
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!token);
+    }, []);
 
     useEffect(() => {
         const fetchData = async () => {
-            console.log(collection);
 
             try {
                 //  Gọi API lấy chi tiết bộ sưu tập
                 const response1 = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collection.id}/detail`,
+                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}/detail`,
                     { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 const data1 = await response1.json();
@@ -51,7 +49,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
 
                 // Gọi API lấy danh sách bài thơ trong bộ sưu tập
                 const response2 = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${collection.id}`,
+                    `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${id}`,
                     { headers: { Authorization: `Bearer ${accessToken}` } }
                 );
                 const data2 = await response2.json();
@@ -77,7 +75,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
         };
         fetchCollections();
         fetchData();
-    }, [collection, reloadTrigger]);
+    }, [id]);
 
     const fetchCollections = async () => {
         try {
@@ -94,15 +92,10 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                     id: collection.id,
                     name: collection.collectionName,
                 })));
-                console.log(collections)
             }
         } catch (error) {
             console.error("Error fetching collections:", error);
         }
-    };
-
-    const handleDelete = () => {
-        console.log("Xóa bài thơ:");
     };
 
     const handleMove = async (collectionId, poemId) => {
@@ -125,50 +118,12 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
             message.error(error.response?.data.errorMessage);
         }
 
-        setReloadTrigger((prev) => !prev);
         console.log("Chuyển bài thơ:", collectionId, poemId);
     };
 
-    function formatDate(isoString) {
-        const date = new Date(isoString);
-        const day = String(date.getUTCDate()).padStart(2, '0');
-        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-        const year = date.getUTCFullYear();
-        return `${day}-${month}-${year}`;
-    }
-
-    const handleMouseEnter = (poemId) => {
-        console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
-        fetchCollections();
-        console.log("aaaa" + collections);
-        setMoveMenuItems(
-            collections.map((collection) => (
-                <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
-                    📂 {collection.name}
-                </Menu.Item>
-            ))
-        );
-    };
-
-    const menu = (poemId) => (
-        <Menu>
-            <Menu.Item key="delete" onClick={handleDelete}>
-                
-            </Menu.Item>
-            <Menu.SubMenu key="move" title="🔄 Chuyển bài thơ" onTitleMouseEnter={() => handleMouseEnter(poemId)}>
-                {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
-            </Menu.SubMenu>
-        </Menu>
-    );
     const handleMoveToUpdate = () => {
-        setSelectedCollection(1);
-    };
 
-    const handleBackDetail = () => {
-        setSelectedCollection(0);
-        setReloadTrigger((prev) => !prev);
     };
-
 
     const handleLike = async (postId) => {
 
@@ -200,6 +155,13 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
         }
     };
 
+    const formatDate = (isoString) => {
+        const date = new Date(isoString);
+        const day = String(date.getUTCDate()).padStart(2, '0');
+        const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+        const year = date.getUTCFullYear();
+        return `${day}-${month}-${year}`;
+    }
 
     const handleBookmark = async (id) => {
 
@@ -234,17 +196,19 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
 
     return (
         <div>
-            {selectedCollection === 0 ? (
-                <div>
-                    <div
-                        style={{ cursor: "pointer", color: "#007bff", fontSize: "18px", marginBottom: "10px" }}
-                        onClick={handleBack}
-                    >
-                        <FiArrowLeft /> Quay về
-                    </div>
+            <div>
+                {isLoggedIn ? <Headeruser /> : <Headerdefault />}
+
+                <div
+                    style={{ cursor: "pointer", color: "#007bff", fontSize: "18px", marginBottom: "10px", marginLeft: "20px", marginTop: "20px", fontWeight: "bold" }}
+                    onClick={() => navigate(-1)}
+                >
+                    <FiArrowLeft /> Quay về
+                </div>
+                <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
                     <div style={{ margin: '0 auto', padding: '5px' }}>
                         <div
-                            key={collection.id}
+                            key={id}
                             style={{
                                 display: 'flex',
                                 padding: "16px",
@@ -327,50 +291,48 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                             </div>
                         </div>
                     </div>
+                    <div style={{display: "flex", flexDirection: "row", gap: "40px"}}>
+                        <div style={{ flex: 7, display: "flex", flexDirection: "column", gap: "15px" }}>
+                            {poems.map((poem) => (
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
-                        {poems.map((poem) => (
+                                <PoemCard
+                                    key={poem.id}
+                                    item={poem}
+                                    liked={likedPosts[poem.id]}
+                                    bookmarked={bookmarkedPosts[poem.id]}
+                                    onBookmark={handleBookmark}
+                                    onLike={handleLike}
+                                    onHover={setIsHovered}
+                                    collections={collections}
+                                    handleMove={handleMove}
+                                />
 
-                            <PoemCard
-                                key={poem.id} 
-                                item={poem}
-                                liked={likedPosts[poem.id]}
-                                bookmarked={bookmarkedPosts[poem.id]}
-                                onBookmark={handleBookmark}
-                                onLike={handleLike}
-                                onHover={setIsHovered}
-                                collections={collections}
-                                handleMove={handleMove}
-                            />
-
-                        ))}
-                    </div>
-
-                    {/* <div style={{ flex: 1, minWidth: "300px" }}>
+                            ))}
+                        </div>
+                        <div style={{ flex: 3, minWidth: "300px" }}>
                             <div style={{
                                 backgroundColor: "white",
                                 borderRadius: "10px",
-                                border: `1px solid black`,
+                                border: `1px solid #aaa`,
                                 padding: "15px",
                                 marginBottom: "15px"
                             }}>
-                                <h3 style={{ fontWeight: "bold", textAlign: 'center' }}>Thống kê tập thơ</h3>
-                                <ul style={{ fontSize: "14px", color: "#555", listStyle: "none", padding: 0 }}>
-                                    <li>Tổng bài viết: <span>{collectionDetails.totalChapter}</span></li>
-                                    <li>Tổng audio : <span>{collectionDetails.totalRecord}</span></li>
-                                    <li>Ngày phát hành: <span>{formatDate(collectionDetails.createdTime)}</span></li>
-                                    <li>Cập nhật gần nhất: <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
+                                <h3 style={{ fontWeight: "bold", textAlign: 'center', margin: "0" }}>Thống kê tập thơ</h3>
+                                <ul style={{ fontSize: "14px", color: "#000", listStyle: "none", padding: 0, }}>
+                                    <li><span style={{fontWeight: "bold"}}>Tổng số bài thơ:</span> <span >{collectionDetails.totalChapter}</span></li>
+                                    <li><span style={{fontWeight: "bold"}}>Tổng số audio:</span> <span>{collectionDetails.totalRecord}</span></li>
+                                    <li><span style={{fontWeight: "bold"}}>Ngày phát hành:</span> <span>{formatDate(collectionDetails.createdTime)}</span></li>
+                                    <li><span style={{fontWeight: "bold"}}>Cập nhật gần nhất:</span> <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
                                 </ul>
                             </div>
-                        </div> */}
+                        </div>
+                    </div>
+
                 </div>
-            ) : (
-                <div style={{ padding: "0px" }}>
-                    <CreateCollection handleBackDetail={handleBackDetail} collection={collectionDetails} />
-                </div>
-            )}
+
+            </div>
         </div>
     );
-};
+}
 
-export default YourCollectionDetail;
+export default CollectionDetail;
