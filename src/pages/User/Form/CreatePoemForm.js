@@ -30,9 +30,11 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const accessToken = localStorage.getItem("accessToken");
   const [plagiarismResult, setPlagiarismResult] = useState(null);
   const [plagiarismPoems, setPlagiarismPoems] = useState([]);
-  const [isDrafting, setIsDrafting] = useState(setDrafting);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const [imagePrompt, setImagePrompt] = useState("");
+  const [previewImage, setPreviewImage] = useState(null);
+
 
   const { Option } = Select;
   const [imageType, setImageType] = useState("cơ bản");
@@ -110,6 +112,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
+    console.log(name, value);
     setPoemData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -594,6 +597,47 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     setIsModalOpen(false);
   }
 
+  const handleCancelPreview = () => {
+    setPreviewImage(null);
+    setIsPreviewModalOpen(false);
+    setIsModalContentCompleteOpen(true);
+  };
+
+  const handleApplyPreviewImage = async () => {
+    try {
+      setIsLoading(true);
+      // Replace this placeholder with your actual API call for applying the image.
+      const applyResponse = await fetch(
+        "https://api-poemtown-staging.nodfeather.win/api/poems/v1/image/ai",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ imageUrl: previewImage }),
+        }
+      );
+      if (!applyResponse.ok) {
+        throw new Error("Failed to apply the image");
+      }
+      const imageData = await applyResponse.json();
+      console.log("Image data", imageData);
+      // On success, update the collection data and file.
+      message.success("Poem Image updated successfully!");
+      setPoemData((prev) => ({ ...prev, poemImage: imageData.data }));
+      setPoemFile(imageData.data);
+      setPreviewImage(null);
+      setIsPreviewModalOpen(false);
+    } catch (error) {
+      message.error("Lỗi khi áp dụng hình ảnh!");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+
   const showModalContentComplete = () => {
     setIsModalContentCompleteOpen(true);
   }
@@ -606,64 +650,69 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     let content = formatContent(poemData.content, selectedType);
     // Limit to the first 900 characters
     content = content.substring(0, 600);
-
+    setPreviewImage(null);
     let responseImage = null;
-    setIsLoading(true);
-    if (imageType === "nâng cao") {
-      console.log("jsdlkajsdlaj")
-      responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt}&prompt="Render an image base on my requirement poem content, return an image without words in it"`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
+    try {
+      setIsLoading(true);
+      if (imageType === "nâng cao") {
+        console.log("jsdlkajsdlaj")
+        responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt}&prompt="Render an image base on my requirement poem content, return an image without words in it"`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        });
 
-    } else {
-
-      const requestBodyImage = {
-        imageSize: 4,
-        poemText: imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt,
-        prompt: `Render an image base on my requirement poem content for me.`,
-        negativePrompt: "Image response must not contain any text",
-        numberInferenceSteps: 5,
-        guidanceScale: 3,
-        numberOfImages: 1,
-        outPutFormat: 2,
-        outPutQuality: 100
-      }
-      console.log("hahah")
-
-      responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`, {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(requestBodyImage),
-      })
-    }
-
-    const data = await responseImage.json();
-    console.log(data)
-    let uploadedImageUrl;
-    if (imageType === "nâng cao") {
-      uploadedImageUrl = data.data;
-    } else if (imageType == "cơ bản") {
-      // If output exists and is an array, use the first element.
-      if (data.data.output && data.data.output.length > 0) {
-        uploadedImageUrl = data.data.output[0].url;
       } else {
-        // Fallback if the structure is different
-        uploadedImageUrl = data.data;
-      }
-    }
 
-    message.success("Poem Image updated successfully!");
-    setPoemData((prev) => ({ ...prev, poemImage: uploadedImageUrl }));
-    setPoemFile(uploadedImageUrl);
-    setIsModalContentCompleteOpen(false);
-    setIsLoading(false);
+        const requestBodyImage = {
+          imageSize: 4,
+          poemText: imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt,
+          prompt: `Render an image base on my requirement poem content for me.`,
+          negativePrompt: "Image response must not contain any text",
+          numberInferenceSteps: 5,
+          guidanceScale: 3,
+          numberOfImages: 1,
+          outPutFormat: 2,
+          outPutQuality: 100
+        }
+        console.log("hahah")
+
+        responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`, {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestBodyImage),
+        })
+      }
+
+      const data = await responseImage.json();
+      let generatedImageUrl;
+      if (imageType === "nâng cao") {
+        generatedImageUrl = data.data;
+      } else if (imageType === "cơ bản") {
+        // If output exists and is an array, use the first element.
+        if (data.data.output && data.data.output.length > 0) {
+          generatedImageUrl = data.data.output[0].url;
+        } else {
+          // Fallback if the structure is different
+          generatedImageUrl = data.data;
+        }
+      }
+
+      setPreviewImage(generatedImageUrl);
+      setIsModalContentCompleteOpen(false);
+      setIsPreviewModalOpen(true);
+
+    } catch (error) {
+      message.error("Lỗi khi tạo hình ảnh!");
+      console.error(error)
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   const handleAICheckPlagiarism = async () => {
@@ -981,7 +1030,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             <div style={{ marginBottom: "15px" }}>
               <label style={{ display: "block", fontWeight: "bold" }}>Tập thơ</label>
               <select
-                name="collection"
+                name="collectionId"
                 value={poemData.collectionId}
                 onChange={handleInputChange}
                 style={{
@@ -1141,13 +1190,46 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           </button>
           <button
             type="button"
-            onClick={setIsDrafting ? handleSubmitDraft : () => handleSubmit(1)}
+            onClick={setDrafting ? handleSubmitDraft : () => handleSubmit(1)}
             style={{ backgroundColor: "#28a745", color: "white", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
           >
             ĐĂNG BÀI
           </button>
         </div>
       </form>
+      <Modal
+        open={isPreviewModalOpen}
+        onCancel={handleCancelPreview}
+        footer={
+          <>
+            <Button color="danger" variant="solid" onClick={handleCancelPreview}>
+              Hủy
+            </Button>
+            <Button color="primary" variant="solid" onClick={handleApplyPreviewImage}>
+              Áp dụng
+            </Button>
+          </>
+        }
+      >
+        <div style={{ textAlign: "center" }}>
+          <h2>Bạn có muốn sử dụng hình này?</h2>
+          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
+            Hãy bấm{" "}
+            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Xác nhận"</span> để áp dụng hình bên dưới vào tập thơ của bạn. Nếu không hài lòng, Vui lòng bấm {" "}
+            <span style={{ color: "#d14249", fontWeight: "bold" }}>"Hủy"</span> và tạo hình mới.
+          </p>
+          {previewImage ? (
+            <img src={previewImage} alt="Preview" style={{
+              height: "268px",
+              width: "168px",
+              objectFit: "cover",
+              marginTop: "10px"
+            }} />
+          ) : (
+            <p>No image to preview</p>
+          )}
+        </div>
+      </Modal>
     </div>
   );
 };
