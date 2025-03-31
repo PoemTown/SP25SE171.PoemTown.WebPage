@@ -12,6 +12,7 @@ RUN npm install
 
 # Copy the rest of the application files
 COPY . .
+ENV NODE_OPTIONS="--max_old_space_size=4096"
 
 # Build the React app for production
 RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
