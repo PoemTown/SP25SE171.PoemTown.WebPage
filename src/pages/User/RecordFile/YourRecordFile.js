@@ -4,8 +4,9 @@ import { FcFolder, FcVideoFile } from "react-icons/fc";
 import { DownOutlined } from "@ant-design/icons"; // Icon mũi tên chỉ xuống
 import CreateRecord from "./CreateRecord";
 import RecordCard from "../../../components/componentHomepage/RecordCard";
+import axios from "axios";
 
-export default function YourRecordFile({ statisticBorder, achievementBorder }) {
+export default function YourRecordFile({ statisticBorder, achievementBorder, isMine, username }) {
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
   const [activeButton, setActiveButton] = useState("mine");
   const [recordFiles, setRecordFiles] = useState([]);
@@ -21,7 +22,12 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
   const [totalRecords, setTotalRecords] = useState(0);
 
   useEffect(() => {
-    fetchRecords(activeButton, currentPage, pageSize);
+    if (isMine) {
+      fetchRecords(activeButton, currentPage, pageSize);
+    } else {
+      fetchUserRecords(currentPage, pageSize)
+      console.log(isMine);
+    }
   }, [isCreatingRecord, reloadTrigger, activeButton, currentPage, pageSize]);
 
   async function fetchRecords(type, pageNumber, pageSize) {
@@ -56,7 +62,34 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
       setIsLoading(false);
     }
   }
-
+  async function fetchUserRecords(pageNumber, pageSize) {
+    console.log(username)
+    const url = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/user/${username}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+    setIsLoading(true);
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        throw new Error(`Lỗi: ${response.status} - ${response.statusText}`);
+      }
+      const data = await response.json();
+      // Nếu API chỉ trả về totalPages, tính tổng số record:
+      if (data.totalPages) {
+        setTotalRecords(data.totalPages * pageSize);
+      }
+      setRecordFiles(data.data);
+      console.log(data.data);
+    } catch (error) {
+      console.error("Lỗi khi gọi API:", error);
+      return null;
+    } finally {
+      setIsLoading(false);
+    }
+  }
   const handleClick = (type) => {
     setActiveButton(type);
     setCurrentPage(1); // Reset trang khi đổi loại
@@ -65,7 +98,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
     });
   };
 
-// Hàm xử lý chuyển đổi trạng thái của bản ghi (ví dụ: chuyển từ công khai sang riêng tư)
+  // Hàm xử lý chuyển đổi trạng thái của bản ghi (ví dụ: chuyển từ công khai sang riêng tư)
   const handleToggleStatus = async (record) => {
     const recordId = record.id;
     if (record.isPublic) {
@@ -91,7 +124,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
                   "Content-Type": "application/json",
                   Authorization: `Bearer ${accessToken}`,
                 },
-                body: JSON.stringify({ recordId , price }),
+                body: JSON.stringify({ recordId, price }),
               }
             );
             if (!response.ok) {
@@ -112,6 +145,35 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
     }
   };
 
+  async function handlePurchaseRecord(recordId) {
+    console.log(recordId);
+    const url = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/purchase`;
+
+    try {
+        const response = await axios.put(url, null, {
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+            },
+            params: {
+                recordId: recordId, // Truyền recordId vào query params
+            },
+        });
+        
+        message.info(response.data.Message);
+        setReloadTrigger((prev) => !prev);
+
+    } catch (error) {
+        message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
+    }
+}
+
+
+ 
+
+
+
+
   // Menu cho Dropdown.Button
   const menu = (
     <Menu>
@@ -127,10 +189,56 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
     </Menu>
   );
 
+
+
   const handlePageChange = (page, size) => {
     setCurrentPage(page);
     setPageSize(size);
     fetchRecords(activeButton, page, size);
+  };
+  const showPurchaseConfirm = (id, price) => {
+    Modal.confirm({
+      title: "Bạn có chắc chắn muốn mua với số tiền " + price + " ?" ,
+      content: "Hành động này không thể hoàn tác!",
+      okText: "Mua",
+      cancelText: "Hủy",
+      okType: "primary",
+      onOk() {
+        handlePurchaseRecord(id);
+      },
+    });
+  };
+  const showDeleteConfirm = (id) => {
+    Modal.confirm({
+      title: "Bạn có chắc chắn muốn xóa?",
+      content: "Hành động này không thể hoàn tác!",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      okType: "danger",
+      onOk() {
+        handleDelete(id);
+      },
+    });
+  };
+  const handleDelete = async (id) => {
+    try {
+      const response = await axios.delete(
+        `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          }
+        }
+      );
+
+      console.log("Response:", response.data);
+      setReloadTrigger((prev) => !prev);
+      message.success("Xóa thành công!");
+    } catch (error) {
+      console.error("Error:", error);
+      message.error(error.response.data.errorMessage);
+    }
   };
 
   return (
@@ -139,6 +247,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
         {!isCreatingRecord ? (
           <>
             {/* Nút tạo bản ghi mới */}
+            {isMine && (
             <div style={{ position: "relative", marginBottom: "10px" }}>
               <button
                 onClick={() => setIsCreatingRecord(true)}
@@ -156,35 +265,37 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
                 BẢN GHI MỚI
               </button>
             </div>
+            )}
 
             {/* Bố cục chính */}
+
             <div style={{}}>
-              <div style={{
-                display: "flex",
-                width: "100%",
-                justifyContent: "flex-end",
-                alignItems: "center",
-                marginBottom: "20px",
-                minHeight: "50px",
-                
-              }}>
-                <Dropdown.Button
-                  overlay={menu}
-                  trigger={["click"]}
-                  icon={<DownOutlined />}
-                  style={{
-                    display: "flex",
-                    width: "100%",
-                    justifyContent: "flex-end",
-                  }}
-                >
-                  {activeButton === "mine"
-                    ? "Của tôi"
-                    : activeButton === "bought"
-                      ? "Đã mua"
-                      : "Đã bán"}
-                </Dropdown.Button>
-              </div>
+              {isMine && (
+                <div style={{ width: "100%" }}>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "flex-end",
+                      alignItems: "center",
+                      marginBottom: "20px",
+                      minHeight: "50px",
+                    }}
+                  >
+                    <Dropdown.Button
+                      overlay={menu}
+                      trigger={["click"]}
+                      icon={<DownOutlined />}
+                      style={{ display: "flex", justifyContent: "flex-end" }}
+                    >
+                      {activeButton === "mine"
+                        ? "Của tôi"
+                        : activeButton === "bought"
+                          ? "Đã mua"
+                          : "Đã bán"}
+                    </Dropdown.Button>
+                  </div>
+                </div>
+              )}
 
               {/* Danh sách folder */}
               {isLoading ? (
@@ -199,11 +310,14 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
                   minHeight: "200px",
                 }}>
                   {recordFiles.map((record) => (
-                    
+
                     <RecordCard
                       key={record.id}
                       record={record}
-                      handleToggleStatus={handleToggleStatus} />
+                      handleToggleStatus={handleToggleStatus}
+                      showDeleteConfirm={showDeleteConfirm} 
+                      isMine ={isMine}
+                      showPurchaseConfirm = {showPurchaseConfirm}/>
                   ))}
                 </div>
               )}
@@ -217,7 +331,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
                 total={totalRecords} // Tổng số record được tính từ totalPages * pageSize
                 onChange={handlePageChange}
                 showSizeChanger
-                pageSizeOptions={["8", "16", "24"]}
+                pageSizeOptions={["4", "8", "16"]}
               />
             </div>
           </>
@@ -226,7 +340,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder }) {
         )}
       </div>
 
-     
+
     </>
   );
 }

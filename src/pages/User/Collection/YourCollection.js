@@ -354,12 +354,14 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                                       <div>Sao chép liên kết</div>
                                     </div>
                                   </Menu.Item>
-                                  <Menu.Item
-                                    key="delete"
-                                    onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}
-                                  >
-                                    ❌ Xóa
-                                  </Menu.Item>
+                                  {isMine === true && (
+                                    <Menu.Item
+                                      key="delete"
+                                      onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}
+                                    >
+                                      ❌ Xóa
+                                    </Menu.Item>
+                                  )}
                                 </Menu>
                               }
                               trigger={["click"]}

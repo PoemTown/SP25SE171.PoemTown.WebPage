@@ -326,7 +326,7 @@ const UserPage = () => {
                             <YourPoem isCreatingPoem={isCreatingPoem} setIsCreatingPoem={setIsCreatingPoem} username={username} isMine={userData.isMine} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitle={achievementTitleBackground} statisticTitle={statisticTitleBackground} />
                         )}
                         {activeTab === "Bản ghi âm" && (
-                            <YourRecordFile achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} />
+                            <YourRecordFile username={username} isMine={userData.isMine} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} />
                         )}
                         {activeTab === "Bộ sưu tập của bạn" && (
                             <YourCollection isCreatingCollection={isCreatingCollection} setIsCreatingCollection={setIsCreatingCollection} avatar={userData.avatar} isMine={userData.isMine} displayName={displayName} username={username}/>
