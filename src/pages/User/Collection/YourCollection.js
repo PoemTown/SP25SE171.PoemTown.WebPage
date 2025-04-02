@@ -56,7 +56,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
   };
 
   useEffect(() => {
-    console.log("isMine", isMine)
+    console.log("isMine", isMine);
     const fetchCollections = async () => {
       if (isMine != null) {
         try {
@@ -98,7 +98,6 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
               });
               setCollection(formattedData);
               setBookmarkedCollections(bookmarkedIds);
-              // Nếu API trả về totalPages, tính tổng số record
               if (collectionsData.totalPages) {
                 setTotalRecords(collectionsData.totalPages * pageSize);
               }
@@ -107,14 +106,15 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
               setStatistic(statisticData.data);
             }
           } else if (isMine === false) {
-            const collectionsResponse = await fetch(`https://api-poemtown-staging.nodfeather.win/api/collections/v1/user/${username}?pageNumber=${currentPage}&pageSize=${pageSize}`,
+            const collectionsResponse = await fetch(
+              `https://api-poemtown-staging.nodfeather.win/api/collections/v1/user/${username}?pageNumber=${currentPage}&pageSize=${pageSize}`,
               {
                 headers: requestHeaders,
               }
             );
             const collectionsData = await collectionsResponse.json();
             if (collectionsData.statusCode === 200) {
-              console.log(collectionsData)
+              console.log(collectionsData);
               const bookmarkedIds = new Set();
               const formattedData = collectionsData.data.map((collection) => {
                 if (collection.targetMark) bookmarkedIds.add(collection.id);
@@ -131,7 +131,6 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
               });
               setCollection(formattedData);
               setBookmarkedCollections(bookmarkedIds);
-              // Nếu API trả về totalPages, tính tổng số record
               if (collectionsData.totalPages) {
                 setTotalRecords(collectionsData.totalPages * pageSize);
               }
@@ -186,15 +185,18 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
 
   const handleDelete = async (id, rowVersion) => {
     try {
-      const response = await axios.delete(`https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}`, {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          "Content-Type": "application/json",
-        },
-        params: {
-          rowVersion: rowVersion,
-        },
-      });
+      const response = await axios.delete(
+        `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          params: {
+            rowVersion: rowVersion,
+          },
+        }
+      );
 
       console.log("Response:", response.data);
       setReloadTrigger((prev) => !prev);
@@ -209,7 +211,10 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
     navigate(`/collection/${id}`)
   };
 
+  // Hàm handleBack dành cho cả Create và Detail.
   const handleBack = () => {
+    // Khi quay lại từ màn hình chi tiết tuyển tập, reset selectedCollection về null.
+    setSelectedCollection(null);
     setIsCreatingCollection(false);
     setReloadTrigger((prev) => !prev);
   };
@@ -240,9 +245,23 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
         </div>
       ) : (
         <>
-          {isCreatingCollection === false ? (
+          {/* Ưu tiên hiển thị chi tiết tuyển tập nếu có selectedCollection */}
+          {selectedCollection ? (
+            <YourCollectionDetail
+              collection={selectedCollection}
+              handleBack={handleBack}
+              avatar={avatar}
+            />
+          ) : isCreatingCollection ? (
+            <div style={{ padding: "0px" }}>
+              <CreateCollection
+                handleBack={handleBack}
+                setIsCreatingCollection={setIsCreatingCollection}
+              />
+            </div>
+          ) : (
             <>
-              {isMine === true ? (
+              {isMine === true && (
                 <button
                   onClick={handleCreate}
                   style={{
@@ -259,7 +278,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                 >
                   BỘ SƯU TẬP MỚI
                 </button>
-              ) : <></>}
+              )}
 
               <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
                 <div style={{ flex: 7 }}>
@@ -278,7 +297,13 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                     >
                       <div style={{ flex: 1, width: "260px", height: "146px" }}>
                         <img
-                          style={{ width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px" }}
+                          style={{
+                            width: "260px",
+                            height: "146px",
+                            objectFit: "cover",
+                            borderTopLeftRadius: "5px",
+                            borderBottomLeftRadius: "5px",
+                          }}
                           src={collection.image ? collection.image : "/anhminhhoa.png"}
                           alt="Ảnh bộ sưu tập"
                         />
@@ -330,9 +355,14 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                                       <div>Sao chép liên kết</div>
                                     </div>
                                   </Menu.Item>
-                                  <Menu.Item key="delete" onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}>
-                                    ❌ Xóa
-                                  </Menu.Item>
+                                  {isMine === true && (
+                                    <Menu.Item
+                                      key="delete"
+                                      onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}
+                                    >
+                                      ❌ Xóa
+                                    </Menu.Item>
+                                  )}
                                 </Menu>
                               }
                               trigger={["click"]}
@@ -363,17 +393,16 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                             display: "-webkit-box",
                             WebkitLineClamp: 2,
                             WebkitBoxOrient: "vertical",
-                            maxWidth: "100%",
+                            overflow: "hidden",
+                            textOverflow: "ellipsis",
+                            whiteSpace: "normal",  //  Cho phép xuống dòng
+                            wordBreak: "break-word",  //  Bắt buộc nếu có từ dài
                           }}
                         >
+
                           <span style={{ fontWeight: 500 }}>Mô tả:</span> <span style={{ color: "#444" }}> {collection.description} </span>
                         </p>
-                        <div style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginTop: "auto",
-                        }}>
+                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
                           <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                               <LuBook />
@@ -406,17 +435,10 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                 />
               </div>
             </>
-          ) : isCreatingCollection === true ? (
-            <div style={{ padding: "0px" }}>
-              <CreateCollection handleBack={handleBack} setIsCreatingCollection={setIsCreatingCollection} />
-            </div>
-          ) : (
-            <YourCollectionDetail collection={selectedCollection} handleBack={handleBack} avatar={avatar} />
           )}
         </>
-      )
-      }
-    </div >
+      )}
+    </div>
   );
 };
 
