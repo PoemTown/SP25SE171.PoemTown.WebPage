@@ -64,6 +64,8 @@ const LoginPage = () => {
                     window.location.href = "/";
                 } else if (role.includes("ADMIN")) {
                     window.location.href = "/";
+                } else if (role.includes("MODERATOR")) {
+                    window.location.href = "/";
                 } else {
                     setError("Vai trò không hợp lệ.");
                 }
