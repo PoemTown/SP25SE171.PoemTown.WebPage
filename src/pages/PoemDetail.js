@@ -6,11 +6,11 @@ import { FiArrowLeft } from 'react-icons/fi';
 import { BiCommentDetail, BiLike, BiSolidLike } from 'react-icons/bi';
 import { RiDeleteBinFill } from "react-icons/ri";
 import { IoBookmark } from 'react-icons/io5';
-import { CiBookmark } from 'react-icons/ci';
-import { Dropdown, Menu } from 'antd';
+import { CiBookmark, CiCirclePlus } from 'react-icons/ci';
+import { Button, Dropdown, Menu, message } from 'antd';
 import { IoIosLink, IoIosMore } from 'react-icons/io';
 import { MdEdit, MdReport } from 'react-icons/md';
-import { FaUserPlus } from 'react-icons/fa';
+import { FaCheck, FaUserPlus } from 'react-icons/fa';
 
 const PoemDetail = () => {
     const { id } = useParams();
@@ -20,12 +20,17 @@ const PoemDetail = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const navigate = useNavigate();
 
+
+    const requestHeaders = {
+        "Content-Type": "application/json",
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+    };
     // Fetch poem details
     useEffect(() => {
         const fetchPoem = async () => {
             try {
                 const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/${id}/detail`, {
-                    headers: { Authorization: `Bearer ${accessToken}` }
+                    headers: requestHeaders
                 });
                 const data = await response.json();
                 setPoem(data.data);
@@ -54,7 +59,7 @@ const PoemDetail = () => {
     // Like handler function (as before)
     const handleLike = async () => {
         if (!isLoggedIn) {
-            alert("Please login to like this post.");
+            message.error("Please login to like this post.");
             return;
         }
         const isCurrentlyLiked = poem?.like;
@@ -84,7 +89,7 @@ const PoemDetail = () => {
     // Bookmark handler function
     const handleBookmark = async () => {
         if (!isLoggedIn) {
-            alert("Please login to bookmark this post.");
+            message.error("Please login to bookmark this post.");
             return;
         }
         const headers = {
@@ -243,7 +248,7 @@ const PoemDetail = () => {
                             Mô tả: {poem?.description}
                         </p>
                         <p style={{ margin: 0 }}>
-                            Tập thơ: <span style={{ color: "#007bff", cursor: "pointer" }}>
+                            Tập thơ: <span style={{ color: "#007bff", cursor: "pointer" }} onClick={() => navigate(`/collection/${poem?.collection.id}`)}>
                                 {poem?.collection?.collectionName}
                             </span>
                         </p>
@@ -275,10 +280,16 @@ const PoemDetail = () => {
                     <div style={{ display: "flex", gap: "10px" }}>
                         <img src={poem?.user.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%" }} />
                         <div>
-                            <p style={{ margin: 0 }}>{poem?.user.displayName}</p>
-                            <p style={{ margin: 0 }}>@{poem?.user.userName}</p>
+                            <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.user.displayName}</p>
+                            <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user.userName}</p>
+                            <div style={{marginTop: "10px"}}>
+                                {poem?.isMine ? <></> :
+                                    poem?.follow ? <Button  onClick={{}} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button> : <Button onClick={{}} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
+                                }
+                            </div>
                         </div>
                     </div>
+
                 </div>
             </div>
         </>

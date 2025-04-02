@@ -14,12 +14,8 @@ const Headerdefault = () => {
 
   return (
     <header style={styles.header}>
-      <div style={styles.logo}>
-        <img
-          src="./logo.png"
-          alt="PoemTown Logo"
-          style={styles.logoImage}
-        />
+      <div style={styles.logo} onClick={() => navigate("/")}>
+        <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="PoemTown Logo" style={styles.logoImage} />
       </div>
       <nav style={styles.nav}>
         <a href="/latest" style={styles.navLink}>
@@ -62,7 +58,7 @@ const styles = {
     justifyContent: "flex-start",
   },
   logoImage: {
-    height: "80px",
+    height: "60px",
   },
   nav: {
     flex: "2",

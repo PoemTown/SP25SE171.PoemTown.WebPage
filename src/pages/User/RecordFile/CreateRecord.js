@@ -4,29 +4,25 @@ import { FcFolder } from "react-icons/fc";
 import axios from "axios";
 
 export default function CreateRecord({ onBack }) {
-  const [form] = Form.useForm(); // Tạo form instance
+  const [form] = Form.useForm();
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [selectedPoem, setSelectedPoem] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const [poems, setPoems] = useState([]);
+  const [combinedPoems, setCombinedPoems] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const [isAudioUploading, setIsAudioUploading] = useState(false);
   const accessToken = localStorage.getItem("accessToken");
 
-  // State data lưu thông tin form cần gửi
   const [data, setData] = useState({
     recordName: "",
     fileUrl: ""
   });
 
-  useEffect(() => {
-    fetchPoems(currentPage, pageSize);
-  }, []);
-
-  async function fetchPoems(currentPage = 1, pageSize = 8) {
-    const baseUrl =
-      "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine";
-    const url = `${baseUrl}?pageNumber=${currentPage}&pageSize=${pageSize}`;
+  // Sửa hàm fetchPoems trả về mảng
+  async function fetchPoems(page = 1, size = 8) {
+    const baseUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine";
+    const url = `${baseUrl}?pageNumber=${page}&pageSize=${size}`;
 
     try {
       const response = await fetch(url, {
@@ -42,28 +38,74 @@ export default function CreateRecord({ onBack }) {
       }
 
       const result = await response.json();
-      setPoems(result.data);
+      // Trả về mảng dữ liệu
+      return Array.isArray(result.data) ? result.data : [];
     } catch (error) {
-      console.error("Lỗi khi gọi API:", error);
-      return null;
+      console.error("Lỗi khi gọi API fetchPoems:", error);
+      return [];
     }
   }
 
+  // Sửa hàm fetchBoughtPoems trả về mảng
+  async function fetchBoughtPoems(page = 1, size = 8) {
+    const baseUrl = "https://api-poemtown-staging.nodfeather.win/api/usage-rights/v1/bought-poem";
+    const url = `${baseUrl}?pageNumber=${page}&pageSize=${size}`;
+
+    try {
+      const response = await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`Lỗi: ${response.status} - ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      return Array.isArray(result.data) ? result.data : [];
+    } catch (error) {
+      console.error("Lỗi khi gọi API fetchBoughtPoems:", error);
+      return [];
+    }
+  }
+
+  // useEffect để fetch và kết hợp dữ liệu
+  useEffect(() => {
+    async function fetchAllRecords() {
+      setIsLoading(true);
+      try {
+        // Gọi song song cả 2 API và nhận kết quả trả về
+        const [fetchedPoems, fetchedBoughtPoems] = await Promise.all([
+          fetchPoems(currentPage, pageSize),
+          fetchBoughtPoems(currentPage, pageSize)
+        ]);
+
+        // Kết hợp 2 mảng trả về
+        const combined = [...fetchedPoems, ...fetchedBoughtPoems];
+        setCombinedPoems(combined);
+        console.log("Combined:", combined);
+      } catch (error) {
+        console.error("Lỗi khi kết hợp dữ liệu:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    fetchAllRecords();
+  }, [currentPage, pageSize]);
+
   const handleCreateRecordFile = async (poemId) => {
     try {
-      const url =
-        "https://api-poemtown-staging.nodfeather.win/api/record-files/v1";
-      const response = await axios.post(
-        url,
-        data,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-          },
-          params: { poemId }
-        }
-      );
+      const url = "https://api-poemtown-staging.nodfeather.win/api/record-files/v1";
+      const response = await axios.post(url, data, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        params: { poemId }
+      });
 
       message.success("Tạo bản ghi âm thành công!");
       console.log("Response:", response.data);
@@ -111,7 +153,6 @@ export default function CreateRecord({ onBack }) {
   // Khi click vào một dòng trong bảng
   const handleRowClick = (poem) => {
     setSelectedPoem(poem);
-    // Reset form và data
     form.resetFields();
     setData({
       recordName: "",
@@ -120,13 +161,15 @@ export default function CreateRecord({ onBack }) {
     setIsModalVisible(true);
   };
 
-  // Khi bấm nút Lưu của Modal, validate form và gọi API
+  // Khi bấm nút Lưu của Modal
   const handleModalOk = async () => {
     try {
       const values = await form.validateFields();
-      // Cập nhật state data với các giá trị từ form
       setData((prev) => ({ ...prev, ...values }));
-      await handleCreateRecordFile(selectedPoem.id);
+      if (selectedPoem) {
+        const poemId = selectedPoem.poem ? selectedPoem.poem.id : selectedPoem.id;
+        await handleCreateRecordFile(poemId);
+      }
       setIsModalVisible(false);
     } catch (errorInfo) {
       console.error("Validation Failed:", errorInfo);
@@ -142,17 +185,34 @@ export default function CreateRecord({ onBack }) {
       title: "Icon",
       dataIndex: "icon",
       render: (_, record) => <FcFolder size={32} />,
-      width: 70
+      width: 70,
     },
     {
       title: "Title",
-      dataIndex: "title",
-      key: "title"
+      key: "title",
+      render: (_, record) => {
+        // Nếu record có thuộc tính 'poem', hiển thị record.poem.title, nếu không thì hiển thị record.title
+        return record.poem ? record.poem.title : record.title;
+      },
     },
     {
       title: "Description",
-      dataIndex: "description",
-      key: "description"
+      key: "description",
+      render: (_, record) => {
+        return record.poem ? record.poem.description : record.description;
+      },
+    },
+    {
+      title: "Owner",
+      key: "owner",
+      render: (_, record) => {
+        // Kiểm tra nếu record có thuộc tính 'poem'
+        if (record.poem && record.poem.user) {
+          return record.poem.user.displayName;
+        }
+        // Nếu không có, hiển thị owner trực tiếp từ record
+        return record.owner ? record.owner.displayName : "Mine";
+      },
     },
     {
       title: "Action",
@@ -161,9 +221,11 @@ export default function CreateRecord({ onBack }) {
         <Button type="link" onClick={() => handleRowClick(record)}>
           Select
         </Button>
-      )
-    }
+      ),
+    },
   ];
+  
+  
 
   return (
     <>
@@ -184,30 +246,36 @@ export default function CreateRecord({ onBack }) {
         ← Quay Lại Danh Sách
       </Button>
 
-      <Table
-        dataSource={poems}
-        columns={columns}
-        rowKey="id"
-        onRow={(poem) => ({
-          onClick: () => handleRowClick(poem)
-        })}
-        pagination={{
-          current: currentPage,
-          pageSize: pageSize,
-          onChange: (page, pageSize) => {
-            setCurrentPage(page);
-            setPageSize(pageSize);
-          },
-          showSizeChanger: true,
-          pageSizeOptions: ["5", "10", "15"]
-        }}
-      />
+      {isLoading ? (
+        <div style={{ textAlign: "center", padding: "50px 0" }}>
+          <Spin size="large" tip="Đang tải dữ liệu..." />
+        </div>
+      ) : (
+        <Table
+          dataSource={combinedPoems} // Dùng combinedPoems
+          columns={columns}
+          rowKey="id"
+          onRow={(poem) => ({
+            onClick: () => handleRowClick(poem)
+          })}
+          pagination={{
+            current: currentPage,
+            pageSize: pageSize,
+            onChange: (page, pageSize) => {
+              setCurrentPage(page);
+              setPageSize(pageSize);
+            },
+            showSizeChanger: true,
+            pageSizeOptions: ["5", "10", "15"]
+          }}
+        />
+      )}
 
       <Modal
         title={
           selectedPoem
-            ? `Nhập thông tin tạo audio cho bài thơ: ${selectedPoem.title}`
-            : "Nhập thông tin"
+      ? `Nhập thông tin tạo audio cho bài thơ: ${selectedPoem.poem ? selectedPoem.poem.title : selectedPoem.title}`
+      : "Nhập thông tin"
         }
         visible={isModalVisible}
         onOk={handleModalOk}
@@ -220,11 +288,10 @@ export default function CreateRecord({ onBack }) {
             form={form}
             layout="vertical"
             initialValues={{ recordName: "record_file" }}
-            // Sử dụng onValuesChange nếu cần cập nhật state ngay lập tức
             onValuesChange={(changedValues, allValues) => {
-                console.log("Form values:", allValues); // Log ra giá trị mới nhập
-                setData((prev) => ({ ...prev, ...allValues }));
-              }}
+              console.log("Form values:", allValues);
+              setData((prev) => ({ ...prev, ...allValues }));
+            }}
           >
             <Form.Item
               label="Tên bản ghi âm"
@@ -235,11 +302,7 @@ export default function CreateRecord({ onBack }) {
             >
               <Input />
             </Form.Item>
-            <Form.Item
-              label="Chọn file audio"
-              name="audioFile"
-             
-            >
+            <Form.Item label="Chọn file audio" name="audioFile">
               <Input
                 type="file"
                 accept="audio/*"

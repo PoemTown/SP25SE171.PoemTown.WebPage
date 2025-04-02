@@ -17,6 +17,7 @@ import {
     DialogContent,
     DialogTitle,
     TextField,
+    Chip
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import axios from "axios";
@@ -30,7 +31,14 @@ const getAccountType = (type) => {
         default: return "Không xác định";
     }
 };
-
+const getTypeColor = (status) => {
+    switch (status) {
+        case 2: return "warning";
+        case 1: return "success";
+        case 3: return "error";
+        default: return "default";
+    }
+};
 const ModeratorManagement = () => {
     const [accounts, setAccounts] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
@@ -149,7 +157,14 @@ const ModeratorManagement = () => {
                                 <TableCell>{account.userName || "Không có tên đăng nhập"}</TableCell>
                                 <TableCell>{account.fullName || "Không có họ và tên"}</TableCell>
                                 <TableCell>{account.email || "Không có email"}</TableCell>
-                                <TableCell>{getAccountType(account.status)}</TableCell>
+                                <TableCell>
+                                    <Chip
+                                        label={getAccountType(account.status)} 
+                                        color={getTypeColor(account.status)}    
+                                        size="small"
+                                    />
+                                </TableCell>
+
                                 <TableCell>
                                     <Avatar src={account.avatar || ""} alt={account.fullName} />
                                 </TableCell>

@@ -3,6 +3,7 @@ import { Modal } from "antd";
 import { useNavigate } from "react-router-dom";
 import CollectionCard from "./CollectionCard";
 import PoemCard from "./PoemCard";
+import RecordCard from "./RecordCard";
 import { BiCommentDetail, BiLike } from "react-icons/bi";
 import { HiUsers } from "react-icons/hi2";
 
@@ -20,6 +21,7 @@ const Content = ({ activeTab }) => {
   const [isBookmarkCollectionTab, setIsBookmarkCollectionTab] = useState(false);
   const [bookmarkedCollections, setBookmarkedCollections] = useState({});
   const [selectedCollection, setSelectedCollection] = useState(null);
+  const [records, setRecord] = useState([]);
   const [isCommunity, setIsCommunity] = useState(false);
   const [title, setTitle] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
@@ -196,9 +198,16 @@ const Content = ({ activeTab }) => {
           setBookmarkedCollections(initialCollectionBookmarks);
           setCollections(data.data);
           setData([]); // Clear poem data
+          setRecord([]);// Clear record data
+
+        } else if (apiUrl.includes('/record-files/')) {
+          setRecord(data.data)
+          setData([]); // Clear poem data
+
+          setCollections([]);
         } else {
           // Handle poems data
-          const initialBookmarkedState = {}; 
+          const initialBookmarkedState = {};
           const initialLikedState = {};
           data.data.forEach(item => {
             initialLikedState[item.id] = !!item.like;
@@ -208,6 +217,8 @@ const Content = ({ activeTab }) => {
           setLikedPosts(initialLikedState);
           setData(data.data);
           setCollections([]); // Clear collection data
+          setRecord([]);// Clear record data
+
         }
       }
     } catch (error) {
@@ -225,7 +236,7 @@ const Content = ({ activeTab }) => {
   useEffect(() => {
     let abortController = new AbortController();
     let apiUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts";
-
+    console.log("activeTab hiện tại:", activeTab);
     switch (activeTab) {
       case "trending":
         apiUrl = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
@@ -256,7 +267,7 @@ const Content = ({ activeTab }) => {
         setIsCommunity(true);
         break;
       case "audioread":
-        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts?filterOptions.audio=1&pageNumber=${currentPage}&pageSize=${pageSize}`;
+        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/all?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
         setTitle("Lắng nghe và cảm nhận sẽ mang đến bức tranh toàn cảnh️ ▶️")
         setIsCommunity(false);
@@ -393,6 +404,12 @@ const Content = ({ activeTab }) => {
                     onBookmark={handleBookmark}
                     isBookmarked={bookmarkedCollections[item.id] || false}
                     isCommunity={isCommunity}
+                  />
+                ))}
+                {records.map((item) => (
+                  <RecordCard
+                    key={item.id}
+                    record={item}
                   />
                 ))}
               </div>
