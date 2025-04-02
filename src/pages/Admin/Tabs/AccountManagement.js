@@ -11,6 +11,7 @@ import {
     Paper,
     Avatar,
     IconButton,
+    Chip
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import axios from "axios";
@@ -23,7 +24,14 @@ const getAccountType = (type) => {
         default: return "Không xác định";
     }
 };
-
+const getTypeColor = (status) => {
+    switch (status) {
+        case 2: return "warning";
+        case 1: return "success";
+        case 3: return "error";
+        default: return "default";
+    }
+};
 const AccountManagement = () => {
     const [accounts, setAccounts] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
@@ -121,7 +129,14 @@ const AccountManagement = () => {
                                     <TableCell>{account.userName || "Không có tên đăng nhập"}</TableCell>
                                     <TableCell>{account.fullName || "Không có họ và tên"}</TableCell>
                                     <TableCell>{account.email || "Không có email"}</TableCell>
-                                    <TableCell>{getAccountType(account.status) || "Không có trạng thái"}</TableCell>
+                                    <TableCell>
+                                        <Chip
+                                            label={getAccountType(account.status)} 
+                                            color={getTypeColor(account.status)}   
+                                            size="small"
+                                        />
+                                    </TableCell>
+
                                     <TableCell>{account.roles.map(role => role.name).join(", ")}</TableCell>
                                     <TableCell>{account.createdTime ? new Date(account.createdTime).toLocaleString() : "Không xác định"}</TableCell>
                                     <TableCell>

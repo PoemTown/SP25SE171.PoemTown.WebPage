@@ -17,10 +17,14 @@ import {
     DialogActions,
     Button,
     CircularProgress,
-    Card, CardContent
+    Card, 
+    CardContent,
+    TextField,
+    MenuItem
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import axios from "axios";
+
 const getTransactionType = (type) => {
     switch (type) {
         case 1: return "Nạp tiền vào ví";
@@ -33,21 +37,31 @@ const getTransactionType = (type) => {
     }
 };
 
+const pageSizeOptions = [
+    { value: 10, label: '10 bản ghi' },
+    { value: 25, label: '25 bản ghi' },
+    { value: 50, label: '50 bản ghi' },
+    { value: 100, label: '100 bản ghi' },
+    { value: 250, label: '250 bản ghi' }
+];
+
 const TransactionsManagement = () => {
     const [transactions, setTransactions] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
+    const [pageSize, setPageSize] = useState(25);
+    const [totalTransactions, setTotalTransactions] = useState(0);
 
     useEffect(() => {
         fetchTransactions();
-    }, []);
+    }, [pageSize]);
 
     const fetchTransactions = async () => {
         try {
             const response = await axios.get(
-                "https://api-poemtown-staging.nodfeather.win/api/transactions/v1/admin",
+                `https://api-poemtown-staging.nodfeather.win/api/transactions/v1/admin?pageSize=${pageSize}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -58,6 +72,7 @@ const TransactionsManagement = () => {
                 (a, b) => new Date(b.createdTime) - new Date(a.createdTime)
             );
             setTransactions(sortedTransactions);
+            setTotalTransactions(sortedTransactions.length);
         } catch (err) {
             console.error("Không thể tải danh sách giao dịch.");
         }
@@ -83,6 +98,11 @@ const TransactionsManagement = () => {
         }
     };
 
+    const handlePageSizeChange = (event) => {
+        setPageSize(event.target.value);
+        setCurrentPage(0); // Reset về trang đầu tiên khi thay đổi pageSize
+    };
+
     const chunkTransactions = (transactions, size) => {
         const chunked = [];
         for (let i = 0; i < transactions.length; i += size) {
@@ -99,6 +119,27 @@ const TransactionsManagement = () => {
             <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
                 Danh sách giao dịch
             </Typography>
+
+            <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                <Typography variant="subtitle1">
+                    Tổng số giao dịch: {totalTransactions}
+                </Typography>
+                
+                <TextField
+                    select
+                    label="Số bản ghi mỗi trang"
+                    value={pageSize}
+                    onChange={handlePageSizeChange}
+                    size="small"
+                    sx={{ minWidth: 150 }}
+                >
+                    {pageSizeOptions.map((option) => (
+                        <MenuItem key={option.value} value={option.value}>
+                            {option.label}
+                        </MenuItem>
+                    ))}
+                </TextField>
+            </Box>
 
             {transactionGroups.length > 0 && (
                 <TableContainer component={Paper} sx={{ mt: 2 }}>
@@ -208,8 +249,6 @@ const TransactionsManagement = () => {
                                     <Typography variant="body1"><strong>Mã ngân hàng:</strong> {selectedTransaction.bankCode || "Không xác định"}</Typography>
                                 </CardContent>
                             </Card>
-
-
                         </Box>
                     ) : (
                         <Typography>Không có dữ liệu</Typography>
@@ -220,7 +259,6 @@ const TransactionsManagement = () => {
                     <Button onClick={() => setOpenDialog(false)} color="primary">Đóng</Button>
                 </DialogActions>
             </Dialog>
-
         </Box>
     );
 };

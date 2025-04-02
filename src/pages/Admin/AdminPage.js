@@ -6,7 +6,7 @@ import {
 } from "@mui/material";
 import { 
     Dashboard, Logout, Gavel, Assignment, ReceiptLong, ManageAccounts, 
-    LibraryBooks, Collections, Report, Notifications, ShoppingCart
+    LibraryBooks, Collections, Report, Notifications, ShoppingCart, Home
 } from "@mui/icons-material";
 import TransactionsManagement from "./Tabs/TransactionsManagement";
 import OrderManagement from "./Tabs/OrderManagement";
@@ -15,6 +15,8 @@ import TemplateManagement from "./Tabs/TemplateManagement";
 import DashboardPage from "./Tabs/Dashboard";
 import ModeratorManager from "./Tabs/ModeratorManager";
 import PoemManagement from "./Tabs/PoemManagement";
+import ReportFromUser from "./Tabs/ReportFromUser";
+import CollectionManagement from "./Tabs/CollectionManagement";
 
 const drawerWidth = 280;
 
@@ -74,7 +76,21 @@ const AdminPage = () => {
                         </ListItem>
                     ))}
                 </List>
+                
                 <Box sx={{ flexGrow: 1 }} />
+                
+                {/* Nút quay về trang chủ */}
+                <ListItem disablePadding>
+                    <ListItemButton 
+                        onClick={() => navigate("/")} 
+                        sx={{ backgroundColor: "#24292e", "&:hover": { backgroundColor: "#1e88e5" }, color: "#fff" }}
+                    >
+                        <ListItemIcon><Home sx={{ color: "#fff" }} /></ListItemIcon>
+                        <ListItemText primary="Quay về trang chủ" />
+                    </ListItemButton>
+                </ListItem>
+                
+                {/* Nút đăng xuất */}
                 <ListItem disablePadding>
                     <ListItemButton 
                         onClick={handleLogout} 
@@ -95,6 +111,8 @@ const AdminPage = () => {
                 {currentPage === "dashboard" && <DashboardPage />}
                 {currentPage === "moderators" && <ModeratorManager />}
                 {currentPage === "poems" && <PoemManagement />}
+                {currentPage === "reports" && <ReportFromUser />}
+                {currentPage === "community-collections" && <CollectionManagement />}
             </Box>
         </Box>
     );
