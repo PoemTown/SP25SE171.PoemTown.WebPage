@@ -25,7 +25,7 @@ const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity }) => {
                 <img
                     style={{ width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px" }}
                     src={item.collectionImage ? item.collectionImage : "/collection1.png"}
-                    alt="Ảnh cá nhân"
+                    alt="Ảnh bộ sưu tập"
                 />
             </div>
             <div style={{ flex: 4, display: "flex", flexDirection: "column", padding: "16px" }}>
@@ -105,7 +105,7 @@ const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity }) => {
                     </div>
                     {/* Xem chi tiết bộ sưu tập */}
                     <div
-                        style={{ color: "#007bff", fontWeight: "500", cursor: "pointer" }}
+                        style={{ color: "#007bff", fontWeight: "600", cursor: "pointer" }}
                         onClick={() => navigate(`/collection/${item.id}`)}
                     >
                         <span>Xem tuyển tập &gt;</span>

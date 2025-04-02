@@ -29,6 +29,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
         ? `${item.description.substring(0, 102)}...`
         : item.description;
 
+    const [isHovered, setIsHovered] = useState(false);
 
 
     // Menu dropdown mặc định (cho trường hợp action khác "collection")
@@ -160,10 +161,10 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     <button
                         style={{
                             ...styles.viewButton,
-                            ...(styles.viewButtonHover)
+                            ...( isHovered && styles.viewButtonHover)
                         }}
-                        onMouseEnter={() => onHover(true)}
-                        onMouseLeave={() => onHover(false)}
+                        onMouseEnter={() => setIsHovered(true)}
+                        onMouseLeave={() => setIsHovered(false)}
                         onClick={() => navigate(`/poem/${item.id}`)}
                     >
                         Xem bài thơ &gt;

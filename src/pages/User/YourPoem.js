@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import CreatePoemForm from "./Form/CreatePoemForm";
-import { Menu, Dropdown, Modal, Button } from "antd";
+import { Menu, Dropdown, Modal, Button, message } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined } from "@ant-design/icons";
 import CommentModal from "./Form/CommentModal";
 import { IoBookmark } from "react-icons/io5";
@@ -8,6 +8,8 @@ import { CiBookmark } from "react-icons/ci";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
 import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
+import "./button-hover.css"
 
 const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, isCreatingPoem }) => {
   const [poems, setPoems] = useState([]);
@@ -17,6 +19,14 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   const [isCommentModalVisible, setIsCommentModalVisible] = useState(false);
   const [selectedPoemForComment, setSelectedPoemForComment] = useState(null);
   const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
+  const [isHovered, setIsHovered] = useState(false);
+  const accessToken = localStorage.getItem("accessToken");
+  const requestHeaders = {
+    "Content-Type": "application/json",
+    ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+  };
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPoems = async () => {
@@ -60,7 +70,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             const response = await fetch(
               `https://api-poemtown-staging.nodfeather.win/api/poems/v1/user/${username}`,
               {
-                headers: { Authorization: `Bearer ${accessToken}` },
+                headers: requestHeaders,
               }
             );
             const data = await response.json();
@@ -101,7 +111,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
   const handleBookmark = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) return;
+    if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
 
     const isBookmarked = bookmarkedPoems.has(id);
     const method = isBookmarked ? "DELETE" : "POST";
@@ -162,7 +172,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   };
   const handleLikePoem = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) return;
+    if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
 
     const isLiked = likedPoems.has(id);
     const method = isLiked ? "DELETE" : "POST";
@@ -483,9 +493,12 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em" }}>{poem.commentCount || 0}</span>
                           </button>
                         </div>
-                        <a href="#" style={{ color: "#007bff", fontWeight: "bold" }}>
-                          Xem bài thơ →
-                        </a>
+                        <button
+                          className="button-hover"
+                          onClick={() => navigate(`/poem/${poem.id}`)}
+                        >
+                          Xem bài thơ &gt;
+                        </button>
                       </div>
                     </div>
 

@@ -17,6 +17,7 @@ import { DoubleRightOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import AchievementAndStatistic from "./AchievementAndStatistic/AchievementAndStatistic";
 import YourRecordFile from "./RecordFile/YourRecordFile";
+import Headerdefault from "../../components/Headerdefault";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -67,83 +68,10 @@ const UserPage = () => {
     const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(true);
-
-    const fetchImage = async () => {
-        try {
-            const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/template/v1/user-templates/theme/in-use",
-                {
-                    method: "GET",
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                        "Content-Type": "application/json",
-                    },
-                }
-            );
-            const result = await response.json();
-            console.log(result)
-            if (response.ok && Array.isArray(result.data)) {
-                const cover = result.data.find(item => item.type === 1);
-                if (cover) {
-                    setCoverImage(cover.image ? encodeURI(cover.image) : null);
-                    setCoverColorCode(cover.colorCode ? cover.colorCode : "#000000");
-                }
-
-                const navBackground = result.data.find(item => item.type === 2);
-                if (navBackground) {
-                    setNavBackground(navBackground.image ? encodeURI(navBackground.image) : null);
-                    setNavColorCode(navBackground.colorCode ? navBackground.colorCode : "#000000");
-                }
-
-                const navBorder = result.data.find(item => item.type === 3);
-                if (navBorder) {
-                    setNavBorder(navBorder.colorCode || "#cccccc");
-                }
-
-                const mainBackground = result.data.find(item => item.type === 4);
-                if (mainBackground) {
-                    setBackgroundImage(mainBackground.image ? encodeURI(mainBackground.image) : null);
-                }
-
-                const achievementBorder = result.data.find(item => item.type === 5);
-                if (achievementBorder) {
-                    setAchievementBorder(achievementBorder.colorCode || "#FFD700");
-                }
-
-                const achievementBackground = result.data.find(item => item.type === 6);
-                if (achievementBackground) {
-                    setAchievementBackground(achievementBackground.image ? encodeURI(achievementBackground.image) : null);
-                    setAchievementBackgroundColorCode(achievementBackground?.colorCode || null);
-                }
-
-                const statisticBorder = result.data.find(item => item.type === 7);
-                if (statisticBorder) {
-                    setStatisticBorder(statisticBorder.colorCode || "#FFD700");
-                }
-
-                const statisticBackground = result.data.find(item => item.type === 8);
-                if (statisticBackground) {
-                    setStatisticBackground(statisticBackground.image ? encodeURI(statisticBackground.image) : null);
-                    setStatisticBackgroundColorCode(statisticBackground?.colorCode || null);
-                }
-
-                const achievementTitleBackgroundData = result.data.find(item => item.type === 9);
-                if (achievementTitleBackgroundData) {
-                    setAchievementTitleBackground(achievementTitleBackgroundData.image ? encodeURI(achievementTitleBackgroundData.image) : null);
-                    setAchievementTitleColorCode(achievementTitleBackgroundData?.colorCode || null);
-                }
-
-                const statisticTitleBackgroundData = result.data.find(item => item.type === 10);
-                if (statisticTitleBackgroundData) {
-                    setStatisticTitleBackground(statisticTitleBackgroundData.image ? encodeURI(statisticTitleBackgroundData.image) : null);
-                    setStatisticTitleColorCode(statisticTitleBackgroundData?.colorCode || null);
-                } else {
-                }
-                console.error("Lỗi khi lấy dữ liệu hình ảnh:", result.message);
-            }
-        } catch (error) {
-            console.error("Lỗi khi gọi API:", error);
-        }
+    const accessToken = localStorage.getItem("accessToken");
+    const requestHeaders = {
+        "Content-Type": "application/json",
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` })
     };
 
 
@@ -151,6 +79,11 @@ const UserPage = () => {
         displayName: "Loading...",
         email: "Loading...",
     });
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!token);
+    }, []);
 
     // useEffect(() => {
     //     if (typeof userData.isMine !== "undefined") {
@@ -169,10 +102,7 @@ const UserPage = () => {
                     `https://api-poemtown-staging.nodfeather.win/api/users/v1/profile/online/${username}`,
                     {
                         method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                            "Content-Type": "application/json",
-                        },
+                        headers: requestHeaders
                     }
                 );
                 const result = await response.json();
@@ -282,7 +212,7 @@ const UserPage = () => {
 
     return (
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-            <Headeruser />
+            { isLoggedIn ? <Headeruser /> : <Headerdefault /> }
 
             {/* Cover Image */}
             {/* {activeTab === "Trang trí" ? (
@@ -329,7 +259,7 @@ const UserPage = () => {
                             <YourRecordFile achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} />
                         )}
                         {activeTab === "Bộ sưu tập của bạn" && (
-                            <YourCollection isCreatingCollection={isCreatingCollection} setIsCreatingCollection={setIsCreatingCollection} avatar={userData.avatar} isMine={userData.isMine} displayName={displayName} username={username}/>
+                            <YourCollection isCreatingCollection={isCreatingCollection} setIsCreatingCollection={setIsCreatingCollection} avatar={userData.avatar} isMine={userData.isMine} displayName={displayName} username={username} />
                         )}
                         {activeTab === "Bookmark của bạn" && (
                             <YourBookmark />
