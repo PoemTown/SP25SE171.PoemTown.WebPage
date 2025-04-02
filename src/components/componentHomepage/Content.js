@@ -355,7 +355,7 @@ const Content = ({ activeTab }) => {
             {!isBookmarkTab && (
               <div style={styles.idea}>
                 <p style={{ fontWeight: "bold", marginTop: "5px", marginLeft: "10px" }}>Thông điệp của ngày: </p>
-                <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Ngôn từ chỉ đóng góp, Tâm hồn của bạn mới là nơi cảm xúc bắt đầu</p>
+                <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Chúc mừng sinh nhật Võ Đăng Khôi (Kalen Guy)</p>
               </div>
             )}
             {isLoading && (
@@ -525,7 +525,7 @@ const Content = ({ activeTab }) => {
                   </li>
                   <div style={styles.topItemLine} />
                 </div>
-              ))}
+              ))} 
             </ul>
             <a href="#see-more" style={styles.seeMore}>
               Xem thêm &gt;
