@@ -47,34 +47,40 @@ const pageSizeOptions = [
 
 const TransactionsManagement = () => {
     const [transactions, setTransactions] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
     const [selectedTransaction, setSelectedTransaction] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [pageSize, setPageSize] = useState(25);
-    const [totalTransactions, setTotalTransactions] = useState(0);
+    const [totalRecords, setTotalRecords] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         fetchTransactions();
-    }, [pageSize]);
+    }, [pageSize, currentPage]);
 
     const fetchTransactions = async () => {
+        setLoading(true);
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/transactions/v1/admin?pageSize=${pageSize}`,
+                `https://api-poemtown-staging.nodfeather.win/api/transactions/v1/admin`,
                 {
+                    params: {
+                        pageNumber: currentPage,
+                        pageSize: pageSize
+                    },
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                     },
                 }
             );
-            const sortedTransactions = response.data.data.sort(
-                (a, b) => new Date(b.createdTime) - new Date(a.createdTime)
-            );
-            setTransactions(sortedTransactions);
-            setTotalTransactions(sortedTransactions.length);
+            setTransactions(response.data.data);
+            setTotalRecords(response.data.totalRecords || 0);
+            setTotalPages(response.data.totalPages || 1);
         } catch (err) {
-            console.error("Không thể tải danh sách giao dịch.");
+            console.error("Không thể tải danh sách giao dịch:", err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -92,7 +98,7 @@ const TransactionsManagement = () => {
             setSelectedTransaction(response.data.data);
             setOpenDialog(true);
         } catch (err) {
-            console.error("Không thể tải chi tiết giao dịch.");
+            console.error("Không thể tải chi tiết giao dịch:", err);
         } finally {
             setLoading(false);
         }
@@ -100,19 +106,14 @@ const TransactionsManagement = () => {
 
     const handlePageSizeChange = (event) => {
         setPageSize(event.target.value);
-        setCurrentPage(0); // Reset về trang đầu tiên khi thay đổi pageSize
+        setCurrentPage(1); // Reset to first page when changing page size
     };
 
-    const chunkTransactions = (transactions, size) => {
-        const chunked = [];
-        for (let i = 0; i < transactions.length; i += size) {
-            chunked.push(transactions.slice(i, i + size));
+    const handlePageChange = (newPage) => {
+        if (newPage >= 1 && newPage <= totalPages) {
+            setCurrentPage(newPage);
         }
-        return chunked;
     };
-
-    const transactionGroups = chunkTransactions(transactions, 7);
-    const totalPages = transactionGroups.length;
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -122,7 +123,7 @@ const TransactionsManagement = () => {
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="subtitle1">
-                    Tổng số giao dịch: {totalTransactions}
+                    Tổng số giao dịch: {totalRecords}
                 </Typography>
                 
                 <TextField
@@ -141,10 +142,14 @@ const TransactionsManagement = () => {
                 </TextField>
             </Box>
 
-            {transactionGroups.length > 0 && (
+            {loading ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+                    <CircularProgress />
+                </Box>
+            ) : transactions.length > 0 ? (
                 <TableContainer component={Paper} sx={{ mt: 2 }}>
                     <Typography variant="h6" sx={{ p: 2 }}>
-                        Trang {currentPage + 1} / {totalPages}
+                        Trang {currentPage} / {totalPages}
                     </Typography>
                     <Table>
                         <TableHead>
@@ -162,14 +167,14 @@ const TransactionsManagement = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {transactionGroups[currentPage].map((transaction, index) => (
+                            {transactions.map((transaction, index) => (
                                 <TableRow
                                     key={transaction.id}
                                     hover
                                     onClick={() => fetchTransactionDetail(transaction.id)}
                                     sx={{ cursor: "pointer" }}
                                 >
-                                    <TableCell>{index + 1 + currentPage * 7}</TableCell>
+                                    <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                     <TableCell>{transaction.description || "Không có mô tả"}</TableCell>
                                     <TableCell>{getTransactionType(transaction.type)}</TableCell>
                                     <TableCell>{transaction.amount ? transaction.amount.toLocaleString() : "0"} VNĐ</TableCell>
@@ -186,18 +191,26 @@ const TransactionsManagement = () => {
                         </TableBody>
                     </Table>
                 </TableContainer>
+            ) : (
+                <Typography variant="body1" sx={{ mt: 2 }}>Không có giao dịch nào</Typography>
             )}
 
             <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
-                <IconButton onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 0}>
+                <IconButton 
+                    onClick={() => handlePageChange(currentPage - 1)} 
+                    disabled={currentPage === 1 || loading}
+                >
                     <ArrowBackIos />
                 </IconButton>
 
                 <Typography variant="h6" sx={{ mx: 2 }}>
-                    {currentPage + 1} / {totalPages}
+                    {currentPage} / {totalPages}
                 </Typography>
 
-                <IconButton onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages - 1}>
+                <IconButton 
+                    onClick={() => handlePageChange(currentPage + 1)} 
+                    disabled={currentPage === totalPages || loading}
+                >
                     <ArrowForwardIos />
                 </IconButton>
             </Box>
