@@ -17,6 +17,7 @@ import ModeratorManager from "./Tabs/ModeratorManager";
 import PoemManagement from "./Tabs/PoemManagement";
 import ReportFromUser from "./Tabs/ReportFromUser";
 import CollectionManagement from "./Tabs/CollectionManagement";
+import CommunityCollectionManagement from "./Tabs/CommunityCollectionManagement";
 
 const drawerWidth = 280;
 
@@ -58,6 +59,7 @@ const AdminPage = () => {
                         { key: "orders", icon: <ShoppingCart />, text: "Order Management" },
                         { key: "accounts", icon: <ManageAccounts />, text: "Account User Management" },
                         { key: "poems", icon: <LibraryBooks />, text: "Poems Management" },
+                        { key: "collections", icon: <Collections />, text: "Collections Management" },
                         { key: "community-collections", icon: <Collections />, text: "Community Collections Management" },
                         { key: "reports", icon: <Report />, text: "Reports from Users" },
                         { key: "notifications", icon: <Notifications />, text: "Notification Management" },
@@ -112,7 +114,8 @@ const AdminPage = () => {
                 {currentPage === "moderators" && <ModeratorManager />}
                 {currentPage === "poems" && <PoemManagement />}
                 {currentPage === "reports" && <ReportFromUser />}
-                {currentPage === "community-collections" && <CollectionManagement />}
+                {currentPage === "community-collections" && <CommunityCollectionManagement />}
+                {currentPage === "collections" && <CollectionManagement />}
             </Box>
         </Box>
     );

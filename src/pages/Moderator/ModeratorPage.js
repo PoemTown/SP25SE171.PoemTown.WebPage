@@ -9,6 +9,10 @@ import {
     ManageAccounts, Home
 } from "@mui/icons-material";
 import ReportFromUser from "../Admin/Tabs/ReportFromUser";
+import PoemManagement from "../Admin/Tabs/PoemManagement";
+import CollectionManagement from "../Admin/Tabs/CollectionManagement";
+import CommunityCollectionManagement from "../Admin/Tabs/CommunityCollectionManagement";
+import AccountManagement from "../Admin/Tabs/AccountManagement";
 
 const drawerWidth = 280;
 
@@ -93,6 +97,10 @@ const ModeratorPage = () => {
             <Box sx={{ flexGrow: 1, p: 3 }}>
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>Page: {currentPage}</Typography>
                 {currentPage === "reports" && <ReportFromUser />}
+                {currentPage === "poems" && <PoemManagement />}
+                {currentPage === "collections" && <CollectionManagement />}
+                {currentPage === "community-collections" && <CommunityCollectionManagement />}
+                {currentPage === "users" && <AccountManagement />}
             </Box>
         </Box>
     );
