@@ -16,7 +16,7 @@ const CollectionDetail = () => {
     const requestHeaders = {
         "Content-Type": "application/json",
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
-      };
+    };
     const headers = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`
@@ -129,6 +129,8 @@ const CollectionDetail = () => {
     };
 
     const handleLike = async (postId) => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
 
         const isCurrentlyLiked = likedPosts[postId];
         const method = isCurrentlyLiked ? "DELETE" : "POST";
@@ -167,6 +169,8 @@ const CollectionDetail = () => {
     }
 
     const handleBookmark = async (id) => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
 
         const endpoint = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
 
@@ -286,13 +290,15 @@ const CollectionDetail = () => {
                                     </div>
                                 </div>
                             </div>
-
+                            {collectionDetails.isMine ?
                             <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer', fontSize: '1rem' }}>
                                 Chỉnh sửa <span><MdEdit /></span>
                             </div>
+                            : 
+                            <></>}
                         </div>
                     </div>
-                    <div style={{display: "flex", flexDirection: "row", gap: "40px"}}>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
                         <div style={{ flex: 7, display: "flex", flexDirection: "column", gap: "15px" }}>
                             {poems.map((poem) => (
 
@@ -320,10 +326,10 @@ const CollectionDetail = () => {
                             }}>
                                 <h3 style={{ fontWeight: "bold", textAlign: 'center', margin: "0" }}>Thống kê tập thơ</h3>
                                 <ul style={{ fontSize: "14px", color: "#000", listStyle: "none", padding: 0, }}>
-                                    <li><span style={{fontWeight: "bold"}}>Tổng số bài thơ:</span> <span >{collectionDetails.totalChapter}</span></li>
-                                    <li><span style={{fontWeight: "bold"}}>Tổng số audio:</span> <span>{collectionDetails.totalRecord}</span></li>
-                                    <li><span style={{fontWeight: "bold"}}>Ngày phát hành:</span> <span>{formatDate(collectionDetails.createdTime)}</span></li>
-                                    <li><span style={{fontWeight: "bold"}}>Cập nhật gần nhất:</span> <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Tổng số bài thơ:</span> <span >{collectionDetails.totalChapter}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Tổng số audio:</span> <span>{collectionDetails.totalRecord}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Ngày phát hành:</span> <span>{formatDate(collectionDetails.createdTime)}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Cập nhật gần nhất:</span> <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
                                 </ul>
                             </div>
                         </div>

@@ -59,6 +59,7 @@ const LoginPage = () => {
 
                 const decodedToken = jwtDecode(accessToken);
                 localStorage.setItem("username", decodedToken.UserName);
+                localStorage.setItem("userId", decodedToken.UserId);
 
                 if (role.includes("USER")) {
                     window.location.href = "/";
