@@ -1,5 +1,5 @@
 # Stage 1: Build the React app
-FROM node:19-alpine as build
+FROM node:19 as build
 
 # Set the working directory inside the container
 WORKDIR /app
@@ -12,9 +12,10 @@ RUN npm install
 
 # Copy the rest of the application files
 COPY . .
+ENV NODE_OPTIONS="--max_old_space_size=4096"
 
 # Build the React app for production
-RUN npm run build
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
 
 # Stage 2: Serve the app using NGINX
 FROM nginx:alpine

@@ -14,6 +14,7 @@ const NavigationTabs = ({ isMine, activeTab, setActiveTab, NavBorder, navColorCo
     ] : [
         "Thơ của bạn",
         "Bộ sưu tập của bạn",
+        "Bản ghi âm",
     ];
 
     return (

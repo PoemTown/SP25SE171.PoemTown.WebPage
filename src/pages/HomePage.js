@@ -16,11 +16,15 @@ const Homepage = () => {
   const { tab } = useParams();
   const currentTab = tab || "lastest";
 
-  useEffect(() => {
-    const currentTab = window.location.pathname.split('/')[1] || 'latest';
-    setActiveTab(currentTab);
-  }, [currentTab]);
+  // currentTab lấy từ useParams(), nhưng lại gọi setActiveTab bên trong useEffect dẫn đến trễ một lần render.
+  // useEffect(() => {
+  //   const currentTab = window.location.pathname.split('/')[1] || 'latest';
+  //   console.log(currentTab);
+  //   setActiveTab(currentTab);
+  // }, [currentTab]);
 
+
+  
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     setIsLoggedIn(!!token);
@@ -51,7 +55,7 @@ const Homepage = () => {
     }
 
     navigate(`/${newTab}`);
-    setActiveTab(newTab);
+    // setActiveTab(newTab);
 
     if (newTab === "yourpage") {
       const username = localStorage.getItem("username");
@@ -100,7 +104,8 @@ const Homepage = () => {
               key={tabItem.key}
               style={{
                 ...styles.navItem,
-                ...(activeTab === tabItem.key ? styles.navLinkActive : {}),
+                // ...(activeTab === tabItem.key ? styles.navLinkActive : {}),
+                ...(tab === tabItem.key ? styles.navLinkActive : {}),
               }}
             >
               <a
@@ -118,7 +123,9 @@ const Homepage = () => {
         </ul>
       </nav>
       <div style={styles.content}>
-        <Content activeTab={activeTab} />
+        {/* <Content activeTab={activeTab} /> */}
+        {/* Sử dụng tab từ param sẽ chính xác hơn/> */}
+        <Content activeTab={tab || "latest"} /> 
       </div>
       <Footer />
     </div>

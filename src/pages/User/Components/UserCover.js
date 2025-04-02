@@ -1,8 +1,50 @@
-import React, { useEffect } from "react";
+import { Button, message } from "antd";
+import React, { useEffect, useState } from "react";
+import { CiCirclePlus } from "react-icons/ci";
 import { FaUserPlus } from "react-icons/fa";
+import { FaCheck } from "react-icons/fa6";
 import { HiUsers } from "react-icons/hi2";
 
 const UserCover = ({ isMine, coverImage, coverColorCode, userData }) => {
+    const [isFollowed, setIsFollowed] = useState(false);
+    useEffect(() => {
+        console.log("userdata", userData);
+        if (userData && typeof userData.followed === "boolean") {
+            setIsFollowed(userData.followed);
+        }
+    }, [userData]);
+
+    const handleFollow = async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            message.error("Bạn cần đăng nhập để theo dõi người dùng!");
+            return;
+        }
+
+        try {
+            const method = isFollowed ? "DELETE" : "POST";
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/followers/${userData.userId}`,
+                {
+                    method,
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`,
+                    },
+                }
+            );
+            if (response.ok) {
+                setIsFollowed(!isFollowed);
+                message.success(isFollowed ? "Đã hủy theo dõi!" : "Theo dõi thành công!");
+            } else {
+                message.error("Có lỗi xảy ra, vui lòng thử lại!");
+            }
+        } catch (error) {
+            console.error("Error following/unfollowing:", error);
+            message.error("Đã xảy ra lỗi!");
+        }
+    };
+
     return (
         <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
             {coverImage && (
@@ -38,17 +80,27 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData }) => {
                     }}
                 />
                 <div style={{ marginLeft: "15px", display: "flex", flexDirection: "column", gap: "15px" }}>
-                    <div style={{display: "flex", flexDirection: "column", gap: "0px"}}>
-                        <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: coverColorCode  }}>{userData.displayName}</h2>
-                        <p style={{ color: coverColorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
+                            <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: coverColorCode }}>{userData.displayName}</h2>
+                            <p style={{ color: coverColorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
+                        </div>
+                        {isMine ? <></> :
+                            <div>
+                                {isFollowed ?
+                                    <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck/>} iconPosition="end">Đã Theo dõi </Button>
+                                :
+                                    <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
+                                }
+                            </div>}
                     </div>
                     <div style={{ fontSize: "14px", color: coverColorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                            <HiUsers color={coverColorCode} /> <span style={{color: coverColorCode}}>{userData.totalFollowers} Người theo dõi</span>
+                            <HiUsers color={coverColorCode} /> <span style={{ color: coverColorCode }}>{userData.totalFollowers} Người theo dõi</span>
                         </div>
-                        <div style={{color: coverColorCode}}>•</div>
+                        <div style={{ color: coverColorCode }}>•</div>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
-                            <FaUserPlus color={coverColorCode} /> <span style={{color: coverColorCode}}>{userData.totalFollowings} Đang theo dõi</span>
+                            <FaUserPlus color={coverColorCode} /> <span style={{ color: coverColorCode }}>{userData.totalFollowings} Đang theo dõi</span>
                         </div>
                     </div>
                 </div>

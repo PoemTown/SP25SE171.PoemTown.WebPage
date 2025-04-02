@@ -19,31 +19,35 @@ const AchievementAndStatistic = ({
   statisticTitleColorCode,
 }) => {
   const [statistic, setStatistic] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const accessToken = localStorage.getItem("accessToken");
+  const [isLoading, setIsLoading] = useState(false);
+  // const accessToken = localStorage.getItem("accessToken");
+  // const requestHeaders = {
+  //   "Content-Type": "application/json",
+  //   ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+  // };
 
-  useEffect(() => {
-    const fetchStatistic = async () => {
-      try {
-        const response = await fetch(
-          "https://api-poemtown-staging.nodfeather.win/api/statistics/v1",
-          {
-            headers: { Authorization: `Bearer ${accessToken}` },
-          }
-        );
-        const statisticData = await response.json();
-        if (statisticData.statusCode === 200) {
-          setStatistic(statisticData.data);
-        }
-      } catch (error) {
-        console.error("Error fetching statistic:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  // useEffect(() => {
+  //   const fetchStatistic = async () => {
+  //     try {
+  //       const response = await fetch(
+  //         "https://api-poemtown-staging.nodfeather.win/api/statistics/v1",
+  //         {
+  //           headers: requestHeaders,
+  //         }
+  //       );
+  //       const statisticData = await response.json();
+  //       if (statisticData.statusCode === 200) {
+  //         setStatistic(statisticData.data);
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching statistic:", error);
+  //     } finally {
+  //       setIsLoading(false);
+  //     }
+  //   };
 
-    fetchStatistic();
-  }, [accessToken]);
+  //   fetchStatistic();
+  // }, [accessToken]);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "30px", width: "100%" }}>
@@ -165,14 +169,14 @@ const AchievementAndStatistic = ({
           }}
         >
           <ul style={{ fontSize: "14px", color: statisticBackgroundColorCode, listStyle: "none", padding: 0, margin: 0 }}>
-            <li>Tổng bài viết: {isLoading ? <Spin size="small" /> : statistic?.totalPoems || 0}</li>
-            <li>Tổng bộ sưu tập: {isLoading ? <Spin size="small" /> : statistic?.totalCollections || 0}</li>
-            <li>Tổng audio cá nhân: {isLoading ? <Spin size="small" /> : statistic?.totalPersonalAudios || 0}</li>
-            <li>Tổng lượt thích: {isLoading ? <Spin size="small" /> : statistic?.totalLikes || 0}</li>
-            <li>Đang theo dõi: {isLoading ? <Spin size="small" /> : statistic?.following || 0}</li>
-            <li>Người theo dõi: {isLoading ? <Spin size="small" /> : statistic?.followers || 0}</li>
-            <li>Bookmark bài viết: {isLoading ? <Spin size="small" /> : statistic?.poemBookmarks || 0}</li>
-            <li>Bookmark bộ sưu tập: {isLoading ? <Spin size="small" /> : statistic?.collectionBookmarks || 0}</li>
+            <li>Tổng bài viết: {isLoading ? <Spin size="small" /> : userStatistic?.totalPoems || 0}</li>
+            <li>Tổng bộ sưu tập: {isLoading ? <Spin size="small" /> : userStatistic?.totalCollections || 0}</li>
+            <li>Tổng audio cá nhân: {isLoading ? <Spin size="small" /> : userStatistic?.totalPersonalAudios || 0}</li>
+            <li>Tổng lượt thích: {isLoading ? <Spin size="small" /> : userStatistic?.totalLikes || 0}</li>
+            <li>Đang theo dõi: {isLoading ? <Spin size="small" /> : totalFollowings || 0}</li>
+            <li>Người theo dõi: {isLoading ? <Spin size="small" /> : totalFollowers || 0}</li>
+            <li>Bookmark bài viết: {isLoading ? <Spin size="small" /> : userStatistic?.poemBookmarks || 0}</li>
+            <li>Bookmark bộ sưu tập: {isLoading ? <Spin size="small" /> : userStatistic?.collectionBookmarks || 0}</li>
           </ul>
           <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
             Xem thêm &gt;

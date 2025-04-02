@@ -13,7 +13,10 @@ const CollectionDetail = () => {
     const { id } = useParams();
     const accessToken = localStorage.getItem("accessToken");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-
+    const requestHeaders = {
+        "Content-Type": "application/json",
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+      };
     const headers = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`
@@ -39,7 +42,7 @@ const CollectionDetail = () => {
                 //  Gọi API lấy chi tiết bộ sưu tập
                 const response1 = await fetch(
                     `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}/detail`,
-                    { headers: { Authorization: `Bearer ${accessToken}` } }
+                    { headers: requestHeaders }
                 );
                 const data1 = await response1.json();
                 if (data1.statusCode === 200) {
@@ -50,7 +53,7 @@ const CollectionDetail = () => {
                 // Gọi API lấy danh sách bài thơ trong bộ sưu tập
                 const response2 = await fetch(
                     `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${id}`,
-                    { headers: { Authorization: `Bearer ${accessToken}` } }
+                    { headers: requestHeaders }
                 );
                 const data2 = await response2.json();
                 if (data2.statusCode === 200) {
@@ -82,7 +85,7 @@ const CollectionDetail = () => {
             const response = await fetch(
                 "https://api-poemtown-staging.nodfeather.win/api/collections/v1",
                 {
-                    headers: { Authorization: `Bearer ${accessToken}` },
+                    headers: requestHeaders,
                 }
             );
             const data = await response.json();
@@ -235,9 +238,7 @@ const CollectionDetail = () => {
                                     src={collectionDetails.collectionImage ? collectionDetails.collectionImage : "./collection1.png"}
                                     alt="Ảnh bộ sưu tập"
                                     style={{
-                                        maxHeight: "100%",
-                                        objectFit: "cover",
-                                        borderRadius: "8px",
+                                        width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px"
                                     }}
                                 />
                             </div>
