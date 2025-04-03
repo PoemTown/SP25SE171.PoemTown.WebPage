@@ -66,34 +66,57 @@ const Headeruser = () => {
         throw new Error("Failed to update notification status");
       }
       console.log("Notification updated successfully");
-      setAnnouncements(prev => prev.filter(item => item.id !== notif.id));
+
+      // Cập nhật lại danh sách thông báo để đánh dấu thông báo đã đọc
+      setAnnouncements(prev => {
+        return prev.map(item =>
+          item.id === notif.id ? { ...item, isRead: true } : item
+        );
+      });
     } catch (error) {
       console.error("Error updating notification:", error);
     }
   };
 
+
   const notificationMenu = (
-    <Menu style={{ width: 300 }}>
-      {announcements != null ? (
+    <Menu style={{ width: 320, borderRadius: "10px", padding: "10px", backgroundColor: "#f9f9f9", boxShadow: "0px 4px 8px rgba(0,0,0,0.2)" }}>
+      {announcements && announcements.length > 0 ? (
         <List
           dataSource={announcements}
           renderItem={(notif, index) => (
-            <Menu.Item key={index} onClick={() => handleNotificationClick(notif)}>
-              <div style={{ padding: "5px 10px", backgroundColor: notif.isRead ? 'transparent' : 'red', color: notif.isRead ? 'initial' : '#fff' }}>
-                <strong style={{ color: "#4A90E2" }}>{notif.title}</strong>
-                <p style={{ margin: "5px 0", fontSize: "14px", color: "#555" }}>{notif.content}</p>
-                <hr style={{ margin: "5px 0", border: "0.5px solid #ddd" }} />
+            <Menu.Item key={index} onClick={() => handleNotificationClick(notif)} style={{ padding: 0 }}>
+              <div
+                style={{
+                  padding: "10px",
+                  marginBottom: "5px",
+                  borderRadius: "8px",
+                  backgroundColor: notif.isRead ? "#fff" : "#FFE5E5",
+                  transition: "background 0.3s",
+                  cursor: "pointer"
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = notif.isRead ? "#f0f0f0" : "#FFC7C7"}
+                onMouseLeave={(e) => e.currentTarget.style.backgroundColor = notif.isRead ? "#fff" : "#FFE5E5"}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <BellOutlined style={{ fontSize: "18px", color: "#4A90E2" }} />
+                  <div>
+                    <strong style={{ color: "#333", fontSize: "16px" }}>{notif.title}</strong>
+                    <p style={{ margin: "5px 0 0", fontSize: "14px", color: "#555" }}>{notif.content}</p>
+                  </div>
+                </div>
               </div>
             </Menu.Item>
           )}
         />
       ) : (
         <Menu.Item>
-          <p style={{ textAlign: "center", padding: "10px" }}>Không có thông báo mới</p>
+          <p style={{ textAlign: "center", padding: "10px", color: "#777" }}>Không có thông báo mới</p>
         </Menu.Item>
       )}
     </Menu>
   );
+
 
   const menuItems = [
     { key: "profile", label: "Profile", onClick: () => navigate("/profile") },
@@ -122,10 +145,14 @@ const Headeruser = () => {
       <div style={styles.icons}>
         <ShopOutlined style={styles.icon} onClick={() => navigate("/shop")} />
         <Dropdown overlay={notificationMenu} trigger={["click"]} placement="bottomRight">
-          <Badge count={announcements != null ? announcements.length : 0} overflowCount={9}>
+          <Badge
+            count={announcements.filter(notif => !notif.isRead).length}
+            overflowCount={9}
+          >
             <BellOutlined style={styles.icon} />
           </Badge>
         </Dropdown>
+
         <Dropdown overlay={menu} trigger={["click"]}>
           <UserOutlined style={{ ...styles.icon, cursor: "pointer" }} />
         </Dropdown>
