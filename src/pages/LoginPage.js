@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
+import { useSignalR } from "../SignalR/SignalRContext";
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ email: "", password: "" });
@@ -9,6 +10,9 @@ const LoginPage = () => {
     const [forgotEmail, setForgotEmail] = useState("");
     const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
+
+    // SignalR
+    const {createAnnouncementConnection } = useSignalR();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -67,6 +71,9 @@ const LoginPage = () => {
                 } else {
                     setError("Vai trò không hợp lệ.");
                 }
+
+                // Tạo kết nối tới SignalR
+                createAnnouncementConnection(jwtDecode.UserId);
             }
         } catch (err) {
             console.error("Login failed:", err.response?.data || err.message);
