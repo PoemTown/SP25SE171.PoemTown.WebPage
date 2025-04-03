@@ -42,14 +42,23 @@ export const SignalRProvider = ({ children }) => {
         // Kết nối và nhận data từ Hub, hàm ReceiveAnnouncement
         newAnnouncementConnection.on("ReceiveAnnouncement", (announcement) => {
             console.log("New announcement:", announcement);
-            setAnnouncements(prev => [...prev, announcement]);
+            // setAnnouncements(prev => [...prev, announcement]);
+
+            setAnnouncements(prev => {
+                const exists = prev.some(n => n.id === announcement.id);
+                if (exists) {
+                    // If it exists, update it instead of adding a duplicate
+                    return prev.map(n => (n.id === announcement.id ? announcement : n));
+                }
+                return [...prev, announcement]; // Add only if it's new
+            });
         });
 
         setAnnouncementConnection(newAnnouncementConnection);
     };
 
     return (
-        <SignalRContext.Provider value={{ announcementConnection, announcements, createAnnouncementConnection }}>
+        <SignalRContext.Provider value={{ announcementConnection, announcements, setAnnouncements, createAnnouncementConnection }}>
             {children}
         </SignalRContext.Provider>
     );
