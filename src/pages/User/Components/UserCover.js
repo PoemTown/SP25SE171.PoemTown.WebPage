@@ -5,14 +5,7 @@ import { FaUserPlus } from "react-icons/fa";
 import { FaCheck } from "react-icons/fa6";
 import { HiUsers } from "react-icons/hi2";
 
-const UserCover = ({ isMine, coverImage, coverColorCode, userData }) => {
-    const [isFollowed, setIsFollowed] = useState(false);
-    useEffect(() => {
-        console.log("userdata", userData);
-        if (userData && typeof userData.followed === "boolean") {
-            setIsFollowed(userData.followed);
-        }
-    }, [userData]);
+const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSuccess  }) => {
 
     const handleFollow = async () => {
         const token = localStorage.getItem("accessToken");
@@ -22,7 +15,8 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData }) => {
         }
 
         try {
-            const method = isFollowed ? "DELETE" : "POST";
+            const method = userData.isFollowed ? "DELETE" : "POST";
+
             const response = await fetch(
                 `https://api-poemtown-staging.nodfeather.win/api/followers/${userData.userId}`,
                 {
@@ -33,9 +27,14 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData }) => {
                     },
                 }
             );
+            
             if (response.ok) {
-                setIsFollowed(!isFollowed);
-                message.success(isFollowed ? "Đã hủy theo dõi!" : "Theo dõi thành công!");
+                // Trigger parent component refresh
+                onFollowSuccess();
+                message.success(userData.isFollowed 
+                    ? "Đã hủy theo dõi!" 
+                    : "Theo dõi thành công!"
+                );
             } else {
                 message.error("Có lỗi xảy ra, vui lòng thử lại!");
             }
@@ -87,7 +86,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData }) => {
                         </div>
                         {isMine ? <></> :
                             <div>
-                                {isFollowed ?
+                                {userData.isFollowed ?
                                     <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck/>} iconPosition="end">Đã Theo dõi </Button>
                                 :
                                     <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
