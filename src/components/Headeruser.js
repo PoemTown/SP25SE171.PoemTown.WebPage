@@ -92,6 +92,11 @@ const Headeruser = () => {
             Dành cho quản trị viên
           </a>
         )}
+        {roles.includes("MODERATOR") && (
+          <a style={styles.navLink} onClick={() => navigate("/mod")}>
+            Dành cho kiểm duyệt viên
+          </a>
+        )}
       </nav>
 
       {/* Icons Section */}

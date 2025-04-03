@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 
-const CollectionManagement = () => {
+const CommunityCollectionManagement = () => {
   const [collections, setCollections] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -32,7 +32,7 @@ const CollectionManagement = () => {
         
         if (response.data.statusCode === 200) {
           const nonCommunityCollections = response.data.data.filter(
-            collection => collection.isCommunity === false
+            collection => collection.isCommunity === true
           );
   
           setCollections(nonCommunityCollections);
@@ -364,4 +364,4 @@ const CollectionManagement = () => {
   );
 };
 
-export default CollectionManagement;
+export default CommunityCollectionManagement;

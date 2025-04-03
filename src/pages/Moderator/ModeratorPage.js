@@ -5,27 +5,22 @@ import {
     Typography
 } from "@mui/material";
 import { 
-    Dashboard, Logout, Gavel, Assignment, ReceiptLong, ManageAccounts, 
-    LibraryBooks, Collections, Report, Notifications, ShoppingCart, Home
+    Logout, LibraryBooks, Collections, Report, Notifications, 
+    ManageAccounts, Home
 } from "@mui/icons-material";
-import TransactionsManagement from "./Tabs/TransactionsManagement";
-import OrderManagement from "./Tabs/OrderManagement";
-import AccountManagement from "./Tabs/AccountManagement";
-import TemplateManagement from "./Tabs/TemplateManagement";
-import DashboardPage from "./Tabs/Dashboard";
-import ModeratorManager from "./Tabs/ModeratorManager";
-import PoemManagement from "./Tabs/PoemManagement";
-import ReportFromUser from "./Tabs/ReportFromUser";
-import CollectionManagement from "./Tabs/CollectionManagement";
-import CommunityCollectionManagement from "./Tabs/CommunityCollectionManagement";
+import ReportFromUser from "../Admin/Tabs/ReportFromUser";
+import PoemManagement from "../Admin/Tabs/PoemManagement";
+import CollectionManagement from "../Admin/Tabs/CollectionManagement";
+import CommunityCollectionManagement from "../Admin/Tabs/CommunityCollectionManagement";
+import AccountManagement from "../Admin/Tabs/AccountManagement";
 
 const drawerWidth = 280;
 
-const AdminPage = () => {
+const ModeratorPage = () => {
     const navigate = useNavigate();
 
     const [currentPage, setCurrentPage] = useState(() => {
-        return localStorage.getItem("currentPage") || "dashboard";
+        return localStorage.getItem("currentPage") || "reports";
     });
 
     useEffect(() => {
@@ -52,16 +47,11 @@ const AdminPage = () => {
                 </Box>
                 <List>
                     {[ 
-                        { key: "moderators", icon: <Gavel />, text: "Moderators Management" },
-                        { key: "templates", icon: <Assignment />, text: "Templates Management" },
-                        { key: "dashboard", icon: <Dashboard />, text: "Dashboard" },
-                        { key: "transactions", icon: <ReceiptLong />, text: "Transactions Management" },
-                        { key: "orders", icon: <ShoppingCart />, text: "Order Management" },
-                        { key: "accounts", icon: <ManageAccounts />, text: "Account User Management" },
-                        { key: "poems", icon: <LibraryBooks />, text: "Poems Management" },
-                        { key: "collections", icon: <Collections />, text: "Collections Management" },
-                        { key: "community-collections", icon: <Collections />, text: "Community Collections Management" },
-                        { key: "reports", icon: <Report />, text: "Reports from Users" },
+                        { key: "reports", icon: <Report />, text: "Report Management" },
+                        { key: "poems", icon: <LibraryBooks />, text: "Poem Management" },
+                        { key: "collections", icon: <Collections />, text: "Collection Management" },
+                        { key: "community-collections", icon: <Collections />, text: "Community Collection Management" },
+                        { key: "users", icon: <ManageAccounts />, text: "User Management" },
                         { key: "notifications", icon: <Notifications />, text: "Notification Management" },
                     ].map((item) => (
                         <ListItem disablePadding key={item.key}>
@@ -81,44 +71,39 @@ const AdminPage = () => {
                 
                 <Box sx={{ flexGrow: 1 }} />
                 
-                {/* Nút quay về trang chủ */}
+                {/* Home button */}
                 <ListItem disablePadding>
                     <ListItemButton 
                         onClick={() => navigate("/")} 
                         sx={{ backgroundColor: "#24292e", "&:hover": { backgroundColor: "#1e88e5" }, color: "#fff" }}
                     >
                         <ListItemIcon><Home sx={{ color: "#fff" }} /></ListItemIcon>
-                        <ListItemText primary="Quay về trang chủ" />
+                        <ListItemText primary="Back to Home" />
                     </ListItemButton>
                 </ListItem>
                 
-                {/* Nút đăng xuất */}
+                {/* Logout button */}
                 <ListItem disablePadding>
                     <ListItemButton 
                         onClick={handleLogout} 
                         sx={{ backgroundColor: "#24292e", "&:hover": { backgroundColor: "#b71c1c" }, color: "#fff" }}
                     >
                         <ListItemIcon><Logout sx={{ color: "#fff" }} /></ListItemIcon>
-                        <ListItemText primary="Đăng xuất" />
+                        <ListItemText primary="Logout" />
                     </ListItemButton>
                 </ListItem>
             </Drawer>
 
             <Box sx={{ flexGrow: 1, p: 3 }}>
-                <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>Trang: {currentPage}</Typography>
-                {currentPage === "transactions" && <TransactionsManagement />}
-                {currentPage === "orders" && <OrderManagement />}
-                {currentPage === "accounts" && <AccountManagement />}
-                {currentPage === "templates" && <TemplateManagement />}
-                {currentPage === "dashboard" && <DashboardPage />}
-                {currentPage === "moderators" && <ModeratorManager />}
-                {currentPage === "poems" && <PoemManagement />}
+                <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>Page: {currentPage}</Typography>
                 {currentPage === "reports" && <ReportFromUser />}
-                {currentPage === "community-collections" && <CommunityCollectionManagement />}
+                {currentPage === "poems" && <PoemManagement />}
                 {currentPage === "collections" && <CollectionManagement />}
+                {currentPage === "community-collections" && <CommunityCollectionManagement />}
+                {currentPage === "users" && <AccountManagement />}
             </Box>
         </Box>
     );
 };
 
-export default AdminPage;
+export default ModeratorPage;

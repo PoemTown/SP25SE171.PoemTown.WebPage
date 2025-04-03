@@ -63,10 +63,13 @@ const LoginPage = () => {
 
                 const decodedToken = jwtDecode(accessToken);
                 localStorage.setItem("username", decodedToken.UserName);
+                localStorage.setItem("userId", decodedToken.UserId);
 
                 if (role.includes("USER")) {
                     window.location.href = "/";
                 } else if (role.includes("ADMIN")) {
+                    window.location.href = "/";
+                } else if (role.includes("MODERATOR")) {
                     window.location.href = "/";
                 } else {
                     setError("Vai trò không hợp lệ.");
