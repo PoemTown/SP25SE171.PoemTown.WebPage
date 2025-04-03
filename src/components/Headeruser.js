@@ -95,7 +95,12 @@ const Headeruser = () => {
                   transition: "background 0.3s",
                   cursor: "pointer"
                 }}
-                onMouseEnter={(e) => e.currentTarget.style.backgroundColor = notif.isRead ? "#f0f0f0" : "#FFC7C7"}
+                onMouseEnter={(e) => {
+                  if(!notif.isRead) {
+                    handleNotificationClick(notif);
+                  }
+                  e.currentTarget.style.backgroundColor = notif.isRead ? "#f0f0f0" : "#FFC7C7"
+                }}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = notif.isRead ? "#fff" : "#FFE5E5"}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -146,7 +151,7 @@ const Headeruser = () => {
         <ShopOutlined style={styles.icon} onClick={() => navigate("/shop")} />
         <Dropdown overlay={notificationMenu} trigger={["click"]} placement="bottomRight">
           <Badge
-            count={announcements.filter(notif => !notif.isRead).length}
+            count={announcements != null ? announcements.filter(notif => !notif.isRead).length : 0}
             overflowCount={9}
           >
             <BellOutlined style={styles.icon} />
