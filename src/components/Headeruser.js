@@ -4,27 +4,31 @@ import { ShopOutlined, BellOutlined, UserOutlined } from "@ant-design/icons";
 import { Dropdown, Menu, Badge } from "antd";
 import { useSignalR } from "../SignalR/SignalRContext"; // Import the hook to access SignalR context
 import { jwtDecode } from 'jwt-decode';
-
-const Headeruser = () => {
+import { RiMessengerLine } from "react-icons/ri";
+import MessengerPage from "../pages/User/Chat/Chat";
+import ChatDropdown from "../pages/User/Chat/ChatDropdown";
+const Headeruser = ({ userData }) => {
   const navigate = useNavigate();
   const roles = JSON.parse(localStorage.getItem("role")) || [];
   const access_token = localStorage.getItem("accessToken");
 
-  const { announcements, setAnnouncements, createAnnouncementConnection , announcementConnection} = useSignalR();
+  const { announcements, setAnnouncements, createAnnouncementConnection, announcementConnection } = useSignalR();
+
+  const [refreshKey, setRefreshKey] = useState(0);
 
   let userId = null;
 
   // Tạo mới kết nối signalR nếu như hiện tại connection bị mất  
   useEffect(() => {
     // Check xem accessToken có hay không, không thì login
-    if(!access_token) {
+    if (!access_token) {
       navigate("login");
       return null;
     }
-  
+
     const decodedToken = jwtDecode(access_token);
     userId = decodedToken.UserId;
-    
+
     // Tạo mới announcement connection khi đã đăng nhập (userId lấy từ decoded token) nhưng chưa có kết nối
     if (!announcementConnection && userId) {
       createAnnouncementConnection(userId); // Establish connection if not already done
@@ -34,6 +38,8 @@ const Headeruser = () => {
   const handleNotificationClick = () => {
     console.log(announcements);
   };
+
+
 
   const notificationMenu = (
     <Menu>
@@ -49,6 +55,14 @@ const Headeruser = () => {
       )}
     </Menu>
   );
+
+  // const chatMenu = (
+  //   <Menu onClick={(e) => e.domEvent.stopPropagation()}>
+  //     <Menu.Item key="chat">
+  //       <MessengerPage userData={userData} refreshKey={refreshKey} /> {/* Truyền refreshKey vào MessengerPage */}
+  //     </Menu.Item>
+  //   </Menu>
+  // );
 
   const menuItems = [
     {
@@ -68,7 +82,9 @@ const Headeruser = () => {
   ];
 
   const menu = <Menu items={menuItems} />;
-
+  const handleChatRefresh = () => {
+    setRefreshKey((prevKey) => prevKey + 1);  // Increment refreshKey to trigger re-fetch
+  };
   return (
     <header style={styles.header}>
       {/* Logo Section */}
@@ -101,12 +117,15 @@ const Headeruser = () => {
 
       {/* Icons Section */}
       <div style={styles.icons}>
+        <ChatDropdown userData={userData} refreshKey={refreshKey} setRefreshKey={setRefreshKey} />
+
         <ShopOutlined style={styles.icon} onClick={() => navigate("/shop")} />
         <Dropdown overlay={notificationMenu} trigger={['click']}>
           <Badge>
             <BellOutlined style={styles.icon} />
           </Badge>
-        </Dropdown>        <Dropdown overlay={menu} trigger={['click']}>
+        </Dropdown>
+        <Dropdown overlay={menu} trigger={['click']}>
           <UserOutlined style={{ ...styles.icon, cursor: "pointer" }} />
         </Dropdown>
       </div>
