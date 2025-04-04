@@ -50,7 +50,7 @@ export const SignalRProvider = ({ children }) => {
                     // If it exists, update it instead of adding a duplicate
                     return prev.map(n => (n.id === announcement.id ? announcement : n));
                 }
-                return [...prev, announcement]; // Add only if it's new
+                return [announcement, ...prev]; // Add only if it's new
             });
         });
 
