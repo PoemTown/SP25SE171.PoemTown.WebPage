@@ -4,16 +4,19 @@ import { ShopOutlined, BellOutlined, UserOutlined } from "@ant-design/icons";
 import { Dropdown, Menu, Badge, List } from "antd";
 import { useSignalR } from "../SignalR/SignalRContext";
 import { jwtDecode } from 'jwt-decode';
+import ChatDropdown from "../pages/User/Chat/ChatDropdown";
 
-const Headeruser = () => {
+const Headeruser = ({ userData }) => {
   const navigate = useNavigate();
   const roles = JSON.parse(localStorage.getItem("role")) || [];
   const access_token = localStorage.getItem("accessToken");
   const { announcements, setAnnouncements, createAnnouncementConnection, announcementConnection } = useSignalR();
 
+  const [refreshKey, setRefreshKey] = useState(0);
   const [userId, setUserId] = useState(null);
 
-  const fetchAnnouncements = async (access_token) => {
+  // Fetch announcements
+  const fetchAnnouncements = async () => {
     try {
       const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/announcements/v1/mine", {
         method: "GET",
@@ -31,29 +34,29 @@ const Headeruser = () => {
     }
   };
 
-  const fetchData = async () => {
-    const data = await fetchAnnouncements(access_token);
-    setAnnouncements(data);  // Now this happens outside the async function
-  };
-
+  // Initialize the connection after user is decoded
   useEffect(() => {
-    if (!access_token) {
-      navigate("/login");
-      return;
+    if (access_token != null) {
+      const decodedToken = jwtDecode(access_token);
+      setUserId(decodedToken.UserId);
+  
+      if (!announcementConnection && userId) {
+        createAnnouncementConnection(userId);
+      }
     }
 
-    const decodedToken = jwtDecode(access_token);
-    setUserId(decodedToken.UserId);
-
-    if (!announcementConnection && userId) {
-      createAnnouncementConnection(userId);
-    }
   }, [access_token, announcementConnection, createAnnouncementConnection, navigate]);
 
+  // Fetch announcements after userId is set
   useEffect(() => {
-    fetchData();
-  }, [])
+    if (userId) {
+      fetchAnnouncements().then((data) => {
+        setAnnouncements(data);
+      });
+    }
+  }, [userId, setAnnouncements]);
 
+  // Handle notification click to mark as read
   const handleNotificationClick = async (notif) => {
     console.log("Notification clicked:", notif);
     try {
@@ -69,17 +72,14 @@ const Headeruser = () => {
       }
       console.log("Notification updated successfully");
 
-      // Cập nhật lại danh sách thông báo để đánh dấu thông báo đã đọc
-      setAnnouncements(prev => {
-        return prev.map(item =>
-          item.id === notif.id ? { ...item, isRead: true } : item
-        );
-      });
+      // Mark the notification as read in the state
+      setAnnouncements(prev => prev.map(item =>
+        item.id === notif.id ? { ...item, isRead: true } : item
+      ));
     } catch (error) {
       console.error("Error updating notification:", error);
     }
   };
-
 
   const notificationMenu = (
     <Menu style={{ width: 320, borderRadius: "10px", padding: "10px", backgroundColor: "#f9f9f9", boxShadow: "0px 4px 8px rgba(0,0,0,0.2)" }}>
@@ -87,11 +87,7 @@ const Headeruser = () => {
         <List
           dataSource={announcements}
           renderItem={(notif, index) => (
-            <Menu.Item key={index} onClick={() => {
-                if(!notif.isRead) {
-                  handleNotificationClick(notif)
-                }
-            }} style={{ padding: 0 }}>
+            <Menu.Item key={index} onClick={() => { if (!notif.isRead) handleNotificationClick(notif); }} style={{ padding: 0 }}>
               <div
                 style={{
                   padding: "10px",
@@ -102,10 +98,10 @@ const Headeruser = () => {
                   cursor: "pointer"
                 }}
                 onMouseEnter={(e) => {
-                  if(!notif.isRead) {
+                  if (!notif.isRead) {
                     handleNotificationClick(notif);
                   }
-                  e.currentTarget.style.backgroundColor = notif.isRead ? "#f0f0f0" : "#FFC7C7"
+                  e.currentTarget.style.backgroundColor = notif.isRead ? "#f0f0f0" : "#FFC7C7";
                 }}
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = notif.isRead ? "#fff" : "#FFE5E5"}
               >
@@ -128,14 +124,13 @@ const Headeruser = () => {
     </Menu>
   );
 
-
   const menuItems = [
     { key: "profile", label: "Profile", onClick: () => navigate("/profile") },
     { key: "logout", label: "Logout", onClick: () => { localStorage.clear(); navigate("/"); window.location.reload(); } },
   ];
 
   const menu = <Menu items={menuItems} />;
-
+  
   return (
     <header style={styles.header}>
       <div style={styles.logo} onClick={() => navigate("/")}>
@@ -147,13 +142,9 @@ const Headeruser = () => {
         <a href="#about-us" style={styles.navLink}>Về chúng tôi</a>
         {roles.includes("ADMIN") && <a style={styles.navLink} onClick={() => navigate("/admin")}>Dành cho quản trị viên</a>}
         {roles.includes("MODERATOR") && <a style={styles.navLink} onClick={() => navigate("/mod")}>Dành cho kiểm duyệt viên</a>}
-        {roles.includes("MODERATOR") && (
-          <a style={styles.navLink} onClick={() => navigate("/mod")}>
-            Dành cho kiểm duyệt viên
-          </a>
-        )}
       </nav>
       <div style={styles.icons}>
+        <ChatDropdown userData={userData} refreshKey={refreshKey} setRefreshKey={setRefreshKey} />
         <ShopOutlined style={styles.icon} onClick={() => navigate("/shop")} />
         <Dropdown overlay={notificationMenu} trigger={["click"]} placement="bottomRight">
           <Badge
@@ -163,7 +154,6 @@ const Headeruser = () => {
             <BellOutlined style={styles.icon} />
           </Badge>
         </Dropdown>
-
         <Dropdown overlay={menu} trigger={["click"]}>
           <UserOutlined style={{ ...styles.icon, cursor: "pointer" }} />
         </Dropdown>

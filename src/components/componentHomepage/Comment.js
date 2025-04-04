@@ -57,7 +57,7 @@ const Comment = React.memo(({
         </Menu>
     );
 
-    
+
     return (<div style={{ marginLeft: `${Math.min(depth, 3) * 20}px`, marginTop: 16 }}>
         <div style={{ display: 'flex', gap: 10, alignItems: 'start' }}>
             <img
@@ -95,21 +95,18 @@ const Comment = React.memo(({
                     </div>
                 </div>
                 <p style={{ margin: '8px 0' }}> <span style={{ color: "#005CC5" }}>{comment.parentCommentId !== null ? `@${comment.parentCommentAuthor?.displayName} ` : ""}</span>{comment.content}</p>
-
-                {depth < 3 && (
-                    <button
-                        onClick={() => onReply(comment.id)}
-                        style={{
-                            background: 'none',
-                            border: 'none',
-                            color: '#007bff',
-                            cursor: 'pointer',
-                            padding: 0
-                        }}
-                    >
-                        Trả lời
-                    </button>
-                )}
+                <button
+                    onClick={() => onReply(comment.id)}
+                    style={{
+                        background: 'none',
+                        border: 'none',
+                        color: '#007bff',
+                        cursor: 'pointer',
+                        padding: 0
+                    }}
+                >
+                    Trả lời
+                </button>
 
                 {currentReply === comment.id && (
                     <div style={{ marginTop: 8 }}>
