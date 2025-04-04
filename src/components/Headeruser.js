@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShopOutlined, BellOutlined, UserOutlined } from "@ant-design/icons";
 import { Dropdown, Menu, Badge, List } from "antd";
@@ -11,7 +11,7 @@ const Headeruser = () => {
   const access_token = localStorage.getItem("accessToken");
   const { announcements, setAnnouncements, createAnnouncementConnection, announcementConnection } = useSignalR();
 
-  let userId = null;
+  const [userId, setUserId] = useState(null);
 
   const fetchAnnouncements = async (access_token) => {
     try {
@@ -31,6 +31,11 @@ const Headeruser = () => {
     }
   };
 
+  const fetchData = async () => {
+    const data = await fetchAnnouncements(access_token);
+    setAnnouncements(data);  // Now this happens outside the async function
+  };
+
   useEffect(() => {
     if (!access_token) {
       navigate("/login");
@@ -38,19 +43,16 @@ const Headeruser = () => {
     }
 
     const decodedToken = jwtDecode(access_token);
-    userId = decodedToken.UserId;
-
-    const fetchData = async () => {
-      const data = await fetchAnnouncements(access_token);
-      setAnnouncements(data);  // Now this happens outside the async function
-    };
-
-    fetchData();
+    setUserId(decodedToken.UserId);
 
     if (!announcementConnection && userId) {
       createAnnouncementConnection(userId);
     }
-  }, [userId, createAnnouncementConnection]);
+  }, [access_token, announcementConnection, createAnnouncementConnection, navigate]);
+
+  useEffect(() => {
+    fetchData();
+  }, [])
 
   const handleNotificationClick = async (notif) => {
     console.log("Notification clicked:", notif);
@@ -85,7 +87,11 @@ const Headeruser = () => {
         <List
           dataSource={announcements}
           renderItem={(notif, index) => (
-            <Menu.Item key={index} onClick={() => handleNotificationClick(notif)} style={{ padding: 0 }}>
+            <Menu.Item key={index} onClick={() => {
+                if(!notif.isRead) {
+                  handleNotificationClick(notif)
+                }
+            }} style={{ padding: 0 }}>
               <div
                 style={{
                   padding: "10px",
