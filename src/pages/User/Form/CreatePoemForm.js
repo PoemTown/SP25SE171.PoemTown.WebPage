@@ -31,6 +31,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const [plagiarismResult, setPlagiarismResult] = useState(null);
   const [plagiarismPoems, setPlagiarismPoems] = useState([]);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
+  const [popupContentPlagiarism, setPopupContentPlagiarism] = useState(false);
+  const [contentPlagiarism, setContentPlagiarism] = useState(null);
 
   const [imagePrompt, setImagePrompt] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
@@ -871,6 +873,15 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     }
   }
 
+  const handlePopupContentPlagiarism = (content) => {
+    setPopupContentPlagiarism(true);
+    setContentPlagiarism(content)
+  }
+
+  const handleCancelPopupContentPlagiarism = () => {
+    setPopupContentPlagiarism(false);
+  }
+
   return (
     <div>
       {isLoading && (
@@ -1122,7 +1133,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                   <p style={{ color: "#000", fontWeight: "bold", marginBottom: "5px", fontSize: "0.95rem" }}>Những bài thơ tương tự:</p>
                   <ul style={{ margin: 0 }}>
                     {plagiarismPoems.map((item) =>
-                      <li style={{ margin: "2px", color: "#005CC5", textDecoration: "underline", cursor: "pointer", fontSize: "0.9rem" }}>
+                      <li onClick={() => handlePopupContentPlagiarism(item.content)} style={{ margin: "2px", color: "#005CC5", textDecoration: "underline", cursor: "pointer", fontSize: "0.9rem" }}>
                         {item.title} - {item.user?.displayName}
                       </li>
                     )}
@@ -1227,6 +1238,34 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             }} />
           ) : (
             <p>No image to preview</p>
+          )}
+        </div>
+      </Modal>
+      <Modal
+        open={popupContentPlagiarism}
+        onCancel={handleCancelPopupContentPlagiarism}
+        footer={
+          <>
+            <Button color="danger" variant="solid" onClick={handleCancelPopupContentPlagiarism}>
+              Đóng
+            </Button>
+          </>
+        }
+      >
+        <div style={{ textAlign: "center" }}>
+          <h2>Nội dung bài thơ</h2>
+          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
+            Đây là nội dung của bài thơ nghi vấn bạn đạo văn. Hãy kiểm tra kĩ và chỉnh sửa nhé{" "}
+            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>kiểm tra</span> và{" "}
+            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>chỉnh sửa</span> nhé
+          </p>
+          {contentPlagiarism && (
+             <textarea
+             style={{ width: "100%", height: "300px", boxSizing: "border-box" }}
+             value={contentPlagiarism} x
+           >
+
+           </textarea>
           )}
         </div>
       </Modal>
