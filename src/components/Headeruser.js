@@ -36,17 +36,15 @@ const Headeruser = ({ userData }) => {
 
   // Initialize the connection after user is decoded
   useEffect(() => {
-    if (!access_token) {
-      navigate("login");
-      return;
+    if (access_token != null) {
+      const decodedToken = jwtDecode(access_token);
+      setUserId(decodedToken.UserId);
+  
+      if (!announcementConnection && userId) {
+        createAnnouncementConnection(userId);
+      }
     }
 
-    const decodedToken = jwtDecode(access_token);
-    setUserId(decodedToken.UserId); // Ensure userId is set before using it
-
-    if (!announcementConnection && decodedToken.UserId) {
-      createAnnouncementConnection(decodedToken.UserId); // Establish connection
-    }
   }, [access_token, announcementConnection, createAnnouncementConnection, navigate]);
 
   // Fetch announcements after userId is set
