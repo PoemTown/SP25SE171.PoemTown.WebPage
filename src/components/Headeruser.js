@@ -50,7 +50,7 @@ const Headeruser = () => {
     if (!announcementConnection && userId) {
       createAnnouncementConnection(userId);
     }
-  }, [announcements, userId, createAnnouncementConnection]);
+  }, [userId, createAnnouncementConnection]);
 
   const handleNotificationClick = async (notif) => {
     console.log("Notification clicked:", notif);
