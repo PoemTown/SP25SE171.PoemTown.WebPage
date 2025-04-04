@@ -37,17 +37,15 @@ const Headeruser = () => {
   };
 
   useEffect(() => {
-    if (!access_token) {
-      navigate("/login");
-      return;
+    if (access_token != null) {
+      const decodedToken = jwtDecode(access_token);
+      setUserId(decodedToken.UserId);
+  
+      if (!announcementConnection && userId) {
+        createAnnouncementConnection(userId);
+      }
     }
 
-    const decodedToken = jwtDecode(access_token);
-    setUserId(decodedToken.UserId);
-
-    if (!announcementConnection && userId) {
-      createAnnouncementConnection(userId);
-    }
   }, [access_token, announcementConnection, createAnnouncementConnection, navigate]);
 
   useEffect(() => {
