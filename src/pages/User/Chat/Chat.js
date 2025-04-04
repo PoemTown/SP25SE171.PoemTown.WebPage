@@ -7,23 +7,30 @@ const MessengerPage = ({ refreshKey }) => {
     const [chatMessages, setChatMessages] = useState([]);
     const [chatInput, setChatInput] = useState("");
     const jwtToken = localStorage.getItem("accessToken");
+    const currentUserId = localStorage.getItem("userId");
 
     // Ref cho container chứa tin nhắn
     const chatContainerRef = useRef(null);
+    const utcDate = new Date(); // Thời gian UTC hiện tại
+    const utcPlus7Date = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000); // Thêm 7 giờ vào thời gian UTC
+    const formattedDate = utcPlus7Date.toISOString();
 
     // Hàm updateMessages cập nhật tin nhắn mới từ SignalR
     const updateMessages = (fromUserId, message) => {
         if (selectedConversation && selectedConversation.id === fromUserId) {
-            const displayName = selectedConversation.fromUser
-                ? selectedConversation.fromUser.displayName
-                : selectedConversation.displayName;
+            const fromUser = {
+                // Lấy displayName và avatar từ selectedConversation
+                displayName: selectedConversation.fromUser
+                    ? selectedConversation.fromUser.displayName
+                    : selectedConversation.displayName,
+                avatar: selectedConversation.avatar, // đảm bảo có avatar
+            };
             setChatMessages((prevMessages) => [
                 ...prevMessages,
                 {
-                    fromUser: { displayName },
+                    fromUser,
                     messageText: message,
-                    createdTime: new Date().toISOString(),
-                    fromMe: fromUserId === selectedConversation.id, // Determine if the message is from the current user
+                    createdTime: formattedDate,
                 },
             ]);
         }
@@ -108,10 +115,14 @@ const MessengerPage = ({ refreshKey }) => {
 
     function formatDate(isoString) {
         const date = new Date(isoString);
-        const hours = String(date.getUTCHours()).padStart(2, "0");
-        const minutes = String(date.getUTCMinutes()).padStart(2, "0");
+
+        // Lấy giờ và phút theo múi giờ UTC+7
+        const hours = String(date.getHours()).padStart(2, "0"); // getHours() tự động tính theo múi giờ cài đặt của hệ thống
+        const minutes = String(date.getMinutes()).padStart(2, "0");
+
         return `${hours}:${minutes}`;
     }
+
 
     return (
         <div style={styles.container}>
@@ -145,37 +156,57 @@ const MessengerPage = ({ refreshKey }) => {
                     ))}
                 </ul>
             </div>
-
             {/* Chat area: hiển thị nội dung chat của cuộc trò chuyện được chọn */}
             <div style={styles.chatArea}>
                 {selectedConversation ? (
                     <>
                         <header style={styles.chatHeader}>
-                            <img
-                                src={selectedConversation.avatar}
-                                alt="avatar"
-                                style={styles.avatarChat}
-                            />
-                            <h3>{selectedConversation.name}</h3>
+                            <img src={selectedConversation.avatar} alt="avatar" style={styles.avatarChat} />
+                            <h3>{selectedConversation.displayName}</h3>
                         </header>
+
                         <div style={styles.chatMessages} ref={chatContainerRef}>
-                            {chatMessages.map((msg, index) => (
-                                <div
-                                    key={msg.id || index}
-                                    style={{
-                                        ...styles.messageBubble,
-                                        alignSelf: msg.fromMe ? "flex-end" : "flex-start",
-                                        backgroundColor: msg.fromMe ? "#DCF8C6" : "#fff",
-                                    }}
-                                >
-                                    <strong>{msg.fromUser.displayName}: </strong>
-                                    <span>{msg.messageText}</span>
-                                    <div style={styles.messageTime}>
-                                        {formatDate(msg.createdTime)}
+                            {chatMessages.map((msg, index) => {
+                                const isMine = msg.fromUser.id == currentUserId;
+                                const isLastMessage = index === chatMessages.length - 1 || msg.fromUser.id !== chatMessages[index + 1].fromUser.id;
+
+
+                                return (
+                                    <div
+                                        key={msg.id || index}
+                                        style={{
+                                            ...styles.messageWrapper,
+                                            justifyContent: isMine ? "flex-end" : "flex-start",
+                                        }}
+                                    >
+                                        {!isMine && (
+                                            <img
+                                                src={msg.fromUser.avatar}
+                                                alt="avatar"
+                                                style={{
+                                                    ...styles.avatarMessage,
+                                                    visibility: isLastMessage ? "visible" : "hidden", // Avatar luôn giữ không gian nhưng chỉ hiện ở dòng cuối
+                                                }}
+                                            />
+                                        )}
+                                        <div
+                                            style={{
+                                                ...styles.messageBubble,
+                                                backgroundColor: isMine ? "#FEE9A3" : "#3B1E1E",
+                                                color: isMine ? "#000" : "#fff",
+                                                borderTopLeftRadius: isMine ? "12px" : "4px",
+                                                borderTopRightRadius: isMine ? "4px" : "12px",
+                                                textAlign: isMine ? "left" : "left",
+                                            }}
+                                        >
+                                            <div>{msg.messageText}</div>
+                                            <div style={styles.messageTime}>{formatDate(msg.createdTime)}</div>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
+
                         <form style={styles.chatInputContainer} onSubmit={handleSendMessage}>
                             <input
                                 type="text"
@@ -184,25 +215,17 @@ const MessengerPage = ({ refreshKey }) => {
                                 onChange={(e) => setChatInput(e.target.value)}
                                 style={styles.chatInput}
                             />
-                            <button
-                                type="submit"
-                                style={{
-                                    ...styles.sendButton,
-                                    opacity: chatInput.trim() ? 1 : 0.5,
-                                    cursor: chatInput.trim() ? "pointer" : "not-allowed"
-                                }}
-                                disabled={!chatInput.trim()}
-                            >
+                            <button type="submit" style={styles.sendButton} disabled={!chatInput.trim()}>
                                 Gửi
                             </button>
                         </form>
                     </>
                 ) : (
-                    <div style={styles.noConversation}>
-                        <p>Chọn một cuộc trò chuyện để xem tin nhắn</p>
-                    </div>
+                    <div style={styles.noConversation}>Chọn một cuộc trò chuyện để bắt đầu</div>
                 )}
             </div>
+
+
         </div>
     );
 };
@@ -212,16 +235,17 @@ const styles = {
         display: "flex",
         height: "90vh",
         fontFamily: "Arial, sans-serif",
+    
     },
     sidebar: {
-        width: "300px",
+        width: "240px",
         borderRight: "1px solid #ddd",
         display: "flex",
         flexDirection: "column",
         backgroundColor: "#fff",
     },
     sidebarHeader: {
-        padding: "15px",
+        padding: "10.5px",
         borderBottom: "1px solid #ddd",
         backgroundColor: "#f5f5f5",
         textAlign: "center",
@@ -248,6 +272,8 @@ const styles = {
     },
     conversationDetails: {
         flex: 1,
+        width: "40px",
+        height: "40px"
     },
     conversationName: {
         display: "block",
@@ -272,13 +298,16 @@ const styles = {
         flex: 1,
         display: "flex",
         flexDirection: "column",
-        backgroundColor: "#fafafa",
-        overflow: "hidden",
+        backgroundColor: "rgba(0, 0, 0, 0.1)", // nền mờ mờ
+        backdropFilter: "blur(4px)",
+        width: "400px",       // Đặt chiều rộng cố định cho container
+        maxWidth: "400px",    // Giới hạn chiều rộng tối đa
     },
     chatHeader: {
         padding: "15px",
         borderBottom: "1px solid #ddd",
-        backgroundColor: "#f5f5f5",
+        backgroundColor: "#3B1E1E",
+        color: "#fff",
         display: "flex",
         alignItems: "center",
     },
@@ -295,52 +324,62 @@ const styles = {
         maxHeight: "calc(100vh - 180px)",
         paddingRight: "10px",
     },
-    messageBubble: {
-        padding: "10px",
+    messageWrapper: {
+        display: "flex",
+        alignItems: "flex-end",
         marginBottom: "10px",
-        borderRadius: "5px",
-        boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
-        overflowWrap: "break-word",
-        wordBreak: "break-word",
-        maxWidth: "70%",
-        whiteSpace: "pre-wrap",
+    },
+    avatarMessage: {
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        marginRight: "10px",
+    },
+    messageBubble: {
+        padding: "10px 14px",
+        maxWidth: "70%",              // Giới hạn chiều rộng của bubble tin nhắn
+        borderRadius: "15px",
+        wordWrap: "break-word",       // Cho phép xuống dòng nếu từ quá dài
+        overflowWrap: "break-word",   // Hỗ trợ tương tự
+        whiteSpace: "normal",         // Cho phép nội dung xuống dòng
+        fontSize: "14px",
     },
     messageTime: {
-        fontSize: "10px",
-        color: "#999",
+        fontSize: "11px",
+        color: "#ccc",
         textAlign: "right",
-        marginTop: "5px",
+        marginTop: "4px",
     },
     chatInputContainer: {
         display: "flex",
-        borderTop: "1px solid #ddd",
         padding: "10px",
+        borderTop: "1px solid #ddd",
         backgroundColor: "#fff",
     },
     chatInput: {
         flex: 1,
         padding: "10px",
-        border: "1px solid #ddd",
-        borderRadius: "4px",
-        outline: "none",
+        borderRadius: "6px",
+        border: "1px solid #ccc",
         fontSize: "14px",
     },
     sendButton: {
-        padding: "10px 20px",
         marginLeft: "10px",
-        border: "none",
+        padding: "10px 20px",
         backgroundColor: "#4A90E2",
         color: "#fff",
-        borderRadius: "4px",
-        cursor: "pointer",
+        border: "none",
+        borderRadius: "6px",
         fontSize: "14px",
+        cursor: "pointer",
     },
     noConversation: {
         flex: 1,
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
-        color: "#666",
+        color: "#777",
+        fontSize: "16px",
     },
 };
 
