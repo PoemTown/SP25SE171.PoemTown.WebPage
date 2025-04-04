@@ -133,7 +133,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     width: "300px", // Adjust the width as needed
                     zIndex: 1000 // Ensure it stays on top of other elements
                 }}>
-                    <CreateNewChat userData={userData} />
+                    <CreateNewChat userData={userData}  onClose={() => setShowChat(false)}/>
                 </div>
             )}
         </div>
