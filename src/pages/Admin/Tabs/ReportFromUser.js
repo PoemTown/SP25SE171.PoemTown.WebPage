@@ -53,6 +53,20 @@ const getStatusColor = (status) => {
     }
 };
 
+const poemType = {
+    1: "Thơ tự do",
+    2: "Thơ Lục bát",
+    3: "Thơ Song thất lục bát",
+    4: "Thơ Thất ngôn tứ tuyệt",
+    5: "Thơ Ngũ ngôn tứ tuyệt",
+    6: "Thơ Thất ngôn bát cú",
+    7: "Thơ bốn chữ",
+    8: "Thơ năm chữ",
+    9: "Thơ sáu chữ",
+    10: "Thơ bảy chữ",
+    11: "Thơ tám chữ",
+}
+
 const pageSizeOptions = [
     { value: 10, label: '10 bản ghi' },
     { value: 25, label: '25 bản ghi' },
@@ -85,6 +99,9 @@ const ReportFromUser = () => {
     const [selectedReport, setSelectedReport] = useState(null);
     const [status, setStatus] = useState(1);
     const [resolveResponse, setResolveResponse] = useState("");
+    const [poemDetect, setPoemDetect] = useState(null);
+    const [plagiarismFromPoems, setPlagiarismFromPoems] = useState([]);
+    const [selectedPlagiarismIndex, setSelectedPlagiarismIndex] = useState(0);
 
     useEffect(() => {
         fetchReports();
@@ -101,6 +118,7 @@ const ReportFromUser = () => {
                 }
             );
             setReports(response.data.data);
+            console.log(response.data.data)
             setPagination({
                 pageNumber: response.data.pageNumber,
                 totalPages: response.data.totalPages,
@@ -138,11 +156,21 @@ const ReportFromUser = () => {
         setStatus(report.status);
         setResolveResponse("");
         setOpenDialog(true);
+        if (report.isSystem === true) {
+            setPoemDetect(report.poem);
+            setPlagiarismFromPoems(report.plagiarismFromPoems);
+            // Reset the selected index to 0 whenever a new report is opened.
+            setSelectedPlagiarismIndex(0);
+        }
     };
 
     const handleCloseDialog = () => {
         setOpenDialog(false);
         setSelectedReport(null);
+        // Clear the plagiarism related states when canceling the dialog.
+        setPoemDetect(null);
+        setPlagiarismFromPoems([]);
+        setSelectedPlagiarismIndex(0);
     };
 
     const handleStatusChange = (event) => {
@@ -168,7 +196,7 @@ const ReportFromUser = () => {
                     },
                 }
             );
-            fetchReports(); 
+            fetchReports();
             handleCloseDialog();
         } catch (err) {
             console.error("Có lỗi khi cập nhật trạng thái báo cáo.");
@@ -185,7 +213,7 @@ const ReportFromUser = () => {
                 <Typography variant="subtitle1">
                     Tổng số báo cáo: {pagination.totalRecords}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <TextField
                         select
@@ -201,7 +229,7 @@ const ReportFromUser = () => {
                             </MenuItem>
                         ))}
                     </TextField>
-                    
+
                     <TextField
                         select
                         label="Số bản ghi mỗi trang"
@@ -248,10 +276,10 @@ const ReportFromUser = () => {
                                     <TableCell>{getReportType(report.type)}</TableCell>
                                     <TableCell>{report.reportReason || "Không có lý do"}</TableCell>
                                     <TableCell>
-                                        <Chip 
-                                            label={getReportStatus(report.status)} 
-                                            color={getStatusColor(report.status)} 
-                                            size="small" 
+                                        <Chip
+                                            label={getReportStatus(report.status)}
+                                            color={getStatusColor(report.status)}
+                                            size="small"
                                         />
                                     </TableCell>
                                     <TableCell>
@@ -288,7 +316,7 @@ const ReportFromUser = () => {
             </Box>
 
             {/* Edit Status Dialog */}
-            <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="sm">
+            <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
                 <DialogTitle>Cập nhật trạng thái báo cáo</DialogTitle>
                 <DialogContent>
                     {selectedReport && (
@@ -302,7 +330,77 @@ const ReportFromUser = () => {
                             <Typography variant="subtitle1" gutterBottom>
                                 <strong>Người báo cáo:</strong> {selectedReport.reportReportUser?.fullName || "Không có tên"}
                             </Typography>
-                            
+                            {selectedReport.isSystem === true && plagiarismFromPoems.length > 0 ? (
+                                <>
+                                    <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <label style={{ fontWeight: "bold", textAlign: "center" }}>Bài thơ bị báo cáo</label>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <label style={{ fontWeight: "bold", textAlign: "center" }}>Bài thơ bị đạo</label>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+                                            <p style={{ margin: 0, paddingTop: "10px" }}>Tựa đề: {poemDetect.title} </p>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <FormControl fullWidth sx={{ mt: 2 }}>
+                                                <InputLabel id="plagiarism-poem-select-label">Chọn bài thơ đạo văn</InputLabel>
+                                                <Select
+                                                    labelId="plagiarism-poem-select-label"
+                                                    value={selectedPlagiarismIndex}
+                                                    label="Chọn bài thơ bị đạo văn"
+                                                    onChange={(e) => setSelectedPlagiarismIndex(e.target.value)}
+                                                >
+                                                    {plagiarismFromPoems.map((poem, index) => (
+                                                        <MenuItem key={index} value={index}>
+                                                            {poem.title}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Mô tả: {poemDetect.description}</p>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Mô tả: {plagiarismFromPoems[selectedPlagiarismIndex].description}</p>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Thể loại: {poemType[poemDetect.type]}</p>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Thể loại: {poemType[plagiarismFromPoems[selectedPlagiarismIndex].type]}</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: "16px" }}>
+                                        <p style={{ margin: 0, textAlign: "center", fontWeight: "bold" }}>
+                                            Giống: <span style={{ color: "red" }}>
+                                                {(plagiarismFromPoems[selectedPlagiarismIndex].score * 100).toFixed(0)}%
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
+                                        <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
+                                            <textarea value={poemDetect?.content || ""} style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} readOnly></textarea>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
+                                            <textarea value={plagiarismFromPoems[selectedPlagiarismIndex].content} style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} readOnly></textarea>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : null}
                             <FormControl fullWidth sx={{ mt: 2 }}>
                                 <InputLabel>Trạng thái</InputLabel>
                                 <Select
@@ -317,7 +415,7 @@ const ReportFromUser = () => {
                                     ))}
                                 </Select>
                             </FormControl>
-                            
+
                             <TextField
                                 label="Phản hồi giải quyết"
                                 fullWidth
