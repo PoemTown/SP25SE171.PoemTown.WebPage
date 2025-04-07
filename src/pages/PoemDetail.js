@@ -80,7 +80,7 @@ const PoemDetail = () => {
     // Like handler function (as before)
     const handleLike = async () => {
         if (!isLoggedIn) {
-            message.error("Please login to like this post.");
+            message.error("Bạn phải đăng nhập để sử dụng chức năng này");
             return;
         }
         const isCurrentlyLiked = poem?.like;
@@ -110,7 +110,7 @@ const PoemDetail = () => {
     // Bookmark handler function
     const handleBookmark = async () => {
         if (!isLoggedIn) {
-            message.error("Please login to bookmark this post.");
+            message.error("Bạn phải đăng nhập để sử dụng chức năng này");
             return;
         }
         const headers = {
@@ -191,14 +191,50 @@ const PoemDetail = () => {
     const buildCommentTree = useCallback((comments) => {
         const map = {};
         const tree = [];
+        const depthMap = new Map();
 
+        // First pass: create map of all comments
         comments?.forEach(comment => {
             map[comment.id] = { ...comment, replies: [] };
         });
 
+        // Second pass: calculate depths after all comments are in map
         comments?.forEach(comment => {
-            if (comment.parentCommentId && map[comment.parentCommentId]) {
-                map[comment.parentCommentId].replies.push(map[comment.id]);
+            let depth = 0;
+            let currentId = comment.parentCommentId;
+
+            // Traverse parent chain using the complete map
+            while (currentId && map[currentId]) {
+                depth++;
+                currentId = map[currentId].parentCommentId;
+            }
+            depthMap.set(comment.id, depth);
+        });
+
+        // Third pass: adjust parent relationships
+        comments?.forEach(comment => {
+            const originalDepth = depthMap.get(comment.id);
+            let parentId = comment.parentCommentId;
+
+            // For comments deeper than 3 levels
+            if (originalDepth > 3) {
+                let currentParentId = parentId;
+                let stepsToClimb = originalDepth - 3;
+
+                // Find nearest ancestor at depth 3
+                while (stepsToClimb > 0 && currentParentId) {
+                    currentParentId = map[currentParentId]?.parentCommentId;
+                    stepsToClimb--;
+                }
+
+                if (currentParentId && map[currentParentId]) {
+                    parentId = currentParentId;
+                }
+            }
+
+            // Add to tree structure
+            if (parentId && map[parentId]) {
+                map[parentId].replies.push(map[comment.id]);
             } else {
                 tree.push(map[comment.id]);
             }
@@ -265,7 +301,12 @@ const PoemDetail = () => {
     };
 
     const handleSubmitReply = async (commentId) => {
+        if (!isLoggedIn) {
+            message.error("Bạn phải đăng nhập để sử dụng chức năng này");
+            return;
+        }
         const content = replyTexts[commentId]?.trim();
+        console.log(commentId)
         if (!content) {
             message.error("Bình luận không được để trống");
             return;
@@ -285,16 +326,24 @@ const PoemDetail = () => {
             });
 
             if (response.ok) {
-                message.success("Đăng bình luận thành công");
                 setReplyTexts(prev => ({ ...prev, [commentId]: "" }));
                 setReplyingTo(null);
-                // Refresh comments
-                const res = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}`, {
+
+                // Refresh comments and rebuild tree
+                const res = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
                     headers: requestHeaders
                 });
                 const data = await res.json();
+
+                // Force tree rebuild with fresh data
                 setComments(data.data);
+
+                // Immediately rebuild comment tree
+                const newTree = buildCommentTree(data.data);
+                setCommentTree(newTree);
             }
+            message.success("Đăng bình luận thành công");
+
         } catch (error) {
             console.error("Lỗi khi đăng bình luận:", error);
             message.error("Đã xảy ra lỗi khi đăng bình luận");
@@ -317,14 +366,23 @@ const PoemDetail = () => {
             });
 
             if (response.ok) {
-                message.success("Xóa bình luận thành công");
-                // Refresh comments
-                const res = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}`, {
+                setReplyTexts(prev => ({ ...prev, [commentId]: "" }));
+                setReplyingTo(null);
+
+                // Refresh comments and rebuild tree
+                const res = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
                     headers: requestHeaders
                 });
                 const data = await res.json();
+
+                // Force tree rebuild with fresh data
                 setComments(data.data);
+
+                // Immediately rebuild comment tree
+                const newTree = buildCommentTree(data.data);
+                setCommentTree(newTree);
             }
+            message.success("Đăng bình luận thành công");
         } catch (error) {
             console.error("Lỗi khi xóa bình luận:", error);
             message.error("Đã xảy ra lỗi khi xóa bình luận");
@@ -516,27 +574,30 @@ const PoemDetail = () => {
                                 Đăng bình luận
                             </button>
                         </div>
-                        {commentTree.map((comment) => (
-                            <Comment
-                                key={comment.id}
-                                comment={comment}
-                                depth={0}
-                                currentReply={replyingTo}
-                                replyTexts={replyTexts}
-                                onReply={setReplyingTo}
-                                onSubmitReply={handleSubmitReply}
-                                onCancelReply={(commentId) => {
-                                    setReplyingTo(null);
-                                    setReplyTexts(prev => ({
-                                        ...prev,
-                                        [commentId]: ""
-                                    }));
-                                }}
-                                onTextChange={handleReplyChange}
-                                isMine={comment.isMine} // Adjust this based on your auth system
-                                onDelete={handleDeleteComment}
-                            />
-                        ))}
+                        {commentTree.map((comment) => {
+                            console.log(commentTree);
+                            return (
+                                <Comment
+                                    key={comment.id}
+                                    comment={comment}
+                                    depth={0}
+                                    currentReply={replyingTo}
+                                    replyTexts={replyTexts}
+                                    onReply={setReplyingTo}
+                                    onSubmitReply={handleSubmitReply}
+                                    onCancelReply={(commentId) => {
+                                        setReplyingTo(null);
+                                        setReplyTexts(prev => ({
+                                            ...prev,
+                                            [commentId]: ""
+                                        }));
+                                    }}
+                                    onTextChange={handleReplyChange}
+                                    isMine={comment.isMine} // Adjust this based on your auth system
+                                    onDelete={handleDeleteComment}
+                                />
+                            )
+                        })}
                     </div>
                 </div>
                 <div style={{ flex: 2, }}>

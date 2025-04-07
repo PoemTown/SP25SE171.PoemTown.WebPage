@@ -1,11 +1,13 @@
 import { Button, message } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
-import { FaUserPlus } from "react-icons/fa";
-import { FaCheck } from "react-icons/fa6";
+import { FaUserPlus, FaCheck } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi2";
+import { RiMessengerLine } from "react-icons/ri";
+import CreateNewChat from "../Chat/CreateNewChat"; // Assuming this is your custom chat component
 
-const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSuccess  }) => {
+const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSuccess }) => {
+    const [showChat, setShowChat] = useState(false);
 
     const handleFollow = async () => {
         const token = localStorage.getItem("accessToken");
@@ -27,12 +29,12 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     },
                 }
             );
-            
+
             if (response.ok) {
                 // Trigger parent component refresh
                 onFollowSuccess();
-                message.success(userData.isFollowed 
-                    ? "Đã hủy theo dõi!" 
+                message.success(userData.isFollowed
+                    ? "Đã hủy theo dõi!"
                     : "Theo dõi thành công!"
                 );
             } else {
@@ -42,6 +44,10 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
             console.error("Error following/unfollowing:", error);
             message.error("Đã xảy ra lỗi!");
         }
+    };
+
+    const handleChat = () => {
+        setShowChat(prevState => !prevState); // Toggle showChat
     };
 
     return (
@@ -85,13 +91,26 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                             <p style={{ color: coverColorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
                         </div>
                         {isMine ? <></> :
-                            <div>
-                                {userData.isFollowed ?
-                                    <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck/>} iconPosition="end">Đã Theo dõi </Button>
-                                :
-                                    <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
-                                }
-                            </div>}
+                            <>
+                                <div>
+                                    <Button
+                                        onClick={handleChat}
+                                        variant="solid"
+                                        color="primary"
+                                        icon={<RiMessengerLine />}
+                                        iconPosition="end"
+                                    >
+                                        Nhắn tin
+                                    </Button>
+                                </div>
+                                <div>
+                                    {userData.isFollowed ?
+                                        <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button>
+                                        :
+                                        <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
+                                    }
+                                </div>
+                            </>}
                     </div>
                     <div style={{ fontSize: "14px", color: coverColorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
@@ -104,6 +123,19 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     </div>
                 </div>
             </div>
+
+            {/* Chat window - Rendered outside the main div with fixed position */}
+            {showChat && (
+                <div style={{
+                    position: "fixed",
+                    bottom: "20px",
+                    right: "0",
+                    width: "300px", // Adjust the width as needed
+                    zIndex: 1000 // Ensure it stays on top of other elements
+                }}>
+                    <CreateNewChat userData={userData}  onClose={() => setShowChat(false)}/>
+                </div>
+            )}
         </div>
     );
 };
