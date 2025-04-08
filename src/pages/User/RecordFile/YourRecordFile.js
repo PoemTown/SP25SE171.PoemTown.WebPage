@@ -160,7 +160,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
             },
         });
         
-        message.info(response.data.Message);
+        message.info(response.data.message);
         setReloadTrigger((prev) => !prev);
 
     } catch (error) {
@@ -331,9 +331,9 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                 total={totalRecords} // Tổng số record được tính từ totalPages * pageSize
                 onChange={handlePageChange}
                 showSizeChanger
-                pageSizeOptions={["4", "8", "16"]}
+                pageSizeOptions={["1", "8", "16"]}
               />
-            </div>
+            </div> 
           </>
         ) : (
           <CreateRecord onBack={() => setIsCreatingRecord(false)} />
