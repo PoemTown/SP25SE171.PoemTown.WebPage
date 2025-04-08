@@ -8,36 +8,35 @@ const MessengerPage = ({ refreshKey }) => {
     const [chatInput, setChatInput] = useState("");
     const jwtToken = localStorage.getItem("accessToken");
     const currentUserId = localStorage.getItem("userId");
-
-    // Ref cho container chứa tin nhắn
     const chatContainerRef = useRef(null);
-    const utcDate = new Date(); // Thời gian UTC hiện tại
-    const utcPlus7Date = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000); // Thêm 7 giờ vào thời gian UTC
-    const formattedDate = utcPlus7Date.toISOString();
+  
 
     // Hàm updateMessages cập nhật tin nhắn mới từ SignalR
     const updateMessages = (fromUserId, message) => {
         if (selectedConversation && selectedConversation.id === fromUserId) {
-            const fromUser = {
-                // Lấy displayName và avatar từ selectedConversation
-                displayName: selectedConversation.fromUser
-                    ? selectedConversation.fromUser.displayName
-                    : selectedConversation.displayName,
-                avatar: selectedConversation.avatar, // đảm bảo có avatar
-            };
-            setChatMessages((prevMessages) => [
-                ...prevMessages,
-                {
-                    fromUser,
-                    messageText: message,
-                    createdTime: formattedDate,
-                },
-            ]);
+          const fromUser = {
+            displayName: selectedConversation.fromUser
+              ? selectedConversation.fromUser.displayName
+              : selectedConversation.displayName,
+            avatar: selectedConversation.avatar,
+          };
+      
+          // Tạo thời gian hiện tại theo UTC, sau đó chuyển sang ISO string
+          const currentTimeUTC = new Date().toISOString();
+      
+          setChatMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              fromUser,
+              messageText: message,
+              createdTime: currentTimeUTC, // Lấy thời gian hiện tại ngay lúc nhận
+            },
+          ]);
         }
-
-        // Gọi lại fetchChatPartner khi nhận được tin nhắn mới
         fetchChatPartner();
-    };
+      };
+      
+
 
     const { sendMessage } = useChat(jwtToken, updateMessages);
 
@@ -235,7 +234,7 @@ const styles = {
         display: "flex",
         height: "90vh",
         fontFamily: "Arial, sans-serif",
-    
+
     },
     sidebar: {
         width: "240px",

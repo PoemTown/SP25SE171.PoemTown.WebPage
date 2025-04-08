@@ -12,12 +12,13 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
 
   const formattedDate = utcPlus7Date.toISOString();
   const updateMessages = (fromUserId, message) => {
+    const currentTimeUTC = new Date().toISOString();
     setChatMessages((prevMessages) => [
       ...prevMessages,
       {
         fromUser: { id: fromUserId, displayName: userData.displayName, avatar: userData.avatar },
         messageText: message,
-        createdTime: formattedDate,
+        createdTime: currentTimeUTC,
 
       },
     ]);

@@ -13,7 +13,7 @@ export const useChat = (jwtToken, updateMessages) => {
       .withUrl(CHAT_HUB_URL, {
         accessTokenFactory: () => jwtToken, // Nếu có dùng JWT
       })
-      .withAutomaticReconnect()
+      .withAutomaticReconnect() 
       .build();
 
     connect.on("ReceiveMessage", (fromUserId, message) => {

@@ -14,7 +14,7 @@ const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = { day: "numeric", month: "long", year: "numeric" };
     return date.toLocaleDateString("vi-VN", options);
-};
+}; 
 
 const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, isMine, showPurchaseConfirm }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);

@@ -10,6 +10,13 @@ import Headeruser from "../components/Headeruser";
 import Headerdefault from "../components/Headerdefault";
 
 const CollectionDetail = () => {
+    const [data, setData] = useState({
+        id: null,
+        collectionName: "",
+        collectionDescription: "",
+        collectionImage: "",
+        rowVersion: "",
+    });
     const { id } = useParams();
     const accessToken = localStorage.getItem("accessToken");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -28,6 +35,8 @@ const CollectionDetail = () => {
     const [bookmarkedPosts, setBookmarkedPosts] = useState({});
     const [likedPosts, setLikedPosts] = useState({});
     const [isHovered, setIsHovered] = useState(false);
+    const [reloadTrigger, setReloadTrigger] = useState(false);
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -89,7 +98,7 @@ const CollectionDetail = () => {
         };
         fetchCollections();
         fetchData();
-    }, [id]);
+    }, [id, reloadTrigger]);
 
     const fetchCollections = async () => {
         try {
@@ -126,6 +135,8 @@ const CollectionDetail = () => {
             );
 
             console.log("Update Response:", response.data);
+            setReloadTrigger((prev) => !prev);
+
             message.success("Cập nhật tập thơ thành công!");
         } catch (error) {
             console.error("Error:", error.response?.data || error.errorMessage);
@@ -135,8 +146,33 @@ const CollectionDetail = () => {
         console.log("Chuyển bài thơ:", collectionId, poemId);
     };
 
-    const handleMoveToUpdate = () => {
 
+    
+    const handleUpdate = async () => {
+        try {
+            const response = await axios.put(
+                `https://api-poemtown-staging.nodfeather.win/api/collections/v1`,
+                data,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            console.log("Update Response:", response.data);
+            setReloadTrigger((prev) => !prev);
+
+            message.success("Cập nhật tập thơ thành công!");
+        } catch (error) {
+            console.error("Error:", error.response?.data || error.errorMessage);
+            message.error(error.response?.data.errorMessage);
+        }
+    };
+
+    const handleMoveToUpdate = () => {
+        
     };
 
     const handleLike = async (postId) => {
