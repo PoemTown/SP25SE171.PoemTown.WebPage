@@ -64,11 +64,22 @@ const CollectionDetail = () => {
                         initialLikedState[item.id] = !!item.like;
                         initialBookmarkedState[item.id] = !!item.targetMark;
                     });
-                    setPoem(data2.data);
+
+                    const collectionInfo = {
+                        id: data1.data.id,
+                        collectionName: data1.data.collectionName,
+                    };
+
+                    const updatedPoems = data2.data.map(item => ({
+                        ...item,
+                        collection: collectionInfo,
+                      }));
+
+                    setPoem(updatedPoems);
                     setBookmarkedPosts(initialBookmarkedState);
                     setLikedPosts(initialLikedState);
 
-                    console.log("Poems:", data2.data);
+                    console.log("Poems:", updatedPoems);
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -291,11 +302,11 @@ const CollectionDetail = () => {
                                 </div>
                             </div>
                             {collectionDetails.isMine ?
-                            <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer', fontSize: '1rem' }}>
-                                Chỉnh sửa <span><MdEdit /></span>
-                            </div>
-                            : 
-                            <></>}
+                                <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer', fontSize: '1rem' }}>
+                                    Chỉnh sửa <span><MdEdit /></span>
+                                </div>
+                                :
+                                <></>}
                         </div>
                     </div>
                     <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>

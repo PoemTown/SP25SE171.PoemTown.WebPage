@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal } from "antd";
+import { Avatar, Button, List, Modal } from "antd";
 import { useNavigate } from "react-router-dom";
 import CollectionCard from "./CollectionCard";
 import PoemCard from "./PoemCard";
@@ -29,6 +29,8 @@ const Content = ({ activeTab }) => {
   const [totalPages, setTotalPages] = useState(1);
   const [poemLeaderBoard, setPoemLeaderBoard] = useState({ topPoems: [] });
   const [userLeaderBoard, setUserLeaderBoard] = useState({ topUsers: [] });
+  const [isLeaderboardUserModalVisible, setIsLeaderboardUserModalVisible] = useState(false);
+  const [isLeaderboardPoemModalVisible, setIsLeaderboardPoemModalVisible] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
   const [hoveredUserLdb, setHoveredUserLdb] = useState(null);
@@ -59,6 +61,22 @@ const Content = ({ activeTab }) => {
     if (rank === 2) return "#0d6efd";
     if (rank === 3) return "#d63384";
     return "#000"; // default color for other ranks
+  };
+
+  const openLeaderboardUserModal = () => {
+    setIsLeaderboardUserModalVisible(true);
+  };
+
+  const closeLeaderboardUserModal = () => {
+    setIsLeaderboardUserModalVisible(false);
+  };
+
+  const openLeaderboardPoemModal = () => {
+    setIsLeaderboardPoemModalVisible(true);
+  };
+
+  const closeLeaderboardPoemModal = () => {
+    setIsLeaderboardPoemModalVisible(false);
   };
 
   const topPoems = [
@@ -302,6 +320,7 @@ const Content = ({ activeTab }) => {
       }
 
       const data = await response.json();
+      console.log("poemLdb", data.data)
       setPoemLeaderBoard(data.data); // set the entire object
     };
 
@@ -479,9 +498,47 @@ const Content = ({ activeTab }) => {
                 </div>
               ))}
             </ul>
-            <a href="#see-more" style={styles.seeMore}>
+            <a onClick={openLeaderboardUserModal} style={styles.seeMore}>
               Xem thêm &gt;
             </a>
+            <Modal
+              title="Top các tác giả được yêu thích 👑"
+              visible={isLeaderboardUserModalVisible}
+              onCancel={closeLeaderboardUserModal}
+              footer={[
+                <Button key="close" onClick={closeLeaderboardUserModal}>
+                  Đóng
+                </Button>,
+              ]}
+            >
+              <List
+                itemLayout="horizontal"
+                dataSource={userLeaderBoard ? userLeaderBoard.topUsers : []}
+                renderItem={(user) => (
+                  <List.Item
+                    onClick={() => navigate(`/user/${user.user.userName}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <li key={user.id} style={styles.topItem}>
+                      <span style={{ ...styles.topItemRank, color: getRankColor(user.rank) }}>
+                        #{user.rank}
+                      </span>
+                      <img style={styles.topItemAvatar} src={user.user.avatar ?? "./default_avatar.png"} alt="avatar user" />
+                      <div style={{ display: "flex", flexDirection: "column" }}>
+                        <span style={styles.topItemName}>{user.user.displayName}</span>
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "6px",
+                        }}>
+                          <HiUsers /> <span style={{ fontSize: "0.9rem" }}>{user.user.totalFollower}</span>
+                        </div>
+                      </div>
+                    </li>
+                  </List.Item>
+                )}
+              />
+            </Modal>
           </div>
 
           {/* Top bài thơ */}
@@ -491,7 +548,7 @@ const Content = ({ activeTab }) => {
             </div>
             <ul style={styles.topList}>
               {poemLeaderBoard && poemLeaderBoard.topPoems?.slice(0, 3).map((poem) => (
-                <div style={{ marginBottom: "20px" }}>
+                <div style={{ marginBottom: "20px", cursor: "pointer"}}  onClick={() => navigate(`/poem/${poem.poem.id}`)}>
                   <li key={poem.id} style={styles.topItem}>
                     <span style={{ ...styles.topItemRank, color: getRankColor(poem.rank) }}>
                       #{poem.rank}
@@ -525,11 +582,78 @@ const Content = ({ activeTab }) => {
                   </li>
                   <div style={styles.topItemLine} />
                 </div>
-              ))} 
+              ))}
             </ul>
-            <a href="#see-more" style={styles.seeMore}>
+            <a onClick={openLeaderboardPoemModal} style={styles.seeMore}>
               Xem thêm &gt;
             </a>
+            <Modal
+              title="Top các bài thơ được yêu thích 📖"
+              visible={isLeaderboardPoemModalVisible}
+              onCancel={closeLeaderboardPoemModal}
+              footer={[
+                <Button key="close" onClick={closeLeaderboardPoemModal}>
+                  Đóng
+                </Button>,
+              ]}
+            >
+              <List
+                itemLayout="horizontal"
+                dataSource={poemLeaderBoard ? poemLeaderBoard.topPoems : []}
+                renderItem={(poem) => (
+                  <List.Item
+                    onClick={() => navigate(`/poem/${poem.poem.id}`)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <li key={poem.id} style={styles.topItem}>
+                      <span style={{ ...styles.topItemRank, color: getRankColor(poem.rank) }}>
+                        #{poem.rank}
+                      </span>
+                      <div style={{display: "flex", flexDirection: "row", gap: "20px", width: "100%"}}>
+                        <div style={styles.poemImageContainer}>
+                          <img
+                            src={poem.poem.poemImage || "/anhminhhoa.png"}
+                            alt="anh minh hoa"
+                            style={styles.poemImage}
+                            onError={(e) => {
+                              console.log("Image failed to load, switching to fallback");
+                              e.target.onerror = null;
+                              e.target.src = "/anhminhhoa.png";
+                            }}
+                          />
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "5px", justifyContent: "center", width: "100%", flex: 1 }}>
+                          <span style={styles.topItemName}>{poem.poem.title}</span>
+                          <div>
+                            <small style={{ margin: 0 }}>
+                              Mô tả:{" "}
+                              <span style={{ color: "#222" }}>
+                                {poem.poem.description.length > 50
+                                  ? `${poem.poem.description.substring(0, 50)}...`
+                                  : poem.poem.description}
+                              </span>
+                            </small>
+                          </div>
+                          <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "flex-start", gap: "30px" }}>
+                            <div style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}><BiLike /> {poem.poem.likeCount}</div>
+                            <div style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                            }}><BiCommentDetail /> {poem.poem.commentCount}</div>
+                          </div>
+                          <small style={{ color: "#005cc5", alignSelf: 'flex-end' }}>{poem.poem.user.displayName || "annoymous"}</small>
+                        </div>
+                      </div>
+                    </li>
+                  </List.Item>
+                )}
+              />
+            </Modal>
           </div>
         </div>
       </div>
@@ -538,6 +662,21 @@ const Content = ({ activeTab }) => {
 };
 
 const styles = {
+  poemImageContainer: {
+    width: "84px",
+    height: "134px",
+    border: "1px solid #000",
+    marginLeft: "20px",
+  },
+
+  poemImage: {
+    width: "84px",
+    maxWidth: "84px",
+    height: "100%",
+    objectFit: "cover", // This will prevent stretching
+    objectPosition: "center" // Center the image
+  },
+
   idea: {
     display: "flex",
     width: "100%",
@@ -634,6 +773,7 @@ const styles = {
     display: "flex",
     alignItems: "center",
     marginBottom: "10px",
+    width: "100%"
   },
   topItemRank: {
     fontWeight: "bold",
@@ -662,6 +802,7 @@ const styles = {
     fontWeight: "bold",
     fontSize: "14px",
     marginTop: "10px",
+    cursor: "pointer"
   },
 
   toggleBookmarkPoem: {

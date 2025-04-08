@@ -605,6 +605,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     setIsModalContentCompleteOpen(true);
   };
 
+  const handleRenewRenderImage = async () => {
+
+  }
+
   const handleApplyPreviewImage = async () => {
     try {
       setIsLoading(true);
@@ -656,6 +660,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     let responseImage = null;
     try {
       setIsLoading(true);
+      console.log(imageType)
       if (imageType === "nâng cao") {
         console.log("jsdlkajsdlaj")
         responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt}&prompt="Render an image base on my requirement poem content, return an image without words in it"`, {
@@ -680,6 +685,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           outPutQuality: 100
         }
         console.log("hahah")
+        console.log(requestBodyImage)
 
         responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`, {
           method: "POST",
@@ -997,7 +1003,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
       <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Sáng Tác Bài Thơ</h2>
 
-      <form style={{ backgroundColor: "#f9f9f9", borderRadius: "10px" }}>
+      <form style={{ borderRadius: "10px" }}>
         <div style={{ display: "flex", gap: "20px" }}>
           <div style={{ flex: 7 }}>
             <div style={{ marginBottom: "15px" }}>
@@ -1121,7 +1127,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               modules={{ toolbar: false }}
               value={poemData.content}
               onChange={handleInputContent}
-              style={{ height: "100%" }}
+              style={{ height: "100%", backgroundColor: "#fff" }}
 
             />
             {plagiarismResult != null ? plagiarismResult > 0.5 ?
@@ -1216,6 +1222,9 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             <Button color="danger" variant="solid" onClick={handleCancelPreview}>
               Hủy
             </Button>
+            <Button color="lime" variant="solid" onClick={handleAIRenderImage}>
+              Tạo mới
+              </Button>
             <Button color="primary" variant="solid" onClick={handleApplyPreviewImage}>
               Áp dụng
             </Button>
@@ -1260,12 +1269,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             <span style={{ color: "#3A86ff", fontWeight: "bold" }}>chỉnh sửa</span> nhé
           </p>
           {contentPlagiarism && (
-             <textarea
-             style={{ width: "100%", height: "300px", boxSizing: "border-box" }}
-             value={contentPlagiarism} x
-           >
+            <textarea
+              style={{ width: "100%", height: "300px", boxSizing: "border-box" }}
+              value={contentPlagiarism} x
+            >
 
-           </textarea>
+            </textarea>
           )}
         </div>
       </Modal>
