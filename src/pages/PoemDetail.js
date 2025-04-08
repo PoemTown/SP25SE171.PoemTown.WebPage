@@ -7,7 +7,7 @@ import { BiCommentDetail, BiLike, BiSolidLike } from 'react-icons/bi';
 import { RiDeleteBinFill } from "react-icons/ri";
 import { IoBookmark } from 'react-icons/io5';
 import { CiBookmark, CiCirclePlus } from 'react-icons/ci';
-import { Button, Dropdown, Menu, message } from 'antd';
+import { Button, Dropdown, Menu, message, Spin } from 'antd';
 import { IoIosLink, IoIosMore } from 'react-icons/io';
 import { MdEdit, MdReport } from 'react-icons/md';
 import { FaCheck, FaUserPlus } from 'react-icons/fa';
@@ -24,6 +24,9 @@ const PoemDetail = () => {
     const [replyTexts, setReplyTexts] = useState({});
     const [replyingTo, setReplyingTo] = useState(null);
     const [commentTree, setCommentTree] = useState([]);
+    const [userData, setUserData] = useState([]);
+    const [backgroundImage, setBackgroundImage] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const navigate = useNavigate();
 
 
@@ -32,6 +35,103 @@ const PoemDetail = () => {
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
     };
     // Fetch poem details
+    useEffect(() => {
+        let isMounted = true;
+
+        const fetchData = async () => {
+            try {
+                const response = await fetch(
+                    `https://api-poemtown-staging.nodfeather.win/api/users/v1/profile/online/${poem?.user.userName}`,
+                    { method: "GET", headers: requestHeaders }
+                );
+
+                if (!isMounted) return;
+
+                const result = await response.json();
+                if (response.ok && result.data) {
+                    setUserData({
+                        displayName: result.data.displayName,
+                        email: result.data.email,
+                        userName: result.data.userName,
+                        userId: result.data.id,
+                        avatar: result.data.avatar,
+                        isMine: result.data.isMine,
+                        isFollowed: result.data.isFollowed,
+                        totalFollowers: result.data.totalFollowers,
+                        totalFollowings: result.data.totalFollowings,
+                        userStatistic: result.data.userStatistic,
+                        achievements: result.data.achievements
+                    });
+                    //    const cover = result.data.userTemplateDetails.find(item => item.type === 1);
+                    //    if (cover) {
+                    //        setCoverImage(cover.image ? encodeURI(cover.image) : null);
+                    //        setCoverColorCode(cover.colorCode ? cover.colorCode : "#000000");
+                    //    }
+
+                    //    const navBackground = result.data.userTemplateDetails.find(item => item.type === 2);
+                    //    if (navBackground) {
+                    //        setNavBackground(navBackground.image ? encodeURI(navBackground.image) : null);
+                    //        setNavColorCode(navBackground.colorCode ? navBackground.colorCode : "#000000");
+                    //    }
+
+                    //    const navBorder = result.data.userTemplateDetails.find(item => item.type === 3);
+                    //    if (navBorder) {
+                    //        setNavBorder(navBorder.colorCode || "#cccccc");
+                    //    }
+
+                    const mainBackground = result.data.userTemplateDetails.find(item => item.type === 4);
+                    if (mainBackground) {
+                        setBackgroundImage(mainBackground.image ? encodeURI(mainBackground.image) : null);
+                    }
+
+                    //    const achievementBorder = result.data.userTemplateDetails.find(item => item.type === 5)
+                    //    if (achievementBorder) {
+                    //        setAchievementBorder(achievementBorder.colorCode || "#cccccc");
+                    //    }
+
+                    //    const achievementBackground = result.data.userTemplateDetails.find(item => item.type === 6)
+                    //    if (achievementBackground) {
+                    //        setAchievementBackground(achievementBackground.image || "none");
+                    //        setAchievementBackgroundColorCode(achievementBackground.colorCode || "#000000");
+                    //    }
+
+                    //    const statisticBorder = result.data.userTemplateDetails.find(item => item.type === 7)
+                    //    if (statisticBorder) {
+                    //        setStatisticBorder(statisticBorder.colorCode || "#cccccc");
+                    //    }
+
+                    //    const statisticBackground = result.data.userTemplateDetails.find(item => item.type === 8)
+                    //    if (statisticBackground) {
+                    //        setStatisticBackground(statisticBackground.image || "none");
+                    //        setStatisticBackgroundColorCode(statisticBackground.colorCode || "#000000");
+                    //    }
+                    //    const achievementTitle = result.data.userTemplateDetails.find(item => item.type === 9);
+                    //    if (achievementTitle) {
+                    //        setAchievementTitleBackground(achievementTitle.image || "none");
+                    //        setAchievementTitleColorCode(achievementTitle.colorCode || "#000000")
+                    //    }
+
+                    //    const statisticTitle = result.data.userTemplateDetails.find(item => item.type === 10);
+                    //    if (statisticTitle) {
+                    //        setStatisticTitleBackground(statisticTitle.image || "none");
+                    //        setStatisticTitleColorCode(statisticTitle.colorCode || "#000000");
+                    //    }
+                } else {
+                    console.error("Lỗi khi lấy dữ liệu người dùng:", result.message);
+                }
+
+            } catch (error) {
+                if (!isMounted) return;
+                console.error("Lỗi khi gọi API:", error);
+            } finally {
+                if (isMounted) setIsLoading(false);
+            }
+        };
+
+        fetchData();
+        return () => { isMounted = false }; // Cleanup
+    }, [poem]);
+
     useEffect(() => {
         const fetchPoem = async () => {
             try {
@@ -432,7 +532,27 @@ const PoemDetail = () => {
     };
 
     return (
-        <>
+        <div style={{
+            backgroundImage: `url("${backgroundImage}")`
+        }}>
+            {isLoading && (
+                <div
+                    style={{
+                        position: "fixed",
+                        top: 0,
+                        left: 0,
+                        width: "100%",
+                        height: "100%",
+                        backgroundColor: "rgba(0, 0, 0, 0.5)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        zIndex: 9999,
+                    }}
+                >
+                    <Spin size="large" tip="Đang tải..." />
+                </div>
+            )}
             {isLoggedIn ? <Headeruser /> : <Headerdefault />}
             <div
                 style={{
@@ -465,7 +585,8 @@ const PoemDetail = () => {
                                     maxWidth: "336px",
                                     height: "100%",
                                     objectFit: "cover",
-                                    objectPosition: "center"
+                                    objectPosition: "center",
+                                    border: "2px solid #fff"
                                 }}
                             />
                         </div>
@@ -575,7 +696,6 @@ const PoemDetail = () => {
                             </button>
                         </div>
                         {commentTree.map((comment) => {
-                            console.log(commentTree);
                             return (
                                 <Comment
                                     key={comment.id}
@@ -602,7 +722,7 @@ const PoemDetail = () => {
                 </div>
                 <div style={{ flex: 2, }}>
                     <div style={{ display: "flex", gap: "10px" }}>
-                        <img src={poem?.user.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%" }} />
+                        <img src={poem?.user.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff" }} />
                         <div>
                             <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.user.displayName}</p>
                             <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user.userName}</p>
@@ -616,7 +736,7 @@ const PoemDetail = () => {
 
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

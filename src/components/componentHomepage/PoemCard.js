@@ -15,7 +15,19 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('vi-VN', options);
 };
 
-
+const poemType = {
+    1: "Thơ tự do",
+    2: "Thơ Lục bát",
+    3: "Thơ Song thất lục bát",
+    4: "Thơ Thất ngôn tứ tuyệt",
+    5: "Thơ Ngũ ngôn tứ tuyệt",
+    6: "Thơ Thất ngôn bát cú",
+    7: "Thơ bốn chữ",
+    8: "Thơ năm chữ",
+    9: "Thơ sáu chữ",
+    10: "Thơ bảy chữ",
+    11: "Thơ tám chữ",
+}
 
 const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove}) => {
 
@@ -25,7 +37,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
     const displayedLines = lines.slice(0, 4);
     const hasMoreLines = lines.length > 4;
     const navigate = useNavigate();
-    const truncatedDescription = item.description?.length > 102
+    const truncatedDescription = item.description?.length > 80
         ? `${item.description.substring(0, 102)}...`
         : item.description;
 
@@ -134,6 +146,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
+                <p style={styles.poemType}>Thể loại: {poemType[item.type]}</p>
                 <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
@@ -147,6 +160,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                         </p>
                     </div>
                 </div>
+                <p style={styles.poemCollection}>Tập thơ: <span style={{fontWeight: "bold", cursor: "pointer"}} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
                 <div style={styles.footerContainer}>
                     <div style={styles.statsContainer}>
                         <button style={styles.likeButton} onClick={() => onLike(item.id)}>
@@ -180,7 +194,8 @@ const styles = {
         width: "168px",
         height: "268px",
         border: "1px solid #000",
-        marginLeft: "20px"
+        marginLeft: "20px",
+        alignSelf: "center"
     },
 
     poemImage: {
@@ -240,15 +255,27 @@ const styles = {
     poemTitle: {
         color: "#222",
         margin: "0",
-        fontSize: "1.4rem",
+        fontSize: "1.2rem",
+    },
+
+    poemType: {
+        color: "#444",
+        margin: "1px 0 0",
+        fontSize: "0.85rem",
     },
 
     poemDescription: {
         color: "#444",
-        fontSize: "0.95rem",
+        fontSize: "0.85rem",
         marginTop: "1px",
         lineHeight: "1.4",
         marginBottom: "5px"
+    },
+
+    poemCollection: {
+        color: "#444",
+        fontSize: "0.8rem",
+        marginBottom: 0
     },
 
     poemContent: {
@@ -259,6 +286,7 @@ const styles = {
         marginBottom: "auto",
         position: 'relative',
     },
+    
     poemTextContainer: {
         display: '-webkit-box',
         WebkitLineClamp: 5,

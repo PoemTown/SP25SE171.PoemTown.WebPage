@@ -1,13 +1,63 @@
-import { Button, message } from "antd";
+import { Avatar, Button, List, message, Modal } from "antd";
 import React, { useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { FaUserPlus, FaCheck } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi2";
 import { RiMessengerLine } from "react-icons/ri";
 import CreateNewChat from "../Chat/CreateNewChat"; // Assuming this is your custom chat component
+import { useNavigate } from "react-router-dom";
 
 const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSuccess }) => {
     const [showChat, setShowChat] = useState(false);
+    const [followers, setFollowers] = useState([]);
+    const [followings, setFollowings] = useState([]);
+    const [isFollowersVisible, setIsFollowersVisible] = useState(false);
+    const [isFollowingsVisible, setIsFollowingsVisible] = useState(false);
+    const accessToken = localStorage.getItem("accessToken");
+    const requestHeaders = {
+        "Content-Type": "application/json",
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+    };
+    const navigate = useNavigate();
+
+    const openFollowersModal = async () => {
+        try {
+            // Replace the endpoint below with the actual endpoint for fetching followers
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/followers/user/${userData.userName}`,
+                {
+                    headers: requestHeaders
+                }
+            );
+            const data = await response.json();
+            setFollowers(data.data);
+        } catch (error) {
+            console.error("Error fetching followers", error);
+        } finally {
+            setIsFollowersVisible(true);
+        }
+    };
+
+    // Function to call API and open followings modal
+    const openFollowingsModal = async () => {
+        try {
+            // Replace the endpoint below with the actual endpoint for fetching followings
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/followers/user/${userData.userName}/follow-list`, {
+                headers: requestHeaders
+            }
+            );
+            const data = await response.json();
+            setFollowings(data.data);
+        } catch (error) {
+            console.error("Error fetching followings", error);
+        } finally {
+            setIsFollowingsVisible(true);
+        }
+    };
+
+    const closeFollowersModal = () => setIsFollowersVisible(false);
+    const closeFollowingsModal = () => setIsFollowingsVisible(false);
 
     const handleFollow = async () => {
         const token = localStorage.getItem("accessToken");
@@ -113,17 +163,68 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                             </>}
                     </div>
                     <div style={{ fontSize: "14px", color: coverColorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
+                        <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} onClick={openFollowersModal}>
                             <HiUsers color={coverColorCode} /> <span style={{ color: coverColorCode }}>{userData.totalFollowers} Người theo dõi</span>
                         </div>
                         <div style={{ color: coverColorCode }}>•</div>
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}>
+                        <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} onClick={openFollowingsModal}>
                             <FaUserPlus color={coverColorCode} /> <span style={{ color: coverColorCode }}>{userData.totalFollowings} Đang theo dõi</span>
                         </div>
                     </div>
                 </div>
             </div>
-
+            <Modal
+                title="Danh sách người theo dõi"
+                visible={isFollowersVisible}
+                onCancel={closeFollowersModal}
+                footer={null}
+            >
+                <List
+                    itemLayout="horizontal"
+                    dataSource={followers}
+                    renderItem={(follower) => (
+                        <List.Item onClick={() => {
+                            setIsFollowersVisible(false);
+                            navigate(`/user/${follower.user.userName}`);
+                            window.location.reload();
+                        }}>
+                            <List.Item.Meta
+                                avatar={
+                                    <Avatar src={follower.user.avatar || "./default_avatar.png"} />
+                                }
+                                title={follower.user.displayName}
+                                description={`@${follower.user.userName}`}
+                            />
+                        </List.Item>
+                    )}
+                />
+            </Modal>
+            <Modal
+                title="Danh sách đang theo dõi"
+                visible={isFollowingsVisible}
+                onCancel={closeFollowingsModal}
+                footer={null}
+            >
+                <List
+                    itemLayout="horizontal"
+                    dataSource={followings}
+                    renderItem={(following) => (
+                        <List.Item onClick={() => {
+                            setIsFollowingsVisible(false);
+                            navigate(`/user/${following.user.userName}`);
+                            window.location.reload();
+                        }}>
+                            <List.Item.Meta
+                                avatar={
+                                    <Avatar src={following.user.avatar || "./default_avatar.png"} />
+                                }
+                                title={following.user.displayName}
+                                description={`@${following.user.userName}`}
+                            />
+                        </List.Item>
+                    )}
+                />
+            </Modal>
             {/* Chat window - Rendered outside the main div with fixed position */}
             {showChat && (
                 <div style={{
@@ -133,7 +234,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     width: "300px", // Adjust the width as needed
                     zIndex: 1000 // Ensure it stays on top of other elements
                 }}>
-                    <CreateNewChat userData={userData}  onClose={() => setShowChat(false)}/>
+                    <CreateNewChat userData={userData} onClose={() => setShowChat(false)} />
                 </div>
             )}
         </div>
