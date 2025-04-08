@@ -4,7 +4,7 @@ import { CiCirclePlus } from "react-icons/ci";
 import { FaUserPlus, FaCheck } from "react-icons/fa";
 import { HiUsers } from "react-icons/hi2";
 import { RiMessengerLine } from "react-icons/ri";
-import CreateNewChat from "../Chat/CreateNewChat"; // Assuming this is your custom chat component
+import CreateNewChat from "../Chat/CreateNewChat";
 import { useNavigate } from "react-router-dom";
 
 const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSuccess }) => {
@@ -13,21 +13,24 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const [followings, setFollowings] = useState([]);
     const [isFollowersVisible, setIsFollowersVisible] = useState(false);
     const [isFollowingsVisible, setIsFollowingsVisible] = useState(false);
+
+    // Donate modal
+    const [isDonateVisible, setIsDonateVisible] = useState(false);
+    const [donateAmount, setDonateAmount] = useState("");
+
     const accessToken = localStorage.getItem("accessToken");
     const requestHeaders = {
         "Content-Type": "application/json",
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
     };
+
     const navigate = useNavigate();
 
     const openFollowersModal = async () => {
         try {
-            // Replace the endpoint below with the actual endpoint for fetching followers
             const response = await fetch(
                 `https://api-poemtown-staging.nodfeather.win/api/followers/user/${userData.userName}`,
-                {
-                    headers: requestHeaders
-                }
+                { headers: requestHeaders }
             );
             const data = await response.json();
             setFollowers(data.data);
@@ -38,14 +41,11 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
         }
     };
 
-    // Function to call API and open followings modal
     const openFollowingsModal = async () => {
         try {
-            // Replace the endpoint below with the actual endpoint for fetching followings
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/followers/user/${userData.userName}/follow-list`, {
-                headers: requestHeaders
-            }
+                `https://api-poemtown-staging.nodfeather.win/api/followers/user/${userData.userName}/follow-list`,
+                { headers: requestHeaders }
             );
             const data = await response.json();
             setFollowings(data.data);
@@ -68,7 +68,6 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
 
         try {
             const method = userData.isFollowed ? "DELETE" : "POST";
-
             const response = await fetch(
                 `https://api-poemtown-staging.nodfeather.win/api/followers/${userData.userId}`,
                 {
@@ -81,7 +80,6 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
             );
 
             if (response.ok) {
-                // Trigger parent component refresh
                 onFollowSuccess();
                 message.success(userData.isFollowed
                     ? "Đã hủy theo dõi!"
@@ -97,8 +95,53 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     };
 
     const handleChat = () => {
-        setShowChat(prevState => !prevState); // Toggle showChat
+        setShowChat(prev => !prev);
     };
+
+    const handleDonateSubmit = async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            message.error("Bạn cần đăng nhập để donate.");
+            return;
+        }
+    
+        const amountNumber = Number(donateAmount);
+        if (!donateAmount || isNaN(amountNumber) || amountNumber <= 0) {
+            message.error("Vui lòng nhập số tiền hợp lệ.");
+            return;
+        }
+    
+        try {
+            const response = await fetch(
+                "https://api-poemtown-staging.nodfeather.win/api/user-ewallets/v1/donate",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        amount: amountNumber,
+                        receiveUserId: userData.userId
+                    })
+                }
+            );
+    
+            if (!response.ok) {
+                const errData = await response.json();
+                throw new Error(errData.message || "Donate thất bại.");
+            }
+    
+            message.success(`Đã ủng hộ ${amountNumber.toLocaleString()} VNĐ thành công!`);
+            setIsDonateVisible(false);
+            setDonateAmount("");
+    
+        } catch (error) {
+            console.error("Donate error:", error);
+            message.error(error.message || "Đã xảy ra lỗi khi donate.");
+        }
+    };
+    
 
     return (
         <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
@@ -108,11 +151,11 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     alt="Cover"
                     style={{
                         width: "100%",
-                        display: "block" // removes extra bottom spacing
+                        display: "block"
                     }}
                 />
             )}
-            {/* Overlay content */}
+
             <div style={{
                 position: "absolute",
                 top: 0,
@@ -140,39 +183,42 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                             <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: coverColorCode }}>{userData.displayName}</h2>
                             <p style={{ color: coverColorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
                         </div>
-                        {isMine ? <></> :
-                            <>
-                                <div>
-                                    <Button
-                                        onClick={handleChat}
-                                        variant="solid"
-                                        color="primary"
-                                        icon={<RiMessengerLine />}
-                                        iconPosition="end"
-                                    >
-                                        Nhắn tin
-                                    </Button>
-                                </div>
-                                <div>
-                                    {userData.isFollowed ?
-                                        <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button>
-                                        :
-                                        <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
-                                    }
-                                </div>
-                            </>}
+                        {!isMine && (
+                            <div style={{ display: "flex", gap: "10px" }}>
+                                <Button onClick={handleChat} type="primary" icon={<RiMessengerLine />}>Nhắn tin</Button>
+
+                                {userData.isFollowed ? (
+                                    <Button onClick={handleFollow} type="primary" icon={<FaCheck />}>Đã theo dõi</Button>
+                                ) : (
+                                    <Button onClick={handleFollow} type="default" icon={<CiCirclePlus />}>Theo dõi</Button>
+                                )}
+
+                                <Button
+                                    type="default"
+                                    onClick={() => setIsDonateVisible(true)}
+                                    style={{
+                                        backgroundColor: "#d4edda",
+                                        color: "#155724",
+                                        border: "1px solid #c3e6cb"
+                                    }}
+                                >
+                                    Donate
+                                </Button>
+                            </div>
+                        )}
                     </div>
                     <div style={{ fontSize: "14px", color: coverColorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} onClick={openFollowersModal}>
-                            <HiUsers color={coverColorCode} /> <span style={{ color: coverColorCode }}>{userData.totalFollowers} Người theo dõi</span>
+                            <HiUsers color={coverColorCode} /> <span>{userData.totalFollowers} Người theo dõi</span>
                         </div>
                         <div style={{ color: coverColorCode }}>•</div>
                         <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} onClick={openFollowingsModal}>
-                            <FaUserPlus color={coverColorCode} /> <span style={{ color: coverColorCode }}>{userData.totalFollowings} Đang theo dõi</span>
+                            <FaUserPlus color={coverColorCode} /> <span>{userData.totalFollowings} Đang theo dõi</span>
                         </div>
                     </div>
                 </div>
             </div>
+
             <Modal
                 title="Danh sách người theo dõi"
                 visible={isFollowersVisible}
@@ -189,9 +235,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                             window.location.reload();
                         }}>
                             <List.Item.Meta
-                                avatar={
-                                    <Avatar src={follower.user.avatar || "./default_avatar.png"} />
-                                }
+                                avatar={<Avatar src={follower.user.avatar || "./default_avatar.png"} />}
                                 title={follower.user.displayName}
                                 description={`@${follower.user.userName}`}
                             />
@@ -199,6 +243,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     )}
                 />
             </Modal>
+
             <Modal
                 title="Danh sách đang theo dõi"
                 visible={isFollowingsVisible}
@@ -215,9 +260,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                             window.location.reload();
                         }}>
                             <List.Item.Meta
-                                avatar={
-                                    <Avatar src={following.user.avatar || "./default_avatar.png"} />
-                                }
+                                avatar={<Avatar src={following.user.avatar || "./default_avatar.png"} />}
                                 title={following.user.displayName}
                                 description={`@${following.user.userName}`}
                             />
@@ -225,14 +268,34 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     )}
                 />
             </Modal>
-            {/* Chat window - Rendered outside the main div with fixed position */}
+
+            {/* Donate Modal */}
+            <Modal
+                title="Ủng hộ người dùng"
+                visible={isDonateVisible}
+                onCancel={() => setIsDonateVisible(false)}
+                onOk={handleDonateSubmit}
+                okText="Gửi ủng hộ"
+                cancelText="Hủy"
+            >
+                <p>Nhập số tiền bạn muốn ủng hộ:</p>
+                <input
+                    type="number"
+                    value={donateAmount}
+                    onChange={(e) => setDonateAmount(e.target.value)}
+                    placeholder="VD: 10000"
+                    style={{ width: "100%", padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}
+                />
+            </Modal>
+
+            {/* Chat Component */}
             {showChat && (
                 <div style={{
                     position: "fixed",
                     bottom: "20px",
                     right: "0",
-                    width: "300px", // Adjust the width as needed
-                    zIndex: 1000 // Ensure it stays on top of other elements
+                    width: "300px",
+                    zIndex: 1000
                 }}>
                     <CreateNewChat userData={userData} onClose={() => setShowChat(false)} />
                 </div>
