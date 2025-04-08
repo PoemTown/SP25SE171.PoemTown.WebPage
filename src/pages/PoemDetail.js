@@ -7,11 +7,12 @@ import { BiCommentDetail, BiLike, BiSolidLike } from 'react-icons/bi';
 import { RiDeleteBinFill } from "react-icons/ri";
 import { IoBookmark } from 'react-icons/io5';
 import { CiBookmark, CiCirclePlus } from 'react-icons/ci';
-import { Button, Dropdown, Menu, message, Spin } from 'antd';
+import { Button, Dropdown, Menu, message, Spin, Modal } from 'antd';
 import { IoIosLink, IoIosMore } from 'react-icons/io';
 import { MdEdit, MdReport } from 'react-icons/md';
 import { FaCheck, FaUserPlus } from 'react-icons/fa';
 import Comment from '../components/componentHomepage/Comment';
+import axios from 'axios';
 
 const PoemDetail = () => {
     const { id } = useParams();
@@ -171,6 +172,8 @@ const PoemDetail = () => {
         setIsLoggedIn(!!token);
     }, []);
 
+
+
     const formatDate = (dateString) => {
         const date = new Date(dateString);
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
@@ -235,6 +238,57 @@ const PoemDetail = () => {
         }
     };
 
+    //------------------------------------------------Purchase------------------------------------------------
+    //Purchase poem
+    const handlePurchasePoem = async (poemId) => {
+        try {
+            const response = await axios.put(
+                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/purchase`,
+                null, // vì không cần gửi body
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`,
+                    },
+                    params: {
+                        poemId: poemId,
+                    },
+                }
+            );
+
+            const data = response.data; // vì dùng axios, không cần `.json()`
+            message.info(response.data.message);
+
+        } catch (error) {
+            console.error("Error fetching poem:", error);
+            message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
+        }
+    };
+
+
+    const showPurchaseConfirm = (poemId, saleVersion) => {
+        Modal.confirm({
+            title: "Xác nhận mua phiên bản",
+            content: (
+                <div>
+                    <p><strong>Giá:</strong> {saleVersion.price} VND</p>
+                    <p><strong>Thời gian sử dụng:</strong> {saleVersion.durationTime} năm</p>
+                    <p><strong>Hoa hồng:</strong> {saleVersion.commissionPercentage}%</p>
+                    <p>Hành động này không thể hoàn tác!</p>
+                </div>
+            ),
+            okText: "Mua",
+            cancelText: "Hủy",
+            okType: "primary",
+            onOk() {
+                handlePurchasePoem(poemId);
+            },
+        });
+    };
+
+
+
+    //------------------------------------------------Purchase------------------------------------------------
     const defaultMenu = (
         <Menu>
             <Menu.Item key="report">
@@ -732,6 +786,24 @@ const PoemDetail = () => {
                                 }
                             </div>
                         </div>
+                        {poem?.saleVersion.status !== 4 && (
+                            <div style={{ margin: "0 auto" }}>
+                                <Button
+                                    type="primary"
+                                    onClick={() => {
+                                        if (poem?.saleVersion.status === 1) {
+                                            showPurchaseConfirm(poem.id, poem?.saleVersion);
+                                        }
+                                    }}
+                                >
+                                    {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                </Button>
+
+
+
+                            </div>
+                        )}
+
                     </div>
 
                 </div>

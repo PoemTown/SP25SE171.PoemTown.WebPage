@@ -19,6 +19,7 @@ import AchievementAndStatistic from "./AchievementAndStatistic/AchievementAndSta
 import YourRecordFile from "./RecordFile/YourRecordFile";
 import Headerdefault from "../../components/Headerdefault";
 import YourWallet from "./YourWallet";
+import UsageRight from "./UsageRight";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -368,7 +369,9 @@ const UserPage = () => {
                             <YourDraft isCreatingPoem={isCreatingPoem} setIsCreatingPoem={setIsCreatingPoem} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />
                         )}
                         {activeTab === "Lịch sử chỉnh sửa" && <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>}
-                        {activeTab === "Quản lý Bản Quyền" && <p>Thông tin về bản quyền các tác phẩm của bạn sẽ được hiển thị tại đây.</p>}
+                        {activeTab === "Quản lý Bản Quyền" && (
+                            <UsageRight/>
+                        )}
                         {/* {activeTab === "Trang trí" &&
                         <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor} />} */}
                         {activeTab === "Quản lý ví" && (<YourWallet/>)}
