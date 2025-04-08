@@ -18,6 +18,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AchievementAndStatistic from "./AchievementAndStatistic/AchievementAndStatistic";
 import YourRecordFile from "./RecordFile/YourRecordFile";
 import Headerdefault from "../../components/Headerdefault";
+import YourWallet from "./YourWallet";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -370,7 +371,7 @@ const UserPage = () => {
                         {activeTab === "Quản lý Bản Quyền" && <p>Thông tin về bản quyền các tác phẩm của bạn sẽ được hiển thị tại đây.</p>}
                         {/* {activeTab === "Trang trí" &&
                         <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor} />} */}
-                        {activeTab === "Quản lý ví" && <p>Thông tin về tài chính và ví điện tử sẽ hiển thị ở đây.</p>}
+                        {activeTab === "Quản lý ví" && (<YourWallet/>)}
                     </div>
                     {!isCreatingPoem && !isCreatingCollection &&
                         <div style={{ display: "flex", flex: 3 }}>
