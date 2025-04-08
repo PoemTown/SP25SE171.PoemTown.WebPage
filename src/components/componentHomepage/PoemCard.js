@@ -127,7 +127,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
-                        <span style={styles.author} onClick={() => navigate(`/user/${item.user?.userName}`)}>{item.user?.displayName || 'Anonymous'}</span>
+                        <span style={styles.author} onClick={() => navigate(`/user/${item.user?.userName}`)}> {item.user?.displayName || 'Anonymous'}</span>
                         <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
