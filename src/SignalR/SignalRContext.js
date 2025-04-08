@@ -41,16 +41,36 @@ export const SignalRProvider = ({ children }) => {
 
         // Kết nối và nhận data từ Hub, hàm ReceiveAnnouncement
         newAnnouncementConnection.on("ReceiveAnnouncement", (announcement) => {
-            console.log("New announcement:", announcement);
-            // setAnnouncements(prev => [...prev, announcement]);
+            // console.log("New announcement:", announcement);
+            // // setAnnuncements(prev => [...prev, announcement]);
 
+            // setAnnouncements(prev => {
+            //     const exists = prev.some(n => n.id === announcement.id);
+            //     if (exists) {
+            //         // If it exists, update it instead of adding a duplicate
+            //         return prev.map(n => (n.id === announcement.id ? announcement : n));
+            //     }
+            //     return [announcement, ...prev]; // Add only if it's new
+            // });
             setAnnouncements(prev => {
-                const exists = prev.some(n => n.id === announcement.id);
-                if (exists) {
-                    // If it exists, update it instead of adding a duplicate
-                    return prev.map(n => (n.id === announcement.id ? announcement : n));
+                const map = new Map();
+        
+                // Add new/updated one first
+                map.set(announcement.id, announcement);
+        
+                // Add the rest, skipping the one we just added
+                for (const a of prev) {
+                    if (!map.has(a.id)) {
+                        map.set(a.id, a);
+                    }
                 }
-                return [announcement, ...prev]; // Add only if it's new
+        
+                // Optional: sort by createdTime DESC to keep it tidy
+                const sorted = Array.from(map.values()).sort((a, b) =>
+                    new Date(b.createdTime) - new Date(a.createdTime)
+                );
+        
+                return sorted;
             });
         });
 
