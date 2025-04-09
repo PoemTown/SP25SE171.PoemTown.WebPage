@@ -69,7 +69,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                     : {};
 
                 const response = await axios.get(
-                    `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/audio-stream/${record.id}`,
+                    `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio-stream/${record.id}`,
                     {
                         responseType: "blob",
                         headers: headers

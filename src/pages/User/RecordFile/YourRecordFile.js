@@ -32,7 +32,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
   }, [isCreatingRecord, reloadTrigger, activeButton, currentPage, pageSize]);
 
   async function fetchRecords(type, pageNumber, pageSize) {
-    const baseUrl = "https://api-poemtown-staging.nodfeather.win/api/record-files/v1";
+    const baseUrl = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1`;
     const url = `${baseUrl}/${type}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
 
     setIsLoading(true);
@@ -64,7 +64,8 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
     }
   }
   async function fetchUserRecords(pageNumber, pageSize) {
-    const url = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/user/${username}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
+    console.log(username)
+    const url = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/user/${username}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
     setIsLoading(true);
     try {
       const response = await fetch(url, {
@@ -117,7 +118,7 @@ const handleToggleStatus = async (record) => {
         }
         try {
           const response = await fetch(
-            "https://api-poemtown-staging.nodfeather.win/api/record-files/v1/enable-selling",
+            `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/enable-selling`,
             {
               method: "PUT",
               headers: {
@@ -146,7 +147,8 @@ const handleToggleStatus = async (record) => {
 };
 
   async function handlePurchaseRecord(recordId) {
-    const url = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/purchase`;
+    console.log(recordId);
+    const url = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/purchase`;
 
     try {
         const response = await axios.put(url, null, {
@@ -222,7 +224,7 @@ const handleToggleStatus = async (record) => {
   const handleDelete = async (id) => {
     try {
       const response = await axios.delete(
-        `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/${id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/${id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,

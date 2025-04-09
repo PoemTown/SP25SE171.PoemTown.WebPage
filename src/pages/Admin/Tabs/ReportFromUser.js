@@ -21,7 +21,8 @@ import {
     Button,
     Select,
     FormControl,
-    InputLabel
+    InputLabel,
+    Alert
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import axios from "axios";
@@ -102,6 +103,7 @@ const ReportFromUser = () => {
     const [poemDetect, setPoemDetect] = useState(null);
     const [plagiarismFromPoems, setPlagiarismFromPoems] = useState([]);
     const [selectedPlagiarismIndex, setSelectedPlagiarismIndex] = useState(0);
+    const [showViewOnlyAlert, setShowViewOnlyAlert] = useState(false);
 
     useEffect(() => {
         fetchReports();
@@ -110,7 +112,7 @@ const ReportFromUser = () => {
     const fetchReports = async () => {
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/reports/v1/reports?sortOptions=${sortOption}&pageNumber=${currentPage}&pageSize=${pageSize}`,
+                `${process.env.REACT_APP_API_BASE_URL}/reports/v1/reports?sortOptions=${sortOption}&pageNumber=${currentPage}&pageSize=${pageSize}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -118,7 +120,6 @@ const ReportFromUser = () => {
                 }
             );
             setReports(response.data.data);
-            console.log(response.data.data)
             setPagination({
                 pageNumber: response.data.pageNumber,
                 totalPages: response.data.totalPages,
@@ -154,12 +155,13 @@ const ReportFromUser = () => {
     const handleRowClick = (report) => {
         setSelectedReport(report);
         setStatus(report.status);
-        setResolveResponse("");
+        setResolveResponse(report.resolveResponse || "");
         setOpenDialog(true);
+        setShowViewOnlyAlert(report.status !== 1);
+        
         if (report.isSystem === true) {
             setPoemDetect(report.poem);
             setPlagiarismFromPoems(report.plagiarismFromPoems);
-            // Reset the selected index to 0 whenever a new report is opened.
             setSelectedPlagiarismIndex(0);
         }
     };
@@ -167,10 +169,10 @@ const ReportFromUser = () => {
     const handleCloseDialog = () => {
         setOpenDialog(false);
         setSelectedReport(null);
-        // Clear the plagiarism related states when canceling the dialog.
         setPoemDetect(null);
         setPlagiarismFromPoems([]);
         setSelectedPlagiarismIndex(0);
+        setShowViewOnlyAlert(false);
     };
 
     const handleStatusChange = (event) => {
@@ -184,7 +186,7 @@ const ReportFromUser = () => {
     const handleSubmit = async () => {
         try {
             await axios.put(
-                "https://api-poemtown-staging.nodfeather.win/api/reports/v1/resolve",
+                `${process.env.REACT_APP_API_BASE_URL}/reports/v1/resolve`,
                 {
                     id: selectedReport.id,
                     resolveResponse: resolveResponse,
@@ -202,6 +204,8 @@ const ReportFromUser = () => {
             console.error("Có lỗi khi cập nhật trạng thái báo cáo.");
         }
     };
+
+    const isEditable = selectedReport?.status === 1;
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -317,8 +321,16 @@ const ReportFromUser = () => {
 
             {/* Edit Status Dialog */}
             <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
-                <DialogTitle>Cập nhật trạng thái báo cáo</DialogTitle>
+                <DialogTitle>
+                    {isEditable ? "Cập nhật trạng thái báo cáo" : "Chi tiết báo cáo"}
+                </DialogTitle>
                 <DialogContent>
+                    {showViewOnlyAlert && (
+                        <Alert severity="info" sx={{ mb: 2 }}>
+                            Báo cáo này đã được xử lý và không thể chỉnh sửa.
+                        </Alert>
+                    )}
+
                     {selectedReport && (
                         <Box sx={{ mt: 2 }}>
                             <Typography variant="subtitle1" gutterBottom>
@@ -333,7 +345,6 @@ const ReportFromUser = () => {
                             {selectedReport.isSystem === true && plagiarismFromPoems.length > 0 ? (
                                 <>
                                     <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
-                                        {/* Select box to choose a plagiarism poem */}
                                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                                             <label style={{ fontWeight: "bold", textAlign: "center" }}>Bài thơ bị báo cáo</label>
                                         </div>
@@ -343,7 +354,6 @@ const ReportFromUser = () => {
                                     </div>
 
                                     <div style={{ display: "flex", flexDirection: "row" }}>
-                                        {/* Select box to choose a plagiarism poem */}
                                         <div style={{ flex: 1, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
                                             <p style={{ margin: 0, paddingTop: "10px" }}>Tựa đề: {poemDetect.title} </p>
                                         </div>
@@ -355,6 +365,7 @@ const ReportFromUser = () => {
                                                     value={selectedPlagiarismIndex}
                                                     label="Chọn bài thơ bị đạo văn"
                                                     onChange={(e) => setSelectedPlagiarismIndex(e.target.value)}
+                                                    disabled={!isEditable}
                                                 >
                                                     {plagiarismFromPoems.map((poem, index) => (
                                                         <MenuItem key={index} value={index}>
@@ -366,7 +377,6 @@ const ReportFromUser = () => {
                                         </div>
                                     </div>
                                     <div style={{ display: "flex", flexDirection: "row" }}>
-                                        {/* Select box to choose a plagiarism poem */}
                                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                                             <p style={{ margin: 0 }}>Mô tả: {poemDetect.description}</p>
                                         </div>
@@ -375,7 +385,6 @@ const ReportFromUser = () => {
                                         </div>
                                     </div>
                                     <div style={{ display: "flex", flexDirection: "row" }}>
-                                        {/* Select box to choose a plagiarism poem */}
                                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
                                             <p style={{ margin: 0 }}>Thể loại: {poemType[poemDetect.type]}</p>
                                         </div>
@@ -393,10 +402,18 @@ const ReportFromUser = () => {
                                     </div>
                                     <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
                                         <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
-                                            <textarea value={poemDetect?.content || ""} style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} readOnly></textarea>
+                                            <textarea 
+                                                value={poemDetect?.content || ""} 
+                                                style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} 
+                                                readOnly
+                                            ></textarea>
                                         </div>
                                         <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
-                                            <textarea value={plagiarismFromPoems[selectedPlagiarismIndex].content} style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} readOnly></textarea>
+                                            <textarea 
+                                                value={plagiarismFromPoems[selectedPlagiarismIndex].content} 
+                                                style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} 
+                                                readOnly
+                                            ></textarea>
                                         </div>
                                     </div>
                                 </>
@@ -407,6 +424,7 @@ const ReportFromUser = () => {
                                     value={status}
                                     label="Trạng thái"
                                     onChange={handleStatusChange}
+                                    disabled={!isEditable}
                                 >
                                     {statusOptions.map((option) => (
                                         <MenuItem key={option.value} value={option.value}>
@@ -425,15 +443,22 @@ const ReportFromUser = () => {
                                 onChange={handleResolveResponseChange}
                                 sx={{ mt: 2 }}
                                 placeholder="Nhập phản hồi giải quyết (nếu có)"
+                                disabled={!isEditable}
                             />
                         </Box>
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog}>Hủy</Button>
-                    <Button onClick={handleSubmit} variant="contained" color="primary">
-                        Lưu thay đổi
-                    </Button>
+                    <Button onClick={handleCloseDialog}>Đóng</Button>
+                    {isEditable && (
+                        <Button 
+                            onClick={handleSubmit} 
+                            variant="contained" 
+                            color="primary"
+                        >
+                            Lưu thay đổi
+                        </Button>
+                    )}
                 </DialogActions>
             </Dialog>
         </Box>

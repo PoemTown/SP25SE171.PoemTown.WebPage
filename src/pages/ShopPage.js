@@ -30,14 +30,18 @@ const Shop = () => {
             "Content-Type": "application/json",
             ...(accessToken && { Authorization: `Bearer ${accessToken}` })
         };
-        const apiUrl = `https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates?${selectedType ? `filterOptions.type=${selectedType}&` : ""}sortOptions=${selectedSort}`;
+        const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates?${selectedType ? `filterOptions.type=${selectedType}&` : ""}sortOptions=${selectedSort}`;
 
         const response = await fetch(apiUrl, { headers: requestHeaders });
         const data = await response.json();
-        console.log(data)
-        setTemplates(data.data || null);
-        setTotalItems(data.totalRecords || 0);
+        console.log(data);
+
+        const filteredTemplates = (data.data || []).filter(item => item.tagName !== "DEFAULT");
+
+        setTemplates(filteredTemplates);
+        setTotalItems(filteredTemplates.length); 
     }
+
 
     const handleViewDetail = (id) => {
         navigate(`/shop/${id}`);
@@ -106,7 +110,12 @@ const Shop = () => {
                             </div>
                             <p><span>Tag: </span><span style={{ color: "#666" }}>#{item.tagName}</span></p>
                             <p><span>Trạng thái: </span><span style={{ color: item.status === 1 ? "#00dd66" : "#ff0000", fontWeight: "bold" }}>{templateStatus[item.status]}</span></p>
-                            <p><span>Giá: </span><span style={{ color: "#0066ff" }}>0</span></p>
+                            <p>
+                                <span>Giá: </span>
+                                <span style={{ color: "#0066ff" }}>
+                                    {item.price?.toLocaleString("vi-VN")}₫
+                                </span>
+                            </p>
                         </div>
                         <Button style={styles.buttonViewDetail} onClick={() => handleViewDetail(item.id)}>Xem chi tiết</Button>
                     </div>

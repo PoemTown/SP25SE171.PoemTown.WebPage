@@ -27,12 +27,26 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     ...(accessToken && { Authorization: `Bearer ${accessToken}` })
   };
 
+  const poemType = {
+    1: "Thơ tự do",
+    2: "Thơ Lục bát",
+    3: "Thơ Song thất lục bát",
+    4: "Thơ Thất ngôn tứ tuyệt",
+    5: "Thơ Ngũ ngôn tứ tuyệt",
+    6: "Thơ Thất ngôn bát cú",
+    7: "Thơ bốn chữ",
+    8: "Thơ năm chữ",
+    9: "Thơ sáu chữ",
+    10: "Thơ bảy chữ",
+    11: "Thơ tám chữ",
+  }
+
   const navigate = useNavigate();
 
   const showDeleteModal = (poemId) => {
     setPoemToDelete(poemId);
     setIsDeleteModalVisible(true);
-  };  
+  };
 
   useEffect(() => {
     const fetchPoems = async () => {
@@ -41,7 +55,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
         try {
           if (isMine === true) {
             const response = await fetch(
-              "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine?filterOptions.status=1",
+              `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=1`,
               {
                 headers: { Authorization: `Bearer ${accessToken}` },
               }
@@ -63,9 +77,11 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                   description: poem.description,
                   content: poem.content,
                   poemImage: poem.poemImage,
+                  type: poem.type,
                   likeCount: poem.likeCount,
                   commentCount: poem.commentCount,
                   createdTime: poem.createdTime,
+                  collection: poem.collection,
                 };
               });
               setPoems(poemsWithId);
@@ -74,7 +90,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             }
           } else {
             const response = await fetch(
-              `https://api-poemtown-staging.nodfeather.win/api/poems/v1/user/${username}`,
+              `${process.env.REACT_APP_API_BASE_URL}/poems/v1/user/${username}`,
               {
                 headers: requestHeaders,
               }
@@ -97,8 +113,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                   content: poem.content,
                   poemImage: poem.poemImage,
                   likeCount: poem.likeCount,
+                  type: poem.type,
                   commentCount: poem.commentCount,
                   createdTime: poem.createdTime,
+                  collection: poem.collection,
                 };
               });
               setPoems(poemsWithId);
@@ -124,7 +142,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
     try {
       await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`,
         {
           method: method,
           headers: {
@@ -159,7 +177,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     if (!poemToDelete) return;
     try {
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${poemToDelete}`,
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/${poemToDelete}`,
         {
           method: "DELETE",
           headers: {
@@ -198,7 +216,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     const method = isLiked ? "DELETE" : "POST";
 
     try {
-      await fetch(`https://api-poemtown-staging.nodfeather.win/api/likes/v1/${id}`, {
+      await fetch(`${process.env.REACT_APP_API_BASE_URL}/likes/v1/${id}`, {
         method: method,
         headers: {
           Authorization: `Bearer ${accessToken}`,
@@ -256,8 +274,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                 const lines = poem.content?.split('\n') || [];
                 const displayedLines = lines.slice(0, 4);
                 const hasMoreLines = lines.length > 4;
-                const truncatedDescription = poem.description?.length > 102
-                  ? `${poem.description.substring(0, 102)}...`
+                const truncatedDescription = poem.description?.length > 80
+                  ? `${poem.description.substring(0, 80)}...`
                   : poem.description;
                 return (
                   <div
@@ -278,9 +296,11 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                     }}
                   >
                     <div style={{
-                      width: "168x",
+                      width: "168px",
                       height: "268px",
                       border: "1px solid #000",
+                      marginLeft: "20px",
+                      alignSelf: "center"
                     }}>
                       <img
                         src={poem.poemImage || "/anhminhhoa.png"}
@@ -289,8 +309,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                           width: "168px",
                           maxWidth: "168px",
                           height: "100%",
-                          objectFit: "cover",
-                          objectPosition: "center"
+                          objectFit: "cover", // This will prevent stretching
+                          objectPosition: "center" // Center the image
                         }}
                         onError={(e) => {
                           e.target.onerror = null;
@@ -355,9 +375,6 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                           {isMine ? <Dropdown
                             overlay={
                               <Menu>
-                                <Menu.Item key="edit">
-                                  ✏️ Chỉnh sửa
-                                </Menu.Item>
                                 <Menu.Item key="delete" onClick={() => showDeleteModal(poem.id)}
                                 >
                                   ❌ Xóa
@@ -399,13 +416,20 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                         </div>
                       </div>
                       <h3 style={{
-                        color: "#222",
-                        margin: "0",
-                        fontSize: "1.4rem",
+                         color: "#222",
+                         margin: "0",
+                         fontSize: "1.2rem",
                       }}>{poem.title}</h3>
                       <p style={{
                         color: "#444",
-                        fontSize: "0.95rem",
+                        margin: "1px 0 0",
+                        fontSize: "0.85rem",
+                      }}>
+                        Thể loại: {poemType[poem.type]}
+                      </p>
+                      <p style={{
+                        color: "#444",
+                        fontSize: "0.85rem",
                         marginTop: "1px",
                         lineHeight: "1.4",
                         marginBottom: "5px"
@@ -436,11 +460,11 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                           }}>“</span>
                           {displayedLines.map((line, index) => (
                             <p key={index} style={{
+                              whiteSpace: 'pre-wrap',
                               margin: "0 0 0 0",
                               lineHeight: "1.6",
                               fontSize: "1rem",
                               textIndent: '0.8rem',
-                              whiteSpace: 'pre-wrap',
                             }}>{line}</p>
                           ))}
                           <p style={{
@@ -461,6 +485,11 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                           </p>
                         </div>
                       </div>
+                      <p style={{
+                         color: "#444",
+                         fontSize: "0.8rem",
+                         marginBottom: 0
+                      }}>Tập thơ: <span style={{fontWeight: "bold", cursor: "pointer"}} onClick={() => navigate(`/collection/${poem.collection.id}`)}>{poem.collection?.collectionName}</span></p>
                       <div
                         style={{
                           display: "flex",

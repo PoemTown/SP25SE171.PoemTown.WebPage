@@ -26,7 +26,7 @@ const LoginPage = () => {
 
         try {
             const response = await axios.put(
-                "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/password/recovery",
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/password/recovery`,
                 { email: forgotEmail }
             );
 
@@ -48,7 +48,7 @@ const LoginPage = () => {
 
         try {
             const response = await axios.post(
-                "https://api-poemtown-staging.nodfeather.win/api/authentications/v1/authentication",
+                `${process.env.REACT_APP_API_BASE_URL}/authentications/v1/authentication`,
                 formData
             );
 

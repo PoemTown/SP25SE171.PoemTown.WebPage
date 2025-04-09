@@ -30,7 +30,7 @@ const ConfirmBorderModal = ({ show, onConfirm, onCancel, selectedThemeId }) => {
 
         try {
             const response = await axios.put(
-                `https://api-poemtown-staging.nodfeather.win/api/template/v1/theme/${templateId}/user-template-detail`,
+                `${process.env.REACT_APP_API_BASE_URL}/template/v1/theme/${templateId}/user-template-detail`,
                 requestBody,
                 {
                     headers: {

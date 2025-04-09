@@ -49,7 +49,7 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
                 const accessToken = localStorage.getItem("accessToken");
                 try {
                     const response = await axios.delete(
-                        `https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/detail/${item.id}`,
+                        `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/detail/${item.id}`,
                         {
                             headers: {
                                 Authorization: `Bearer ${accessToken}`,
@@ -78,7 +78,7 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
 
         try {
             const response = await axios.post(
-                "https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/cover-image",
+                `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/cover-image`,
                 formData,
                 {
                     headers: {
@@ -116,7 +116,7 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
 
         try {
             const response = await axios.post(
-                "https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/detail/addition",
+                `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/detail/addition`,
                 requestData,
                 {
                     headers: {
@@ -157,7 +157,7 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
     
         try {
             const response = await axios.put(
-                "https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/detail",
+                `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/detail`,
                 requestData,
                 {
                     headers: {

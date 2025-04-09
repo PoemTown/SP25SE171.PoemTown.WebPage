@@ -82,7 +82,7 @@ const OrderManagement = () => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/orders/v1/admin`,
+                `${process.env.REACT_APP_API_BASE_URL}/orders/v1/admin`,
                 {
                     params: {
                         pageNumber: currentPage,
@@ -107,7 +107,7 @@ const OrderManagement = () => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/orders/v1/detail/${id}`,
+                `${process.env.REACT_APP_API_BASE_URL}/orders/v1/detail/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

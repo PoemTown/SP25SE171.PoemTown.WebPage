@@ -15,7 +15,7 @@ const CommentModal = ({ visible, onClose, poemId }) => {
     const accessToken = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/comments/v1/${poemId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/comments/v1/${poemId}`,
         {
           headers: { Authorization: `Bearer ${accessToken}` },
         }
@@ -36,7 +36,7 @@ const CommentModal = ({ visible, onClose, poemId }) => {
     const accessToken = localStorage.getItem("accessToken");
     try {
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/comments/v1`,
+        `${process.env.REACT_APP_API_BASE_URL}/comments/v1`,
         {
           method: "POST",
           headers: {

@@ -32,7 +32,7 @@ const SignupPage = () => {
     
         try {
             const response = await axios.post(
-                "https://api-poemtown-staging.nodfeather.win/api/authentications/v1/registration",
+                `${process.env.REACT_APP_API_BASE_URL}/authentications/v1/registration`,
                 {
                     username: formData.username,
                     email: formData.email,

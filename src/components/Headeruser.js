@@ -10,6 +10,7 @@ const Headeruser = ({ userData }) => {
   const navigate = useNavigate();
   const roles = JSON.parse(localStorage.getItem("role")) || [];
   const access_token = localStorage.getItem("accessToken");
+  const username = localStorage.getItem("username");
   const { announcements, setAnnouncements, createAnnouncementConnection, announcementConnection } = useSignalR();
 
   const [refreshKey, setRefreshKey] = useState(0);
@@ -18,7 +19,7 @@ const Headeruser = ({ userData }) => {
   // Fetch announcements
   const fetchAnnouncements = async () => {
     try {
-      const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/announcements/v1/mine", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/announcements/v1/mine`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${access_token}`
@@ -60,7 +61,7 @@ const Headeruser = ({ userData }) => {
   const handleNotificationClick = async (notif) => {
     console.log("Notification clicked:", notif);
     try {
-      const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/announcements/v1/${notif.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/announcements/v1/${notif.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -125,8 +126,23 @@ const Headeruser = ({ userData }) => {
   );
 
   const menuItems = [
-    { key: "profile", label: "Profile", onClick: () => navigate("/profile") },
-    { key: "logout", label: "Logout", onClick: () => { localStorage.clear(); navigate("/"); window.location.reload(); } },
+    {
+      key: "welcome",
+      label: (
+        <div
+          style={{
+            padding: "8px 12px",
+            fontWeight: "bold",
+            color: "#333",
+            cursor: "default",
+          }}
+        >
+          Chào mừng, {username}
+        </div>
+      ),
+    },
+    { key: "profile", label: "Hồ sơ người dùng", onClick: () => navigate("/profile") },
+    { key: "logout", label: (<div style={{color: "#f00"}}>Đăng xuất</div>), onClick: () => { localStorage.clear(); navigate("/"); window.location.reload(); } },
   ];
 
   const menu = <Menu items={menuItems} />;
@@ -146,12 +162,7 @@ const Headeruser = ({ userData }) => {
         <a href="#about-us" style={styles.navLink}>
           Về chúng tôi
         </a>
-        {roles.includes("ADMIN") && (
-          <a style={styles.navLink} onClick={() => navigate("/admin")}>
-            Dành cho quản trị viên
-          </a>
-        )}
-        <a href="#knowledge" style={styles.navLink} onClick={() => navigate("/knowledge")}>Kiến thức </a>
+        <a href="/knowledge" style={styles.navLink} >Kiến thức </a>
         {roles.includes("ADMIN") && <a style={styles.navLink} onClick={() => navigate("/admin")}>Dành cho quản trị viên</a>}
         {roles.includes("MODERATOR") && <a style={styles.navLink} onClick={() => navigate("/mod")}>Dành cho kiểm duyệt viên</a>}
       </nav>

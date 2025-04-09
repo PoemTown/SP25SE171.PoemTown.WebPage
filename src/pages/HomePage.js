@@ -5,16 +5,18 @@ import Headeruser from "../components/Headeruser";
 import Footer from "../components/Footer";
 import Content from "../components/componentHomepage/Content";
 import { useParams } from "react-router-dom";
-import { Modal } from "antd";
+import { Modal, Input } from "antd";
+
 
 const Homepage = () => {
-  const [activeTab, setActiveTab] = useState("latest");
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
 
-  const { tab } = useParams();
-  const currentTab = tab || "lastest";
+  const { Search } = Input;
+
+  const { tab: urlTab } = useParams();
+  const tab = urlTab || "latest";
 
   // currentTab lấy từ useParams(), nhưng lại gọi setActiveTab bên trong useEffect dẫn đến trễ một lần render.
   // useEffect(() => {
@@ -23,8 +25,6 @@ const Homepage = () => {
   //   setActiveTab(currentTab);
   // }, [currentTab]);
 
-
-  
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     setIsLoggedIn(!!token);
@@ -63,6 +63,10 @@ const Homepage = () => {
     }
   };
 
+  const handleOnSearch = async () => {
+
+  }
+
   return (
     <div style={styles.container}>
       {isLoggedIn ? <Headeruser /> : <Headerdefault />}
@@ -89,11 +93,12 @@ const Homepage = () => {
 
         </div>
         <div style={styles.searchBox}>
-          <input
+          {/* <input
             type="text"
-            placeholder="Search"
+            placeholder="Tìm kiếm tên người dùng, bài viết, tập thơ"
             style={styles.searchInput}
-          />
+          /> */}
+          <Search placeholder="Tìm kiếm tên người dùng, bài viết, tập thơ" allowClear size="large" onSearch={handleOnSearch} style={styles.searchInput} />
         </div>
       </section>
 
@@ -125,7 +130,7 @@ const Homepage = () => {
       <div style={styles.content}>
         {/* <Content activeTab={activeTab} /> */}
         {/* Sử dụng tab từ param sẽ chính xác hơn/> */}
-        <Content activeTab={tab || "latest"} /> 
+        <Content activeTab={tab || "latest"} />
       </div>
       <Footer />
     </div>
@@ -220,9 +225,6 @@ const styles = {
   },
   searchInput: {
     width: "100%",
-    padding: "10px",
-    border: "none",
-    borderRadius: "5px",
     fontSize: "16px",
     boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.2)",
   },

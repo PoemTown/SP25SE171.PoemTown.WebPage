@@ -101,21 +101,21 @@ const UsageRight = () => {
     }
 
     async function fetchPoems(page, size) {
-        const baseUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine";
+        const baseUrl = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine`;
         const url = `${baseUrl}?pageNumber=${page}&pageSize=${size}`;
         await fetchPoemsData(url);
     }
 
     async function fetchBoughtPoems(page, size) {
         const baseUrl =
-            "https://api-poemtown-staging.nodfeather.win/api/usage-rights/v1/bought-poem";
+            `${process.env.REACT_APP_API_BASE_URL}/usage-rights/v1/bought-poem`;
         const url = `${baseUrl}?pageNumber=${page}&pageSize=${size}`;
         await fetchPoemsData(url);
     }
 
     async function fetchSoldPoems(page, size) {
         const baseUrl =
-            "https://api-poemtown-staging.nodfeather.win/api/usage-rights/v1/sold-poem";
+            `${process.env.REACT_APP_API_BASE_URL}/usage-rights/v1/sold-poem`;
         const url = `${baseUrl}?pageNumber=${page}&pageSize=${size}`;
         await fetchPoemsData(url);
     }
@@ -124,7 +124,7 @@ const UsageRight = () => {
     async function enableFreeVersion(poemId) {
         try {
             const response = await axios.put(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/free/${poemId}`,
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/free/${poemId}`,
                 null, // nếu không có body, truyền null
                 {
                     headers: {
@@ -148,7 +148,7 @@ const UsageRight = () => {
                 price: price,
             };
             const response = await axios.put(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/enable-selling`,
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/enable-selling`,
                 body, // nếu không có body, truyền null
                 {
                     headers: {

@@ -33,7 +33,7 @@ const AccountDetail = ({ open, onClose, account, status: initialStatus, loading 
         
         try {
             await axios.put(
-                `https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts/status/${account.id}?status=${status}`,
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts/status/${account.id}?status=${status}`,
                 {},
                 {
                     headers: { Authorization: `Bearer ${accessToken}` }

@@ -97,7 +97,7 @@ const UserPage = () => {
         const fetchData = async () => {
             try {
                 const response = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/users/v1/profile/online/${username}`,
+                    `${process.env.REACT_APP_API_BASE_URL}/users/v1/profile/online/${username}`,
                     { method: "GET", headers: requestHeaders }
                 );
 
@@ -208,7 +208,7 @@ const UserPage = () => {
     const fetchUserProfile = async () => {
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/users/v1/profile/online/${username}`,
+                `${process.env.REACT_APP_API_BASE_URL}/users/v1/profile/online/${username}`,
                 {
                     method: "GET",
                     headers: requestHeaders

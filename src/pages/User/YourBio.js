@@ -35,7 +35,7 @@ const YourBio = (props) => {
             };
 
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile",
+                `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile`,
                 {
                     method: "PUT",
                     headers: {

@@ -3,7 +3,8 @@ import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import axios from "axios";
 
-const CHAT_HUB_URL = "https://api-poemtown-staging.nodfeather.win/hub/chatHub"; // đổi thành local nếu cần
+const API_BACKEND_URL = process.env.REACT_APP_API_BACKEND_URL
+const CHAT_HUB_URL = `${API_BACKEND_URL}/hub/chatHub`; // đổi thành local nếu cần
 
 export const useChat = (jwtToken, updateMessages) => {
   const connectionRef = useRef(null);
@@ -36,7 +37,7 @@ export const useChat = (jwtToken, updateMessages) => {
   const sendMessage = async (toUserId, message) => {
     try {
       const res = await axios.post(
-        "https://api-poemtown-staging.nodfeather.win/api/chat/send",
+        `${API_BACKEND_URL}/api/chat/send`,
         { toUserId, message },
         { headers: { Authorization: `Bearer ${jwtToken}` } }
       );
