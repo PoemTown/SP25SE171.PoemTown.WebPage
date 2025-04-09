@@ -52,9 +52,6 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/shop/:masterTemplateId" element={<TemplateDetail />} />
-        <Route path="/knowledge" element={<KnowledgePage />} />
-        <Route path="/admin" element={<AdminRoute element={<AdminPage />} />} />
-        <Route path="/mod" element={<ModRoute element={<ModeratorPage />} />} />
         <Route path="/search" element={<SearchPage />} />        
         <Route
           path="/payment/success"
