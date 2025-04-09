@@ -1,20 +1,19 @@
-import { Button, message } from "antd";
+import { Button, message, Card, Avatar, Typography, Space, Divider } from "antd";
 import React, { useState } from "react";
 import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css"; // Import the Quill styles
-import "./ReactQuillNoMargin.css"; // Adjust the path as needed
+import "react-quill/dist/quill.snow.css";
+import "./ReactQuillNoMargin.css";
 import { FaEdit, FaUserCircle } from "react-icons/fa";
 import { IoIosInformationCircleOutline } from "react-icons/io";
+import { EditOutlined, UserOutlined } from "@ant-design/icons";
+
+const { Title, Text, Paragraph } = Typography;
 
 const YourBio = (props) => {
     const { userData, displayName, isMine } = props;
-
-    // Manage edit mode
     const [isEditing, setIsEditing] = useState(false);
-    // Local state for the bio content; initialize it with userData.bio
     const [bio, setBio] = useState(userData.bio || "");
 
-    // Function to handle saving bio changes
     const handleSave = async () => {
         const accessToken = localStorage.getItem("accessToken");
         if (!accessToken) {
@@ -23,7 +22,6 @@ const YourBio = (props) => {
         }
 
         try {
-            // Build the request body; we use current userData for fields that remain unchanged.
             const requestBody = {
                 fullName: userData.fullName,
                 gender: userData.gender,
@@ -39,7 +37,7 @@ const YourBio = (props) => {
             const response = await fetch(
                 "https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile",
                 {
-                    method: "PUT", // Use PUT or PATCH as required by your API
+                    method: "PUT",
                     headers: {
                         "Content-Type": "application/json",
                         Authorization: `Bearer ${accessToken}`,
@@ -64,68 +62,160 @@ const YourBio = (props) => {
         }
     };
 
+    const getGenderText = (gender) => {
+        const lowerGender = gender.toLowerCase();
+        if (lowerGender === "male") return "Nam";
+        if (lowerGender === "female") return "Nữ";
+        return gender;
+    };
+
     return (
-        <div>
-            <h2 style={{ margin: "0 0 15px", display: "flex", flexDirection: "row", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-                <span>Thông tin cơ bản</span>
-                <FaUserCircle size={20} />
-            </h2>
-            <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
-                <div style={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
-
-                    <img src={userData.avatar} alt="avatar" style={{ width: "200px", height: "200px", border: "2px solid #000" }} />
-                </div>
-                <div style={{ marginLeft: "1em" }}>
-                    <div style={{ display: "flex", flexDirection: "row", gap: "5px", alignItems: "center", margin: "0 0 10px" }}>
-                        <p style={{ margin: 0, fontSize: "1.2rem", fontWeight: "bold" }}>{displayName}</p>
-                        <p style={{ margin: 0, fontWeight: "normal", }}>
-                            (@{userData.userName})
-                        </p>
-                    </div>
-                    <p style={{ margin: "0 0 10px", }}><span style={{ color: "#333", fontWeight: "bold" }}>Ngày sinh: </span>{userData.dateOfBirth}</p>
-                    <p style={{ margin: "0" }}><span style={{ color: "#333", fontWeight: "bold" }}>Giới tính: </span>{userData.gender.toLowerCase() === "male" ? "nam" : userData.gender.toLowerCase() === "female" ? "nữ" : userData.gender}</p>
-                </div>
-
+        <Card
+            style={{
+                borderRadius: "12px",
+                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+                border: "none",
+            }}
+            bodyStyle={{ padding: "24px" }}
+        >
+            {/* Profile Header */}
+            <div style={{ textAlign: "center", marginBottom: "24px" }}>
+                <Title level={3} style={{ marginBottom: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <Space>
+                        Thông tin cá nhân
+                        <FaUserCircle style={{ color: "#1890ff" }} />
+                    </Space>
+                </Title>
             </div>
-            <hr style={{ border: "1px solid #ddd" }} />
-            <div style={{ display: "flex", flexDirection: "row", alignItems: "center", gap: "10px", justifyContent: "center" }}>
-                <h2 style={{ margin: 0 }}>Tiểu sử</h2>
-                <IoIosInformationCircleOutline size={20} />
-            </div>
-            {isEditing && isMine ? (
-                <>
-                    {/* Editable Bio using ReactQuill */}
-                    <ReactQuill value={bio} onChange={setBio} />
-                    <div style={{ marginTop: "1rem" }}>
-                        <Button color="success" variant="solid" onClick={handleSave}>Save Bio</Button>
-                        <Button
-                            color="danger" variant="solid"
-                            onClick={() => setIsEditing(false)}
-                            style={{ marginLeft: "0.5rem" }}
-                        >
-                            Cancel
-                        </Button>
-                    </div>
-                </>
-            ) : (
-                <>
-                    {/* View mode: render the bio as HTML with the custom CSS class */}
-                    {userData.bio !== null ?
-                        <div style={{ boxSizing: "border-box", padding: "0 3em 0 1em", display: "flex", width: "100%", flexDirection: "row", alignItems: "space-between", justifyContent: "space-between" }}>
-                            <div style={{}}
-                                className="bio-content"
-                                dangerouslySetInnerHTML={{ __html: bio }}
-                            ></div>
-                            {isMine ? <FaEdit size={20} style={{ cursor: "pointer" }} onClick={() => setIsEditing(true)} /> : <></>}
+
+            {/* Profile Content */}
+            <div style={{ display: "flex", gap: "24px", flexWrap: "wrap" }}>
+                {/* Avatar Section */}
+                <div style={{ flex: "0 0 auto" }}>
+                    <Avatar
+                        src={userData.avatar}
+                        icon={<UserOutlined />}
+                        size={160}
+                        style={{
+                            border: "3px solid #f0f0f0",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+                        }}
+                    />
+                </div>
+
+                {/* User Info Section */}
+                <div style={{ flex: "1 1 300px" }}>
+                    <Space direction="vertical" size="middle" style={{ width: "100%" }}>
+                        <div>
+                            <Title level={4} style={{ marginBottom: "2px" }}>
+                                {displayName}
+                            </Title>
+                            <Text type="secondary">@{userData.userName}</Text>
                         </div>
-                        :
-                        <p style={{ textAlign: "center" }}>
-                            Hiện chưa có tiểu sử
-                        </p>
-                    }
-                </>
-            )}
-        </div>
+
+                        <Space direction="vertical" size="small">
+                            <Paragraph style={{ marginBottom: 0 }}>
+                                <Text strong>Ngày sinh: </Text>
+                                <Text>{userData.dateOfBirth || "Chưa cập nhật"}</Text>
+                            </Paragraph>
+                            <Paragraph style={{ marginBottom: 0 }}>
+                                <Text strong>Giới tính: </Text>
+                                <Text>{getGenderText(userData.gender)}</Text>
+                            </Paragraph>
+                            <Paragraph style={{ marginBottom: 0 }}>
+                                <Text strong>Địa chỉ: </Text>
+                                <Text>{userData.address || "Chưa cập nhật"}</Text>
+                            </Paragraph>
+                        </Space>
+                    </Space>
+                </div>
+            </div>
+
+            <Divider style={{ margin: "24px 0" }} />
+
+            {/* Bio Section */}
+            <div>
+                <Title level={4} style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+                    <span>Tiểu sử</span>
+                    <IoIosInformationCircleOutline style={{ color: "#1890ff" }} />
+                </Title>
+
+                {isEditing && isMine ? (
+                    <>
+                        <ReactQuill
+                            value={bio}
+                            onChange={setBio}
+                            style={{
+                                borderRadius: "8px",
+                                border: "1px solid #d9d9d9",
+                                marginBottom: "16px"
+                            }}
+                        />
+                        <Space>
+                            <Button
+                                type="primary"
+                                onClick={handleSave}
+                                style={{ borderRadius: "6px" }}
+                            >
+                                Lưu thay đổi
+                            </Button>
+                            <Button
+                                onClick={() => setIsEditing(false)}
+                                style={{ borderRadius: "6px" }}
+                            >
+                                Hủy bỏ
+                            </Button>
+                        </Space>
+                    </>
+                ) : (
+                    <>
+                        {userData.bio ? (
+                            <Card
+                                bordered={false}
+                                style={{
+                                    backgroundColor: "#fafafa",
+                                    borderRadius: "8px",
+                                    position: "relative"
+                                }}
+                                bodyStyle={{ padding: "16px" }}
+                            >
+                                <div
+                                    className="bio-content"
+                                    dangerouslySetInnerHTML={{ __html: bio }}
+                                    style={{ lineHeight: 1.6 }}
+                                />
+                                {isMine && (
+                                    <Button
+                                        type="text"
+                                        icon={<EditOutlined />}
+                                        onClick={() => setIsEditing(true)}
+                                        style={{
+                                            position: "absolute",
+                                            top: "8px",
+                                            right: "8px"
+                                        }}
+                                    />
+                                )}
+                            </Card>
+                        ) : (
+                            <Paragraph type="secondary" style={{ textAlign: "center" }}>
+                                {isMine ? (
+                                    <Button
+                                        type="dashed"
+                                        icon={<EditOutlined />}
+                                        onClick={() => setIsEditing(true)}
+                                    >
+                                        Thêm tiểu sử
+                                    </Button>
+                                ) : (
+                                    "Người dùng chưa cập nhật tiểu sử"
+                                )}
+                            </Paragraph>
+                        )}
+                    </>
+                )}
+            </div>
+        </Card>
     );
 };
 

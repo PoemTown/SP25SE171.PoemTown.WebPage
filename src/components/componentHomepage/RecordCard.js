@@ -20,10 +20,10 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedRecord, setSelectedRecord] = useState(null);
     const truncatedDescription =
-        record.poem.description?.length > 102
-            ? `${record.poem.description.substring(0, 102)}...`
-            : record.poem.description;
-    const lines = record.poem.content?.split("\n") || [];
+        record.poem?.description?.length > 102
+            ? `${record.poem?.description.substring(0, 102)}...`
+            : record.poem?.description;
+    const lines = record.poem?.content?.split("\n") || [];
     const displayedLines = lines.slice(0, 4);
     const hasMoreLines = lines.length > 4;
     const navigate = useNavigate();
@@ -64,7 +64,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
             <div style={styles.poemCard} key={record.key}>
                 <div style={styles.poemImageContainer}>
                     <img
-                        src={record.poem.poemImage || "/anhminhhoa.png"}
+                        src={record.poem?.poemImage || "/anhminhhoa.png"}
                         alt="anh minh hoa"
                         style={styles.poemImage}
                         onError={(e) => {
@@ -76,7 +76,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                 </div>
                 <div style={styles.avatarContainer}>
                     <img
-                        src={record.poem.user?.avatar || "./default_avatar.png"}
+                        src={record.poem?.user?.avatar || "./default_avatar.png"}
                         alt="avatar"
                         style={styles.avatar}
                         onError={(e) => {
@@ -96,7 +96,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                                 {record.poem?.user?.displayName || "Anonymous"}
                             </span>
                             <span style={styles.postDate}>
-                                – {formatDate(record.poem.createdTime)}
+                                – {formatDate(record.poem?.createdTime)}
                             </span>
                         </div>
                         <div style={styles.headerRight}>
@@ -107,7 +107,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                             </Dropdown>
                         </div>
                     </div>
-                    <h3 style={styles.poemTitle}>{record.poem.title}</h3>
+                    <h3 style={styles.poemTitle}>{record.poem?.title}</h3>
                     <p style={styles.poemDescription}>
                         Mô tả: {truncatedDescription}
                     </p>
@@ -185,7 +185,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                             }}
                             onMouseEnter={() => setIsHovered(true)}
                             onMouseLeave={() => setIsHovered(false)}
-                            onClick={() => navigate(`/poem/${record.poem.id}`)}
+                            onClick={() => navigate(`/poem/${record.poem?.id}`)}
                         >
                             Xem bài thơ &gt;
                         </button>
@@ -212,7 +212,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                             }}
                         >
                             <strong>Tiêu đề bài thơ:</strong>{" "}
-                            {record.poem ? record.poem.title : "Không có tiêu đề"}
+                            {record.poem ? record.poem?.title : "Không có tiêu đề"}
                         </h3>
                         <h4
                             style={{
