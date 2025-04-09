@@ -137,9 +137,10 @@ const Headeruser = ({ userData }) => {
         <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="PoemTown Logo" style={styles.logoImage} />
       </div>
       <nav style={styles.nav}>
-        <a href="/latest" style={styles.navLink}>Trang chủ</a>
+        <a href="/" style={styles.navLink}>Trang chủ</a>
         <a href="#about-poemtown" style={styles.navLink}>Về PoemTown</a>
         <a href="#about-us" style={styles.navLink}>Về chúng tôi</a>
+        <a href="#knowledge" style={styles.navLink} onClick={() => navigate("/knowledge")}>Kiến thức </a>
         {roles.includes("ADMIN") && <a style={styles.navLink} onClick={() => navigate("/admin")}>Dành cho quản trị viên</a>}
         {roles.includes("MODERATOR") && <a style={styles.navLink} onClick={() => navigate("/mod")}>Dành cho kiểm duyệt viên</a>}
       </nav>

@@ -19,6 +19,7 @@ import CollectionDetail from "./pages/CollectionDetail";
 import ModeratorPage from "./pages/Moderator/ModeratorPage";
 import SuccessPage from "./pages/SuccessPage";
 import FailPage from "./pages/FailPage";
+import KnowledgePage from "./pages/KnowledgePage";
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
   
@@ -45,6 +46,7 @@ function App() {
               <Route path="/shop/:masterTemplateId" element={<TemplateDetail />} />
               <Route path="/payment/success" element={<SuccessPage />} />
               <Route path="/payment/fail" element={<FailPage />} />
+              <Route path="/knowledge" element={<KnowledgePage />} />
               <Route path="/admin" element={<AdminRoute element={<AdminPage />} />} />
               <Route path="/mod" element={<ModRoute element={<ModeratorPage />} />} />
 
