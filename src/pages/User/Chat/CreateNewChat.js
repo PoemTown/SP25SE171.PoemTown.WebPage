@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "../../../SignalR/UseChat";
 import { IoMdClose, IoMdSend } from "react-icons/io";
+import { Tooltip } from "antd";
 const CreateNewChat = ({ userData, refreshKey, onClose }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
@@ -65,7 +66,7 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
       setChatInput("");
     }
   };
-  function formatDate(isoString) {
+  function formatTime(isoString) {
     const date = new Date(isoString);
 
     // Lấy giờ và phút theo múi giờ UTC+7
@@ -74,15 +75,18 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
 
     return `${hours}:${minutes}`;
   }
-
+  function formatDate(dateStr) {
+    const date = new Date(dateStr);
+    return date.toLocaleDateString("vi-VN"); // → "09/04/2025"
+  }
   return (
     <div style={styles.container}>
       <div style={styles.chatArea}>
         <header style={styles.chatHeader}>
           <img src={userData.avatar} alt="avatar" style={styles.avatarChat} />
           <h3>{userData.displayName}</h3>
-            {/* Icon X để đóng chat, gọi hàm onClose khi click */}
-            <IoMdClose style={styles.closeIcon} onClick={onClose} />
+          {/* Icon X để đóng chat, gọi hàm onClose khi click */}
+          <IoMdClose style={styles.closeIcon} onClick={onClose} />
 
         </header>
         <div style={styles.chatMessages} ref={chatContainerRef}>
@@ -114,38 +118,40 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
                     textAlign: isMine ? "left" : "left",
                   }}
                 >
+                  <Tooltip title={formatDate(msg.createdTime)}>
                   <div>{msg.messageText}</div>
-                  <div style={styles.messageTime}>{formatDate(msg.createdTime)}</div>
-                </div>
+                </Tooltip>
+                <div style={styles.messageTime}>{formatTime(msg.createdTime)}</div>
               </div>
-            );
+              </div>
+        );
           })}
-        </div>
-        <form style={styles.chatInputContainer} onSubmit={handleSendMessage}>
-          <input
-            type="text"
-            placeholder="Nhập tin nhắn..."
-            value={chatInput}
-            onChange={(e) => setChatInput(e.target.value)}
-            style={styles.chatInput}
-          />
-          <div
-            style={{
-              ...styles.sendButton,
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              cursor: chatInput.trim() ? "pointer" : "not-allowed", // Thêm hiệu ứng con trỏ khi có thể gửi
-            }}
-            onClick={chatInput.trim() ? handleSendMessage : null} // Gọi hàm gửi tin nhắn khi có input
-          >
-            <IoMdSend style={{ fontSize: "24px", color: "blue" }} /> {/* Chỉnh kích thước biểu tượng */}
-          </div>
-
-
-        </form>
       </div>
+      <form style={styles.chatInputContainer} onSubmit={handleSendMessage}>
+        <input
+          type="text"
+          placeholder="Nhập tin nhắn..."
+          value={chatInput}
+          onChange={(e) => setChatInput(e.target.value)}
+          style={styles.chatInput}
+        />
+        <div
+          style={{
+            ...styles.sendButton,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            cursor: chatInput.trim() ? "pointer" : "not-allowed", // Thêm hiệu ứng con trỏ khi có thể gửi
+          }}
+          onClick={chatInput.trim() ? handleSendMessage : null} // Gọi hàm gửi tin nhắn khi có input
+        >
+          <IoMdSend style={{ fontSize: "24px", color: "blue" }} /> {/* Chỉnh kích thước biểu tượng */}
+        </div>
+
+
+      </form>
     </div>
+    </div >
   );
 };
 
@@ -166,7 +172,7 @@ const styles = {
     overflow: "hidden",
   },
   chatHeader: {
-    position: "relative", 
+    position: "relative",
     padding: "15px",
     borderBottom: "1px solid #ddd",
     backgroundColor: "#3B1E1E",

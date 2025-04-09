@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal, message, Spin, Switch, Input, Dropdown, Menu, Pagination } from "antd";
 import { FcFolder, FcVideoFile } from "react-icons/fc";
 import { DownOutlined } from "@ant-design/icons"; // Icon mũi tên chỉ xuống
@@ -14,6 +14,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
   const [selectedRecord, setSelectedRecord] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [price, setPrice] = useState("");
+  const priceRef = useRef(null);
   const [reloadTrigger, setReloadTrigger] = useState(false);
 
   // State phân trang
@@ -54,7 +55,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
         setTotalRecords(data.totalPages * pageSize);
       }
       setRecordFiles(data.data);
-      console.log(data.data);
+      
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
       return null;
@@ -63,7 +64,6 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
     }
   }
   async function fetchUserRecords(pageNumber, pageSize) {
-    console.log(username)
     const url = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/user/${username}?pageNumber=${pageNumber}&pageSize=${pageSize}`;
     setIsLoading(true);
     try {
@@ -82,7 +82,6 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
         setTotalRecords(data.totalPages * pageSize);
       }
       setRecordFiles(data.data);
-      console.log(data.data);
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
       return null;
@@ -94,59 +93,59 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
     setActiveButton(type);
     setCurrentPage(1); // Reset trang khi đổi loại
     fetchRecords(type, 1, pageSize).then((data) => {
-      console.log(`Dữ liệu từ API ${type}:`, data);
     });
   };
 
   // Hàm xử lý chuyển đổi trạng thái của bản ghi (ví dụ: chuyển từ công khai sang riêng tư)
-  const handleToggleStatus = async (record) => {
-    const recordId = record.id;
-    if (record.isPublic) {
-      Modal.confirm({
-        title: "Nhập giá để chuyển sang Riêng tư",
-        content: (
-          <Input
-            placeholder="Nhập giá"
-            onChange={(e) => setPrice(e.target.value)}
-          />
-        ),
-        onOk: async () => {
-          if (!price) {
-            message.error("Vui lòng nhập giá!" + price);
-            return;
-          }
-          try {
-            const response = await fetch(
-              "https://api-poemtown-staging.nodfeather.win/api/record-files/v1/enable-selling",
-              {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({ recordId, price }),
-              }
-            );
-            if (!response.ok) {
-              throw new Error("Lỗi khi cập nhật trạng thái bán");
+ 
+const handleToggleStatus = async (record) => {
+  const recordId = record.id;
+  if (record.isPublic) {
+    Modal.confirm({
+      title: "Nhập giá để chuyển sang Riêng tư",
+      content: (
+        <Input
+          placeholder="Nhập giá"
+          onChange={(e) => (priceRef.current = e.target.value)} // cập nhật ref thay vì state
+        />
+      ),
+      onOk: async () => {
+        const inputPrice = priceRef.current;
+        if (!inputPrice) {
+          message.error("Vui lòng nhập giá!");
+          return;
+        }
+        try {
+          const response = await fetch(
+            "https://api-poemtown-staging.nodfeather.win/api/record-files/v1/enable-selling",
+            {
+              method: "PUT",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${accessToken}`,
+              },
+              body: JSON.stringify({ recordId, price: inputPrice }),
             }
-            await response.json();
-            message.success("Trạng thái cập nhật thành công!");
-            setSelectedRecord((prev) => ({ ...prev, isPublic: false }));
-            setReloadTrigger((prev) => !prev);
-          } catch (err) {
-            console.error("Lỗi khi cập nhật trạng thái:", err);
-            message.error("Cập nhật trạng thái thất bại!");
+          );
+          if (!response.ok) {
+            throw new Error("Lỗi khi cập nhật trạng thái bán");
           }
-        },
-      });
-    } else {
-      message.info("Không cho chuyển từ riêng tư sang công khai");
-    }
-  };
+          await response.json();
+          message.success("Trạng thái cập nhật thành công!");
+          setSelectedRecord((prev) => ({ ...prev, isPublic: false }));
+          setReloadTrigger((prev) => !prev);
+        } catch (err) {
+          console.error("Lỗi khi cập nhật trạng thái:", err);
+          message.error("Cập nhật trạng thái thất bại!");
+        }
+      },
+    });
+  } else {
+    message.info("Không cho chuyển từ riêng tư sang công khai");
+  }
+};
 
   async function handlePurchaseRecord(recordId) {
-    console.log(recordId);
     const url = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/purchase`;
 
     try {
@@ -198,7 +197,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
   };
   const showPurchaseConfirm = (id, price) => {
     Modal.confirm({
-      title: "Bạn có chắc chắn muốn mua với số tiền " + price + " ?" ,
+      title: "Bạn có chắc chắn muốn mua với số tiền " + price.toLocaleString('vi-VN') + " ?" ,
       content: "Hành động này không thể hoàn tác!",
       okText: "Mua",
       cancelText: "Hủy",
@@ -232,7 +231,6 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
         }
       );
 
-      console.log("Response:", response.data);
       setReloadTrigger((prev) => !prev);
       message.success("Xóa thành công!");
     } catch (error) {

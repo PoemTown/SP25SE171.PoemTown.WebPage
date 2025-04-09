@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Modal, Spin, Switch, Table, Dropdown, Menu } from "antd";
 import { FcVideoFile } from "react-icons/fc";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
@@ -9,12 +9,13 @@ import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
 import { FaUserPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = { day: "numeric", month: "long", year: "numeric" };
     return date.toLocaleDateString("vi-VN", options);
-}; 
+};
 
 const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, isMine, showPurchaseConfirm }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,10 +30,11 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
     const navigate = useNavigate();
     const currentUser = localStorage.getItem("username");
     const [isHovered, setIsHovered] = useState(false);
+    const [audioUrl, setAudioUrl] = useState(null);
+    const accessToken = localStorage.getItem("accessToken");
 
     const showModal = (record) => {
         setSelectedRecord(record);
-        console.log("test: " + record);
         setIsModalOpen(true);
     };
 
@@ -50,13 +52,42 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                     <div> Sao chép liên kết </div>
                 </div>
             </Menu.Item>
-            {record.poem?.user?.userName === currentUser && (
+            {record.owner?.userName === currentUser && (
                 <Menu.Item key="delete" onClick={() => showDeleteConfirm(record.id)}>
                     ❌ Xóa
                 </Menu.Item>
             )}
         </Menu>
     );
+
+
+    useEffect(() => {
+        const fetchAudio = async () => {
+            try {
+                const headers = accessToken
+                    ? { Authorization: `Bearer ${accessToken}` }
+                    : {};
+
+                const response = await axios.get(
+                    `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/audio-stream/${record.id}`,
+                    {
+                        responseType: "blob",
+                        headers: headers
+                    }
+                );
+
+                const url = URL.createObjectURL(response.data);
+                setAudioUrl(url);
+            } catch (error) {
+                console.error("Error fetching audio:", error);
+                setAudioUrl(null); // Reset audio URL nếu có lỗi
+            }
+        };
+
+        fetchAudio();
+    }, [record, accessToken, currentUser]);
+
+
 
     const overlayMenu = defaultMenu;
     return (
@@ -76,11 +107,12 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                 </div>
                 <div style={styles.avatarContainer}>
                     <img
-                        src={record.poem?.user?.avatar || "./default_avatar.png"}
+                        src={record.poem?.user?.avatar || "/default_avatar.png"}
                         alt="avatar"
                         style={styles.avatar}
                         onError={(e) => {
-                            e.target.src = "./default_avatar.png";
+                            e.target.onerror = null;
+                            e.target.src = "/default_avatar.png";
                         }}
                     />
                 </div>
@@ -136,11 +168,11 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                     >
                         {record.fileUrl ? (
                             // Kiểm tra nếu người dùng hiện tại có quyền truy cập file âm thanh
-                            record.poem?.user?.userName === currentUser || // Nếu currentUser là chủ sở hữu bài thơ
+                            record.owner?.userName === currentUser || // Nếu currentUser là chủ sở hữu bài thơ
                                 (record.buyers && record.buyers.some(buyer => buyer.userName === currentUser)) || // Hoặc nếu currentUser nằm trong danh sách người mua
                                 record.buyer?.userName == currentUser || // Hoặc currentUser là người mua duy nhất (trong trường hợp có một buyer riêng lẻ)
                                 record.isPublic == true ? ( // Hoặc bài thơ này được đặt ở chế độ công khai
-                                <audio controls style={{ width: "100%" }} src={record.fileUrl}>
+                                <audio controls style={{ width: "100%" }} src={audioUrl}>
                                     Your browser does not support the audio element.
                                 </audio>
                             ) : (
@@ -239,7 +271,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                                     marginBottom: "20px",
                                 }}
                             >
-                                Giá: {record.price} VND
+                                Giá: {record.price.toLocaleString('vi-VN')} VND
                             </h4>
                         )}
                         {record.buyers && Array.isArray(record.buyers) && (
