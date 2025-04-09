@@ -1,6 +1,5 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-
 const Headerdefault = () => {
   const navigate = useNavigate();
 
@@ -27,6 +26,7 @@ const Headerdefault = () => {
         <a href="#about-us" style={styles.navLink}>
           Về chúng tôi
         </a>
+        <a href="#knowledge" style={styles.navLink} onClick={() => navigate("/knowledge")}>Kiến thức </a>
       </nav>
       <div style={styles.buttons}>
         <button style={styles.loginButton} onClick={handleLogin}>
