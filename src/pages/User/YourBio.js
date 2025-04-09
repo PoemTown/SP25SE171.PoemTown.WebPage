@@ -49,7 +49,7 @@ const YourBio = (props) => {
             const data = await response.json();
             console.log("Update response:", data);
             if (!response.ok) {
-                throw new Error("Failed to update the bio");
+                message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
             }
 
             if (data.statusCode === 202) {

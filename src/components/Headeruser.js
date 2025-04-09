@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShopOutlined, BellOutlined, UserOutlined } from "@ant-design/icons";
-import { Dropdown, Menu, Badge, List } from "antd";
+import { Dropdown, Menu, Badge, List, message } from "antd";
 import { useSignalR } from "../SignalR/SignalRContext";
 import { jwtDecode } from 'jwt-decode';
 import ChatDropdown from "../pages/User/Chat/ChatDropdown";
@@ -26,7 +26,7 @@ const Headeruser = ({ userData }) => {
         }
       });
 
-      if (!response.ok) throw new Error("Failed to fetch announcements");
+      if (!response.ok) message.error("Failed to fetch announcements");
 
       const data = await response.json();
       return data.data || [];
@@ -69,7 +69,7 @@ const Headeruser = ({ userData }) => {
         },
       });
       if (!response.ok) {
-        throw new Error("Failed to update notification status");
+        message.error("Failed to update notification status");
       }
       console.log("Notification updated successfully");
 

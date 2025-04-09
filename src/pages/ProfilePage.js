@@ -59,6 +59,20 @@ const ProfilePage = () => {
   };
 
   const handleSave = async () => {
+    const requiredFields = [
+      'fullName',
+      'address',
+      'userName',
+      'phoneNumber',
+      'displayName'
+    ];
+
+    const missingFields = requiredFields.filter(field => !formData[field]?.trim());
+
+    if (missingFields.length > 0) {
+      message.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      return;
+    }
     const updatedData = {
       ...formData,
       avatar: sessionStorage.getItem("profileImage") || formData.avatar,
@@ -125,7 +139,8 @@ const ProfilePage = () => {
         );
 
         if (!response.ok) {
-          throw new Error("Failed to upload image");
+          message.error("Failed to upload image");
+          return
         }
 
         const data = await response.json();
@@ -185,90 +200,105 @@ const ProfilePage = () => {
           />
         </div>
         <div style={styles.form}>
-          <div style={styles.inputContainer}>
-            <label style={styles.label}>Full Name</label>
-            <Input
-              value={formData.fullName}
-              onChange={(e) => handleChange("fullName", e.target.value)}
-              disabled={!isEditing}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.inputContainer}>
-            <label style={styles.label}>Gender</label>
-            <Select
-              value={formData.gender}
-              onChange={(value) => handleChange("gender", value)}
-              disabled={!isEditing}
-              style={styles.select}
-            >
-              <Option value="Male">Male</Option>
-              <Option value="Female">Female</Option>
-              <Option value="Other">Other</Option>
-            </Select>
-          </div>
-          <div style={styles.inputContainer}>
-            <label style={styles.label}>Address</label>
-            <Input
-              value={formData.address}
-              onChange={(e) => handleChange("address", e.target.value)}
-              disabled={!isEditing}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.inputContainer}>
-            <label style={styles.label}>Date of Birth</label>
-            <DatePicker
-              value={formData.dateOfBirth ? dayjs(formData.dateOfBirth) : null}
-              onChange={(date, dateString) => handleChange("dateOfBirth", dateString)}
-              format="YYYY-MM-DD"
-              disabled={!isEditing}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.inputContainer}>
-            <label style={styles.label}>User Name</label>
-            <Input
-              value={formData.userName}
-              onChange={(e) => handleChange("userName", e.target.value)}
-              disabled={!isEditing}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.inputContainer}>
-            <label style={styles.label}>Phone Number</label>
-            <Input
-              value={formData.phoneNumber}
-              onChange={(e) => handleChange("phoneNumber", e.target.value)}
-              disabled={!isEditing}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.inputContainer}>
-            <label style={styles.label}>Display Name</label>
-            <Input
-              value={formData.displayName}
-              onChange={(e) => handleChange("displayName", e.target.value)}
-              disabled={!isEditing}
-              style={styles.input}
-            />
-          </div>
-          <div style={styles.buttonGroup}>
-            {!isEditing ? (
-              <Button type="primary" style={styles.editButton} onClick={handleEdit}>
-                Edit
-              </Button>
-            ) : (
-              <>
-                <Button style={styles.cancelButton} onClick={handleCancel}>
-                  Cancel
+          <form onSubmit={(e) => {
+            e.preventDefault();
+            if (isEditing) handleSave();
+          }}>
+            <div style={styles.inputContainer}>
+              <label style={styles.label}>Họ và tên</label>
+              <Input
+                value={formData.fullName}
+                onChange={(e) => handleChange("fullName", e.target.value)}
+                disabled={!isEditing}
+                style={styles.input}
+                required
+              />
+            </div>
+            <div style={styles.inputContainer}>
+              <label style={styles.label}>Giới tính</label>
+              <Select
+                value={formData.gender}
+                onChange={(value) => handleChange("gender", value)}
+                disabled={!isEditing}
+                style={styles.select}
+              >
+                <Option value="Male">Nam</Option>
+                <Option value="Female">Nữ</Option>
+                <Option value="Other">Khác</Option>
+              </Select>
+            </div>
+            <div style={styles.inputContainer}>
+              <label style={styles.label}>Địa chỉ</label>
+              <Input
+                value={formData.address}
+                onChange={(e) => handleChange("address", e.target.value)}
+                disabled={!isEditing}
+                style={styles.input}
+                required
+              />
+            </div>
+            <div style={styles.inputContainer}>
+              <label style={styles.label}>Ngày sinh</label>
+              <DatePicker
+                value={formData.dateOfBirth ? dayjs(formData.dateOfBirth) : null}
+                onChange={(date, dateString) => handleChange("dateOfBirth", dateString)}
+                format="YYYY-MM-DD"
+                disabled={!isEditing}
+                style={styles.input}
+                required={isEditing}
+              />
+            </div>
+            <div style={styles.inputContainer}>
+              <label style={styles.label}>Username <span style={{ color: "#999" }}>(Đây là mã tên để người khác tìm kiếm bạn)</span></label>
+              <Input
+                value={formData.userName}
+                onChange={(e) => handleChange("userName", e.target.value)}
+                disabled={!isEditing}
+                style={styles.input}
+                required
+              />
+            </div>
+            <div style={styles.inputContainer}>
+              <label style={styles.label}>Số điện thoại</label>
+              <Input
+                value={formData.phoneNumber}
+                onChange={(e) => handleChange("phoneNumber", e.target.value)}
+                disabled={!isEditing}
+                style={styles.input}
+                required
+              />
+            </div>
+            <div style={styles.inputContainer}>
+              <label style={styles.label}>Tên hiển thị</label>
+              <Input
+                value={formData.displayName}
+                onChange={(e) => handleChange("displayName", e.target.value)}
+                disabled={!isEditing}
+                style={styles.input}
+                required
+              />
+            </div>
+            <div style={styles.buttonGroup}>
+              {!isEditing ? (
+                <Button type="primary" style={styles.editButton} onClick={handleEdit}>
+                  Edit
                 </Button>
-                <Button type="primary" style={styles.saveButton} onClick={handleSave}>
-                  Save
-                </Button>
-              </>
-            )}
-          </div>
+              ) : (
+                <>
+                  <Button style={styles.cancelButton} onClick={handleCancel}>
+                    Cancel
+                  </Button>
+                  <Button
+                    type="primary"
+                    style={styles.saveButton}
+                    htmlType="submit"  // Add this
+                  >
+                    Save
+                  </Button>
+                </>
+              )}
+            </div>
+          </form>
         </div>
       </div>
     </div>
