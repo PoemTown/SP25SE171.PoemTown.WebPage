@@ -9,7 +9,8 @@ const SuccessPage = () => {
   const navigate = useNavigate();
 
   const handleBackHome = () => {
-    navigate('/user/:username');
+    const username = localStorage.getItem("username");
+    navigate(`/user/${username}`);
   };
 
   return (

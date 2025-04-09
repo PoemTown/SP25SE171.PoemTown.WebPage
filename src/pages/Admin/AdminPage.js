@@ -51,10 +51,9 @@ const AdminPage = () => {
                     <Typography variant="h6" sx={{ fontWeight: "bold" }}>Admin Panel</Typography>
                 </Box>
                 <List>
-                    {[ 
+                    {[  { key: "dashboard", icon: <Dashboard />, text: "Dashboard" },
                         { key: "moderators", icon: <Gavel />, text: "Moderators Management" },
                         { key: "templates", icon: <Assignment />, text: "Templates Management" },
-                        { key: "dashboard", icon: <Dashboard />, text: "Dashboard" },
                         { key: "transactions", icon: <ReceiptLong />, text: "Transactions Management" },
                         { key: "orders", icon: <ShoppingCart />, text: "Order Management" },
                         { key: "accounts", icon: <ManageAccounts />, text: "Account User Management" },
