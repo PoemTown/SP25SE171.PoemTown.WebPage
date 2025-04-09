@@ -63,9 +63,11 @@ const Homepage = () => {
     }
   };
 
-  const handleOnSearch = async () => {
-
-  }
+  const handleOnSearch = (value) => {
+    if (value.trim()) {
+      navigate(`/search?query=${encodeURIComponent(value)}&type=poem`);
+    }
+  };
 
   return (
     <div style={styles.container}>

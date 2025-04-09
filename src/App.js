@@ -22,6 +22,7 @@ import SuccessPage from "./pages/SuccessPage";
 import FailPage from "./pages/FailPage";
 import KnowledgePage from "./pages/KnowledgePage";
 import YourWallet from "./pages/User/YourWallet";
+import SearchPage from "./pages/SearchPage";
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
 
@@ -51,6 +52,7 @@ function App() {
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/shop" element={<Shop />} />
         <Route path="/shop/:masterTemplateId" element={<TemplateDetail />} />
+        <Route path="/search" element={<SearchPage />} />        
         <Route
           path="/payment/success"
           element={

@@ -63,7 +63,7 @@ const YourBio = (props) => {
     };
 
     const getGenderText = (gender) => {
-        const lowerGender = gender.toLowerCase();
+        const lowerGender = gender?.toLowerCase();
         if (lowerGender === "male") return "Nam";
         if (lowerGender === "female") return "Nữ";
         return gender;

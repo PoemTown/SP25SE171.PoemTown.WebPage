@@ -61,11 +61,11 @@ const ProfilePage = () => {
   const handleSave = async () => {
     const updatedData = {
       ...formData,
-      avatar: sessionStorage.getItem("profileImage") || formData.avatar, 
+      avatar: sessionStorage.getItem("profileImage") || formData.avatar,
     };
 
     localStorage.setItem("username", updatedData.userName);
-  
+
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile`,
@@ -78,13 +78,13 @@ const ProfilePage = () => {
           body: JSON.stringify(updatedData),
         }
       );
-  
-  
+
+
       const data = await response.json();
-      setUser(data.data); 
+      setUser(data.data);
       setIsEditing(false);
       message.success("Profile updated successfully!");
-  
+
       sessionStorage.removeItem("profileImage");
       setTimeout(() => {
         window.location.reload();
@@ -94,7 +94,7 @@ const ProfilePage = () => {
       console.error(error);
     }
   };
-  
+
 
   const handleAvatarClick = () => {
     if (isEditing) {
@@ -103,14 +103,15 @@ const ProfilePage = () => {
   };
 
   const handleAvatarChange = async (event) => {
+    setLoading(true);
     const file = event.target.files[0];
     if (file) {
       const imageUrl = URL.createObjectURL(file);
       setAvatarFile(imageUrl);
-  
+
       const formData = new FormData();
       formData.append("file", file);
-  
+
       try {
         const response = await fetch(
           `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile/image`,
@@ -122,26 +123,29 @@ const ProfilePage = () => {
             body: formData,
           }
         );
-  
+
         if (!response.ok) {
           throw new Error("Failed to upload image");
         }
-  
+
         const data = await response.json();
         const uploadedImageUrl = data.data;
-  
+
         message.success("Avatar updated successfully!");
         sessionStorage.setItem("profileImage", uploadedImageUrl);
         setFormData((prev) => ({ ...prev, avatar: uploadedImageUrl }));
         setAvatarFile(uploadedImageUrl);
-      } catch (error) {
-        message.error("Error uploading image!");
-        console.error(error);
+      } finally {
+        // This will run regardless of success or failure
+        setLoading(false);
       }
+    } else {
+      // If no file is selected, stop the loading indicator
+      setLoading(false);
     }
   };
-  
-  
+
+
 
   if (loading) {
     return (
