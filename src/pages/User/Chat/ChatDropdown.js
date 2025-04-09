@@ -31,6 +31,7 @@ const ChatDropdown = ({ userData, refreshKey, setRefreshKey }) => {
       visible={visible}
       onVisibleChange={handleVisibleChange}
       placement="bottomCenter"
+      
     >
       <Badge>
         <RiMessengerLine style={{ fontSize: "24px", color: "#4A90E2" }} />
