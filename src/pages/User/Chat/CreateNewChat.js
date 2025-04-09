@@ -2,6 +2,9 @@ import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "../../../SignalR/UseChat";
 import { IoMdClose, IoMdSend } from "react-icons/io";
 import { Tooltip } from "antd";
+import EmojiPicker from "emoji-picker-react";
+import { BsEmojiSmile } from "react-icons/bs";
+
 const CreateNewChat = ({ userData, refreshKey, onClose }) => {
   const [chatMessages, setChatMessages] = useState([]);
   const [chatInput, setChatInput] = useState("");
@@ -10,6 +13,7 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
   const chatContainerRef = useRef(null);
   const utcDate = new Date(); // Thời gian UTC hiện tại
   const utcPlus7Date = new Date(utcDate.getTime() + 7 * 60 * 60 * 1000); // Thêm 7 giờ vào thời gian UTC
+  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
   const formattedDate = utcPlus7Date.toISOString();
   const updateMessages = (fromUserId, message) => {
@@ -23,6 +27,9 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
 
       },
     ]);
+  };
+  const handleEmojiClick = (emojiData) => {
+    setChatInput((prevInput) => prevInput + emojiData.emoji);
   };
 
   const { sendMessage } = useChat(jwtToken, updateMessages);
@@ -119,38 +126,57 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
                   }}
                 >
                   <Tooltip title={formatDate(msg.createdTime)}>
-                  <div>{msg.messageText}</div>
-                </Tooltip>
-                <div style={styles.messageTime}>{formatTime(msg.createdTime)}</div>
+                    <div>{msg.messageText}</div>
+                  </Tooltip>
+                  <div style={styles.messageTime}>{formatTime(msg.createdTime)}</div>
+                </div>
               </div>
-              </div>
-        );
+            );
           })}
-      </div>
-      <form style={styles.chatInputContainer} onSubmit={handleSendMessage}>
-        <input
-          type="text"
-          placeholder="Nhập tin nhắn..."
-          value={chatInput}
-          onChange={(e) => setChatInput(e.target.value)}
-          style={styles.chatInput}
-        />
-        <div
-          style={{
-            ...styles.sendButton,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            cursor: chatInput.trim() ? "pointer" : "not-allowed", // Thêm hiệu ứng con trỏ khi có thể gửi
-          }}
-          onClick={chatInput.trim() ? handleSendMessage : null} // Gọi hàm gửi tin nhắn khi có input
-        >
-          <IoMdSend style={{ fontSize: "24px", color: "blue" }} /> {/* Chỉnh kích thước biểu tượng */}
         </div>
+        <form style={styles.chatInputContainer} onSubmit={handleSendMessage}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%" }}>
+            {/* Nút chọn emoji */}
+            <div style={{ position: "relative" }}>
+              <BsEmojiSmile
+                style={{ fontSize: "24px", cursor: "pointer", color: "#555" }}
+                title="Gửi emoji"
+                onClick={() => setShowEmojiPicker((prev) => !prev)}
+              />
+              {/* Bảng emoji hiển thị khi showEmojiPicker = true */}
+              {showEmojiPicker && (
+                <div style={{ position: "absolute", bottom: "40px", zIndex: 999 }}>
+                  <EmojiPicker onEmojiClick={handleEmojiClick} />
+                </div>
+              )}
+            </div>
 
+            {/* Input chat */}
+            <input
+              type="text"
+              placeholder="Nhập tin nhắn..."
+              value={chatInput}
+              onChange={(e) => setChatInput(e.target.value)}
+              style={styles.chatInput}
+            />
 
-      </form>
-    </div>
+            {/* Nút gửi */}
+            <div
+              style={{
+                ...styles.sendButton,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                cursor: chatInput.trim() ? "pointer" : "not-allowed",
+              }}
+              onClick={chatInput.trim() ? handleSendMessage : null}
+            >
+              <IoMdSend style={{ fontSize: "24px", color: "blue" }} />
+            </div>
+          </div>
+        </form>
+
+      </div>
     </div >
   );
 };
@@ -158,40 +184,52 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
 const styles = {
   container: {
     display: "flex",
-    height: "90vh",
-    fontFamily: "Arial, sans-serif",
-    backgroundSize: "cover",
-    backgroundColor: "#fff",
-
+    height: "70vh",
+    fontFamily: "Segoe UI, sans-serif",
+    backgroundColor: "#f9f9f9",
   },
   chatArea: {
     flex: 1,
     display: "flex",
     flexDirection: "column",
-    backgroundColor: "rgba(0,0,0,0.2)", // Độ trong suốt để nhìn thấy nền
+    backgroundColor: "#fdfdfd",
+    borderRadius: "12px",
     overflow: "hidden",
+    border: "1px solid #ddd",
   },
   chatHeader: {
-    position: "relative",
-    padding: "15px",
-    borderBottom: "1px solid #ddd",
-    backgroundColor: "#3B1E1E",
-    color: "#fff",
-    display: "flex",
-    alignItems: "center",
+    padding: "16px 24px",
+        borderBottom: "1px solid #e9ecef",
+        display: "flex",
+        alignItems: "center",
+        backgroundColor: "#ffffff",
+        h3: {
+            margin: 0,
+            fontSize: "16px",
+            fontWeight: 600,
+            color: "#212529",
+        }
   },
   avatarChat: {
-    width: "40px",
-    height: "40px",
+    width: "42px",
+    height: "42px",
     borderRadius: "50%",
-    marginRight: "10px",
+    marginRight: "12px",
+  },
+  closeIcon: {
+    position: "absolute",
+    top: "15px",
+    right: "20px",
+    fontSize: "22px",
+    cursor: "pointer",
+    color: "#000",
   },
   chatMessages: {
     flex: 1,
-    padding: "15px",
+    padding: "16px",
     overflowY: "auto",
     maxHeight: "calc(100vh - 180px)",
-    paddingRight: "10px",
+    backgroundColor: "#f4f4f4",
   },
   messageWrapper: {
     display: "flex",
@@ -199,58 +237,52 @@ const styles = {
     marginBottom: "10px",
   },
   avatarMessage: {
-    width: "35px",
-    height: "35px",
+    width: "32px",
+    height: "32px",
     borderRadius: "50%",
-    marginRight: "10px",
+    marginRight: "8px",
   },
   messageBubble: {
-    padding: "10px",
-    maxWidth: "75%",
-    borderRadius: "15px",
+    padding: "10px 14px",
+    maxWidth: "70%",
+    borderRadius: "16px",
     wordWrap: "break-word",
     whiteSpace: "pre-wrap",
-    position: "relative",
     fontSize: "14px",
+    boxShadow: "0 1px 2px rgba(0,0,0,0.1)",
   },
   messageTime: {
-    fontSize: "10px",
-    color: "#aaa",
+    fontSize: "11px",
+    color: "#888",
     textAlign: "right",
-    marginTop: "5px",
+    marginTop: "6px",
   },
   chatInputContainer: {
     display: "flex",
+    alignItems: "center",
+    padding: "10px 16px",
+    backgroundColor: "#ffffff",
+
     borderTop: "1px solid #ddd",
-    padding: "10px",
-    backgroundColor: "rgba(0,0,0,0.2)"
   },
   chatInput: {
     flex: 1,
-    padding: "10px",
-    border: "1px solid #ddd",
-    borderRadius: "4px",
+    padding: "10px 12px",
+    border: "1px solid #ccc",
+    borderRadius: "20px",
     outline: "none",
     fontSize: "14px",
-    backgroundColor: "rgb(211, 209, 209)", // Nền mờ đen
-    color: "#303030 ", // Màu chữ trắng cho dễ đọc trên nền tối
+    backgroundColor: "#fff",
+    color: "#333",
   },
   sendButton: {
     marginLeft: "10px",
-    border: "none",
-    //backgroundColor: "#4A90E2",
-    color: "#fff",
-    borderRadius: "4px",
+    padding: "8px 8px",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
     cursor: "pointer",
-    fontSize: "14px",
-  },
-  closeIcon: {
-    position: "absolute",
-    top: "15px",
-    right: "15px",
-    fontSize: "24px",
-    cursor: "pointer",
-    color: "#fff",
+    transition: "background 0.2s",
   },
 };
 
