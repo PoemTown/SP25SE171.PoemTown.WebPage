@@ -10,6 +10,7 @@ const Headeruser = ({ userData }) => {
   const navigate = useNavigate();
   const roles = JSON.parse(localStorage.getItem("role")) || [];
   const access_token = localStorage.getItem("accessToken");
+  const username = localStorage.getItem("username");
   const { announcements, setAnnouncements, createAnnouncementConnection, announcementConnection } = useSignalR();
 
   const [refreshKey, setRefreshKey] = useState(0);
@@ -125,8 +126,23 @@ const Headeruser = ({ userData }) => {
   );
 
   const menuItems = [
-    { key: "profile", label: "Profile", onClick: () => navigate("/profile") },
-    { key: "logout", label: "Logout", onClick: () => { localStorage.clear(); navigate("/"); window.location.reload(); } },
+    {
+      key: "welcome",
+      label: (
+        <div
+          style={{
+            padding: "8px 12px",
+            fontWeight: "bold",
+            color: "#333",
+            cursor: "default",
+          }}
+        >
+          Chào mừng, {username}
+        </div>
+      ),
+    },
+    { key: "profile", label: "Hồ sơ người dùng", onClick: () => navigate("/profile") },
+    { key: "logout", label: (<div style={{color: "#f00"}}>Đăng xuất</div>), onClick: () => { localStorage.clear(); navigate("/"); window.location.reload(); } },
   ];
 
   const menu = <Menu items={menuItems} />;

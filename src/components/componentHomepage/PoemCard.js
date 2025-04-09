@@ -38,7 +38,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
     const hasMoreLines = lines.length > 4;
     const navigate = useNavigate();
     const truncatedDescription = item.description?.length > 80
-        ? `${item.description.substring(0, 102)}...`
+        ? `${item.description.substring(0, 80)}...`
         : item.description;
 
     const [isHovered, setIsHovered] = useState(false);
