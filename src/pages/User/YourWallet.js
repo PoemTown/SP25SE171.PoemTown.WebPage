@@ -17,6 +17,7 @@ import {
   Badge,
   Spin,
   List,
+  Tooltip
 } from "antd";
 import {
   WalletOutlined,
@@ -395,22 +396,22 @@ const YourWallet = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <Badge
-          color={transactionStatusMap[status]?.color || "default"}
-          text={
-            <Space>
-              {transactionStatusMap[status]?.icon}
-              {transactionStatusMap[status]?.text || "Không xác định"}
-            </Space>
-          }
-        />
-      ),
+      render: (status) => {
+        const color = transactionStatusMap[status]?.color || "default";
+        const text = transactionStatusMap[status]?.text || "Không xác định";
+    
+        return <span style={{ color }}>{text}</span>;
+      },
     },    
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
+    },
+    {
+      title: "Mã giao dịch",
+      dataIndex: "transactionCode",
+      key: "transactionCode",
     },
     {
       title: "Số tiền",
@@ -466,18 +467,13 @@ const YourWallet = () => {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status) => (
-        <Badge
-          color={orderStatusMap[status]?.color || "default"}
-          text={
-            <Space>
-              {orderStatusMap[status]?.icon}
-              {orderStatusMap[status]?.text || "Không xác định"}
-            </Space>
-          }
-        />
-      ),
-    },
+      render: (status) => {
+        const color = orderStatusMap[status]?.color || "default";
+        const text = orderStatusMap[status]?.text || "Không xác định";
+    
+        return <span style={{ color }}>{text}</span>;
+      },
+    },    
     {
       title: "Thao tác",
       key: "action",
