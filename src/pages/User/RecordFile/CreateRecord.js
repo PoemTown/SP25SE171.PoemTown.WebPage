@@ -8,10 +8,11 @@ import {
   message,
   Spin,
   Menu,
-  Dropdown
+  Dropdown,
+  Upload
 } from "antd";
 import { FcFolder } from "react-icons/fc";
-import { DownOutlined } from "@ant-design/icons";
+import { DownOutlined, UploadOutlined } from "@ant-design/icons";
 import axios from "axios";
 
 export default function CreateRecord({ onBack }) {
@@ -43,7 +44,6 @@ export default function CreateRecord({ onBack }) {
         }
       });
       if (!response.ok) throw new Error("Lỗi khi fetch poems");
-
       const result = await response.json();
       setTotal(result.totalPages || 0);
       setPoems(result.data || []);
@@ -63,7 +63,6 @@ export default function CreateRecord({ onBack }) {
         }
       });
       if (!response.ok) throw new Error("Lỗi khi fetch bought poems");
-
       const result = await response.json();
       setTotal(result.totalPages || 0);
       setPoems(result.data || []);
@@ -101,36 +100,28 @@ export default function CreateRecord({ onBack }) {
     }
   };
 
-  const handleUploadAudio = async (event) => {
-    const file = event.target.files[0];
-    if (file) {
-      const formData = new FormData();
-      formData.append("file", file);
+  const uploadProps = {
+    name: "file",
+    action: `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio`,
+    headers: {
+      Authorization: `Bearer ${accessToken}`
+    },
+    accept: "audio/*",
+    showUploadList: false,
+    beforeUpload: () => {
       setIsAudioUploading(true);
-      try {
-        const response = await fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${accessToken}`
-            },
-            body: formData
-          }
-        );
-
-        if (!response.ok) throw new Error("Upload thất bại");
-
-        const result = await response.json();
-        const uploadedAudioUrl = result.data;
-        message.success("Tải audio thành công!");
-
-        sessionStorage.setItem("recordAudio", uploadedAudioUrl);
-        setData((prev) => ({ ...prev, fileUrl: uploadedAudioUrl }));
-      } catch (err) {
-        console.error(err);
-        message.error("Tải audio thất bại!");
-      } finally {
+      return true;
+    },
+    onChange(info) {
+      if (info.file.status === "done") {
+        const uploadedUrl = info.file.response?.data;
+        if (uploadedUrl) {
+          message.success(`${info.file.name} tải lên thành công`);
+          setData((prev) => ({ ...prev, fileUrl: uploadedUrl }));
+        }
+        setIsAudioUploading(false);
+      } else if (info.file.status === "error") {
+        message.error(`${info.file.name} tải lên thất bại.`);
         setIsAudioUploading(false);
       }
     }
@@ -151,7 +142,6 @@ export default function CreateRecord({ onBack }) {
         recordName: values.recordName
       };
       setData(updatedData);
-
       const poemId = selectedPoem.poem ? selectedPoem.poem.id : selectedPoem.id;
       await handleCreateRecordFile(poemId);
       setIsModalVisible(false);
@@ -180,8 +170,7 @@ export default function CreateRecord({ onBack }) {
     {
       title: "Owner",
       key: "owner",
-      render: (_, record) =>
-        record.poem?.user?.displayName || record.owner?.displayName || "Mine"
+      render: (_, record) => record.poem?.user?.displayName || record.owner?.displayName || "Mine"
     },
     {
       title: "Action",
@@ -196,12 +185,8 @@ export default function CreateRecord({ onBack }) {
 
   const menu = (
     <Menu>
-      <Menu.Item key="mine" onClick={() => handleClick("mine")}>
-        Của tôi
-      </Menu.Item>
-      <Menu.Item key="bought" onClick={() => handleClick("bought")}>
-        Đã mua
-      </Menu.Item>
+      <Menu.Item key="mine" onClick={() => handleClick("mine")}>Của tôi</Menu.Item>
+      <Menu.Item key="bought" onClick={() => handleClick("bought")}>Đã mua</Menu.Item>
     </Menu>
   );
 
@@ -268,7 +253,7 @@ export default function CreateRecord({ onBack }) {
             ? `Tạo audio cho bài thơ: ${selectedPoem.poem ? selectedPoem.poem.title : selectedPoem.title}`
             : "Tạo bản ghi âm"
         }
-        visible={isModalVisible}
+        open={isModalVisible}
         onOk={handleModalOk}
         onCancel={() => setIsModalVisible(false)}
         okText="Lưu"
@@ -287,12 +272,11 @@ export default function CreateRecord({ onBack }) {
             <Input />
           </Form.Item>
           <Form.Item label="Chọn file audio" name="audioFile">
-            <Input
-              type="file"
-              accept="audio/*"
-              onChange={handleUploadAudio}
-              disabled={isAudioUploading}
-            />
+            <Upload {...uploadProps}>
+              <Button icon={<UploadOutlined />} disabled={isAudioUploading}>
+                Chọn file audio
+              </Button>
+            </Upload>
           </Form.Item>
           {isAudioUploading && (
             <div style={{ marginTop: "8px" }}>

@@ -50,11 +50,12 @@ const UsageRight = () => {
 
     function formatDate(isoString) {
         const date = new Date(isoString);
-        const day = String(date.getUTCDate() + 1).padStart(2, "0");
-        const month = String(date.getUTCMonth() + 1).padStart(2, "0");
-        const year = date.getUTCFullYear();
+        const day = String(date.getDate()).padStart(2, "0");
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const year = date.getFullYear();
         return `${day}-${month}-${year}`;
     }
+    
 
     const versions = [
         {
@@ -410,7 +411,7 @@ const UsageRight = () => {
                                     )}
                                     {!selectedPoem.copyRightValidFrom && (
                                         <Descriptions.Item label="Thời hạn">
-                                            {selectedPoem.saleVersion.durationTime} năm
+                                            {selectedPoem.saleVersion.durationTime > 50 ? "Vô thời hạn": selectedPoem.saleVersion.durationTime + " năm"} 
                                         </Descriptions.Item>
                                     )}
                                     <Descriptions.Item label="Phần trăm hoa hồng">
@@ -419,8 +420,8 @@ const UsageRight = () => {
                                 </>
                             )}
                             <Descriptions.Item label="Giá">
-                                {selectedPoem.saleVersion.price}{" "}
-                                VND
+                                {selectedPoem.saleVersion.price === 0 ? "Miễn phí" : selectedPoem.saleVersion.price.toLocaleString('vi-VN') + " VND"}
+                                
                             </Descriptions.Item>
                         </Descriptions>
 
@@ -455,9 +456,9 @@ const UsageRight = () => {
                                             ))}
                                         </Select>
                                     </Descriptions.Item>
-                                    {price !== null && (
-                                        <Descriptions.Item label="Giá tiền">
-                                            {price} VND
+                                    {time !== null && (
+                                        <Descriptions.Item label="Thời hạn sử dụng">
+                                            {time} năm
                                         </Descriptions.Item>
                                     )}
                                     {commissionFee !== null && (
@@ -465,11 +466,13 @@ const UsageRight = () => {
                                             {commissionFee}%
                                         </Descriptions.Item>
                                     )}
-                                    {time !== null && (
-                                        <Descriptions.Item label="Thời hạn sử dụng">
-                                            {time} năm
+                                    {price !== null && (
+                                        <Descriptions.Item label="Giá tiền">
+                                            {price.toLocaleString('vi-VN')} VND
                                         </Descriptions.Item>
                                     )}
+                                    
+                                    
                                 </Descriptions>
                             </>
                         )}
@@ -486,6 +489,11 @@ const UsageRight = () => {
                 onOk={handlePriceModalOk}
                 onCancel={() => {
                     setIsPriceModalVisible(false);
+                    setShowVersionOptions(false);
+                    setPrice(null); // reset giá
+                    setCommissionFee(null); // reset hoa hồng
+                    setTime(null);
+                    setSelectedVersion(null); // reset phiên bản nếu cần
                     setShowVersionOptions(false);
                     form.resetFields(); // reset lại các giá trị trong form nếu cần
                 }}
@@ -521,7 +529,7 @@ const UsageRight = () => {
                             { required: true, message: "Vui lòng nhập thời hạn!" },
                             {
                                 type: "number",
-                                min: 0,
+                                min: 1,
                                 max: 100,
                                 message: "",
                             },

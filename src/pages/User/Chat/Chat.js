@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useChat } from "../../../SignalR/UseChat";
+import { Tooltip } from "antd";
 
 const MessengerPage = ({ refreshKey }) => {
     const [conversations, setConversations] = useState([]);
@@ -9,33 +10,33 @@ const MessengerPage = ({ refreshKey }) => {
     const jwtToken = localStorage.getItem("accessToken");
     const currentUserId = localStorage.getItem("userId");
     const chatContainerRef = useRef(null);
-  
+
 
     // Hàm updateMessages cập nhật tin nhắn mới từ SignalR
     const updateMessages = (fromUserId, message) => {
         if (selectedConversation && selectedConversation.id === fromUserId) {
-          const fromUser = {
-            displayName: selectedConversation.fromUser
-              ? selectedConversation.fromUser.displayName
-              : selectedConversation.displayName,
-            avatar: selectedConversation.avatar,
-          };
-      
-          // Tạo thời gian hiện tại theo UTC, sau đó chuyển sang ISO string
-          const currentTimeUTC = new Date().toISOString();
-      
-          setChatMessages((prevMessages) => [
-            ...prevMessages,
-            {
-              fromUser,
-              messageText: message,
-              createdTime: currentTimeUTC, // Lấy thời gian hiện tại ngay lúc nhận
-            },
-          ]);
+            const fromUser = {
+                displayName: selectedConversation.fromUser
+                    ? selectedConversation.fromUser.displayName
+                    : selectedConversation.displayName,
+                avatar: selectedConversation.avatar,
+            };
+
+            // Tạo thời gian hiện tại theo UTC, sau đó chuyển sang ISO string
+            const currentTimeUTC = new Date().toISOString();
+
+            setChatMessages((prevMessages) => [
+                ...prevMessages,
+                {
+                    fromUser,
+                    messageText: message,
+                    createdTime: currentTimeUTC, // Lấy thời gian hiện tại ngay lúc nhận
+                },
+            ]);
         }
         fetchChatPartner();
-      };
-      
+    };
+
 
 
     const { sendMessage } = useChat(jwtToken, updateMessages);
@@ -112,7 +113,7 @@ const MessengerPage = ({ refreshKey }) => {
         }
     };
 
-    function formatDate(isoString) {
+    function formatTime(isoString) {
         const date = new Date(isoString);
 
         // Lấy giờ và phút theo múi giờ UTC+7
@@ -122,7 +123,12 @@ const MessengerPage = ({ refreshKey }) => {
         return `${hours}:${minutes}`;
     }
 
-
+    function formatDate(dateStr) {
+        const date = new Date(dateStr);
+        return date.toLocaleDateString("vi-VN"); // → "09/04/2025"
+      }
+      
+      
     return (
         <div style={styles.container}>
             {/* Sidebar: danh sách cuộc trò chuyện */}
@@ -149,7 +155,7 @@ const MessengerPage = ({ refreshKey }) => {
                                 </span>
                             </div>
                             <div style={styles.conversationTime}>
-                                {formatDate(conv.lastMessage.createdTime)}
+                                {formatTime(conv.lastMessage.createdTime)}
                             </div>
                         </li>
                     ))}
@@ -198,8 +204,10 @@ const MessengerPage = ({ refreshKey }) => {
                                                 textAlign: isMine ? "left" : "left",
                                             }}
                                         >
-                                            <div>{msg.messageText}</div>
-                                            <div style={styles.messageTime}>{formatDate(msg.createdTime)}</div>
+                                            <Tooltip title={formatDate(msg.createdTime)}>
+                                                <div>{msg.messageText}</div>
+                                            </Tooltip>
+                                            <div style={styles.messageTime}>{formatTime(msg.createdTime)}</div>
                                         </div>
                                     </div>
                                 );
