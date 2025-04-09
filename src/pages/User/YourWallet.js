@@ -92,7 +92,7 @@ const YourWallet = () => {
       }
 
       const response = await fetch(
-        "https://api-poemtown-staging.nodfeather.win/api/user-ewallets/v1/mine",
+      `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/mine`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -132,7 +132,7 @@ const YourWallet = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/transactions/v1/mine?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+        `${process.env.REACT_APP_API_BASE_URL}/transactions/v1/mine?pageNumber=${pageNumber}&pageSize=${pageSize}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -165,7 +165,7 @@ const YourWallet = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/orders/v1?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+        `${process.env.REACT_APP_API_BASE_URL}/orders/v1?pageNumber=${pageNumber}&pageSize=${pageSize}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -198,7 +198,7 @@ const YourWallet = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/orders/v1/detail/${orderId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/orders/v1/detail/${orderId}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -226,7 +226,7 @@ const YourWallet = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
-        "https://api-poemtown-staging.nodfeather.win/api/payment-gateways/v1",
+        `${process.env.REACT_APP_API_BASE_URL}/payment-gateways/v1`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -281,7 +281,7 @@ const YourWallet = () => {
 
       const accessToken = localStorage.getItem("accessToken");
       const response = await fetch(
-        "https://api-poemtown-staging.nodfeather.win/api/user-ewallets/v1/deposit",
+        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/deposit`,
         {
           method: "POST",
           headers: {

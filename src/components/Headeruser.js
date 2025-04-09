@@ -18,7 +18,7 @@ const Headeruser = ({ userData }) => {
   // Fetch announcements
   const fetchAnnouncements = async () => {
     try {
-      const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/announcements/v1/mine", {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/announcements/v1/mine`, {
         method: "GET",
         headers: {
           "Authorization": `Bearer ${access_token}`
@@ -60,7 +60,7 @@ const Headeruser = ({ userData }) => {
   const handleNotificationClick = async (notif) => {
     console.log("Notification clicked:", notif);
     try {
-      const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/announcements/v1/${notif.id}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/announcements/v1/${notif.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

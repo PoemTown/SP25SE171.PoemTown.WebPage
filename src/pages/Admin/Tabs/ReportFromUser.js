@@ -110,7 +110,7 @@ const ReportFromUser = () => {
     const fetchReports = async () => {
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/reports/v1/reports?sortOptions=${sortOption}&pageNumber=${currentPage}&pageSize=${pageSize}`,
+                `${process.env.REACT_APP_API_BASE_URL}/reports/v1/reports?sortOptions=${sortOption}&pageNumber=${currentPage}&pageSize=${pageSize}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -184,7 +184,7 @@ const ReportFromUser = () => {
     const handleSubmit = async () => {
         try {
             await axios.put(
-                "https://api-poemtown-staging.nodfeather.win/api/reports/v1/resolve",
+                `${process.env.REACT_APP_API_BASE_URL}/reports/v1/resolve`,
                 {
                     id: selectedReport.id,
                     resolveResponse: resolveResponse,

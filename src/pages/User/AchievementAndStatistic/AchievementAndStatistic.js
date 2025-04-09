@@ -30,7 +30,7 @@ const AchievementAndStatistic = ({
   //   const fetchStatistic = async () => {
   //     try {
   //       const response = await fetch(
-  //         "https://api-poemtown-staging.nodfeather.win/api/statistics/v1",
+  //         "process.env.REACT_APP_API_BASE_URL/statistics/v1",
   //         {
   //           headers: requestHeaders,
   //         }

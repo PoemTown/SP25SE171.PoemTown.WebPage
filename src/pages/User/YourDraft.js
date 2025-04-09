@@ -17,7 +17,7 @@ const YourDraft = ({ isCreatingPoem ,setIsCreatingPoem, displayName, avatar, sta
             const accessToken = localStorage.getItem("accessToken");
             try {
                 const response = await fetch(
-                    "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine?filterOptions.status=0",
+                    `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=0`,
                     {
                         headers: {
                             Authorization: `Bearer ${accessToken}`,

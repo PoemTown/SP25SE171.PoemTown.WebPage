@@ -28,7 +28,7 @@ const TemplateManagement = () => {
     const [selectedTemplateId, setSelectedTemplateId] = useState(null);
     // Fetch data from API
     useEffect(() => {
-        axios.get("https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates")
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`)
             .then((response) => {
                 console.log("API Response:", response.data);
                 if (response.data && response.data.statusCode === 200 && response.data.data) {
@@ -78,7 +78,7 @@ const TemplateManagement = () => {
             onOk: async () => {
                 try {
                     const response = await fetch(
-                        `https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/${id}`,
+                        `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${id}`,
                         {
                             method: "DELETE",
                             headers: {
@@ -121,7 +121,7 @@ const TemplateManagement = () => {
 
                 axios
                     .put(
-                        "https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates",
+                        `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`,
                         updatedValues,
                         config
                     )
@@ -171,7 +171,7 @@ const TemplateManagement = () => {
 
             axios
                 .post(
-                    "https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates",
+                    `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`,
                     newValues,
                     config
                 )
@@ -195,7 +195,7 @@ const TemplateManagement = () => {
 
     // Handle view details
     const handleViewDetails = (id) => {
-        axios.get(`https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/${id}`)
+        axios.get(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${id}`)
             .then((response) => {
                 if (response.data && response.data.statusCode === 200 && response.data.data) {
                     setDetailItem(response.data.data);
@@ -224,7 +224,7 @@ const TemplateManagement = () => {
 
         try {
             const response = await axios.post(
-                "https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/cover-image",
+                `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/cover-image`,
                 formData,
                 {
                     headers: {

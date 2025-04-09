@@ -106,8 +106,8 @@ const Content = ({ activeTab }) => {
     }
 
     const endpoint = isCollection
-      ? `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection/${id}`
-      : `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
+  ? `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`
+  : `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
 
     const currentState = isCollection
       ? bookmarkedCollections[id]
@@ -138,14 +138,14 @@ const Content = ({ activeTab }) => {
   };
 
   const handleChangeToBookmarkPoem = () => {
-    setIsBookmarkCollectionTab(false)
-    fetchData(`https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`);
-  }
+    setIsBookmarkCollectionTab(false);
+    fetchData(`${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`);
+  };
 
 
   const handleChangeToBookmarkCollection = () => {
     setIsBookmarkCollectionTab(true)
-    fetchData(`https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`);
+    fetchData(`${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`);
   }
 
 
@@ -159,7 +159,7 @@ const Content = ({ activeTab }) => {
 
     try {
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/likes/v1/${postId}`,
+        `${process.env.REACT_APP_API_BASE_URL}/likes/v1/${postId}`,
         { method, headers }
       );
 
@@ -253,45 +253,45 @@ const Content = ({ activeTab }) => {
 
   useEffect(() => {
     let abortController = new AbortController();
-    let apiUrl = "https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts";
+    let apiUrl = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/posts`;
     console.log("activeTab hiện tại:", activeTab);
     switch (activeTab) {
       case "trending":
-        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
+        apiUrl = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
         setTitle("Đạt được lượng tương tác lớn trong thời gian gần 📈");
         setIsCommunity(false);
         break;
       case "collections":
-        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/collections/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
+        apiUrl = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
         setTitle("Các Tập thơ của người dùng được yêu thích gần đây 📚");
         setIsCommunity(false);
         break;
       case "bookmark":
         if (isBookmarkCollectionTab) {
-          apiUrl = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`
+          apiUrl = `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`
         } else {
-          apiUrl = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`;
+          apiUrl = `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`;
         }
         setIsBookmarkTab(true);
         setTitle("");
         setIsCommunity(false);
         break;
       case "community":
-        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/collections/v1/community?pageNumber=${currentPage}&pageSize=${pageSize}`;
+        apiUrl = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/community?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
         setTitle("Hãy cùng nhau chung tay đóng góp cho cộng đồng Thị trấn thơ 🏡")
         setIsCommunity(true);
         break;
       case "audioread":
-        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/record-files/v1/all?pageNumber=${currentPage}&pageSize=${pageSize}`;
+        apiUrl = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/all?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
         setTitle("Lắng nghe và cảm nhận sẽ mang đến bức tranh toàn cảnh️ ▶️")
         setIsCommunity(false);
         break;
       default:
-        apiUrl = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts?pageNumber=${currentPage}&pageSize=${pageSize}`;
+        apiUrl = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/posts?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
         setTitle("Những bài thơ nóng hổi, vừa thổi vừa đọc 📰")
         setIsCommunity(false);
@@ -311,7 +311,7 @@ const Content = ({ activeTab }) => {
         "Content-Type": "application/json",
       };
 
-      const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/leaderboards/v1/poem-leaderboard`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/leaderboards/v1/poem-leaderboard`, {
         headers: requestHeaders
       });
 
@@ -333,7 +333,7 @@ const Content = ({ activeTab }) => {
         "Content-Type": "application/json",
       };
 
-      const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/leaderboards/v1/user-leaderboard`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/leaderboards/v1/user-leaderboard`, {
         headers: requestHeaders
       });
 

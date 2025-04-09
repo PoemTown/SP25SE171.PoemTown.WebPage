@@ -49,7 +49,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
         }
         try {
             setIsLoading(true);
-            const url = `https://api-poemtown-staging.nodfeather.win/api/collections/v1`;
+            const url = `${process.env.REACT_APP_API_BASE_URL}/collections/v1`;
             const method = collection ? "put" : "post";
             const response = await axios[method](url, data, {
                 headers: {
@@ -76,7 +76,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
             try {
                 setIsLoading(true);
                 const response = await fetch(
-                    "https://api-poemtown-staging.nodfeather.win/api/collections/v1/image",
+                    `${process.env.REACT_APP_API_BASE_URL}/collections/v1/image`,
                     {
                         method: "POST",
                         headers: {
@@ -129,7 +129,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
             let responseImage = null;
             if (imageType === "nâng cao") {
                 responseImage = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/open-ai?imageSize=1&imageStyle=2&poemText=${encodeURIComponent(imagePrompt)}&prompt="Render an image base on my requirement, return an image width: 780px height: 438px "`,
+                    `${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/open-ai?imageSize=1&imageStyle=2&poemText=${encodeURIComponent(imagePrompt)}&prompt="Render an image base on my requirement, return an image width: 780px height: 438px "`,
                     {
                         method: "POST",
                         headers: {
@@ -152,7 +152,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
                 };
 
                 responseImage = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`,
+                    `${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`,
                     {
                         method: "POST",
                         headers: {
@@ -200,7 +200,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
             setIsLoading(true);
             // Replace this placeholder with your actual API call for applying the image.
             const applyResponse = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/poems/v1/image/ai",
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image/ai`,
                 {
                     method: "POST",
                     headers: {

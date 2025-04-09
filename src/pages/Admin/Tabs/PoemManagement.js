@@ -5,7 +5,7 @@ import { HeartOutlined, MessageOutlined, FilterOutlined, ClearOutlined } from '@
 
 const { Title, Paragraph } = Typography;
 const { Option } = Select;
-const API_URL = 'https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts';
+const API_URL = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/posts`;
 
 export const getPoemPosts = async (filters) => {
   try {

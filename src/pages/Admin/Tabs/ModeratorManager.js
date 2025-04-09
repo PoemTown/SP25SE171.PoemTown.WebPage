@@ -60,7 +60,7 @@ const ModeratorManagement = () => {
     const fetchAccounts = async () => {
         try {
             const response = await axios.get(
-                "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts?filterOptions.roleId=6dda6b38-5b7e-4d7d-433b-08dd629662fc",
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts?filterOptions.roleId=6dda6b38-5b7e-4d7d-433b-08dd629662fc`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -80,7 +80,7 @@ const ModeratorManagement = () => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts/detail/${id}`,
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts/detail/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -99,7 +99,7 @@ const ModeratorManagement = () => {
     const handleCreateAccount = async () => {
         try {
             await axios.post(
-                "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts/moderator",
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts/moderator`,
                 newAccount,
                 {
                     headers: {

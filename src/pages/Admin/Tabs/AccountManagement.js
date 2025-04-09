@@ -46,7 +46,7 @@ const AccountManagement = () => {
     const fetchAccounts = async () => {
         try {
             const response = await axios.get(
-                "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts?filterOptions.roleId=89fca251-f021-425b-de62-08dcdfcdb851",
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts?filterOptions.roleId=89fca251-f021-425b-de62-08dcdfcdb851`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -66,7 +66,7 @@ const AccountManagement = () => {
         setLoading(true);
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/accounts/v1/accounts/detail/${id}`,
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts/detail/${id}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

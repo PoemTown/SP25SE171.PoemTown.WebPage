@@ -39,7 +39,7 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
   }, [userData]);
 
   async function fetchContentChat(targetUserId) {
-    const url = `https://api-poemtown-staging.nodfeather.win/api/chat/v1/partner/content?pageNumber=1&pageSize=100&targetUserId=${targetUserId}`;
+    const url = `${process.env.REACT_APP_API_BASE_URL}/chat/v1/partner/content?pageNumber=1&pageSize=100&targetUserId=${targetUserId}`;
     try {
       const response = await fetch(url, {
         method: "GET",

@@ -33,7 +33,7 @@ const UserStats = ({ achievementBorder, statisticBorder, achievementBackground, 
 
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=6",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=6`,
                 {
                     method: "GET",
                     headers: {
@@ -87,7 +87,7 @@ const UserStats = ({ achievementBorder, statisticBorder, achievementBackground, 
 
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=5",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=5`,
                 {
                     method: "GET",
                     headers: {
@@ -141,7 +141,7 @@ const UserStats = ({ achievementBorder, statisticBorder, achievementBackground, 
 
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=9",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=9`,
                 {
                     method: "GET",
                     headers: {
@@ -195,7 +195,7 @@ const UserStats = ({ achievementBorder, statisticBorder, achievementBackground, 
 
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=8",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=8`,
                 {
                     method: "GET",
                     headers: {
@@ -249,7 +249,7 @@ const UserStats = ({ achievementBorder, statisticBorder, achievementBackground, 
 
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=7",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=7`,
                 {
                     method: "GET",
                     headers: {
@@ -303,7 +303,7 @@ const UserStats = ({ achievementBorder, statisticBorder, achievementBackground, 
 
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=10",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=10`,
                 {
                     method: "GET",
                     headers: {

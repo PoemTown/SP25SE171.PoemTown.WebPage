@@ -42,7 +42,7 @@ const PoemDetail = () => {
         const fetchData = async () => {
             try {
                 const response = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/users/v1/profile/online/${poem?.user.userName}`,
+                    `${process.env.REACT_APP_API_BASE_URL}/users/v1/profile/online/${poem?.user.userName}`,
                     { method: "GET", headers: requestHeaders }
                 );
 
@@ -136,7 +136,7 @@ const PoemDetail = () => {
     useEffect(() => {
         const fetchPoem = async () => {
             try {
-                const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/${id}/detail`, {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/${id}/detail`, {
                     headers: requestHeaders
                 });
                 const data = await response.json();
@@ -154,7 +154,7 @@ const PoemDetail = () => {
     useEffect(() => {
         const fetchComment = async () => {
             try {
-                const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
                     headers: requestHeaders
                 });
                 const data = await response.json();
@@ -195,7 +195,7 @@ const PoemDetail = () => {
 
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/likes/v1/${id}`,
+                `${process.env.REACT_APP_API_BASE_URL}/likes/v1/${id}`,
                 { method, headers }
             );
             if (response.ok) {
@@ -222,7 +222,7 @@ const PoemDetail = () => {
         };
 
         // Endpoint for bookmarking a poem
-        const endpoint = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
         const method = bookmarked ? "DELETE" : "POST";
 
         try {
@@ -243,7 +243,7 @@ const PoemDetail = () => {
     const handlePurchasePoem = async (poemId) => {
         try {
             const response = await axios.put(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/purchase`,
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/purchase`,
                 null, // vì không cần gửi body
                 {
                     headers: {
@@ -414,7 +414,7 @@ const PoemDetail = () => {
         }
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/comments/v1", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -427,7 +427,7 @@ const PoemDetail = () => {
                 message.success("Đăng bình luận thành công");
                 setNewComment("");
                 // Refresh comments
-                const res = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}`, {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${id}`, {
                     headers: requestHeaders
                 });
                 const data = await res.json();
@@ -467,7 +467,7 @@ const PoemDetail = () => {
         }
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/comments/v1/respondent", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/respondent`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -484,7 +484,7 @@ const PoemDetail = () => {
                 setReplyingTo(null);
 
                 // Refresh comments and rebuild tree
-                const res = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
                     headers: requestHeaders
                 });
                 const data = await res.json();
@@ -511,7 +511,7 @@ const PoemDetail = () => {
         }
 
         try {
-            const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${commentId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${commentId}`, {
                 method: "DELETE",
                 headers: {
                     "Content-Type": "application/json",
@@ -524,7 +524,7 @@ const PoemDetail = () => {
                 setReplyingTo(null);
 
                 // Refresh comments and rebuild tree
-                const res = await fetch(`https://api-poemtown-staging.nodfeather.win/api/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
+                const res = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
                     headers: requestHeaders
                 });
                 const data = await res.json();
@@ -553,7 +553,7 @@ const PoemDetail = () => {
         try {
             const method = poem?.isFollowed ? "DELETE" : "POST";
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/followers/${poem?.user.id}`,
+                `${process.env.REACT_APP_API_BASE_URL}/followers/${poem?.user.id}`,
                 {
                     method,
                     headers: {

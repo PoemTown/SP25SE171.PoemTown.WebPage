@@ -43,7 +43,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
         try {
             //  Gọi API lấy chi tiết bộ sưu tập
             const response1 = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collection.id}/detail`,
+                `${process.env.REACT_APP_API_BASE_URL}/collections/v1/${collection.id}/detail`,
                 { headers: { Authorization: `Bearer ${accessToken}` } }
             );
             const data1 = await response1.json();
@@ -54,7 +54,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
 
             // Gọi API lấy danh sách bài thơ trong bộ sưu tập
             const response2 = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${collection.id}`,
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/${collection.id}`,
                 { headers: { Authorization: `Bearer ${accessToken}` } }
             );
             const data2 = await response2.json();
@@ -81,7 +81,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     const fetchCollections = async () => {
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/collections/v1",
+                `${process.env.REACT_APP_API_BASE_URL}/collections/v1`,
                 {
                     headers: { Authorization: `Bearer ${accessToken}` },
                 }
@@ -107,7 +107,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     const handleMove = async (collectionId, poemId) => {
         try {
             const response = await axios.post(
-                `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collectionId}/${poemId}`,
+                `${process.env.REACT_APP_API_BASE_URL}/collections/v1/${collectionId}/${poemId}`,
                 {},
                 {
                     headers: {
@@ -175,7 +175,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
 
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/likes/v1/${postId}`,
+                `${process.env.REACT_APP_API_BASE_URL}/likes/v1/${postId}`,
                 { method, headers }
             );
 
@@ -201,7 +201,7 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
 
     const handleBookmark = async (id) => {
 
-        const endpoint = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
 
         const currentState = bookmarkedPosts[id];
 
