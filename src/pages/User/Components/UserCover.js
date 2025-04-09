@@ -108,7 +108,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
             message.error("Bạn cần đăng nhập để donate.");
             return;
         }
-    
+
         const amountNumber = Number(donateAmount);
         if (!donateAmount || isNaN(amountNumber) || amountNumber <= 0) {
             message.error("Vui lòng nhập số tiền hợp lệ (lớn hơn 0).");
@@ -133,12 +133,12 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     })
                 }
             );
-    
+
             if (!response.ok) {
                 const errData = await response.json();
                 throw new Error(errData.message || "Donate thất bại.");
             }
-    
+
             message.success(`Đã ủng hộ ${amountNumber.toLocaleString()} VNĐ thành công!`);
             setIsDonateVisible(false);
             setDonateAmount("");
@@ -351,12 +351,16 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     position: "fixed",
                     bottom: "20px",
                     right: "20px",
-                    width: "300px",
+                    width: "350px",
+                    maxHeight: "80vh",
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
+                    borderRadius: "10px",
+                    overflow: "hidden",
                     zIndex: 1000,
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
                 }}>
                     <CreateNewChat userData={userData} onClose={() => setShowChat(false)} />
                 </div>
+
             )}
         </div>
     );

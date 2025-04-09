@@ -63,9 +63,8 @@ const AboutPoemTown = () => {
 
                         <h3 style={{ color: '#2c3e50', margin: '25px 0 15px' }}>Lịch sử hình thành</h3>
                         <p>
-                            PoemTown được thành lập năm 2020 với mong muốn tạo ra một không gian sáng tạo lành mạnh
-                            cho cộng đồng yêu thơ tại Việt Nam. Qua 3 năm phát triển, chúng tôi đã kết nối hơn 10.000
-                            thành viên trên khắp cả nước.
+                            PoemTown được thành lập năm 2025 với mong muốn tạo ra một không gian sáng tạo lành mạnh
+                            cho cộng đồng yêu thơ tại Việt Nam.
                         </p>
 
                         <h3 style={{ color: '#2c3e50', margin: '25px 0 15px' }}>Tầm nhìn</h3>

@@ -8,6 +8,7 @@ import { IoBookmark } from "react-icons/io5";
 import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
 import { FaUserPlus } from "react-icons/fa";
+import { AiOutlineInfoCircle } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
@@ -42,8 +43,8 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
         <Menu>
             <Menu.Item key="report" onClick={() => showModal(record)}>
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <MdReport color="red" size={16} />
-                    <div> Thông tin chi tiết </div>
+                    <AiOutlineInfoCircle color="#2a7fbf" size={16} />
+                    <div>Thông tin chi tiết</div>
                 </div>
             </Menu.Item>
             <Menu.Item key="copylink">
