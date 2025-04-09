@@ -22,6 +22,7 @@ import ModeratorPage from "./pages/Moderator/ModeratorPage";
 import SuccessPage from "./pages/SuccessPage";
 import FailPage from "./pages/FailPage";
 import KnowledgePage from "./pages/KnowledgePage";
+import YourWallet from "./pages/User/YourWallet";
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
   

@@ -54,6 +54,11 @@ const orderStatusMap = {
   2: { text: "Đã thanh toán", color: "green", icon: <CheckCircleOutlined /> },
   3: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
 };
+const transactionStatusMap = {
+  1: { text: "Chờ thanh toán", color: "orange", icon: <ClockCircleOutlined /> },
+  2: { text: "Đã thanh toán", color: "green", icon: <CheckCircleOutlined /> },
+  3: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
+};
 
 const YourWallet = () => {
   const [walletBalance, setWalletBalance] = useState(0);
@@ -387,6 +392,22 @@ const YourWallet = () => {
       render: (type) => transactionTypeMap[type] || "Không rõ",
     },
     {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Badge
+          color={transactionStatusMap[status]?.color || "default"}
+          text={
+            <Space>
+              {transactionStatusMap[status]?.icon}
+              {transactionStatusMap[status]?.text || "Không xác định"}
+            </Space>
+          }
+        />
+      ),
+    },    
+    {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
@@ -395,8 +416,15 @@ const YourWallet = () => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      render: (amount) => `₫${amount?.toLocaleString()}`,
-    },
+      render: (_, record) => {
+        const { amount, isAddToWallet } = record;
+    
+        if (amount == null) return "";
+    
+        const sign = isAddToWallet === true ? "+" : isAddToWallet === false ? "-" : "";
+        return `${sign}₫${amount.toLocaleString()}`;
+      },
+    },      
     {
       title: "Số dư còn lại",
       dataIndex: "balance",
