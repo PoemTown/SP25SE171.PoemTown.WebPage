@@ -1,0 +1,12 @@
+.bio-content p,
+.bio-content h1,
+.bio-content h2,
+.bio-content h3,
+.bio-content h4,
+.bio-content h5,
+.bio-content h6,
+.bio-content ul,
+.bio-content ol,
+.bio-content li {
+  margin: 0;
+}

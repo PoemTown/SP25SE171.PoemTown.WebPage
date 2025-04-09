@@ -2,6 +2,7 @@ import React from "react";
 
 const NavigationTabs = ({ isMine, activeTab, setActiveTab, NavBorder, navColorCode, navBackground }) => {
     const tabs = isMine ? [
+        "Tiểu sử",
         "Thơ của bạn",
         "Bản ghi âm",
         "Bộ sưu tập của bạn",
@@ -12,6 +13,7 @@ const NavigationTabs = ({ isMine, activeTab, setActiveTab, NavBorder, navColorCo
         // "Trang trí",
         "Quản lý ví",
     ] : [
+        "Tiểu sử",
         "Thơ của bạn",
         "Bộ sưu tập của bạn",
         "Bản ghi âm",

@@ -20,6 +20,7 @@ import YourRecordFile from "./RecordFile/YourRecordFile";
 import Headerdefault from "../../components/Headerdefault";
 import YourWallet from "./YourWallet";
 import UsageRight from "./UsageRight";
+import YourBio from "./YourBio";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -115,6 +116,11 @@ const UserPage = () => {
                         totalFollowers: result.data.totalFollowers,
                         totalFollowings: result.data.totalFollowings,
                         userStatistic: result.data.userStatistic,
+                        gender: result.data.gender,
+                        dateOfBirth: result.data.dateOfBirth,
+                        address: result.data.address,
+                        phoneNumber: result.data.phoneNumber,
+                        bio: result.data.bio,
                         achievements: result.data.achievements
                     });
                     setDisplayName(result.data.displayName);
@@ -222,6 +228,11 @@ const UserPage = () => {
                     totalFollowers: result.data.totalFollowers,
                     totalFollowings: result.data.totalFollowings,
                     userStatistic: result.data.userStatistic,
+                    gender: result.data.gender,
+                    dateOfBirth: result.data.dateOfBirth,
+                    address: result.data.address,
+                    phoneNumber: result.data.phoneNumber,
+                    bio: result.data.bio,
                     achievements: result.data.achievements
                 });
                 setDisplayName(result.data.displayName);
@@ -288,14 +299,14 @@ const UserPage = () => {
     };
 
 
-    const [activeTab, setActiveTab] = useState(() => "Thơ của bạn");
+    const [activeTab, setActiveTab] = useState(() => "Tiểu sử");
 
     useEffect(() => {
         localStorage.setItem("activeTab", activeTab);
-        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm") {
+        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm", activeTab === "Tiểu sử" ) {
             setIsCreatingPoem(false);
         }
-        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm") {
+        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm", activeTab === "Tiểu sử" ) {
             setIsCreatingCollection(false);
         }
 
@@ -353,6 +364,9 @@ const UserPage = () => {
                 }}>
 
                     <div style={{ flex: 8 }}>
+                        {activeTab === "Tiểu sử" && (
+                            <YourBio userData={userData} displayName={userData.displayName} isMine={userData.isMine} />
+                        )}
                         {activeTab === "Thơ của bạn" && (
                             <YourPoem isCreatingPoem={isCreatingPoem} setIsCreatingPoem={setIsCreatingPoem} username={username} isMine={userData.isMine} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitle={achievementTitleBackground} statisticTitle={statisticTitleBackground} />
                         )}

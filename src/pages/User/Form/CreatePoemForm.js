@@ -78,6 +78,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           }
         );
         setCollections(response.data.data);
+        setPoemData((prev) => ({...prev, collectionId: response.data.data[0].id}))
       } catch (error) {
         console.error("Error fetching collections:", error);
       }
@@ -133,6 +134,19 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       message.error("Vui lòng đăng nhập để đăng bài.");
       setIsLoading(false);
       return;
+    }
+
+    if (status === 1) {
+      if (poemData.title === null || poemData.title.trim() === "") {
+        message.error("Vui lòng nhập tiêu đề");
+        setIsLoading(false);
+        return;
+      }
+      if (poemData.description === null || poemData.description.trim() === "") {
+        message.error("Vui lòng nhập mô tả");
+        setIsLoading(false);
+        return;
+      }
     }
 
     const validatePoemStructure = () => {
@@ -1013,8 +1027,14 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                 name="title"
                 value={poemData.title}
                 onChange={handleInputChange}
-                placeholder="Enter Poem's Title"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
+                placeholder="Nhập tiêu đề bài thơ"
+                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", outline: "none", }}
+                onFocus={(e) =>
+                  (e.target.style.border = "1px solid #000") // Custom focus border
+                }
+                onBlur={(e) =>
+                  (e.target.style.border = "1px solid #ccc") // Reset on blur
+                }
                 required
               />
             </div>
@@ -1026,8 +1046,15 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                 name="description"
                 value={poemData.description}
                 onChange={handleInputChange}
-                placeholder="Enter Poem's Description"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
+                placeholder="Nhập mô tả bài thơ"
+                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", outline: "none", }}
+                onFocus={(e) =>
+                  (e.target.style.border = "1px solid #000") // Custom focus border
+                }
+                onBlur={(e) =>
+                  (e.target.style.border = "1px solid #ccc") // Reset on blur
+                }
+                required
               />
             </div>
 
@@ -1056,9 +1083,16 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                   borderRadius: "5px",
                   border: "1px solid #ccc",
                   boxSizing: "border-box",
+                  outline: "none",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.border = "1px solid #000") // Custom focus border
+                }
+                onBlur={(e) =>
+                  (e.target.style.border = "1px solid #ccc") // Reset on blur
+                }
+                required
               >
-                <option value="">Choose existing collection</option>
                 {collections.map((collection) => (
                   <option key={collection.id} value={collection.id}>
                     {collection.collectionName}
@@ -1188,7 +1222,14 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                   lineHeight: "1.5",
                   resize: "none", // optional: prevent manual resizing
                   boxSizing: "border-box",
+                  outline: "none",
                 }}
+                onFocus={(e) =>
+                  (e.target.style.border = "1px solid #000") // Custom focus border
+                }
+                onBlur={(e) =>
+                  (e.target.style.border = "1px solid #ccc") // Reset on blur
+                }
                 value={formatContent(poemData.content, selectedType)}
                 readOnly
               />
@@ -1224,7 +1265,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             </Button>
             <Button color="lime" variant="solid" onClick={handleAIRenderImage}>
               Tạo mới
-              </Button>
+            </Button>
             <Button color="primary" variant="solid" onClick={handleApplyPreviewImage}>
               Áp dụng
             </Button>

@@ -20,6 +20,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   const [selectedPoemForComment, setSelectedPoemForComment] = useState(null);
   const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
   const [isHovered, setIsHovered] = useState(false);
+  const [poemToDelete, setPoemToDelete] = useState(null);
   const accessToken = localStorage.getItem("accessToken");
   const requestHeaders = {
     "Content-Type": "application/json",
@@ -27,6 +28,11 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   };
 
   const navigate = useNavigate();
+
+  const showDeleteModal = (poemId) => {
+    setPoemToDelete(poemId);
+    setIsDeleteModalVisible(true);
+  };  
 
   useEffect(() => {
     const fetchPoems = async () => {
@@ -149,16 +155,30 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     return date.toLocaleDateString('vi-VN', options);
   };
 
-  const handleDeleteForever = async () => {
-    console.log("Xóa vĩnh viễn:", selectedPoemId);
+  const handleDeletePoem = async () => {
+    if (!poemToDelete) return;
+    try {
+      const response = await fetch(
+        `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${poemToDelete}`,
+        {
+          method: "DELETE",
+          headers: {
+            ...requestHeaders, // includes Content-Type and Authorization if available
+          },
+        }
+      );
 
-    setIsDeleteModalVisible(false);
-  };
-
-  const handleMoveToTrash = async () => {
-    console.log("Chuyển vào thùng rác:", selectedPoemId);
-
-    setIsDeleteModalVisible(false);
+      if (!response.ok) {
+        throw new Error("Failed to delete the poem");
+      }
+      setPoems((prevPoems) => prevPoems.filter((poem) => poem.id !== poemToDelete));
+      setIsDeleteModalVisible(false);
+      setPoemToDelete(null);
+      message.success("Bài thơ đã được xóa thành công.");
+    } catch (error) {
+      console.error("Error deleting poem:", error);
+      message.error("Có lỗi xảy ra khi xóa bài thơ.");
+    }
   };
 
   const openCommentModal = (poemId) => {
@@ -338,7 +358,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                                 <Menu.Item key="edit">
                                   ✏️ Chỉnh sửa
                                 </Menu.Item>
-                                <Menu.Item key="delete">
+                                <Menu.Item key="delete" onClick={() => showDeleteModal(poem.id)}
+                                >
                                   ❌ Xóa
                                 </Menu.Item>
                               </Menu>
@@ -523,17 +544,14 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
           <Button key="cancel" onClick={() => setIsDeleteModalVisible(false)}>
             Hủy
           </Button>,
-          <Button key="trash" type="default" onClick={handleMoveToTrash}>
-            Chuyển vào thùng rác
-          </Button>,
-          <Button key="delete" type="primary" danger onClick={handleDeleteForever}>
-            Xóa vĩnh viễn
+          <Button key="delete" type="primary" danger onClick={handleDeletePoem}>
+            Xóa
           </Button>,
         ]}
       >
         <p>
           <ExclamationCircleOutlined style={{ color: "red", marginRight: "10px" }} />
-          Bạn muốn xóa bài thơ này vĩnh viễn hay chuyển vào thùng rác?
+          Bạn muốn xóa bài thơ này?
         </p>
       </Modal>
       <CommentModal
