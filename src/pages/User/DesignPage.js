@@ -409,7 +409,7 @@ const DesignPage = () => {
             );
 
             if (!response.ok) {
-                throw new Error(`HTTP error! Status: ${response.status}`);
+                message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
             }
 
             const data = await response.json();
@@ -680,7 +680,7 @@ const DesignPage = () => {
                                 }))}
                                 placeholder="Chọn template"
                             />
-                            <Button color="green" variant="solid" onClick={handleApplyFullTemplate} style={{marginLeft: "10px"}}>Áp dụng</Button>
+                            <Button color="green" variant="solid" onClick={handleApplyFullTemplate} style={{ marginLeft: "10px" }}>Áp dụng</Button>
                         </div>
                     </div>
 

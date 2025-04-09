@@ -967,7 +967,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             Đóng
           </Button>,
           <Button color="green" variant="solid" onClick={()=> setIsPreviewModalOpen(true)}>
-            Coi lại ảnh đã tạo
+            Xem lại ảnh đã tạo
           </Button>,
           <Button key="confirm" color="primary" variant="solid" onClick={handleAIRenderImage}>
             Xác nhận

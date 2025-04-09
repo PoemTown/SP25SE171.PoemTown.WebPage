@@ -203,7 +203,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
       message.success("Xóa tập thơ thành công!");
     } catch (error) {
       console.error("Error:", error);
-      message.error("Có lỗi xảy ra khi xóa tập thơ!");
+      message.error(error.response.data?.errorMessage);
     }
   };
 

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Button, List, Modal } from "antd";
+import { Avatar, Button, List, message, Modal } from "antd";
 import { useNavigate } from "react-router-dom";
 import CollectionCard from "./CollectionCard";
 import PoemCard from "./PoemCard";
@@ -197,11 +197,11 @@ const Content = ({ activeTab }) => {
       const response = await fetch(apiUrl, { headers: requestHeaders, signal: abortController.signal });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
+        
       }
 
       const data = await response.json();
-      console.log(data)
       if (!abortController.signal.aborted) {
         if (data.totalPages) {
           setTotalPages(data.totalPages);
@@ -254,7 +254,6 @@ const Content = ({ activeTab }) => {
   useEffect(() => {
     let abortController = new AbortController();
     let apiUrl = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/posts`;
-    console.log("activeTab hiện tại:", activeTab);
     switch (activeTab) {
       case "trending":
         apiUrl = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/trending?pageNumber=${currentPage}&pageSize=${pageSize}`;
@@ -316,11 +315,11 @@ const Content = ({ activeTab }) => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
+
       }
 
       const data = await response.json();
-      console.log("poemLdb", data.data)
       setPoemLeaderBoard(data.data); // set the entire object
     };
 
@@ -338,11 +337,12 @@ const Content = ({ activeTab }) => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
+
       }
 
       const data = await response.json();
-      console.log(data.data);
+     
       setUserLeaderBoard(data.data); // set the entire object
     };
 

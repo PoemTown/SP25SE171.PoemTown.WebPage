@@ -34,7 +34,7 @@ const TemplateManagement = () => {
                 if (response.data && response.data.statusCode === 200 && response.data.data) {
                     setItems(response.data.data.map(item => ({
                         id: item.id,
-                        templateName: item.templateName || "Không có tên", 
+                        templateName: item.templateName || "Không có tên",
                         price: item.price || 0,
                         coverImage: item.coverImage || "",
                         status: item.status || 2,
@@ -89,7 +89,7 @@ const TemplateManagement = () => {
                     );
 
                     if (!response.ok) {
-                        throw new Error("Xóa không thành công");
+                        message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
                     }
                     window.location.reload();
                 } catch (error) {
@@ -207,7 +207,7 @@ const TemplateManagement = () => {
             })
             .catch((error) => console.error("Error fetching detail:", error));
     };
-    
+
     const reloadDetails = () => {
         if (selectedTemplateId) {
             handleViewDetails(selectedTemplateId);
@@ -261,7 +261,7 @@ const TemplateManagement = () => {
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
                     {items && items.length > 0 ? (
                         items.map((item) => {
-                            if (!item) return null; 
+                            if (!item) return null;
                             return (
                                 <Card
                                     key={item.id}
@@ -384,13 +384,13 @@ const TemplateManagement = () => {
             </Modal>
 
             {/* Detail Modal */}
-            <TemplateDetails 
-            visible={detailModalVisible} 
-            onClose={() => setDetailModalVisible(false)} 
-            detailItem={detailItem} 
-            id={selectedTemplateId}
-            onSuccess={reloadDetails} 
-        />
+            <TemplateDetails
+                visible={detailModalVisible}
+                onClose={() => setDetailModalVisible(false)}
+                detailItem={detailItem}
+                id={selectedTemplateId}
+                onSuccess={reloadDetails}
+            />
         </div>
     );
 };

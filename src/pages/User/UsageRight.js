@@ -82,7 +82,7 @@ const UsageRight = () => {
             });
 
             if (!response.ok) {
-                throw new Error(`Lỗi: ${response.status} - ${response.statusText}`);
+                message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
             }
 
             const data = await response.json();
