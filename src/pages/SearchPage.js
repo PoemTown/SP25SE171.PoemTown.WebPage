@@ -89,7 +89,7 @@ const SearchPage = () => {
     }, [searchParams]);
 
     const handleSearch = (value) => {
-        setSearchParams({ query: value.trim(), type });
+        setSearchParams({ query: value, type });
     };
 
     const handleTabChange = (activeKey) => {

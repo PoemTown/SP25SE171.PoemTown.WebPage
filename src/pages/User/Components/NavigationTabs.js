@@ -1,6 +1,6 @@
 import React from "react";
 
-const NavigationTabs = ({ isMine, activeTab, setActiveTab, NavBorder, navColorCode, navBackground }) => {
+const NavigationTabs = ({ isMine, activeTab, setActiveTab, setIsCreatingPoem, setIsCreatingCollection, NavBorder, navColorCode, navBackground }) => {
     const tabs = isMine ? [
         "Tiểu sử",
         "Thơ của bạn",
@@ -18,6 +18,25 @@ const NavigationTabs = ({ isMine, activeTab, setActiveTab, NavBorder, navColorCo
         "Bộ sưu tập của bạn",
         "Bản ghi âm",
     ];
+
+    const handleChangeTab = (tab) => {
+        if (activeTab === "Thơ của bạn") {
+            if (tab === "Bộ sưu tập của bạn" || tab === "Bookmark của bạn" || tab === "Bản nháp của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Bản Quyền" || tab === "Quản lý ví" || tab === "Bản ghi âm" || tab === "Tiểu sử" ) {
+                setIsCreatingPoem(false);
+            }
+        }
+        if (activeTab === "Bộ sưu tập của bạn") {
+            if (tab === "Thơ của bạn" || tab === "Bookmark của bạn" || tab === "Bản nháp của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Bản Quyền" || tab === "Quản lý ví" || tab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
+                setIsCreatingCollection(false);
+            }
+        }
+        if (activeTab === "Bản nháp của bạn") {
+            if (tab === "Thơ của bạn" || tab === "Bookmark của bạn" || tab === "Bộ sưu tập của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Bản Quyền" || tab === "Quản lý ví" || tab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
+                setIsCreatingPoem(false);
+            }
+        }
+        setActiveTab(tab)
+    }
 
     return (
         <nav
@@ -38,7 +57,7 @@ const NavigationTabs = ({ isMine, activeTab, setActiveTab, NavBorder, navColorCo
             {tabs.map((tab, index) => (
                 <button
                     key={index}
-                    onClick={() => setActiveTab(tab)}
+                    onClick={() => {handleChangeTab(tab)}}
                     style={{
                         padding: "10px 15px",
                         fontSize: "14px",

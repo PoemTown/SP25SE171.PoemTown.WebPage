@@ -9,6 +9,8 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
     const [isModalAIRenderImageOpen, setIsModalAIRenderImageOpen] = useState(false);
     const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
     const [previewImage, setPreviewImage] = useState(null);
+    const [previewImages, setPreviewImages] = useState([]);
+    const [previewSelectedIndex, setPreviewSelectedIndex] = useState(0);
     const [imagePrompt, setImagePrompt] = useState("");
     const { Option } = Select;
     const [imageType, setImageType] = useState("cơ bản");
@@ -123,7 +125,6 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
             message.error("Hãy nhập yêu cầu về hình ảnh của bạn!");
             return;
         }
-        setPreviewImage(null);
         try {
             setIsLoading(true);
             let responseImage = null;
@@ -139,6 +140,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
                     }
                 );
             } else {
+                console.log("cơ bản");
                 const requestBodyImage = {
                     imageSize: 1,
                     poemText: imagePrompt,
@@ -175,8 +177,10 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
                     generatedImageUrl = dataRes.data;
                 }
             }
-            // Set the preview image and open the preview modal
-            setPreviewImage(generatedImageUrl);
+            setPreviewImages(prev => [...prev, generatedImageUrl]);
+            // Automatically select the new image
+            setPreviewSelectedIndex(previewImages.length);
+
             setIsModalAIRenderImageOpen(false);
             setIsPreviewModalOpen(true);
         } catch (error) {
@@ -196,8 +200,13 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
 
     // Apply the preview image: call another API and update the collection data.
     const handleApplyPreviewImage = async () => {
+        if (previewImages.length === 0 || previewSelectedIndex === null) {
+            message.error("Vui lòng chọn hình ảnh để áp dụng!");
+            return;
+        }
         try {
             setIsLoading(true);
+            const selectedImageUrl = previewImages[previewSelectedIndex];
             // Replace this placeholder with your actual API call for applying the image.
             const applyResponse = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image/ai`,
@@ -207,7 +216,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
                         Authorization: `Bearer ${accessToken}`,
                         "Content-Type": "application/json",
                     },
-                    body: JSON.stringify({ imageUrl: previewImage }),
+                    body: JSON.stringify({ imageUrl: selectedImageUrl }),
                 }
             );
             if (!applyResponse.ok) {
@@ -219,7 +228,8 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
             message.success("Poem Image updated successfully!");
             setData((prev) => ({ ...prev, collectionImage: imageData.data }));
             setCollectionFile(imageData.data);
-            setPreviewImage(null);
+
+            setPreviewSelectedIndex(0);
             setIsPreviewModalOpen(false);
         } catch (error) {
             message.error("Lỗi khi áp dụng hình ảnh!");
@@ -337,6 +347,9 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
                         <Button color="danger" variant="solid" onClick={handleCancelRenderAIImageModal}>
                             Đóng
                         </Button>
+                        <Button color="green" variant="solid" onClick={() => setIsPreviewModalOpen(true)}>
+                            Xem lại ảnh đã tạo
+                        </Button>
                         <Button color="primary" variant="solid" onClick={handleAIRenderImage}>
                             Xác nhận
                         </Button>
@@ -373,6 +386,9 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
                         <Button color="danger" variant="solid" onClick={handleCancelPreview}>
                             Hủy
                         </Button>
+                        <Button color="green" variant="solid" onClick={handleAIRenderImage}>
+                            Tạo mới
+                        </Button>
                         <Button color="primary" variant="solid" onClick={handleApplyPreviewImage}>
                             Áp dụng
                         </Button>
@@ -381,18 +397,53 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
             >
                 <div style={{ textAlign: "center" }}>
                     <h2>Bạn có muốn sử dụng hình này?</h2>
-                    <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
-                        Hãy bấm{" "}
-                        <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Xác nhận"</span> để áp dụng hình bên dưới vào tập thơ của bạn. Nếu không hài lòng, Vui lòng bấm {" "}
-                        <span style={{ color: "#d14249", fontWeight: "bold" }}>"Hủy"</span> và tạo hình mới.
+                    <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "10px", fontWeight: "bold" }}>
+                        Hãy chọn hình bạn muốn sử dụng. Nếu không hài lòng, bấm “Tạo mới” để tạo thêm.
                     </p>
-                    {previewImage ? (
-                        <img loading={isLoading} src={previewImage} alt="Preview" style={{ width: "260px", height: "160px",  objectFit: "cover", marginTop: "10px" }} />
+                    {previewImages.length > 0 ? (
+                        <div
+                            style={{
+                                display: "grid",
+                                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
+                                gap: "0px",
+                                maxHeight: "400px",
+                                overflowY: "auto",
+                                width: "100%",
+                                maxWidth: "280px",
+                                margin: "0 auto"
+                            }}
+                        >
+                            {previewImages.map((imgUrl, index) => (
+                                <div
+                                    key={index}
+                                    onClick={() => setPreviewSelectedIndex(index)}
+                                    style={{
+                                        border: previewSelectedIndex === index
+                                            ? "2px solid #1890ff"
+                                            : "2px solid transparent",
+                                        padding: "4px",
+                                        cursor: "pointer",
+                                        marginBottom: "10px"
+                                    }}
+                                >
+                                    <img
+                                        src={imgUrl}
+                                        alt={`Preview ${index + 1}`}
+                                        style={{
+                                            width: "100%",
+                                            height: "146px",
+                                            objectFit: "cover"
+                                        }}
+                                    />
+                                </div>
+                            ))}
+                        </div>
                     ) : (
-                        <p>No image to preview</p>
+                        <p>Chưa có hình ảnh nào được tạo</p>
                     )}
                 </div>
             </Modal>
+
         </div>
     );
 };

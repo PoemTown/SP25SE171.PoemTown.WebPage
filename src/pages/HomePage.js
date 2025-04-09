@@ -64,8 +64,10 @@ const Homepage = () => {
   };
 
   const handleOnSearch = (value) => {
-    if (value.trim()) {
+    if (value) {
       navigate(`/search?query=${encodeURIComponent(value)}&type=poem`);
+    } else if (value === null || value === "") {
+      navigate(`/search?query= &type=poem`);
     }
   };
 

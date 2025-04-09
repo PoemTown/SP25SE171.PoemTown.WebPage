@@ -303,10 +303,11 @@ const UserPage = () => {
 
     useEffect(() => {
         localStorage.setItem("activeTab", activeTab);
-        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm", activeTab === "Tiểu sử" ) {
+        
+        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
             setIsCreatingPoem(false);
         }
-        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm", activeTab === "Tiểu sử" ) {
+        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
             setIsCreatingCollection(false);
         }
 
@@ -337,7 +338,7 @@ const UserPage = () => {
             {/* {activeTab === "Trang trí" ? (
                     <NavigationTabsEdit activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground} navColorCode={navColorCode} />
                 ) : ( */}
-            <NavigationTabs isMine={userData.isMine} activeTab={activeTab} setActiveTab={setActiveTab} NavBorder={NavBorder} navBackground={navBackground} navColorCode={navColorCode} />
+            <NavigationTabs isMine={userData.isMine} activeTab={activeTab} setActiveTab={setActiveTab} setIsCreatingCollection={setIsCreatingCollection} setIsCreatingPoem={setIsCreatingPoem} NavBorder={NavBorder} navBackground={navBackground} navColorCode={navColorCode} />
             {/* )} */}
 
             {/* Nội dung hiển thị theo Tab */}

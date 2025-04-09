@@ -187,7 +187,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete the poem");
+        message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
       }
       setPoems((prevPoems) => prevPoems.filter((poem) => poem.id !== poemToDelete));
       setIsDeleteModalVisible(false);

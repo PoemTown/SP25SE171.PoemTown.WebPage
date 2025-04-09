@@ -160,8 +160,6 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     alt="Cover"
                     style={{
                         width: "100%",
-                        height: "300px",
-                        objectFit: "cover",
                         display: "block"
                     }}
                 />
