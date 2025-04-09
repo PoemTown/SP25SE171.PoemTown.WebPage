@@ -680,7 +680,7 @@ const DesignPage = () => {
                                 }))}
                                 placeholder="Chọn template"
                             />
-                            <Button color="green" variant="solid" onClick={handleApplyFullTemplate}>Áp dụng</Button>
+                            <Button color="green" variant="solid" onClick={handleApplyFullTemplate} style={{marginLeft: "10px"}}>Áp dụng</Button>
                         </div>
                     </div>
 

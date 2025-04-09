@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Button, Input, message, Modal, Select, Spin } from "antd";
+import { Button, Carousel, Input, message, Modal, Select, Spin } from "antd";
 import { FcIdea } from "react-icons/fc";
 import { FaSpellCheck } from "react-icons/fa6";
 
@@ -30,6 +30,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const accessToken = localStorage.getItem("accessToken");
   const [plagiarismResult, setPlagiarismResult] = useState(null);
   const [plagiarismPoems, setPlagiarismPoems] = useState([]);
+  const [previewImages, setPreviewImages] = useState([]);
+  const [previewSelectedIndex, setPreviewSelectedIndex] = useState(0);
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [popupContentPlagiarism, setPopupContentPlagiarism] = useState(false);
   const [contentPlagiarism, setContentPlagiarism] = useState(null);
@@ -78,7 +80,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           }
         );
         setCollections(response.data.data);
-        setPoemData((prev) => ({...prev, collectionId: response.data.data[0].id}))
+        setPoemData((prev) => ({ ...prev, collectionId: response.data.data[0].id }))
       } catch (error) {
         console.error("Error fetching collections:", error);
       }
@@ -614,19 +616,21 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   }
 
   const handleCancelPreview = () => {
-    setPreviewImage(null);
+    // setPreviewImage(null);
     setIsPreviewModalOpen(false);
-    setIsModalContentCompleteOpen(true);
+    // setIsModalContentCompleteOpen(true);
   };
 
-  const handleRenewRenderImage = async () => {
-
-  }
-
   const handleApplyPreviewImage = async () => {
+    if (previewSelectedIndex === null || !previewImages[previewSelectedIndex]) {
+      message.error("Vui lòng chọn hình ảnh để áp dụng!");
+      return;
+    }
     try {
       setIsLoading(true);
-      // Replace this placeholder with your actual API call for applying the image.
+      // Use the selected image from the preview images list.
+      const selectedImageUrl = previewImages[previewSelectedIndex];
+
       const applyResponse = await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image/ai`,
         {
@@ -635,7 +639,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             Authorization: `Bearer ${accessToken}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ imageUrl: previewImage }),
+          body: JSON.stringify({ imageUrl: selectedImageUrl }),
         }
       );
       if (!applyResponse.ok) {
@@ -643,11 +647,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       }
       const imageData = await applyResponse.json();
       console.log("Image data", imageData);
-      // On success, update the collection data and file.
       message.success("Poem Image updated successfully!");
       setPoemData((prev) => ({ ...prev, poemImage: imageData.data }));
       setPoemFile(imageData.data);
-      setPreviewImage(null);
+      setPreviewSelectedIndex(null);
       setIsPreviewModalOpen(false);
     } catch (error) {
       message.error("Lỗi khi áp dụng hình ảnh!");
@@ -656,6 +659,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       setIsLoading(false);
     }
   };
+
 
 
   const showModalContentComplete = () => {
@@ -668,47 +672,54 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
   const handleAIRenderImage = async () => {
     let content = formatContent(poemData.content, selectedType);
-    // Limit to the first 900 characters
+    // Limit to the first 600 characters
     content = content.substring(0, 600);
-    setPreviewImage(null);
-    let responseImage = null;
+    // Optional: Clear any previous preview image selection if desired.
+    // setPreviewSelectedIndex(null);
+    // We'll update previewImages instead of previewImage
     try {
       setIsLoading(true);
-      console.log(imageType)
+      let responseImage = null;
+
       if (imageType === "nâng cao") {
-        console.log("jsdlkajsdlaj")
-        responseImage = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt}&prompt="Render an image base on my requirement poem content, return an image without words in it"`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        });
-
+        responseImage = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${encodeURIComponent(
+            imagePrompt.trim() === "" ? content : imagePrompt
+          )}&prompt=${encodeURIComponent(
+            "Render an image base on my requirement poem content, return an image without words in it"
+          )}`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
       } else {
-
         const requestBodyImage = {
           imageSize: 4,
-          poemText: imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt,
+          poemText: imagePrompt.trim() === "" ? content : imagePrompt,
           prompt: `Render an image base on my requirement poem content for me.`,
           negativePrompt: "Image response must not contain any text",
           numberInferenceSteps: 5,
           guidanceScale: 3,
           numberOfImages: 1,
           outPutFormat: 2,
-          outPutQuality: 100
-        }
-        console.log("hahah")
-        console.log(requestBodyImage)
+          outPutQuality: 100,
+        };
 
-        responseImage = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`, {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(requestBodyImage),
-        })
+        responseImage = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBodyImage),
+          }
+        );
       }
 
       const data = await responseImage.json();
@@ -716,26 +727,29 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       if (imageType === "nâng cao") {
         generatedImageUrl = data.data;
       } else if (imageType === "cơ bản") {
-        // If output exists and is an array, use the first element.
         if (data.data.output && data.data.output.length > 0) {
           generatedImageUrl = data.data.output[0].url;
         } else {
-          // Fallback if the structure is different
           generatedImageUrl = data.data;
         }
       }
 
-      setPreviewImage(generatedImageUrl);
+      // Append the newly generated image to our temporary list.
+      setPreviewImages((prevImages) => [...prevImages, generatedImageUrl]);
+      // Select the newly added image automatically.
+      setPreviewSelectedIndex(previewImages.length); // new image index is at the end
+
+      // Close the content complete modal and open the preview modal.
       setIsModalContentCompleteOpen(false);
       setIsPreviewModalOpen(true);
-
     } catch (error) {
       message.error("Lỗi khi tạo hình ảnh!");
-      console.error(error)
+      console.error(error);
     } finally {
       setIsLoading(false);
     }
-  }
+  };
+
 
   const handleAICheckPlagiarism = async () => {
     const content = formatContent(poemData.content, selectedType);
@@ -945,38 +959,46 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
       </Modal>
 
-      <Modal open={isModalContentCompleteOpen} onCancel={handleCancelModalContentComplete} footer={() => (
-        <>
-          <Button color="danger" variant="solid" onClick={handleCancelModalContentComplete}>
+      <Modal
+        open={isModalContentCompleteOpen}
+        onCancel={handleCancelModalContentComplete}
+        footer={[
+          <Button key="cancel" color="danger" variant="solid" onClick={handleCancelModalContentComplete}>
             Đóng
-          </Button>
-          <Button color="primary" variant="solid" onClick={handleAIRenderImage}>
+          </Button>,
+          <Button color="green" variant="solid" onClick={()=> setIsPreviewModalOpen(true)}>
+            Coi lại ảnh đã tạo
+          </Button>,
+          <Button key="confirm" color="primary" variant="solid" onClick={handleAIRenderImage}>
             Xác nhận
-          </Button>
-
-        </>
-      )}>
+          </Button>,
+        ]}
+      >
         <div>
-          <h2 style={{ textAlign: "center", fontSize: "1.8rem", marginBottom: "0px" }}>AI tạo hình ảnh 🏞</h2>
-          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>Hãy đảm bảo rằng bạn muốn AI tạo hình ảnh dựa trên <span style={{ color: "#3A86ff", fontWeight: "bold" }}>nội dung hiện tại</span> hoặc <span style={{ color: "#3A86ff", fontWeight: "bold" }}>yêu cầu của bạn</span> dưới đây . Hãy bấm <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Xác nhận"</span> để AI bắt đầu tạo hình ảnh cho bài thơ của bạn nhé.</p>
+          <h2 style={{ textAlign: "center", fontSize: "1.8rem", marginBottom: "0px" }}>
+            AI tạo hình ảnh 🏞
+          </h2>
+          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
+            Hãy đảm bảo rằng bạn muốn AI tạo hình ảnh dựa trên{" "}
+            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>nội dung hiện tại</span> hoặc{" "}
+            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>yêu cầu của bạn</span> dưới đây.
+            Bấm <span style={{ color: "#3A86ff", fontWeight: "bold" }}>Xác nhận</span> để bắt đầu.
+          </p>
           <div style={{ marginBottom: "10px" }}>
-
             <div style={{ marginBottom: "10px" }}>
               <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>
                 Loại hình ảnh
               </label>
-              <Select
-                defaultValue="cơ bản"
-                style={{ width: "100%" }}
-                onChange={handleOptionChange}
-              >
+              <Select defaultValue="cơ bản" style={{ width: "100%" }} onChange={handleOptionChange}>
                 <Option value="cơ bản">Cơ bản</Option>
                 <Option value="nâng cao">Nâng cao</Option>
               </Select>
             </div>
-
             <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>
-              Yêu cầu của bạn <span style={{ fontWeight: "normal", color: "#666" }}>(Nếu không nhập, chúng tôi sẽ tạo dựa trên nội dung)</span>
+              Yêu cầu của bạn{" "}
+              <span style={{ fontWeight: "normal", color: "#666" }}>
+                (Nếu không nhập, chúng tôi sẽ tạo dựa trên nội dung)
+              </span>
             </label>
             <Input
               placeholder="Hãy miêu tả hình ảnh bạn muốn"
@@ -984,12 +1006,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               onChange={handleImagePromptChange}
             />
           </div>
-
-          {/* Label and textarea for poem content */}
           <div style={{ marginBottom: "10px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>
-              Nội dung thơ
-            </label>
+            <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>Nội dung thơ</label>
             <textarea
               style={{ width: "100%", height: "300px" }}
               value={formatContent(poemData.content, selectedType)}
@@ -997,8 +1015,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             />
           </div>
         </div>
-
       </Modal>
+
       <button
         onClick={onBack}
         style={{
@@ -1164,7 +1182,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               style={{ height: "100%", backgroundColor: "#fff" }}
 
             />
-            {plagiarismResult != null ? plagiarismResult > 0.5 ?
+            {plagiarismResult != null ? plagiarismResult > 0.75 ?
               <div>
                 <p style={{ color: "#f00", fontWeight: "bold", alignSelf: "flex-end" }}>
                   Nội dung của bạn đang dính đạo văn ở mức {plagiarismResult * 100}%. Vui lòng chỉnh sửa nội dung!
@@ -1172,7 +1190,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                 <div>
                   <p style={{ color: "#000", fontWeight: "bold", marginBottom: "5px", fontSize: "0.95rem" }}>Những bài thơ tương tự:</p>
                   <ul style={{ margin: 0 }}>
-                    {plagiarismPoems.map((item) =>
+                    {plagiarismPoems !== null && plagiarismPoems?.map((item) =>
                       <li onClick={() => handlePopupContentPlagiarism(item.content)} style={{ margin: "2px", color: "#005CC5", textDecoration: "underline", cursor: "pointer", fontSize: "0.9rem" }}>
                         {item.title} - {item.user?.displayName}
                       </li>
@@ -1238,7 +1256,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         </div>
 
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "100px" }}>
           <button
             type="button"
             onClick={setDrafting ? handleSaveDraft : handleSave}
@@ -1258,39 +1276,66 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       <Modal
         open={isPreviewModalOpen}
         onCancel={handleCancelPreview}
-        footer={
-          <>
-            <Button color="danger" variant="solid" onClick={handleCancelPreview}>
-              Hủy
-            </Button>
-            <Button color="lime" variant="solid" onClick={handleAIRenderImage}>
-              Tạo mới
-            </Button>
-            <Button color="primary" variant="solid" onClick={handleApplyPreviewImage}>
-              Áp dụng
-            </Button>
-          </>
-        }
+        footer={[
+          <Button key="cancel" color="danger" variant="solid" onClick={handleCancelPreview}>
+            Hủy
+          </Button>,
+          <Button key="renew" color="green" variant="solid" onClick={handleAIRenderImage}>
+            Tạo mới
+          </Button>,
+          <Button key="apply" color="primary" variant="solid" onClick={handleApplyPreviewImage}>
+            Áp dụng
+          </Button>,
+        ]}
       >
         <div style={{ textAlign: "center" }}>
           <h2>Bạn có muốn sử dụng hình này?</h2>
-          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
-            Hãy bấm{" "}
-            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Xác nhận"</span> để áp dụng hình bên dưới vào tập thơ của bạn. Nếu không hài lòng, Vui lòng bấm {" "}
-            <span style={{ color: "#d14249", fontWeight: "bold" }}>"Hủy"</span> và tạo hình mới.
+          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "10px", fontWeight: "bold" }}>
+            Hãy chọn hình bạn muốn sử dụng. Nếu không hài lòng, bấm “Tạo mới” để tạo thêm.
           </p>
-          {previewImage ? (
-            <img src={previewImage} alt="Preview" style={{
-              height: "268px",
-              width: "168px",
-              objectFit: "cover",
-              marginTop: "10px"
-            }} />
+          {previewImages.length > 0 ? (
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(168px, 1fr))",
+                gap: "10px",
+                height: "400px",
+                overflow: "scroll"
+              }}
+            >
+              {previewImages.map((imgUrl, index) => (
+                <div
+                  key={index}
+                  onClick={() => setPreviewSelectedIndex(index)}
+                  style={{
+                    border:
+                      previewSelectedIndex === index ? "2px solid #1890ff" : "2px solid transparent",
+                    padding: "4px",
+                    cursor: "pointer",
+                    height: "268px",
+                    width: "168px",
+                    objectFit: "cover",
+                    margin: "0 auto"
+                  }}
+                >
+                  <img
+                    src={imgUrl}
+                    alt={`Preview ${index + 1}`}
+                    style={{
+                      height: "268px",
+                      width: "168px",
+                      objectFit: "cover",
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
           ) : (
             <p>No image to preview</p>
           )}
         </div>
       </Modal>
+
       <Modal
         open={popupContentPlagiarism}
         onCancel={handleCancelPopupContentPlagiarism}

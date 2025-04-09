@@ -63,6 +63,8 @@ const ProfilePage = () => {
       ...formData,
       avatar: sessionStorage.getItem("profileImage") || formData.avatar, 
     };
+
+    localStorage.setItem("username", updatedData.userName);
   
     try {
       const response = await fetch(
