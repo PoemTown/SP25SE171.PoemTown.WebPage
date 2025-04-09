@@ -1,4 +1,4 @@
-import { Avatar, Button, List, message, Modal } from "antd";
+import { Avatar, Button, List, message, Modal, Input, Typography } from "antd";
 import React, { useState } from "react";
 import { CiCirclePlus } from "react-icons/ci";
 import { FaUserPlus, FaCheck } from "react-icons/fa";
@@ -7,6 +7,8 @@ import { RiMessengerLine } from "react-icons/ri";
 import CreateNewChat from "../Chat/CreateNewChat";
 import { useNavigate } from "react-router-dom";
 
+const { Text } = Typography;
+
 const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSuccess }) => {
     const [showChat, setShowChat] = useState(false);
     const [followers, setFollowers] = useState([]);
@@ -14,9 +16,11 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const [isFollowersVisible, setIsFollowersVisible] = useState(false);
     const [isFollowingsVisible, setIsFollowingsVisible] = useState(false);
 
-    // Donate modal
+    // Donate modal states
     const [isDonateVisible, setIsDonateVisible] = useState(false);
     const [donateAmount, setDonateAmount] = useState("");
+    const [donateMessage, setDonateMessage] = useState("");
+    const [isDonating, setIsDonating] = useState(false);
 
     const accessToken = localStorage.getItem("accessToken");
     const requestHeaders = {
@@ -107,9 +111,11 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     
         const amountNumber = Number(donateAmount);
         if (!donateAmount || isNaN(amountNumber) || amountNumber <= 0) {
-            message.error("Vui lòng nhập số tiền hợp lệ.");
+            message.error("Vui lòng nhập số tiền hợp lệ (lớn hơn 0).");
             return;
         }
+
+        setIsDonating(true);
     
         try {
             const response = await fetch(
@@ -122,7 +128,8 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     },
                     body: JSON.stringify({
                         amount: amountNumber,
-                        receiveUserId: userData.userId
+                        receiveUserId: userData.userId,
+                        donateMessage: donateMessage.trim() || `Ủng hộ ${userData.displayName}`
                     })
                 }
             );
@@ -135,13 +142,15 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
             message.success(`Đã ủng hộ ${amountNumber.toLocaleString()} VNĐ thành công!`);
             setIsDonateVisible(false);
             setDonateAmount("");
+            setDonateMessage("");
     
         } catch (error) {
             console.error("Donate error:", error);
             message.error(error.message || "Đã xảy ra lỗi khi donate.");
+        } finally {
+            setIsDonating(false);
         }
     };
-    
 
     return (
         <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
@@ -151,6 +160,8 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     alt="Cover"
                     style={{
                         width: "100%",
+                        height: "300px",
+                        objectFit: "cover",
                         display: "block"
                     }}
                 />
@@ -165,32 +176,41 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 padding: "1em 6em",
                 boxSizing: "border-box",
                 display: "flex",
-                alignItems: "center"
+                alignItems: "center",
+                
             }}>
-                <img
+                <Avatar
                     src={userData.avatar || "./default-avatar.png"}
                     alt="Avatar"
+                    size={80}
                     style={{
-                        width: "80px",
-                        height: "80px",
-                        borderRadius: "50%",
                         border: "2px solid white"
                     }}
                 />
                 <div style={{ marginLeft: "15px", display: "flex", flexDirection: "column", gap: "15px" }}>
                     <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
-                            <h2 style={{ fontSize: "20px", fontWeight: "bold", margin: "0", color: coverColorCode }}>{userData.displayName}</h2>
-                            <p style={{ color: coverColorCode, margin: "0", fontSize: "0.9em" }}>@{userData.userName || "Annoymous"}</p>
+                            <Text strong style={{ fontSize: "20px", margin: "0", color: coverColorCode || "white" }}>
+                                {userData.displayName}
+                            </Text>
+                            <Text style={{ color: coverColorCode || "rgba(255,255,255,0.8)", margin: "0", fontSize: "0.9em" }}>
+                                @{userData.userName || "Anonymous"}
+                            </Text>
                         </div>
                         {!isMine && (
                             <div style={{ display: "flex", gap: "10px" }}>
-                                <Button onClick={handleChat} type="primary" icon={<RiMessengerLine />}>Nhắn tin</Button>
+                                <Button onClick={handleChat} type="primary" icon={<RiMessengerLine />}>
+                                    Nhắn tin
+                                </Button>
 
                                 {userData.isFollowed ? (
-                                    <Button onClick={handleFollow} type="primary" icon={<FaCheck />}>Đã theo dõi</Button>
+                                    <Button onClick={handleFollow} type="primary" icon={<FaCheck />}>
+                                        Đã theo dõi
+                                    </Button>
                                 ) : (
-                                    <Button onClick={handleFollow} type="default" icon={<CiCirclePlus />}>Theo dõi</Button>
+                                    <Button onClick={handleFollow} type="default" icon={<CiCirclePlus />}>
+                                        Theo dõi
+                                    </Button>
                                 )}
 
                                 <Button
@@ -207,18 +227,27 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                             </div>
                         )}
                     </div>
-                    <div style={{ fontSize: "14px", color: coverColorCode, display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} onClick={openFollowersModal}>
-                            <HiUsers color={coverColorCode} /> <span>{userData.totalFollowers} Người theo dõi</span>
+                    <div style={{ fontSize: "14px", color: coverColorCode || "white", display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
+                        <div 
+                            style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} 
+                            onClick={openFollowersModal}
+                        >
+                            <HiUsers color={coverColorCode || "white"} /> 
+                            <span>{userData.totalFollowers || 0} Người theo dõi</span>
                         </div>
-                        <div style={{ color: coverColorCode }}>•</div>
-                        <div style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} onClick={openFollowingsModal}>
-                            <FaUserPlus color={coverColorCode} /> <span>{userData.totalFollowings} Đang theo dõi</span>
+                        <div style={{ color: coverColorCode || "white" }}>•</div>
+                        <div 
+                            style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} 
+                            onClick={openFollowingsModal}
+                        >
+                            <FaUserPlus color={coverColorCode || "white"} /> 
+                            <span>{userData.totalFollowings || 0} Đang theo dõi</span>
                         </div>
                     </div>
                 </div>
             </div>
 
+            {/* Followers Modal */}
             <Modal
                 title="Danh sách người theo dõi"
                 visible={isFollowersVisible}
@@ -229,11 +258,14 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     itemLayout="horizontal"
                     dataSource={followers}
                     renderItem={(follower) => (
-                        <List.Item onClick={() => {
-                            setIsFollowersVisible(false);
-                            navigate(`/user/${follower.user.userName}`);
-                            window.location.reload();
-                        }}>
+                        <List.Item 
+                            onClick={() => {
+                                setIsFollowersVisible(false);
+                                navigate(`/user/${follower.user.userName}`);
+                                window.location.reload();
+                            }}
+                            style={{ cursor: "pointer", padding: "12px 0" }}
+                        >
                             <List.Item.Meta
                                 avatar={<Avatar src={follower.user.avatar || "./default_avatar.png"} />}
                                 title={follower.user.displayName}
@@ -244,6 +276,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 />
             </Modal>
 
+            {/* Followings Modal */}
             <Modal
                 title="Danh sách đang theo dõi"
                 visible={isFollowingsVisible}
@@ -254,11 +287,14 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     itemLayout="horizontal"
                     dataSource={followings}
                     renderItem={(following) => (
-                        <List.Item onClick={() => {
-                            setIsFollowingsVisible(false);
-                            navigate(`/user/${following.user.userName}`);
-                            window.location.reload();
-                        }}>
+                        <List.Item 
+                            onClick={() => {
+                                setIsFollowingsVisible(false);
+                                navigate(`/user/${following.user.userName}`);
+                                window.location.reload();
+                            }}
+                            style={{ cursor: "pointer", padding: "12px 0" }}
+                        >
                             <List.Item.Meta
                                 avatar={<Avatar src={following.user.avatar || "./default_avatar.png"} />}
                                 title={following.user.displayName}
@@ -271,21 +307,42 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
 
             {/* Donate Modal */}
             <Modal
-                title="Ủng hộ người dùng"
+                title={`Ủng hộ ${userData.displayName}`}
                 visible={isDonateVisible}
-                onCancel={() => setIsDonateVisible(false)}
+                onCancel={() => {
+                    setIsDonateVisible(false);
+                    setDonateAmount("");
+                    setDonateMessage("");
+                }}
                 onOk={handleDonateSubmit}
                 okText="Gửi ủng hộ"
                 cancelText="Hủy"
+                confirmLoading={isDonating}
+                okButtonProps={{ disabled: !donateAmount || Number(donateAmount) <= 0 }}
             >
-                <p>Nhập số tiền bạn muốn ủng hộ:</p>
-                <input
-                    type="number"
-                    value={donateAmount}
-                    onChange={(e) => setDonateAmount(e.target.value)}
-                    placeholder="VD: 10000"
-                    style={{ width: "100%", padding: "8px", borderRadius: "5px", border: "1px solid #ccc" }}
-                />
+                <div style={{ marginBottom: 16 }}>
+                    <Text strong>Số tiền (VNĐ):</Text>
+                    <Input
+                        type="number"
+                        value={donateAmount}
+                        onChange={(e) => setDonateAmount(e.target.value)}
+                        placeholder="Nhập số tiền bạn muốn ủng hộ"
+                        style={{ width: "100%", marginTop: 8 }}
+                        min="1000"
+                        step="1000"
+                    />
+                </div>
+                <div>
+                    <Text strong>Lời nhắn (tùy chọn):</Text>
+                    <Input.TextArea
+                        value={donateMessage}
+                        onChange={(e) => setDonateMessage(e.target.value)}
+                        placeholder={`Nhắn gửi đến ${userData.displayName}...`}
+                        rows={3}
+                        maxLength={200}
+                        style={{ marginTop: 8 }}
+                    />
+                </div>
             </Modal>
 
             {/* Chat Component */}
@@ -293,9 +350,10 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 <div style={{
                     position: "fixed",
                     bottom: "20px",
-                    right: "0",
+                    right: "20px",
                     width: "300px",
-                    zIndex: 1000
+                    zIndex: 1000,
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.15)"
                 }}>
                     <CreateNewChat userData={userData} onClose={() => setShowChat(false)} />
                 </div>
