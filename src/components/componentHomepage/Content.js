@@ -374,7 +374,7 @@ const Content = ({ activeTab }) => {
             {!isBookmarkTab && (
               <div style={styles.idea}>
                 <p style={{ fontWeight: "bold", marginTop: "5px", marginLeft: "10px" }}>Thông điệp của ngày: </p>
-                <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Chúc mừng sinh nhật Võ Đăng Khôi (Kalen Guy)</p>
+                <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Nổ lực hết mình để đạt được thành quả tốt nhất!!!</p>
               </div>
             )}
             {isLoading && (
