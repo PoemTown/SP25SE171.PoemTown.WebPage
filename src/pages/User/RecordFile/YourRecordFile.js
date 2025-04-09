@@ -55,7 +55,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
         setTotalRecords(data.totalPages * pageSize);
       }
       setRecordFiles(data.data);
-      
+
     } catch (error) {
       console.error("Lỗi khi gọi API:", error);
       return null;
@@ -98,79 +98,91 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
   };
 
   // Hàm xử lý chuyển đổi trạng thái của bản ghi (ví dụ: chuyển từ công khai sang riêng tư)
- 
-const handleToggleStatus = async (record) => {
-  const recordId = record.id;
-  if (record.isPublic) {
-    Modal.confirm({
-      title: "Nhập giá để chuyển sang Riêng tư",
-      content: (
-        <Input
-          placeholder="Nhập giá"
-          onChange={(e) => (priceRef.current = e.target.value)} // cập nhật ref thay vì state
-        />
-      ),
-      onOk: async () => {
-        const inputPrice = priceRef.current;
-        if (!inputPrice) {
-          message.error("Vui lòng nhập giá!");
-          return;
-        }
-        try {
-          const response = await fetch(
-            `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/enable-selling`,
-            {
-              method: "PUT",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-              },
-              body: JSON.stringify({ recordId, price: inputPrice }),
-            }
-          );
-          if (!response.ok) {
-            throw new Error("Lỗi khi cập nhật trạng thái bán");
+
+  const handleToggleStatus = async (record) => {
+    const recordId = record.id;
+    if (record.isPublic) {
+      Modal.confirm({
+        title: "Nhập giá để chuyển sang Riêng tư",
+        content: (
+          <Input
+            type="number"
+            min={0}
+            placeholder="Nhập giá"
+            onKeyDown={(e) => {
+              // Chặn nhập dấu "-" và ký tự "e", "E" (tránh nhập dạng số mũ như 1e10)
+              if (e.key === "-" || e.key === "e" || e.key === "E") {
+                e.preventDefault();
+              }
+            }}
+            onChange={(e) => {
+              priceRef.current = e.target.value;
+            }}
+          />
+
+        ), 
+        onOk: async () => {
+          const inputPrice = priceRef.current;
+          if (!inputPrice) {
+            message.error("Vui lòng nhập giá!");
+            return;
           }
-          await response.json();
-          message.success("Trạng thái cập nhật thành công!");
-          setSelectedRecord((prev) => ({ ...prev, isPublic: false }));
-          setReloadTrigger((prev) => !prev);
-        } catch (err) {
-          console.error("Lỗi khi cập nhật trạng thái:", err);
-          message.error("Cập nhật trạng thái thất bại!");
-        }
-      },
-    });
-  } else {
-    message.info("Không cho chuyển từ riêng tư sang công khai");
-  }
-};
+       
+          try {
+            const response = await fetch(
+              `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/enable-selling`,
+              {
+                method: "PUT",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${accessToken}`,
+                },
+                body: JSON.stringify({ recordId, price: inputPrice }),
+              }
+            );
+            if (!response.ok) {
+              throw new Error("Lỗi khi cập nhật trạng thái bán");
+            }
+            await response.json();
+            message.success("Trạng thái cập nhật thành công!");
+            setSelectedRecord((prev) => ({ ...prev, isPublic: false }));
+            setReloadTrigger((prev) => !prev);
+          } catch (err) {
+            console.error("Lỗi khi cập nhật trạng thái:", err);
+            message.error("Cập nhật trạng thái thất bại!");
+          }
+        },
+      });
+    } else {
+      message.info("Không cho chuyển từ riêng tư sang công khai");
+    }
+  };
 
   async function handlePurchaseRecord(recordId) {
     console.log(recordId);
     const url = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/purchase`;
 
     try {
-        const response = await axios.put(url, null, {
-            headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${accessToken}`,
-            },
-            params: {
-                recordId: recordId, // Truyền recordId vào query params
-            },
-        });
-        
-        message.info(response.data.message);
-        setReloadTrigger((prev) => !prev);
+      const response = await axios.put(url, null, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+        },
+        params: {
+          recordId: recordId, // Truyền recordId vào query params
+        },
+      });
+
+      message.info(response.data.message);
+      setReloadTrigger((prev) => !prev);
 
     } catch (error) {
-        message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
+      message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
     }
-}
+  }
 
 
- 
+
 
 
 
@@ -199,7 +211,7 @@ const handleToggleStatus = async (record) => {
   };
   const showPurchaseConfirm = (id, price) => {
     Modal.confirm({
-      title: "Bạn có chắc chắn muốn mua với số tiền " + price.toLocaleString('vi-VN') + " ?" ,
+      title: "Bạn có chắc chắn muốn mua với số tiền " + price.toLocaleString('vi-VN') + " ?",
       content: "Hành động này không thể hoàn tác!",
       okText: "Mua",
       cancelText: "Hủy",
@@ -237,7 +249,7 @@ const handleToggleStatus = async (record) => {
       message.success("Xóa thành công!");
     } catch (error) {
       console.error("Error:", error);
-      message.error(error.response.data.errorMessage);
+      message.error(error.response.data?.errorMessage);
     }
   };
 
@@ -248,23 +260,23 @@ const handleToggleStatus = async (record) => {
           <>
             {/* Nút tạo bản ghi mới */}
             {isMine && (
-            <div style={{ position: "relative", marginBottom: "10px" }}>
-              <button
-                onClick={() => setIsCreatingRecord(true)}
-                style={{
-                  backgroundColor: "#007bff",
-                  color: "white",
-                  padding: "12px 20px",
-                  borderRadius: "5px",
-                  border: "none",
-                  fontWeight: "bold",
-                  cursor: "pointer",
-                  transition: "background-color 0.3s",
-                }}
-              >
-                BẢN GHI MỚI
-              </button>
-            </div>
+              <div style={{ position: "relative", marginBottom: "10px" }}>
+                <button
+                  onClick={() => setIsCreatingRecord(true)}
+                  style={{
+                    backgroundColor: "#007bff",
+                    color: "white",
+                    padding: "12px 20px",
+                    borderRadius: "5px",
+                    border: "none",
+                    fontWeight: "bold",
+                    cursor: "pointer",
+                    transition: "background-color 0.3s",
+                  }}
+                >
+                  BẢN GHI MỚI
+                </button>
+              </div>
             )}
 
             {/* Bố cục chính */}
@@ -315,9 +327,9 @@ const handleToggleStatus = async (record) => {
                       key={record.id}
                       record={record}
                       handleToggleStatus={handleToggleStatus}
-                      showDeleteConfirm={showDeleteConfirm} 
-                      isMine ={isMine}
-                      showPurchaseConfirm = {showPurchaseConfirm}/>
+                      showDeleteConfirm={showDeleteConfirm}
+                      isMine={isMine}
+                      showPurchaseConfirm={showPurchaseConfirm} />
                   ))}
                 </div>
               )}
@@ -333,7 +345,7 @@ const handleToggleStatus = async (record) => {
                 showSizeChanger
                 pageSizeOptions={["1", "8", "16"]}
               />
-            </div> 
+            </div>
           </>
         ) : (
           <CreateRecord onBack={() => setIsCreatingRecord(false)} />

@@ -55,7 +55,7 @@ const UsageRight = () => {
         const year = date.getFullYear();
         return `${day}-${month}-${year}`;
     }
-    
+
 
     const versions = [
         {
@@ -411,7 +411,7 @@ const UsageRight = () => {
                                     )}
                                     {!selectedPoem.copyRightValidFrom && (
                                         <Descriptions.Item label="Thời hạn">
-                                            {selectedPoem.saleVersion.durationTime > 50 ? "Vô thời hạn": selectedPoem.saleVersion.durationTime + " năm"} 
+                                            {selectedPoem.saleVersion.durationTime > 50 ? "Vô thời hạn" : selectedPoem.saleVersion.durationTime + " năm"}
                                         </Descriptions.Item>
                                     )}
                                     <Descriptions.Item label="Phần trăm hoa hồng">
@@ -421,7 +421,7 @@ const UsageRight = () => {
                             )}
                             <Descriptions.Item label="Giá">
                                 {selectedPoem.saleVersion.price === 0 ? "Miễn phí" : selectedPoem.saleVersion.price.toLocaleString('vi-VN') + " VND"}
-                                
+
                             </Descriptions.Item>
                         </Descriptions>
 
@@ -471,8 +471,8 @@ const UsageRight = () => {
                                             {price.toLocaleString('vi-VN')} VND
                                         </Descriptions.Item>
                                     )}
-                                    
-                                    
+
+
                                 </Descriptions>
                             </>
                         )}
@@ -505,8 +505,17 @@ const UsageRight = () => {
                         name="price"
                         rules={[{ required: true, message: "Vui lòng nhập giá tiền!" }]}
                     >
-                        <InputNumber style={{ width: "100%" }} min={0} />
+                        <InputNumber
+                            style={{ width: "100%" }}
+                            min={0}
+                            onKeyDown={(e) => {
+                                if (e.key === "-" || e.key === "e" || e.key === "E") {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
                     </Form.Item>
+
                     <Form.Item
                         label="Phần trăm hoa hồng (%)"
                         name="commission"
@@ -520,8 +529,18 @@ const UsageRight = () => {
                             },
                         ]}
                     >
-                        <InputNumber style={{ width: "100%" }} min={0} max={100} />
+                        <InputNumber
+                            style={{ width: "100%" }}
+                            min={0}
+                            max={100}
+                            onKeyDown={(e) => {
+                                if (e.key === "-" || e.key === "e" || e.key === "E") {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
                     </Form.Item>
+
                     <Form.Item
                         label="Thời hạn của bản quyền sử dụng"
                         name="time"
@@ -531,12 +550,22 @@ const UsageRight = () => {
                                 type: "number",
                                 min: 1,
                                 max: 100,
-                                message: "",
+                                message: "Thời hạn phải từ 1 đến 100",
                             },
                         ]}
                     >
-                        <InputNumber style={{ width: "100%" }} min={0} max={100} />
+                        <InputNumber
+                            style={{ width: "100%" }}
+                            min={1}
+                            max={100}
+                            onKeyDown={(e) => {
+                                if (e.key === "-" || e.key === "e" || e.key === "E") {
+                                    e.preventDefault();
+                                }
+                            }}
+                        />
                     </Form.Item>
+
                 </Form>
             </Modal>
 

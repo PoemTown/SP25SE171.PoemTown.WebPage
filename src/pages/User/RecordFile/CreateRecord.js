@@ -9,7 +9,8 @@ import {
   Spin,
   Menu,
   Dropdown,
-  Upload
+  Upload,
+  Progress // Thêm component Progress
 } from "antd";
 import { FcFolder } from "react-icons/fc";
 import { DownOutlined, UploadOutlined } from "@ant-design/icons";
@@ -26,7 +27,10 @@ export default function CreateRecord({ onBack }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isAudioUploading, setIsAudioUploading] = useState(false);
   const [activeButton, setActiveButton] = useState("mine");
+  const [uploadProgress, setUploadProgress] = useState(0);
 
+  // Thêm state mới
+  const [currentFile, setCurrentFile] = useState(null);
   const accessToken = localStorage.getItem("accessToken");
 
   const [data, setData] = useState({
@@ -100,32 +104,62 @@ export default function CreateRecord({ onBack }) {
     }
   };
 
+
+  // Sửa lại phần uploadProps
   const uploadProps = {
     name: "file",
-    action: `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio`,
-    headers: {
-      Authorization: `Bearer ${accessToken}`
-    },
     accept: "audio/*",
     showUploadList: false,
-    beforeUpload: () => {
-      setIsAudioUploading(true);
-      return true;
-    },
-    onChange(info) {
-      if (info.file.status === "done") {
-        const uploadedUrl = info.file.response?.data;
-        if (uploadedUrl) {
-          message.success(`${info.file.name} tải lên thành công`);
-          setData((prev) => ({ ...prev, fileUrl: uploadedUrl }));
-        }
+    customRequest: async ({ file, onSuccess, onError, onProgress }) => {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        setIsAudioUploading(true);
+        setCurrentFile(file); // Lưu file hiện tại
+
+        const response = await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio`,
+          formData,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`,
+              "Content-Type": "multipart/form-data"
+            },
+            onUploadProgress: (progressEvent) => {
+              const percent = Math.round(
+                (progressEvent.loaded * 100) / progressEvent.total
+              );
+              setUploadProgress(percent);
+              onProgress({ percent });
+            }
+          }
+        );
+
+        onSuccess(response.data);
+        setData(prev => ({
+          ...prev,
+          fileUrl: response.data.data // Sửa thành response.data.data
+        }));
+        message.success(`${file.name} tải lên thành công`);
+      } catch (error) {
+        onError(error);
+        message.error(`${file.name} tải lên thất bại`);
+      } finally {
         setIsAudioUploading(false);
-      } else if (info.file.status === "error") {
-        message.error(`${info.file.name} tải lên thất bại.`);
-        setIsAudioUploading(false);
+        setUploadProgress(0);
+        setCurrentFile(null); // Reset file hiện tại
       }
+    },
+    beforeUpload: (file) => {
+      if (isAudioUploading) {
+        message.warning("Vui lòng đợi file hiện tại upload xong");
+        return false;
+      }
+      return true;
     }
   };
+
 
   const handleRowClick = (poem) => {
     setSelectedPoem(poem);
@@ -258,6 +292,9 @@ export default function CreateRecord({ onBack }) {
         onCancel={() => setIsModalVisible(false)}
         okText="Lưu"
         cancelText="Hủy"
+        okButtonProps={{ 
+          disabled: !data.fileUrl || isAudioUploading 
+        }}
       >
         <Form
           form={form}
@@ -278,14 +315,36 @@ export default function CreateRecord({ onBack }) {
               </Button>
             </Upload>
           </Form.Item>
+
           {isAudioUploading && (
             <div style={{ marginTop: "8px" }}>
-              <Spin size="small" /> Đang tải file audio...
+              <Progress
+                percent={uploadProgress}
+                status="active"
+                strokeColor={{
+                  '0%': '#108ee9',
+                  '100%': '#87d068',
+                }}
+              />
+              <div style={{ marginTop: 4, color: '#666' }}>
+                Đang tải lên: {currentFile?.name} ({uploadProgress}%)
+              </div>
             </div>
           )}
+
           {data.fileUrl && (
             <Form.Item label="Audio đã tải lên">
               <audio controls src={data.fileUrl} style={{ width: "100%" }} />
+              <Button
+                type="link"
+                onClick={() => {
+                  setData(prev => ({ ...prev, fileUrl: "" }));
+                  form.setFieldValue('audioFile', null);
+                }}
+                style={{ marginTop: 8 }}
+              >
+                Chọn file khác
+              </Button>
             </Form.Item>
           )}
         </Form>

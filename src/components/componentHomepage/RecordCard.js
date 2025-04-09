@@ -272,7 +272,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                                     marginBottom: "20px",
                                 }}
                             >
-                                Giá: {record.price.toLocaleString('vi-VN')} VND
+                                Giá: {record.price === 0 ? "Miễn phí" : record.price.toLocaleString('vi-VN') +" VND"} 
                             </h4>
                         )}
                         {record.buyers && Array.isArray(record.buyers) && (
