@@ -10,6 +10,13 @@ import Headeruser from "../components/Headeruser";
 import Headerdefault from "../components/Headerdefault";
 
 const CollectionDetail = () => {
+    const [data, setData] = useState({
+        id: null,
+        collectionName: "",
+        collectionDescription: "",
+        collectionImage: "",
+        rowVersion: "",
+    });
     const { id } = useParams();
     const accessToken = localStorage.getItem("accessToken");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -17,7 +24,7 @@ const CollectionDetail = () => {
     const requestHeaders = {
         "Content-Type": "application/json",
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
-      };
+    };
     const headers = {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`
@@ -29,6 +36,8 @@ const CollectionDetail = () => {
     const [bookmarkedPosts, setBookmarkedPosts] = useState({});
     const [likedPosts, setLikedPosts] = useState({});
     const [isHovered, setIsHovered] = useState(false);
+    const [reloadTrigger, setReloadTrigger] = useState(false);
+    
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -65,11 +74,22 @@ const CollectionDetail = () => {
                         initialLikedState[item.id] = !!item.like;
                         initialBookmarkedState[item.id] = !!item.targetMark;
                     });
-                    setPoem(data2.data);
+
+                    const collectionInfo = {
+                        id: data1.data.id,
+                        collectionName: data1.data.collectionName,
+                    };
+
+                    const updatedPoems = data2.data.map(item => ({
+                        ...item,
+                        collection: collectionInfo,
+                      }));
+
+                    setPoem(updatedPoems);
                     setBookmarkedPosts(initialBookmarkedState);
                     setLikedPosts(initialLikedState);
 
-                    console.log("Poems:", data2.data);
+                    console.log("Poems:", updatedPoems);
                 }
             } catch (error) {
                 console.error("Error fetching data:", error);
@@ -79,7 +99,7 @@ const CollectionDetail = () => {
         };
         fetchCollections();
         fetchData();
-    }, [id]);
+    }, [id, reloadTrigger]);
 
     const fetchCollections = async () => {
         try {
@@ -116,6 +136,8 @@ const CollectionDetail = () => {
             );
 
             console.log("Update Response:", response.data);
+            setReloadTrigger((prev) => !prev);
+
             message.success("Cập nhật tập thơ thành công!");
         } catch (error) {
             console.error("Error:", error.response?.data || error.errorMessage);
@@ -125,11 +147,38 @@ const CollectionDetail = () => {
         console.log("Chuyển bài thơ:", collectionId, poemId);
     };
 
-    const handleMoveToUpdate = () => {
 
+    
+    const handleUpdate = async () => {
+        try {
+            const response = await axios.put(
+                `https://api-poemtown-staging.nodfeather.win/api/collections/v1`,
+                data,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+
+            console.log("Update Response:", response.data);
+            setReloadTrigger((prev) => !prev);
+
+            message.success("Cập nhật tập thơ thành công!");
+        } catch (error) {
+            console.error("Error:", error.response?.data || error.errorMessage);
+            message.error(error.response?.data.errorMessage);
+        }
+    };
+
+    const handleMoveToUpdate = () => {
+        
     };
 
     const handleLike = async (postId) => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
 
         const isCurrentlyLiked = likedPosts[postId];
         const method = isCurrentlyLiked ? "DELETE" : "POST";
@@ -168,6 +217,8 @@ const CollectionDetail = () => {
     }
 
     const handleBookmark = async (id) => {
+        const accessToken = localStorage.getItem("accessToken");
+        if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
 
         const endpoint = `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
 
@@ -287,13 +338,15 @@ const CollectionDetail = () => {
                                     </div>
                                 </div>
                             </div>
-
-                            <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer', fontSize: '1rem' }}>
-                                Chỉnh sửa <span><MdEdit /></span>
-                            </div>
+                            {collectionDetails.isMine ?
+                                <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer', fontSize: '1rem' }}>
+                                    Chỉnh sửa <span><MdEdit /></span>
+                                </div>
+                                :
+                                <></>}
                         </div>
                     </div>
-                    <div style={{display: "flex", flexDirection: "row", gap: "40px"}}>
+                    <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
                         <div style={{ flex: 7, display: "flex", flexDirection: "column", gap: "15px" }}>
                             {poems.map((poem) => (
 
@@ -321,10 +374,10 @@ const CollectionDetail = () => {
                             }}>
                                 <h3 style={{ fontWeight: "bold", textAlign: 'center', margin: "0" }}>Thống kê tập thơ</h3>
                                 <ul style={{ fontSize: "14px", color: "#000", listStyle: "none", padding: 0, }}>
-                                    <li><span style={{fontWeight: "bold"}}>Tổng số bài thơ:</span> <span >{collectionDetails.totalChapter}</span></li>
-                                    <li><span style={{fontWeight: "bold"}}>Tổng số audio:</span> <span>{collectionDetails.totalRecord}</span></li>
-                                    <li><span style={{fontWeight: "bold"}}>Ngày phát hành:</span> <span>{formatDate(collectionDetails.createdTime)}</span></li>
-                                    <li><span style={{fontWeight: "bold"}}>Cập nhật gần nhất:</span> <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Tổng số bài thơ:</span> <span >{collectionDetails.totalChapter}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Tổng số audio:</span> <span>{collectionDetails.totalRecord}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Ngày phát hành:</span> <span>{formatDate(collectionDetails.createdTime)}</span></li>
+                                    <li><span style={{ fontWeight: "bold" }}>Cập nhật gần nhất:</span> <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
                                 </ul>
                             </div>
                         </div>

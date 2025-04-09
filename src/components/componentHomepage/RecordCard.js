@@ -14,7 +14,7 @@ const formatDate = (dateString) => {
     const date = new Date(dateString);
     const options = { day: "numeric", month: "long", year: "numeric" };
     return date.toLocaleDateString("vi-VN", options);
-};
+}; 
 
 const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, isMine, showPurchaseConfirm }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,6 +28,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
     const hasMoreLines = lines.length > 4;
     const navigate = useNavigate();
     const currentUser = localStorage.getItem("username");
+    const [isHovered, setIsHovered] = useState(false);
 
     const showModal = (record) => {
         setSelectedRecord(record);
@@ -124,6 +125,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                             </p>
                         </div>
                     </div>
+
                     {/* Hiển thị audio */}
                     <div
                         style={{
@@ -172,9 +174,27 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                             </div>
                         )}
 
+
+
+                    </div>
+                    <div style={styles.footerContainer}>
+                        <button
+                            style={{
+                                ...styles.viewButton,
+                                ...(isHovered && styles.viewButtonHover)
+                            }}
+                            onMouseEnter={() => setIsHovered(true)}
+                            onMouseLeave={() => setIsHovered(false)}
+                            onClick={() => navigate(`/poem/${record.poem.id}`)}
+                        >
+                            Xem bài thơ &gt;
+                        </button>
                     </div>
                 </div>
             </div>
+
+
+
             <Modal
                 title={record ? record.fileName : "Chi tiết bản ghi"}
                 open={isModalOpen}
@@ -199,11 +219,18 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                                 textAlign: "center",
                                 marginBottom: "20px",
                             }}
+
                         >
-                            Audio Owner:{" "}
-                            {record.owner
-                                ? record.owner.displayName
-                                : record.poem?.user?.displayName}
+                            Chủ sở hữu:{" "}
+                            <span
+                                style={styles.author}
+
+                                onClick={() => navigate(`/user/${record.owner.userName}`)}>
+                                {record.owner
+                                    ? record.owner.displayName
+                                    : record.poem?.user?.displayName}
+                            </span>
+
                         </h4>
                         {record.price !== undefined && (
                             <h4
@@ -212,7 +239,7 @@ const RecordCard = ({ record, handleToggleStatus, onHover, showDeleteConfirm, is
                                     marginBottom: "20px",
                                 }}
                             >
-                                Price: {record.price} VND
+                                Giá: {record.price} VND
                             </h4>
                         )}
                         {record.buyers && Array.isArray(record.buyers) && (
@@ -441,6 +468,27 @@ const styles = {
         display: "flex",
         flexDirection: "column",
         flex: "6",
+    },
+    footerContainer: {
+        display: "flex",
+        justifyContent: "end",
+        alignItems: "center",
+        marginTop: "10px"
+    },
+    viewButton: {
+        background: "none",
+        border: "1px solid #2a7fbf",
+        color: "#2a7fbf",
+        cursor: "pointer",
+        padding: "8px 16px",
+        borderRadius: "20px",
+        transition: "all 0.2s",
+        fontWeight: "500",
+    },
+
+    viewButtonHover: {
+        background: "#2a7fbf",
+        color: "white",
     },
 };
 

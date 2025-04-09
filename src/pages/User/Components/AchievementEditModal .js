@@ -362,7 +362,7 @@ const AchievementEditModal = ({
                                                                 justifyContent: "center"
                                                             }}
                                                         >
-                                                            <p style={{ margin: 0, color: detail.colorCode }}>abc xyz</p>
+                                                            <p style={{ margin: 0, color: detail.colorCode }}>Màu chữ trên nền</p>
                                                         </div>
                                                     ) : (
                                                         <div

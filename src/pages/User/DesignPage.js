@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import Headeruser from "../../components/Headeruser";
 import { HiUsers } from "react-icons/hi2";
 import { FaUserPlus } from "react-icons/fa6";
-import { Button, ConfigProvider, message, Modal, Space } from "antd";
+import { Button, ConfigProvider, message, Modal, Select, Space } from "antd";
 import UserCoverEditModal from "./Form/UserCoverEditModal";
 import NavigationEditModal from "./Components/NavigationEditModal";
 import AchievementEditModal from "./Components/AchievementEditModal ";
@@ -50,6 +50,8 @@ const DesignPage = () => {
         totalFollowers: 0,
         totalFollowings: 0,
     });
+    const [userTemplates, setUserTemplates] = useState([]);
+    const [selectedTemplate, setSelectedTemplate] = useState(null);
     const [templates, setTemplates] = useState([]);
     const [myInUseTemplate, setMyInUseTemplate] = useState(null);
     const [inUseHeader, setInUseHeader] = useState({});
@@ -110,6 +112,78 @@ const DesignPage = () => {
         // "Trang trí",
         "Quản lý ví",
     ];
+
+    useEffect(() => {
+        fetchUserTemplates();
+    }, [])
+
+    const fetchUserTemplates = async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            message.error("Có lỗi. Xin hãy đăng nhập lại!");
+            return;
+        }
+        try {
+            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/template/v1/user-templates", {
+                method: "GET",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await response.json();
+            console.log(data.data);
+
+            if (data?.statusCode === 200) {
+                setUserTemplates(data.data);
+            }
+
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
+    const handleChangeSelectedTemplate = (value) => {
+        setSelectedTemplate(value);
+    };
+
+    const handleApplyFullTemplate = async () => {
+        const token = localStorage.getItem("accessToken");
+        if (!token) {
+            message.error("Có lỗi. Xin hãy đăng nhập lại!");
+            return;
+        }
+
+        console.log(selectedTemplate);
+        console.log(myInUseTemplate.id)
+
+        try {
+            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/template/v1/user-templates/theme", {
+                method: "PUT",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    userTemplateId: selectedTemplate,
+                    themeId: myInUseTemplate.id,
+                }),
+            });
+
+            const data = await response.json();
+            if (data?.statusCode === 202) {
+                message.success("Cập nhật thành công");
+                window.location.reload();
+            } else {
+                console.error("Lỗi từ API:", data);
+                message.error("Cập nhật thất bại");
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+            message.error("Đã xảy ra lỗi, vui lòng thử lại!");
+        }
+    }
 
     useEffect(() => {
         fetchTemplates();
@@ -209,7 +283,7 @@ const DesignPage = () => {
     const handleSelectTemplate = async (id, name) => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
-            console.error("Access token không tồn tại");
+            message.error("Có lỗi. Xin hãy đăng nhập lại!");
             return;
         }
 
@@ -244,7 +318,7 @@ const DesignPage = () => {
     const handleAddTemplate = async () => {
         const token = localStorage.getItem("accessToken");
         if (!token) {
-            console.error("Access token không tồn tại");
+            message.error("Có lỗi. Xin hãy đăng nhập lại!");
             return;
         }
 
@@ -536,7 +610,7 @@ const DesignPage = () => {
                         onClick={e => e.stopPropagation()}
                     >
                         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", }}>
-                            <h3 style={{ fontWeight: "bold", marginTop: 0, }}>Bản mẫu của bạn</h3>
+                            <h3 style={{ fontWeight: "bold", marginTop: 0 }}>Bản mẫu của bạn</h3>
                             {/* Settings icon or modal trigger */}
                         </div>
                         <label>Tên</label>
@@ -593,6 +667,20 @@ const DesignPage = () => {
                             >
                                 XÓA
                             </button>
+                        </div>
+                        <div>
+                            <h3>Áp dụng template vào bản mẫu của bạn:</h3>
+                            <Select
+                                value={selectedTemplate}
+                                style={{ width: 300, }}
+                                onChange={handleChangeSelectedTemplate}
+                                options={userTemplates.map((template) => ({
+                                    value: template.id,
+                                    label: `${template.templateName} (${template.tagName})`,
+                                }))}
+                                placeholder="Chọn template"
+                            />
+                            <Button color="green" variant="solid" onClick={handleApplyFullTemplate}>Áp dụng</Button>
                         </div>
                     </div>
 
@@ -858,7 +946,7 @@ const DesignPage = () => {
                 }}
             >
                 <Space style={{ position: "fixed", right: 0, bottom: 60, zIndex: 3, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}>
-                    <Button type="primary" size="large" iconPosition="end" icon={<DoubleRightOutlined />} style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }} onClick={() => { navigate('/userpage') }}>
+                    <Button type="primary" size="large" iconPosition="end" icon={<DoubleRightOutlined />} style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }} onClick={() => { navigate(`/user/${localStorage.getItem("username")}`) }}>
                         Về trang của bạn
                     </Button>
                 </Space>

@@ -18,6 +18,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import AchievementAndStatistic from "./AchievementAndStatistic/AchievementAndStatistic";
 import YourRecordFile from "./RecordFile/YourRecordFile";
 import Headerdefault from "../../components/Headerdefault";
+import YourWallet from "./YourWallet";
+import UsageRight from "./UsageRight";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -63,6 +65,7 @@ const UserPage = () => {
     const [statisticBackgroundColorCode, setStatisticBackgroundColorCode] = useState(null);
     const [isCreatingPoem, setIsCreatingPoem] = useState(false);
     const [isCreatingCollection, setIsCreatingCollection] = useState(false);
+    const [refreshTrigger, setRefreshTrigger] = useState(0);
     const { styles } = useStyle();
     const { username } = useParams();
     const navigate = useNavigate();
@@ -74,46 +77,41 @@ const UserPage = () => {
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
     };
 
-
-    const [userData, setUserData] = useState({
-        displayName: "Loading...",
-        email: "Loading...",
-    });
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
     useEffect(() => {
-        const token = localStorage.getItem("accessToken");
-        setIsLoggedIn(!!token);
-    }, []);
+        const fetchData = async () => {
+            try {
+                await fetchUserProfile();
+            } finally {
+                setIsLoading(false);
+            }
+        };
 
-    // useEffect(() => {
-    //     if (typeof userData.isMine !== "undefined") {
-    //         if (userData.isMine) {
-    //             fetchImage();
-    //         } else {
+        fetchData();
+    }, [refreshTrigger]); // Only trigger when refreshTrigger changes
 
-    //         }
-    //     }
-    // }, [userData.isMine]);
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
+        let isMounted = true;
+
+        const fetchData = async () => {
             try {
                 const response = await fetch(
                     `https://api-poemtown-staging.nodfeather.win/api/users/v1/profile/online/${username}`,
-                    {
-                        method: "GET",
-                        headers: requestHeaders
-                    }
+                    { method: "GET", headers: requestHeaders }
                 );
+
+                if (!isMounted) return;
+
                 const result = await response.json();
-                console.log("online user", result)
                 if (response.ok && result.data) {
                     setUserData({
                         displayName: result.data.displayName,
                         email: result.data.email,
                         userName: result.data.userName,
+                        userId: result.data.id,
                         avatar: result.data.avatar,
                         isMine: result.data.isMine,
+                        isFollowed: result.data.isFollowed,
                         totalFollowers: result.data.totalFollowers,
                         totalFollowings: result.data.totalFollowings,
                         userStatistic: result.data.userStatistic,
@@ -125,39 +123,39 @@ const UserPage = () => {
                         setCoverImage(cover.image ? encodeURI(cover.image) : null);
                         setCoverColorCode(cover.colorCode ? cover.colorCode : "#000000");
                     }
-
+    
                     const navBackground = result.data.userTemplateDetails.find(item => item.type === 2);
                     if (navBackground) {
                         setNavBackground(navBackground.image ? encodeURI(navBackground.image) : null);
                         setNavColorCode(navBackground.colorCode ? navBackground.colorCode : "#000000");
                     }
-
+    
                     const navBorder = result.data.userTemplateDetails.find(item => item.type === 3);
                     if (navBorder) {
                         setNavBorder(navBorder.colorCode || "#cccccc");
                     }
-
+    
                     const mainBackground = result.data.userTemplateDetails.find(item => item.type === 4);
                     if (mainBackground) {
                         setBackgroundImage(mainBackground.image ? encodeURI(mainBackground.image) : null);
                     }
-
+    
                     const achievementBorder = result.data.userTemplateDetails.find(item => item.type === 5)
                     if (achievementBorder) {
                         setAchievementBorder(achievementBorder.colorCode || "#cccccc");
                     }
-
+    
                     const achievementBackground = result.data.userTemplateDetails.find(item => item.type === 6)
                     if (achievementBackground) {
                         setAchievementBackground(achievementBackground.image || "none");
                         setAchievementBackgroundColorCode(achievementBackground.colorCode || "#000000");
                     }
-
+    
                     const statisticBorder = result.data.userTemplateDetails.find(item => item.type === 7)
                     if (statisticBorder) {
                         setStatisticBorder(statisticBorder.colorCode || "#cccccc");
                     }
-
+    
                     const statisticBackground = result.data.userTemplateDetails.find(item => item.type === 8)
                     if (statisticBackground) {
                         setStatisticBackground(statisticBackground.image || "none");
@@ -168,7 +166,7 @@ const UserPage = () => {
                         setAchievementTitleBackground(achievementTitle.image || "none");
                         setAchievementTitleColorCode(achievementTitle.colorCode || "#000000")
                     }
-
+    
                     const statisticTitle = result.data.userTemplateDetails.find(item => item.type === 10);
                     if (statisticTitle) {
                         setStatisticTitleBackground(statisticTitle.image || "none");
@@ -177,15 +175,118 @@ const UserPage = () => {
                 } else {
                     console.error("Lỗi khi lấy dữ liệu người dùng:", result.message);
                 }
+
             } catch (error) {
+                if (!isMounted) return;
                 console.error("Lỗi khi gọi API:", error);
+            } finally {
+                if (isMounted) setIsLoading(false);
             }
         };
 
-        Promise.all([fetchUserProfile()]).finally(() => {
-            setIsLoading(false);
-        });
+        fetchData();
+        return () => { isMounted = false }; // Cleanup
+    }, [refreshTrigger, username]); // Add username to dependencies
+
+    const [userData, setUserData] = useState({
+        displayName: "Loading...",
+        email: "Loading...",
+    });
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!token);
     }, []);
+
+
+    const fetchUserProfile = async () => {
+        try {
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/users/v1/profile/online/${username}`,
+                {
+                    method: "GET",
+                    headers: requestHeaders
+                }
+            );
+            const result = await response.json();
+            console.log("online user", result)
+            if (response.ok && result.data) {
+                setUserData({
+                    displayName: result.data.displayName,
+                    email: result.data.email,
+                    userName: result.data.userName,
+                    userId: result.data.id,
+                    avatar: result.data.avatar,
+                    isMine: result.data.isMine,
+                    isFollowed: result.data.isFollowed,
+                    totalFollowers: result.data.totalFollowers,
+                    totalFollowings: result.data.totalFollowings,
+                    userStatistic: result.data.userStatistic,
+                    achievements: result.data.achievements
+                });
+                setDisplayName(result.data.displayName);
+                const cover = result.data.userTemplateDetails.find(item => item.type === 1);
+                if (cover) {
+                    setCoverImage(cover.image ? encodeURI(cover.image) : null);
+                    setCoverColorCode(cover.colorCode ? cover.colorCode : "#000000");
+                }
+
+                const navBackground = result.data.userTemplateDetails.find(item => item.type === 2);
+                if (navBackground) {
+                    setNavBackground(navBackground.image ? encodeURI(navBackground.image) : null);
+                    setNavColorCode(navBackground.colorCode ? navBackground.colorCode : "#000000");
+                }
+
+                const navBorder = result.data.userTemplateDetails.find(item => item.type === 3);
+                if (navBorder) {
+                    setNavBorder(navBorder.colorCode || "#cccccc");
+                }
+
+                const mainBackground = result.data.userTemplateDetails.find(item => item.type === 4);
+                if (mainBackground) {
+                    setBackgroundImage(mainBackground.image ? encodeURI(mainBackground.image) : null);
+                }
+
+                const achievementBorder = result.data.userTemplateDetails.find(item => item.type === 5)
+                if (achievementBorder) {
+                    setAchievementBorder(achievementBorder.colorCode || "#cccccc");
+                }
+
+                const achievementBackground = result.data.userTemplateDetails.find(item => item.type === 6)
+                if (achievementBackground) {
+                    setAchievementBackground(achievementBackground.image || "none");
+                    setAchievementBackgroundColorCode(achievementBackground.colorCode || "#000000");
+                }
+
+                const statisticBorder = result.data.userTemplateDetails.find(item => item.type === 7)
+                if (statisticBorder) {
+                    setStatisticBorder(statisticBorder.colorCode || "#cccccc");
+                }
+
+                const statisticBackground = result.data.userTemplateDetails.find(item => item.type === 8)
+                if (statisticBackground) {
+                    setStatisticBackground(statisticBackground.image || "none");
+                    setStatisticBackgroundColorCode(statisticBackground.colorCode || "#000000");
+                }
+                const achievementTitle = result.data.userTemplateDetails.find(item => item.type === 9);
+                if (achievementTitle) {
+                    setAchievementTitleBackground(achievementTitle.image || "none");
+                    setAchievementTitleColorCode(achievementTitle.colorCode || "#000000")
+                }
+
+                const statisticTitle = result.data.userTemplateDetails.find(item => item.type === 10);
+                if (statisticTitle) {
+                    setStatisticTitleBackground(statisticTitle.image || "none");
+                    setStatisticTitleColorCode(statisticTitle.colorCode || "#000000");
+                }
+            } else {
+                console.error("Lỗi khi lấy dữ liệu người dùng:", result.message);
+            }
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    };
+
 
     const [activeTab, setActiveTab] = useState(() => "Thơ của bạn");
 
@@ -212,13 +313,13 @@ const UserPage = () => {
 
     return (
         <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh" }}>
-            { isLoggedIn ? <Headeruser /> : <Headerdefault /> }
+            {isLoggedIn ? <Headeruser /> : <Headerdefault />}
 
             {/* Cover Image */}
             {/* {activeTab === "Trang trí" ? (
                 <UserCoverEdit coverImage={coverImage} coverColorCode={coverColorCode} userData={userData} />
             ) : ( */}
-            <UserCover isMine={userData.isMine} coverImage={coverImage} coverColorCode={coverColorCode} userData={userData} />
+            <UserCover onFollowSuccess={() => setRefreshTrigger(prev => prev + 1)} isMine={userData.isMine} coverImage={coverImage} coverColorCode={coverColorCode} userData={userData} />
             {/* )} */}
 
             {/* Navigation Tabs */}
@@ -268,10 +369,12 @@ const UserPage = () => {
                             <YourDraft isCreatingPoem={isCreatingPoem} setIsCreatingPoem={setIsCreatingPoem} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />
                         )}
                         {activeTab === "Lịch sử chỉnh sửa" && <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>}
-                        {activeTab === "Quản lý Bản Quyền" && <p>Thông tin về bản quyền các tác phẩm của bạn sẽ được hiển thị tại đây.</p>}
+                        {activeTab === "Quản lý Bản Quyền" && (
+                            <UsageRight/>
+                        )}
                         {/* {activeTab === "Trang trí" &&
                         <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor} />} */}
-                        {activeTab === "Quản lý ví" && <p>Thông tin về tài chính và ví điện tử sẽ hiển thị ở đây.</p>}
+                        {activeTab === "Quản lý ví" && (<YourWallet/>)}
                     </div>
                     {!isCreatingPoem && !isCreatingCollection &&
                         <div style={{ display: "flex", flex: 3 }}>

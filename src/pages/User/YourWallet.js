@@ -1,0 +1,697 @@
+import React, { useEffect, useState } from "react";
+import {
+  Card,
+  Button,
+  Tabs,
+  Typography,
+  Space,
+  Tag,
+  message,
+  Table,
+  Modal,
+  Form,
+  InputNumber,
+  Radio,
+  Image,
+  Descriptions,
+  Badge,
+  Spin,
+  List,
+} from "antd";
+import {
+  WalletOutlined,
+  ShoppingOutlined,
+  PlusCircleOutlined,
+  EyeOutlined,
+  ClockCircleOutlined,
+  CheckCircleOutlined,
+  CloseCircleOutlined,
+  FileOutlined,
+  FormOutlined,
+} from "@ant-design/icons";
+import dayjs from "dayjs";
+
+const { Title, Text } = Typography;
+
+const transactionTypeMap = {
+  1: "Nạp tiền",
+  2: "Giao dịch mẫu",
+  3: "Tệp ghi âm",
+  4: "Bài thơ",
+  5: "Rút tiền",
+  6: "Ủng hộ",
+};
+
+const orderTypeMap = {
+  1: { text: "Nạp tiền ví", icon: <WalletOutlined /> },
+  2: { text: "Mẫu giao dịch", icon: <FormOutlined /> },
+  3: { text: "Tệp ghi âm", icon: <FileOutlined /> },
+  4: { text: "Bài thơ", icon: <FormOutlined /> },
+};
+
+const orderStatusMap = {
+  1: { text: "Chờ thanh toán", color: "orange", icon: <ClockCircleOutlined /> },
+  2: { text: "Đã thanh toán", color: "green", icon: <CheckCircleOutlined /> },
+  3: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
+};
+
+const YourWallet = () => {
+  const [walletBalance, setWalletBalance] = useState(0);
+  const [walletStatus, setWalletStatus] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [pagination, setPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  const [orderPagination, setOrderPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  const [loading, setLoading] = useState(false);
+  const [orderLoading, setOrderLoading] = useState(false);
+  const [depositModalVisible, setDepositModalVisible] = useState(false);
+  const [orderDetailModalVisible, setOrderDetailModalVisible] = useState(false);
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [orderDetail, setOrderDetail] = useState(null);
+  const [orderDetailLoading, setOrderDetailLoading] = useState(false);
+  const [confirmLoading, setConfirmLoading] = useState(false);
+  const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(false);
+  const [form] = Form.useForm();
+
+  // Fetch wallet info
+  const fetchWalletInfo = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        message.error("Vui lòng đăng nhập để sử dụng ví");
+        return;
+      }
+
+      const response = await fetch(
+        "https://api-poemtown-staging.nodfeather.win/api/user-ewallets/v1/mine",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      
+      const result = await response.json();
+      
+      // Xử lý theo cấu trúc response mẫu
+      if (result && typeof result.walletBalance !== 'undefined') {
+        setWalletBalance(result.walletBalance);
+        setWalletStatus(result.walletStatus);
+        
+        // Log để debug
+        console.log('Wallet info fetched:', {
+          balance: result.walletBalance,
+          status: result.walletStatus
+        });
+      } else {
+        message.error("Dữ liệu ví không hợp lệ");
+        setWalletBalance(0);
+        setWalletStatus(null);
+      }
+    } catch (error) {
+      console.error("Error fetching wallet info:", error);
+      message.error("Lỗi khi lấy thông tin ví");
+      setWalletBalance(0);
+      setWalletStatus(null);
+    }
+  };
+
+  // Fetch transactions
+  const fetchTransactions = async (pageNumber = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `https://api-poemtown-staging.nodfeather.win/api/transactions/v1/mine?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      if (result.statusCode === 200) {
+        setTransactions(result.data);
+        setPagination({
+          current: result.pageNumber,
+          pageSize: result.pageSize,
+          total: result.totalRecords,
+        });
+      } else {
+        message.error("Không thể lấy lịch sử giao dịch");
+      }
+    } catch (error) {
+      console.error("Fetch transaction error:", error);
+      message.error("Lỗi khi lấy lịch sử giao dịch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fetch orders
+  const fetchOrders = async (pageNumber = 1, pageSize = 10) => {
+    setOrderLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `https://api-poemtown-staging.nodfeather.win/api/orders/v1?pageNumber=${pageNumber}&pageSize=${pageSize}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      if (result.statusCode === 200) {
+        setOrders(result.data);
+        setOrderPagination({
+          current: result.pageNumber,
+          pageSize: result.pageSize,
+          total: result.totalRecords,
+        });
+      } else {
+        message.error("Không thể lấy danh sách đơn hàng");
+      }
+    } catch (error) {
+      console.error("Fetch orders error:", error);
+      message.error("Lỗi khi lấy danh sách đơn hàng");
+    } finally {
+      setOrderLoading(false);
+    }
+  };
+
+  // Fetch order detail
+  const fetchOrderDetail = async (orderId) => {
+    setOrderDetailLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(
+        `https://api-poemtown-staging.nodfeather.win/api/orders/v1/detail/${orderId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      if (result.statusCode === 200) {
+        setOrderDetail(result.data);
+      } else {
+        message.error(result.message || "Không thể lấy chi tiết đơn hàng");
+      }
+    } catch (error) {
+      console.error("Fetch order detail error:", error);
+      message.error("Lỗi khi lấy chi tiết đơn hàng");
+    } finally {
+      setOrderDetailLoading(false);
+    }
+  };
+
+  // Fetch payment methods
+  const fetchPaymentMethods = async () => {
+    setPaymentMethodsLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(
+        "https://api-poemtown-staging.nodfeather.win/api/payment-gateways/v1",
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const result = await response.json();
+      if (result.statusCode === 200) {
+        const activeMethods = result.data.filter(method => !method.isSuspended);
+        setPaymentMethods(activeMethods);
+      } else {
+        message.error("Không thể lấy danh sách phương thức thanh toán");
+      }
+    } catch (error) {
+      console.error("Fetch payment methods error:", error);
+      message.error("Lỗi khi lấy danh sách phương thức thanh toán");
+    } finally {
+      setPaymentMethodsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWalletInfo();
+    fetchTransactions(pagination.current, pagination.pageSize);
+    fetchPaymentMethods();
+    fetchOrders(orderPagination.current, orderPagination.pageSize);
+  }, []);
+
+  const handleTableChange = (pagination) => {
+    setPagination({
+      ...pagination,
+    });
+    fetchTransactions(pagination.current, pagination.pageSize);
+  };
+
+  const handleOrderTableChange = (pagination) => {
+    setOrderPagination({
+      ...pagination,
+    });
+    fetchOrders(pagination.current, pagination.pageSize);
+  };
+
+  const handleDeposit = () => {
+    setDepositModalVisible(true);
+  };
+
+  const handleDepositOk = async () => {
+    try {
+      const values = await form.validateFields();
+      setConfirmLoading(true);
+
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await fetch(
+        "https://api-poemtown-staging.nodfeather.win/api/user-ewallets/v1/deposit",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            amount: values.amount,
+            paymentGatewayId: values.paymentMethod,
+          }),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result?.paymentUrl) {
+        message.success("Đang chuyển hướng đến cổng thanh toán...");
+        setTimeout(() => {
+          window.location.href = result.paymentUrl;
+        }, 1000);
+      } else if (result?.isSuccess) {
+        message.success(result.message || "Nạp tiền thành công!");
+        fetchWalletInfo();
+        fetchTransactions();
+        fetchOrders();
+        setDepositModalVisible(false);
+        form.resetFields();
+      } else {
+        message.error(result.message || "Nạp tiền thất bại");
+      }
+    } catch (error) {
+      console.error("Deposit error:", error);
+      message.error("Có lỗi xảy ra khi nạp tiền");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const handleDepositCancel = () => {
+    form.resetFields();
+    setDepositModalVisible(false);
+  };
+
+  const handleViewOrderDetail = async (order) => {
+    setSelectedOrder(order);
+    setOrderDetailModalVisible(true);
+    await fetchOrderDetail(order.id);
+  };
+
+  const handleOrderDetailClose = () => {
+    setOrderDetailModalVisible(false);
+    setSelectedOrder(null);
+    setOrderDetail(null);
+  };
+
+  const renderOrderItems = () => {
+    if (!orderDetail?.orderDetails?.length) return "Không có chi tiết sản phẩm";
+
+    return (
+      <List
+        itemLayout="vertical"
+        dataSource={orderDetail.orderDetails}
+        renderItem={(item, index) => (
+          <List.Item key={index}>
+            <Descriptions bordered size="small" column={1}>
+              <Descriptions.Item label="Số lượng">{item.itemQuantity}</Descriptions.Item>
+              <Descriptions.Item label="Đơn giá">₫{item.itemPrice?.toLocaleString()}</Descriptions.Item>
+              <Descriptions.Item label="Thành tiền">
+                <Text strong>₫{(item.itemPrice * item.itemQuantity)?.toLocaleString()}</Text>
+              </Descriptions.Item>
+              {item.recordFile && (
+                <>
+                  <Descriptions.Item label="Loại sản phẩm">Tệp ghi âm</Descriptions.Item>
+                  <Descriptions.Item label="Tên file">{item.recordFile.name}</Descriptions.Item>
+                  <Descriptions.Item label="Mô tả">{item.recordFile.description}</Descriptions.Item>
+                </>
+              )}
+              {item.masterTemplate && (
+                <>
+                  <Descriptions.Item label="Loại sản phẩm">Mẫu giao dịch</Descriptions.Item>
+                  <Descriptions.Item label="Tên mẫu">{item.masterTemplate.name}</Descriptions.Item>
+                  <Descriptions.Item label="Mô tả">{item.masterTemplate.description}</Descriptions.Item>
+                </>
+              )}
+            </Descriptions>
+          </List.Item>
+        )}
+      />
+    );
+  };
+
+  const transactionColumns = [
+    {
+      title: "Thời gian",
+      dataIndex: "createdTime",
+      key: "createdTime",
+      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
+    },
+    {
+      title: "Loại giao dịch",
+      dataIndex: "type",
+      key: "type",
+      render: (type) => transactionTypeMap[type] || "Không rõ",
+    },
+    {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount) => `₫${amount?.toLocaleString()}`,
+    },
+    {
+      title: "Số dư còn lại",
+      dataIndex: "balance",
+      key: "balance",
+      render: (balance) => `₫${balance?.toLocaleString()}`,
+    },
+  ];
+
+  const orderColumns = [
+    {
+      title: "Mã đơn hàng",
+      dataIndex: "orderCode",
+      key: "orderCode",
+      render: (text) => <Text strong>{text}</Text>,
+    },
+    {
+      title: "Loại đơn hàng",
+      dataIndex: "type",
+      key: "type",
+      render: (type) => (
+        <Space>
+          {orderTypeMap[type]?.icon}
+          {orderTypeMap[type]?.text || "Không rõ"}
+        </Space>
+      ),
+    },
+    {
+      title: "Mô tả",
+      dataIndex: "orderDescription",
+      key: "orderDescription",
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount) => amount > 0 ? `₫${amount?.toLocaleString()}` : "Miễn phí",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => (
+        <Badge
+          color={orderStatusMap[status]?.color || "default"}
+          text={
+            <Space>
+              {orderStatusMap[status]?.icon}
+              {orderStatusMap[status]?.text || "Không xác định"}
+            </Space>
+          }
+        />
+      ),
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_, record) => (
+        <Button
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => handleViewOrderDetail(record)}
+        >
+          Chi tiết
+        </Button>
+      ),
+    },
+  ];
+
+  return (
+    <div className="max-w-4xl mx-auto p-6">
+      <Title level={2} className="text-center">
+        Ví của tôi
+      </Title>
+
+      <Card
+        style={{
+          background: "linear-gradient(to right, #fff9db, #fff3bf)",
+          marginBottom: 24,
+        }}
+      >
+        <Space direction="vertical" size="middle" className="w-full">
+          <div className="flex justify-between items-center">
+            <div>
+              <Text strong>Số dư hiện tại</Text>
+              <Title level={3} style={{ margin: 0, color: "#389e0d" }}>
+                ₫{walletBalance?.toLocaleString() || '0'}
+              </Title>
+              {walletStatus === 1 && (
+                <Tag color="orange" style={{ marginTop: 8 }}>
+                  Ví đang chờ kích hoạt
+                </Tag>
+              )}
+              {walletStatus === 2 && (
+                <Tag color="green" style={{ marginTop: 8 }}>
+                  Ví đang hoạt động
+                </Tag>
+              )}
+            </div>
+            <Button
+              type="primary"
+              icon={<PlusCircleOutlined />}
+              size="large"
+              onClick={handleDeposit}
+              style={{ marginTop: 16 }}
+            >
+              Nạp tiền
+            </Button>
+          </div>
+        </Space>
+      </Card>
+
+      {/* Modal nạp tiền */}
+      <Modal
+        title="Nạp tiền vào ví"
+        visible={depositModalVisible}
+        onOk={handleDepositOk}
+        confirmLoading={confirmLoading}
+        onCancel={handleDepositCancel}
+        okText="Xác nhận nạp tiền"
+        cancelText="Hủy bỏ"
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item
+            name="amount"
+            label="Số tiền (VNĐ)"
+            rules={[
+              { required: true, message: "Vui lòng nhập số tiền" },
+              {
+                type: 'number',
+                min: 10000,
+                message: 'Số tiền tối thiểu là 10,000 VNĐ'
+              },
+            ]}
+          >
+            <InputNumber
+              style={{ width: '100%' }}
+              min={10000}
+              step={10000}
+              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+              parser={value => value.replace(/₫\s?|(,*)/g, '')}
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="paymentMethod"
+            label="Phương thức thanh toán"
+            rules={[{ required: true, message: "Vui lòng chọn phương thức thanh toán" }]}
+          >
+            <Radio.Group>
+              {paymentMethodsLoading ? (
+                <div>Đang tải phương thức thanh toán...</div>
+              ) : paymentMethods.length > 0 ? (
+                paymentMethods.map(method => (
+                  <Radio key={method.id} value={method.id}>
+                    <Space>
+                      {method.imageIcon && (
+                        <Image
+                          src={method.imageIcon}
+                          alt={method.name}
+                          width={24}
+                          preview={false}
+                        />
+                      )}
+                      {method.name}
+                    </Space>
+                  </Radio>
+                ))
+              ) : (
+                <div>Không có phương thức thanh toán khả dụng</div>
+              )}
+            </Radio.Group>
+          </Form.Item>
+        </Form>
+      </Modal>
+
+      {/* Modal chi tiết đơn hàng */}
+      <Modal
+        title={`Chi tiết đơn hàng ${selectedOrder?.orderCode || ''}`}
+        visible={orderDetailModalVisible}
+        onCancel={handleOrderDetailClose}
+        footer={[
+          <Button key="close" onClick={handleOrderDetailClose}>
+            Đóng
+          </Button>,
+        ]}
+        width={800}
+      >
+        <Spin spinning={orderDetailLoading}>
+          {orderDetail ? (
+            <Descriptions bordered column={1}>
+              <Descriptions.Item label="Mã đơn hàng">
+                <Text strong>{orderDetail.orderCode}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Loại đơn hàng">
+                <Space>
+                  {orderTypeMap[orderDetail.type]?.icon}
+                  {orderTypeMap[orderDetail.type]?.text || "Không rõ"}
+                </Space>
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả">
+                {orderDetail.orderDescription}
+              </Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">
+                <Badge
+                  color={orderStatusMap[orderDetail.status]?.color}
+                  text={
+                    <Space>
+                      {orderStatusMap[orderDetail.status]?.icon}
+                      {orderStatusMap[orderDetail.status]?.text || "Không xác định"}
+                    </Space>
+                  }
+                />
+              </Descriptions.Item>
+              <Descriptions.Item label="Ngày tạo đơn">
+                {dayjs(orderDetail.orderDate).format("DD/MM/YYYY HH:mm")}
+              </Descriptions.Item>
+              {orderDetail.paidDate && (
+                <Descriptions.Item label="Ngày thanh toán">
+                  {dayjs(orderDetail.paidDate).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+              )}
+              {orderDetail.cancelledDate && (
+                <Descriptions.Item label="Ngày hủy">
+                  {dayjs(orderDetail.cancelledDate).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+              )}
+              <Descriptions.Item label="Tổng tiền">
+                <Text strong type="success">
+                  {orderDetail.amount > 0
+                    ? `₫${orderDetail.amount?.toLocaleString()}`
+                    : "Miễn phí"}
+                </Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Mã token">
+                <Text code>{orderDetail.orderToken}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Chi tiết sản phẩm">
+                {renderOrderItems()}
+              </Descriptions.Item>
+            </Descriptions>
+          ) : (
+            <div>Không tìm thấy thông tin đơn hàng</div>
+          )}
+        </Spin>
+      </Modal>
+
+      <Tabs defaultActiveKey="1" type="card">
+        <Tabs.TabPane
+          tab={
+            <span>
+              <WalletOutlined />
+              Giao dịch
+            </span>
+          }
+          key="1"
+        >
+          <Table
+            columns={transactionColumns}
+            dataSource={transactions}
+            rowKey="id"
+            loading={loading}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20", "50"],
+            }}
+            onChange={handleTableChange}
+          />
+        </Tabs.TabPane>
+
+        <Tabs.TabPane
+          tab={
+            <span>
+              <ShoppingOutlined />
+              Danh sách đơn hàng
+            </span>
+          }
+          key="2"
+        >
+          <Table
+            columns={orderColumns}
+            dataSource={orders}
+            rowKey="id"
+            loading={orderLoading}
+            pagination={{
+              ...orderPagination,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+            }}
+            onChange={handleOrderTableChange}
+          />
+        </Tabs.TabPane>
+      </Tabs>
+    </div>
+  );
+};
+
+export default YourWallet;

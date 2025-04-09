@@ -18,10 +18,18 @@ import PoemDetail from "./pages/PoemDetail";
 import CollectionDetail from "./pages/CollectionDetail";
 import AboutPoemTown from "./pages/AboutPoemTown";
 
+import ModeratorPage from "./pages/Moderator/ModeratorPage";
+import SuccessPage from "./pages/SuccessPage";
+import FailPage from "./pages/FailPage";
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
   
   return role.includes("ADMIN") ? element : <Navigate to="/" replace />;
+};
+const ModRoute = ({ element }) => {
+  const role = JSON.parse(localStorage.getItem("role")) || [];
+  
+  return role.includes("MODERATOR") ? element : <Navigate to="/" replace />;
 };
 
 function App() {
@@ -37,8 +45,10 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/shop" element={<Shop />} />
               <Route path="/shop/:masterTemplateId" element={<TemplateDetail />} />
-              {/* Bảo vệ trang Admin */}
+              <Route path="/payment/success" element={<SuccessPage />} />
+              <Route path="/payment/fail" element={<FailPage />} />
               <Route path="/admin" element={<AdminRoute element={<AdminPage />} />} />
+              <Route path="/mod" element={<ModRoute element={<ModeratorPage />} />} />
 
               {/* User Page với nested routes */}
               {/* <Route path="/userpage" element={<UserPage />}>

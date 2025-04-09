@@ -11,17 +11,17 @@ import {
     Paper,
     Avatar,
     IconButton,
+    TextField,
+    MenuItem,
+    Chip,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
     Button,
-    CircularProgress,
-    Card,
-    CardContent,
-    TextField,
-    MenuItem,
-    Chip
+    Select,
+    FormControl,
+    InputLabel
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import axios from "axios";
@@ -53,6 +53,20 @@ const getStatusColor = (status) => {
     }
 };
 
+const poemType = {
+    1: "Thơ tự do",
+    2: "Thơ Lục bát",
+    3: "Thơ Song thất lục bát",
+    4: "Thơ Thất ngôn tứ tuyệt",
+    5: "Thơ Ngũ ngôn tứ tuyệt",
+    6: "Thơ Thất ngôn bát cú",
+    7: "Thơ bốn chữ",
+    8: "Thơ năm chữ",
+    9: "Thơ sáu chữ",
+    10: "Thơ bảy chữ",
+    11: "Thơ tám chữ",
+}
+
 const pageSizeOptions = [
     { value: 10, label: '10 bản ghi' },
     { value: 25, label: '25 bản ghi' },
@@ -65,28 +79,38 @@ const sortOptions = [
     { value: 2, label: 'Mới nhất' }
 ];
 
+const statusOptions = [
+    { value: 1, label: 'Đang chờ xử lý' },
+    { value: 2, label: 'Đã chấp nhận' },
+    { value: 3, label: 'Đã từ chối' }
+];
+
 const ReportFromUser = () => {
     const [reports, setReports] = useState([]);
-    const [currentPage, setCurrentPage] = useState(0);
-    const [selectedReport, setSelectedReport] = useState(null);
-    const [loading, setLoading] = useState(false);
-    const [openDialog, setOpenDialog] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
     const [pageSize, setPageSize] = useState(25);
     const [sortOption, setSortOption] = useState(2);
     const [pagination, setPagination] = useState({
-        pageNumber: 0,
+        pageNumber: 1,
         totalPages: 0,
         totalRecords: 0
     });
+    const [openDialog, setOpenDialog] = useState(false);
+    const [selectedReport, setSelectedReport] = useState(null);
+    const [status, setStatus] = useState(1);
+    const [resolveResponse, setResolveResponse] = useState("");
+    const [poemDetect, setPoemDetect] = useState(null);
+    const [plagiarismFromPoems, setPlagiarismFromPoems] = useState([]);
+    const [selectedPlagiarismIndex, setSelectedPlagiarismIndex] = useState(0);
 
     useEffect(() => {
         fetchReports();
-    }, [pageSize, sortOption]);
+    }, [currentPage, pageSize, sortOption]);
 
     const fetchReports = async () => {
         try {
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/reports/v1/reports?pageSize=${pageSize}&sortOption=${sortOption}`,
+                `https://api-poemtown-staging.nodfeather.win/api/reports/v1/reports?sortOptions=${sortOption}&pageNumber=${currentPage}&pageSize=${pageSize}`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -94,6 +118,7 @@ const ReportFromUser = () => {
                 }
             );
             setReports(response.data.data);
+            console.log(response.data.data)
             setPagination({
                 pageNumber: response.data.pageNumber,
                 totalPages: response.data.totalPages,
@@ -104,46 +129,79 @@ const ReportFromUser = () => {
         }
     };
 
-    const fetchReportDetail = async (id) => {
-        setLoading(true);
+    const handlePageSizeChange = (event) => {
+        setPageSize(event.target.value);
+        setCurrentPage(1);
+    };
+
+    const handleSortChange = (event) => {
+        setSortOption(event.target.value);
+        setCurrentPage(1);
+    };
+
+    const handlePreviousPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
+
+    const handleNextPage = () => {
+        if (currentPage < pagination.totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const handleRowClick = (report) => {
+        setSelectedReport(report);
+        setStatus(report.status);
+        setResolveResponse("");
+        setOpenDialog(true);
+        if (report.isSystem === true) {
+            setPoemDetect(report.poem);
+            setPlagiarismFromPoems(report.plagiarismFromPoems);
+            // Reset the selected index to 0 whenever a new report is opened.
+            setSelectedPlagiarismIndex(0);
+        }
+    };
+
+    const handleCloseDialog = () => {
+        setOpenDialog(false);
+        setSelectedReport(null);
+        // Clear the plagiarism related states when canceling the dialog.
+        setPoemDetect(null);
+        setPlagiarismFromPoems([]);
+        setSelectedPlagiarismIndex(0);
+    };
+
+    const handleStatusChange = (event) => {
+        setStatus(event.target.value);
+    };
+
+    const handleResolveResponseChange = (event) => {
+        setResolveResponse(event.target.value);
+    };
+
+    const handleSubmit = async () => {
         try {
-            const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/reports/v1/reports/${id}`,
+            await axios.put(
+                "https://api-poemtown-staging.nodfeather.win/api/reports/v1/resolve",
+                {
+                    id: selectedReport.id,
+                    resolveResponse: resolveResponse,
+                    status: status
+                },
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
                     },
                 }
             );
-            setSelectedReport(response.data.data);
-            setOpenDialog(true);
+            fetchReports();
+            handleCloseDialog();
         } catch (err) {
-            console.error("Không thể tải chi tiết báo cáo.");
-        } finally {
-            setLoading(false);
+            console.error("Có lỗi khi cập nhật trạng thái báo cáo.");
         }
     };
-
-    const handlePageSizeChange = (event) => {
-        setPageSize(event.target.value);
-        setCurrentPage(0);
-    };
-
-    const handleSortChange = (event) => {
-        setSortOption(event.target.value);
-        setCurrentPage(0);
-    };
-
-    const chunkReports = (reports, size) => {
-        const chunked = [];
-        for (let i = 0; i < reports.length; i += size) {
-            chunked.push(reports.slice(i, i + size));
-        }
-        return chunked;
-    };
-
-    const reportGroups = chunkReports(reports, 7);
-    const totalPages = reportGroups.length;
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
@@ -155,7 +213,7 @@ const ReportFromUser = () => {
                 <Typography variant="subtitle1">
                     Tổng số báo cáo: {pagination.totalRecords}
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', gap: 2 }}>
                     <TextField
                         select
@@ -171,7 +229,7 @@ const ReportFromUser = () => {
                             </MenuItem>
                         ))}
                     </TextField>
-                    
+
                     <TextField
                         select
                         label="Số bản ghi mỗi trang"
@@ -189,10 +247,10 @@ const ReportFromUser = () => {
                 </Box>
             </Box>
 
-            {reportGroups.length > 0 ? (
+            {reports.length > 0 ? (
                 <TableContainer component={Paper} sx={{ mt: 2 }}>
                     <Typography variant="h6" sx={{ p: 2 }}>
-                        Trang {currentPage + 1} / {totalPages}
+                        Trang {currentPage} / {pagination.totalPages}
                     </Typography>
                     <Table>
                         <TableHead>
@@ -207,21 +265,21 @@ const ReportFromUser = () => {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {reportGroups[currentPage].map((report, index) => (
+                            {reports.map((report, index) => (
                                 <TableRow
                                     key={report.id}
                                     hover
-                                    onClick={() => fetchReportDetail(report.id)}
-                                    sx={{ cursor: "pointer" }}
+                                    onClick={() => handleRowClick(report)}
+                                    sx={{ cursor: 'pointer' }}
                                 >
-                                    <TableCell>{index + 1 + currentPage * 7}</TableCell>
+                                    <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                     <TableCell>{getReportType(report.type)}</TableCell>
                                     <TableCell>{report.reportReason || "Không có lý do"}</TableCell>
                                     <TableCell>
-                                        <Chip 
-                                            label={getReportStatus(report.status)} 
-                                            color={getStatusColor(report.status)} 
-                                            size="small" 
+                                        <Chip
+                                            label={getReportStatus(report.status)}
+                                            color={getStatusColor(report.status)}
+                                            size="small"
                                         />
                                     </TableCell>
                                     <TableCell>
@@ -244,140 +302,138 @@ const ReportFromUser = () => {
             )}
 
             <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
-                <IconButton onClick={() => setCurrentPage(currentPage - 1)} disabled={currentPage === 0}>
+                <IconButton onClick={handlePreviousPage} disabled={currentPage === 1}>
                     <ArrowBackIos />
                 </IconButton>
 
                 <Typography variant="h6" sx={{ mx: 2 }}>
-                    {currentPage + 1} / {totalPages}
+                    {currentPage} / {pagination.totalPages}
                 </Typography>
 
-                <IconButton onClick={() => setCurrentPage(currentPage + 1)} disabled={currentPage === totalPages - 1}>
+                <IconButton onClick={handleNextPage} disabled={currentPage === pagination.totalPages}>
                     <ArrowForwardIos />
                 </IconButton>
             </Box>
 
-            <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="md">
-                <DialogTitle>Chi tiết báo cáo</DialogTitle>
-                <DialogContent sx={{ p: 3, bgcolor: "#f5f5f5" }}>
-                    {loading ? (
-                        <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
-                            <CircularProgress />
+            {/* Edit Status Dialog */}
+            <Dialog open={openDialog} onClose={handleCloseDialog} fullWidth maxWidth="md">
+                <DialogTitle>Cập nhật trạng thái báo cáo</DialogTitle>
+                <DialogContent>
+                    {selectedReport && (
+                        <Box sx={{ mt: 2 }}>
+                            <Typography variant="subtitle1" gutterBottom>
+                                <strong>Loại báo cáo:</strong> {getReportType(selectedReport.type)}
+                            </Typography>
+                            <Typography variant="subtitle1" gutterBottom>
+                                <strong>Lý do:</strong> {selectedReport.reportReason || "Không có lý do"}
+                            </Typography>
+                            <Typography variant="subtitle1" gutterBottom>
+                                <strong>Người báo cáo:</strong> {selectedReport.reportReportUser?.fullName || "Không có tên"}
+                            </Typography>
+                            {selectedReport.isSystem === true && plagiarismFromPoems.length > 0 ? (
+                                <>
+                                    <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <label style={{ fontWeight: "bold", textAlign: "center" }}>Bài thơ bị báo cáo</label>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <label style={{ fontWeight: "bold", textAlign: "center" }}>Bài thơ bị đạo</label>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+                                            <p style={{ margin: 0, paddingTop: "10px" }}>Tựa đề: {poemDetect.title} </p>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <FormControl fullWidth sx={{ mt: 2 }}>
+                                                <InputLabel id="plagiarism-poem-select-label">Chọn bài thơ đạo văn</InputLabel>
+                                                <Select
+                                                    labelId="plagiarism-poem-select-label"
+                                                    value={selectedPlagiarismIndex}
+                                                    label="Chọn bài thơ bị đạo văn"
+                                                    onChange={(e) => setSelectedPlagiarismIndex(e.target.value)}
+                                                >
+                                                    {plagiarismFromPoems.map((poem, index) => (
+                                                        <MenuItem key={index} value={index}>
+                                                            {poem.title}
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Mô tả: {poemDetect.description}</p>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Mô tả: {plagiarismFromPoems[selectedPlagiarismIndex].description}</p>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        {/* Select box to choose a plagiarism poem */}
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Thể loại: {poemType[poemDetect.type]}</p>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                            <p style={{ margin: 0 }}>Thể loại: {poemType[plagiarismFromPoems[selectedPlagiarismIndex].type]}</p>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: "16px" }}>
+                                        <p style={{ margin: 0, textAlign: "center", fontWeight: "bold" }}>
+                                            Giống: <span style={{ color: "red" }}>
+                                                {(plagiarismFromPoems[selectedPlagiarismIndex].score * 100).toFixed(0)}%
+                                            </span>
+                                        </p>
+                                    </div>
+                                    <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
+                                        <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
+                                            <textarea value={poemDetect?.content || ""} style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} readOnly></textarea>
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
+                                            <textarea value={plagiarismFromPoems[selectedPlagiarismIndex].content} style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} readOnly></textarea>
+                                        </div>
+                                    </div>
+                                </>
+                            ) : null}
+                            <FormControl fullWidth sx={{ mt: 2 }}>
+                                <InputLabel>Trạng thái</InputLabel>
+                                <Select
+                                    value={status}
+                                    label="Trạng thái"
+                                    onChange={handleStatusChange}
+                                >
+                                    {statusOptions.map((option) => (
+                                        <MenuItem key={option.value} value={option.value}>
+                                            {option.label}
+                                        </MenuItem>
+                                    ))}
+                                </Select>
+                            </FormControl>
+
+                            <TextField
+                                label="Phản hồi giải quyết"
+                                fullWidth
+                                multiline
+                                rows={4}
+                                value={resolveResponse}
+                                onChange={handleResolveResponseChange}
+                                sx={{ mt: 2 }}
+                                placeholder="Nhập phản hồi giải quyết (nếu có)"
+                            />
                         </Box>
-                    ) : selectedReport ? (
-                        <Box>
-                            <Card sx={{ mb: 2, boxShadow: 3 }}>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ mb: 2, color: "#795548" }}>Thông tin báo cáo</Typography>
-                                    
-                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-                                        <Box sx={{ flex: 1, minWidth: 200 }}>
-                                            <Typography variant="body1"><strong>ID:</strong> {selectedReport.id}</Typography>
-                                            <Typography variant="body1"><strong>Loại báo cáo:</strong> {getReportType(selectedReport.type)}</Typography>
-                                            <Typography variant="body1">
-                                                <strong>Trạng thái:</strong> 
-                                                <Chip 
-                                                    label={getReportStatus(selectedReport.status)} 
-                                                    color={getStatusColor(selectedReport.status)} 
-                                                    size="small" 
-                                                    sx={{ ml: 1 }}
-                                                />
-                                            </Typography>
-                                            <Typography variant="body1"><strong>Điểm đạo văn:</strong> {selectedReport.plagiarismScore || "Không có"}</Typography>
-                                        </Box>
-                                        
-                                        <Box sx={{ flex: 1, minWidth: 200 }}>
-                                            <Typography variant="body1"><strong>Thời gian tạo:</strong> {selectedReport.createdTime ? new Date(selectedReport.createdTime).toLocaleString() : "Không xác định"}</Typography>
-                                            <Typography variant="body1"><strong>Là hệ thống:</strong> {selectedReport.isSystem ? "Có" : "Không"}</Typography>
-                                        </Box>
-                                    </Box>
-                                    
-                                    <Box sx={{ mt: 2 }}>
-                                        <Typography variant="body1"><strong>Lý do báo cáo:</strong></Typography>
-                                        <Typography variant="body2" sx={{ p: 2, bgcolor: '#fff', borderRadius: 1, mt: 1 }}>
-                                            {selectedReport.reportReason || "Không có lý do"}
-                                        </Typography>
-                                    </Box>
-                                    
-                                    {selectedReport.resolveResponse && (
-                                        <Box sx={{ mt: 2 }}>
-                                            <Typography variant="body1"><strong>Phản hồi xử lý:</strong></Typography>
-                                            <Typography variant="body2" sx={{ p: 2, bgcolor: '#fff', borderRadius: 1, mt: 1 }}>
-                                                {selectedReport.resolveResponse}
-                                            </Typography>
-                                        </Box>
-                                    )}
-                                </CardContent>
-                            </Card>
-
-                            <Card sx={{ mb: 2, boxShadow: 3 }}>
-                                <CardContent>
-                                    <Typography variant="h6" sx={{ mb: 2, color: "#795548" }}>Người báo cáo</Typography>
-                                    
-                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                        <Avatar 
-                                            src={selectedReport.reportReportUser?.avatar} 
-                                            alt={selectedReport.reportReportUser?.fullName} 
-                                            sx={{ width: 60, height: 60 }}
-                                        />
-                                        <Box>
-                                            <Typography variant="body1"><strong>Tên:</strong> {selectedReport.reportReportUser?.fullName || "Không có tên"}</Typography>
-                                            <Typography variant="body1"><strong>Email:</strong> {selectedReport.reportReportUser?.email || "Không có email"}</Typography>
-                                            <Typography variant="body1"><strong>Số điện thoại:</strong> {selectedReport.reportReportUser?.phoneNumber || "Không có số điện thoại"}</Typography>
-                                        </Box>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-
-                            {selectedReport.poem && (
-                                <Card sx={{ mb: 2, boxShadow: 3 }}>
-                                    <CardContent>
-                                        <Typography variant="h6" sx={{ mb: 2, color: "#795548" }}>Bài thơ được báo cáo</Typography>
-                                        
-                                        <Typography variant="body1"><strong>ID:</strong> {selectedReport.poem.id}</Typography>
-                                        <Typography variant="body1"><strong>Tiêu đề:</strong> {selectedReport.poem.title}</Typography>
-                                        <Typography variant="body1"><strong>Điểm:</strong> {selectedReport.poem.score}</Typography>
-                                        
-                                        <Box sx={{ mt: 2 }}>
-                                            <Typography variant="body1"><strong>Mô tả:</strong></Typography>
-                                            <Typography variant="body2" sx={{ p: 2, bgcolor: '#fff', borderRadius: 1, mt: 1 }}>
-                                                {selectedReport.poem.description || "Không có mô tả"}
-                                            </Typography>
-                                        </Box>
-                                    </CardContent>
-                                </Card>
-                            )}
-
-                            {selectedReport.plagiarismFromPoems && selectedReport.plagiarismFromPoems.length > 0 && (
-                                <Card sx={{ boxShadow: 3 }}>
-                                    <CardContent>
-                                        <Typography variant="h6" sx={{ mb: 2, color: "#795548" }}>Bài thơ đạo văn</Typography>
-                                        
-                                        {selectedReport.plagiarismFromPoems.map((poem, index) => (
-                                            <Box key={poem.id} sx={{ mb: 3, p: 2, border: '1px solid #ddd', borderRadius: 1 }}>
-                                                <Typography variant="body1"><strong>ID:</strong> {poem.id}</Typography>
-                                                <Typography variant="body1"><strong>Tiêu đề:</strong> {poem.title}</Typography>
-                                                <Typography variant="body1"><strong>Điểm đạo văn:</strong> {poem.score}</Typography>
-                                                
-                                                <Box sx={{ mt: 1 }}>
-                                                    <Typography variant="body1"><strong>Mô tả:</strong></Typography>
-                                                    <Typography variant="body2" sx={{ p: 1, bgcolor: '#f9f9f9', borderRadius: 1 }}>
-                                                        {poem.description || "Không có mô tả"}
-                                                    </Typography>
-                                                </Box>
-                                            </Box>
-                                        ))}
-                                    </CardContent>
-                                </Card>
-                            )}
-                        </Box>
-                    ) : (
-                        <Typography>Không có dữ liệu</Typography>
                     )}
                 </DialogContent>
-
                 <DialogActions>
-                    <Button onClick={() => setOpenDialog(false)} color="primary">Đóng</Button>
+                    <Button onClick={handleCloseDialog}>Hủy</Button>
+                    <Button onClick={handleSubmit} variant="contained" color="primary">
+                        Lưu thay đổi
+                    </Button>
                 </DialogActions>
             </Dialog>
         </Box>

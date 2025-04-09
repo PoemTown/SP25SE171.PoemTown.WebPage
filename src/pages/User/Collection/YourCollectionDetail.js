@@ -34,51 +34,50 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
     const [isLoading, setIsLoading] = useState(true); // <-- Thêm state isLoading
 
     useEffect(() => {
-        const fetchData = async () => {
-            console.log(collection);
-
-            try {
-                //  Gọi API lấy chi tiết bộ sưu tập
-                const response1 = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collection.id}/detail`,
-                    { headers: { Authorization: `Bearer ${accessToken}` } }
-                );
-                const data1 = await response1.json();
-                if (data1.statusCode === 200) {
-                    setCollectionDetails(data1.data);
-                    console.log("Collection Details:", data1.data);
-                }
-
-                // Gọi API lấy danh sách bài thơ trong bộ sưu tập
-                const response2 = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${collection.id}`,
-                    { headers: { Authorization: `Bearer ${accessToken}` } }
-                );
-                const data2 = await response2.json();
-                if (data2.statusCode === 200) {
-                    const initialBookmarkedState = {};
-                    const initialLikedState = {};
-
-                    data2.data.forEach(item => {
-                        initialLikedState[item.id] = !!item.like;
-                        initialBookmarkedState[item.id] = !!item.targetMark;
-                    });
-                    setPoem(data2.data);
-                    setBookmarkedPosts(initialBookmarkedState);
-                    setLikedPosts(initialLikedState);
-
-                    console.log("Poems:", data2.data);
-                }
-            } catch (error) {
-                console.error("Error fetching data:", error);
-            } finally {
-                setIsLoading(false); // <-- Tắt loading sau khi fetch xong
-            }
-        };
         fetchCollections();
         fetchData();
     }, [collection, reloadTrigger]);
+    const fetchData = async () => {
+        console.log(collection);
 
+        try {
+            //  Gọi API lấy chi tiết bộ sưu tập
+            const response1 = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${collection.id}/detail`,
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+            const data1 = await response1.json();
+            if (data1.statusCode === 200) {
+                setCollectionDetails(data1.data);
+                console.log("Collection Details:", data1.data);
+            }
+
+            // Gọi API lấy danh sách bài thơ trong bộ sưu tập
+            const response2 = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${collection.id}`,
+                { headers: { Authorization: `Bearer ${accessToken}` } }
+            );
+            const data2 = await response2.json();
+            if (data2.statusCode === 200) {
+                const initialBookmarkedState = {};
+                const initialLikedState = {};
+
+                data2.data.forEach(item => {
+                    initialLikedState[item.id] = !!item.like;
+                    initialBookmarkedState[item.id] = !!item.targetMark;
+                });
+                setPoem(data2.data);
+                setBookmarkedPosts(initialBookmarkedState);
+                setLikedPosts(initialLikedState);
+
+                console.log("Poems:", data2.data);
+            }
+        } catch (error) {
+            console.error("Error fetching data:", error);
+        } finally {
+            setIsLoading(false); // <-- Tắt loading sau khi fetch xong
+        }
+    };
     const fetchCollections = async () => {
         try {
             const response = await fetch(
@@ -117,16 +116,15 @@ const YourCollectionDetail = ({ collection, handleBack, avatar }) => {
                     },
                 }
             );
-
+            setReloadTrigger((prev) => !prev);
+            console.log("Chuyển bài thơ:", collectionId, poemId);
             console.log("Update Response:", response.data);
             message.success("Cập nhật tập thơ thành công!");
         } catch (error) {
             console.error("Error:", error.response?.data || error.errorMessage);
             message.error(error.response?.data.errorMessage);
         }
-
-        setReloadTrigger((prev) => !prev);
-        console.log("Chuyển bài thơ:", collectionId, poemId);
+        
     };
 
     function formatDate(isoString) {
