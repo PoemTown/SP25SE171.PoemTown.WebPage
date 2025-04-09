@@ -20,7 +20,7 @@ const UserCoverEdit = ({ coverImage, coverColorCode, userData }) => {
 
             try {
                 const response = await fetch(
-                    "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=1",
+                    `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=1`,
                     {
                         method: "GET",
                         headers: {

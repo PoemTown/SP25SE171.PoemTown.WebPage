@@ -70,7 +70,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
       try {
         const response = await axios.get(
-          "https://api-poemtown-staging.nodfeather.win/api/collections/v1",
+          `${process.env.REACT_APP_API_BASE_URL}/collections/v1`,
           {
             headers: {
               Authorization: `Bearer ${accessToken}`,
@@ -294,7 +294,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     console.log(requestData)
     try {
       const response = await axios.post(
-        "https://api-poemtown-staging.nodfeather.win/api/poems/v1",
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
         requestData,
         {
           headers: {
@@ -524,7 +524,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       formData.append("file", file);
       try {
         const response = await fetch(
-          "https://api-poemtown-staging.nodfeather.win/api/poems/v1/image",
+          `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image`,
           {
             method: "POST",
             headers: {
@@ -575,7 +575,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       maxToken: 1000
     }
     setIsLoading(true);
-    const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/ai-chat-completion`, {
+    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/ai-chat-completion`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -628,7 +628,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       setIsLoading(true);
       // Replace this placeholder with your actual API call for applying the image.
       const applyResponse = await fetch(
-        "https://api-poemtown-staging.nodfeather.win/api/poems/v1/image/ai",
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image/ai`,
         {
           method: "POST",
           headers: {
@@ -677,7 +677,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       console.log(imageType)
       if (imageType === "nâng cao") {
         console.log("jsdlkajsdlaj")
-        responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt}&prompt="Render an image base on my requirement poem content, return an image without words in it"`, {
+        responseImage = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${imagePrompt === null || imagePrompt.trim() === "" ? content : imagePrompt}&prompt="Render an image base on my requirement poem content, return an image without words in it"`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -701,7 +701,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         console.log("hahah")
         console.log(requestBodyImage)
 
-        responseImage = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`, {
+        responseImage = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`, {
           method: "POST",
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -743,7 +743,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       poemContent: content
     }
     setIsLoading(true);
-    const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/plagiarism`, {
+    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/plagiarism`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
@@ -814,7 +814,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
     try {
       const response = await axios.put(
-        "https://api-poemtown-staging.nodfeather.win/api/poems/v1",
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
         requestBody,
         {
           headers: {
@@ -868,7 +868,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
     try {
       const response = await axios.put(
-        "https://api-poemtown-staging.nodfeather.win/api/poems/v1",
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
         requestBody,
         {
           headers: {

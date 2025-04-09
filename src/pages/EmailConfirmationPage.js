@@ -34,7 +34,7 @@ const EmailConfirmationPage = () => {
 
     try {
       const response = await fetch(
-        "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/email/confirmation",
+        `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/email/confirmation`,
         {
           method: "POST",
           headers: {
@@ -72,7 +72,7 @@ const EmailConfirmationPage = () => {
   
     try {
       const response = await fetch(
-        "https://api-poemtown-staging.nodfeather.win/api/accounts/v1/email/otp",
+        `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/email/otp`,
         {
           method: "POST",
           headers: {

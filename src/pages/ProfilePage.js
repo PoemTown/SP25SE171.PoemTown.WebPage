@@ -16,7 +16,7 @@ const ProfilePage = () => {
     const fetchUserProfile = async () => {
       try {
         const response = await fetch(
-          "https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile",
+          `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile`,
           {
             method: "GET",
             headers: {
@@ -66,7 +66,7 @@ const ProfilePage = () => {
   
     try {
       const response = await fetch(
-        "https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile",
+        `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile`,
         {
           method: "PUT",
           headers: {
@@ -111,7 +111,7 @@ const ProfilePage = () => {
   
       try {
         const response = await fetch(
-          "https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile/image",
+          `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile/image`,
           {
             method: "POST",
             headers: {

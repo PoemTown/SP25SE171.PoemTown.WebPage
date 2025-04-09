@@ -30,7 +30,7 @@ const Shop = () => {
             "Content-Type": "application/json",
             ...(accessToken && { Authorization: `Bearer ${accessToken}` })
         };
-        const apiUrl = `https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates?${selectedType ? `filterOptions.type=${selectedType}&` : ""}sortOptions=${selectedSort}`;
+        const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates?${selectedType ? `filterOptions.type=${selectedType}&` : ""}sortOptions=${selectedSort}`;
 
         const response = await fetch(apiUrl, { headers: requestHeaders });
         const data = await response.json();

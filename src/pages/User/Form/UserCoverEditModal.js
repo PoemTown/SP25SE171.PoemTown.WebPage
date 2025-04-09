@@ -46,7 +46,7 @@ const UserCoverEditModal = ({
         console.log(payload)
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/template/v1/theme/${themes.find(theme => theme.isInUse === true).id}/user-template-detail`,
+                `${process.env.REACT_APP_API_BASE_URL}/template/v1/theme/${themes.find(theme => theme.isInUse === true).id}/user-template-detail`,
                 {
                     method: "PUT",
                     headers: {

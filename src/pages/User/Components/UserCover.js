@@ -29,7 +29,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const openFollowersModal = async () => {
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/followers/user/${userData.userName}`,
+                `${process.env.REACT_APP_API_BASE_URL}/followers/user/${userData.userName}`,
                 { headers: requestHeaders }
             );
             const data = await response.json();
@@ -44,7 +44,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const openFollowingsModal = async () => {
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/followers/user/${userData.userName}/follow-list`,
+                `${process.env.REACT_APP_API_BASE_URL}/followers/user/${userData.userName}/follow-list`,
                 { headers: requestHeaders }
             );
             const data = await response.json();
@@ -69,7 +69,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
         try {
             const method = userData.isFollowed ? "DELETE" : "POST";
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/followers/${userData.userId}`,
+                `${process.env.REACT_APP_API_BASE_URL}/followers/${userData.userId}`,
                 {
                     method,
                     headers: {
@@ -113,7 +113,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/user-ewallets/v1/donate",
+                `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/donate`,
                 {
                     method: "POST",
                     headers: {

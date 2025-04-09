@@ -77,7 +77,7 @@ const TemplateDetail = () => {
             "Content-Type": "application/json",
             ...(token && { Authorization: `Bearer ${token}` })
         };
-        const apiUrl = `https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates?pageSize=250&allowExceedPageSize=true`;
+        const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates?pageSize=250&allowExceedPageSize=true`;
 
         const response = await fetch(apiUrl, { headers: requestHeaders });
         const data = await response.json();
@@ -88,7 +88,7 @@ const TemplateDetail = () => {
 
 
     const fetchTemplateDetail = async () => {
-        const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/template/v1/master-templates/${masterTemplateId}?pageSize=250&allowExceedPageSize=true`);
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${masterTemplateId}?pageSize=250&allowExceedPageSize=true`);
         const data = await response.json();
         console.log(data);
         setTemplate(data.data);
@@ -189,7 +189,7 @@ const TemplateDetail = () => {
 
     const handleBuyTemplate = async () => {
         console.log(masterTemplateId)
-        const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/template/v1/master-template/${masterTemplateId}/purchase`, {
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-template/${masterTemplateId}/purchase`, {
             method: "POST",
             headers: {
                 Authorization: `Bearer ${token}`,

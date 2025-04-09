@@ -16,7 +16,7 @@ const YourBookmark = () => {
     useEffect(() => {
         const token = localStorage.getItem("accessToken");
         setIsLoggedIn(!!token);
-        fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem")
+        fetchData(`${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem`)
     }, []);
 
     const accessToken = localStorage.getItem("accessToken");
@@ -32,7 +32,7 @@ const YourBookmark = () => {
 
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/likes/v1/${postId}`,
+                `${process.env.REACT_APP_API_BASE_URL}/likes/v1/${postId}`,
                 { method, headers }
             );
 
@@ -57,8 +57,8 @@ const YourBookmark = () => {
 
     const handleBookmark = async (id, isCollection = false) => {
         const endpoint = isCollection
-            ? `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection/${id}`
-            : `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`;
+            ? `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`
+            : `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
 
         const currentState = isCollection
             ? bookmarkedCollections[id]
@@ -133,12 +133,12 @@ const YourBookmark = () => {
 
     const handleChangeToBookmarkPoem = () => {
         setIsBookmarkCollectionTab(false)
-        fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem");
+        fetchData(`${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem`);
     }
 
     const handleChangeToBookmarkCollection = () => {
         setIsBookmarkCollectionTab(true)
-        fetchData("https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection");
+        fetchData(`${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection`);
     }
 
     return (

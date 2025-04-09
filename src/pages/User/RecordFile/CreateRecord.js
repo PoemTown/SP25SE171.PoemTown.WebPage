@@ -34,7 +34,7 @@ export default function CreateRecord({ onBack }) {
   });
 
   const fetchPoems = async (page, size) => {
-    const url = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine?pageNumber=${page}&pageSize=${size}`;
+    const url = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?pageNumber=${page}&pageSize=${size}`;
     try {
       const response = await fetch(url, {
         headers: {
@@ -54,7 +54,7 @@ export default function CreateRecord({ onBack }) {
   };
 
   const fetchBoughtPoems = async (page, size) => {
-    const url = `https://api-poemtown-staging.nodfeather.win/api/usage-rights/v1/bought-poem?pageNumber=${page}&pageSize=${size}`;
+    const url = `${process.env.REACT_APP_API_BASE_URL}/usage-rights/v1/bought-poem?pageNumber=${page}&pageSize=${size}`;
     try {
       const response = await fetch(url, {
         headers: {
@@ -81,7 +81,7 @@ export default function CreateRecord({ onBack }) {
 
   const handleCreateRecordFile = async (poemId) => {
     try {
-      const url = "https://api-poemtown-staging.nodfeather.win/api/record-files/v1";
+      const url = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1`;
       const response = await axios.post(
         url,
         data,
@@ -109,7 +109,7 @@ export default function CreateRecord({ onBack }) {
       setIsAudioUploading(true);
       try {
         const response = await fetch(
-          "https://api-poemtown-staging.nodfeather.win/api/record-files/v1/audio",
+          `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio`,
           {
             method: "POST",
             headers: {

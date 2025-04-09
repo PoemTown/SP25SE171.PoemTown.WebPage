@@ -124,7 +124,7 @@ const DesignPage = () => {
             return;
         }
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/template/v1/user-templates", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/user-templates`, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -159,7 +159,7 @@ const DesignPage = () => {
         console.log(myInUseTemplate.id)
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/template/v1/user-templates/theme", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/user-templates/theme`, {
                 method: "PUT",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -197,7 +197,7 @@ const DesignPage = () => {
         }
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/themes/v2/user", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/themes/v2/user`, {
                 method: "GET",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -249,7 +249,7 @@ const DesignPage = () => {
         const fetchUserProfile = async () => {
             try {
                 const response = await fetch(
-                    "https://api-poemtown-staging.nodfeather.win/api/users/v1/mine/profile/online",
+                    `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile/online`,
                     {
                         method: "GET",
                         headers: {
@@ -288,7 +288,7 @@ const DesignPage = () => {
         }
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/themes/v1/user", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/themes/v1/user`, {
                 method: "PUT",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -328,7 +328,7 @@ const DesignPage = () => {
         }
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/themes/v1/user", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/themes/v1/user`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -369,7 +369,7 @@ const DesignPage = () => {
             onOk: async () => {
                 try {
                     const response = await fetch(
-                        `https://api-poemtown-staging.nodfeather.win/api/themes/v1/user/${myInUseTemplate.id}`,
+                        `${process.env.REACT_APP_API_BASE_URL}/themes/v1/user/${myInUseTemplate.id}`,
                         {
                             method: "DELETE",
                             headers: {
@@ -398,7 +398,7 @@ const DesignPage = () => {
     const handleModalHeader = async () => {
         try {
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=1",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=1`,
                 {
                     method: "GET",
                     headers: {

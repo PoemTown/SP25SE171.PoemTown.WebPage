@@ -64,7 +64,7 @@ const AchievementEditModal = ({
                 return;
             }
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=6",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=6`,
                 {
                     method: "GET",
                     headers: {
@@ -96,7 +96,7 @@ const AchievementEditModal = ({
                 return;
             }
             const response = await fetch(
-                "https://api-poemtown-staging.nodfeather.win/api/themes/v2/user?filterOptions.templateDetailType=5",
+                `${process.env.REACT_APP_API_BASE_URL}/themes/v2/user?filterOptions.templateDetailType=5`,
                 {
                     method: "GET",
                     headers: {
@@ -174,7 +174,7 @@ const AchievementEditModal = ({
 
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/template/v1/theme/${selectedThemeId}/user-template-detail`,
+                `${process.env.REACT_APP_API_BASE_URL}/template/v1/theme/${selectedThemeId}/user-template-detail`,
                 {
                     method: "PUT",
                     headers: {

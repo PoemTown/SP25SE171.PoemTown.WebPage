@@ -34,7 +34,7 @@ const YourDesign = ({
             }
 
             try {
-                const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/themes/v2/user", {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/themes/v2/user`, {
                     method: "GET",
                     headers: {
                         "Authorization": `Bearer ${token}`,
@@ -88,7 +88,7 @@ const YourDesign = ({
         }
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/themes/v1/user", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/themes/v1/user`, {
                 method: "PUT",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -128,7 +128,7 @@ const YourDesign = ({
         }
 
         try {
-            const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/themes/v1/user", {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/themes/v1/user`, {
                 method: "POST",
                 headers: {
                     "Authorization": `Bearer ${token}`,
@@ -171,7 +171,7 @@ const YourDesign = ({
         if (!confirmDelete) return;
 
         try {
-            const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/themes/v1/user/${selectedTemplateId}`, {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/themes/v1/user/${selectedTemplateId}`, {
                 method: "DELETE",
                 headers: {
                     "Authorization": `Bearer ${token}`,

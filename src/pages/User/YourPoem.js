@@ -41,7 +41,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
         try {
           if (isMine === true) {
             const response = await fetch(
-              "https://api-poemtown-staging.nodfeather.win/api/poems/v1/mine?filterOptions.status=1",
+              `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=1`,
               {
                 headers: { Authorization: `Bearer ${accessToken}` },
               }
@@ -74,7 +74,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             }
           } else {
             const response = await fetch(
-              `https://api-poemtown-staging.nodfeather.win/api/poems/v1/user/${username}`,
+              `${process.env.REACT_APP_API_BASE_URL}/poems/v1/user/${username}`,
               {
                 headers: requestHeaders,
               }
@@ -124,7 +124,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
     try {
       await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/poem/${id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`,
         {
           method: method,
           headers: {
@@ -159,7 +159,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     if (!poemToDelete) return;
     try {
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${poemToDelete}`,
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/${poemToDelete}`,
         {
           method: "DELETE",
           headers: {
@@ -198,7 +198,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     const method = isLiked ? "DELETE" : "POST";
 
     try {
-      await fetch(`https://api-poemtown-staging.nodfeather.win/api/likes/v1/${id}`, {
+      await fetch(`${process.env.REACT_APP_API_BASE_URL}/likes/v1/${id}`, {
         method: method,
         headers: {
           Authorization: `Bearer ${accessToken}`,

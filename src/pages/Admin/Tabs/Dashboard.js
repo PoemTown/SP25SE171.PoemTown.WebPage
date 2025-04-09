@@ -102,7 +102,7 @@ const fetchData = async (period, setData, url) => {
 const fetchTransactions = async (period, setData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/transactions",
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/transactions`,
             period
         );
         if (result.statusCode === 200) {
@@ -127,7 +127,7 @@ const fetchTransactions = async (period, setData) => {
 const fetchReportPoems = async (setReportData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/report-poems"
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/report-poems`
         );
         if (result.statusCode === 200) {
             const transformedData = result.data.samples.map(sample => ({
@@ -144,7 +144,7 @@ const fetchReportPoems = async (setReportData) => {
 const fetchReportUsers = async (setReportUserData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/report-users"
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/report-users`
         );
         if (result.statusCode === 200) {
             const transformedData = result.data.samples.map(sample => ({
@@ -161,7 +161,7 @@ const fetchReportUsers = async (setReportUserData) => {
 const fetchReportPlagiarismPoems = async (setReportPlagiarismData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/report-plagiarism-poems"
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/report-plagiarism-poems`
         );
         if (result.statusCode === 200) {
             const transformedData = result.data.samples.map(sample => ({
@@ -178,7 +178,7 @@ const fetchReportPlagiarismPoems = async (setReportPlagiarismData) => {
 const fetchTotalStatistics = async (setTotalStats) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/total"
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/total`
         );
         if (result.statusCode === 200) {
             const transformedData = [
@@ -197,7 +197,7 @@ const fetchTotalStatistics = async (setTotalStats) => {
 const fetchOrderStatus = async (setOrderStatusData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/order-status"
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/order-status`
         );
         if (result.statusCode === 200) {
             const transformedData = result.data.samples.map(sample => ({
@@ -216,7 +216,7 @@ const fetchOrderStatus = async (setOrderStatusData) => {
 const fetchMasterTemplateOrders = async (setMasterTemplateData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/master-template-orders"
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/master-template-orders`
         );
         if (result.statusCode === 200) {
             const transformedData = result.data.samples.map(sample => ({
@@ -234,7 +234,7 @@ const fetchMasterTemplateOrders = async (setMasterTemplateData) => {
 const fetchOrderTypes = async (setOrderTypeData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/order-types"
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/order-types`
         );
         if (result.statusCode === 200) {
             const transformedData = result.data.samples.map(sample => ({
@@ -261,7 +261,7 @@ const fetchOrderTypes = async (setOrderTypeData) => {
 const fetchIncomes = async (period, setIncomeData) => {
     try {
         const result = await fetchWithAuth(
-            "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/incomes",
+            `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/incomes`,
             period
         );
         if (result.statusCode === 200) {
@@ -497,15 +497,15 @@ const UserOnline = () => {
     const [incomeData, setIncomeData] = useState([]);
     const [incomePeriod, setIncomePeriod] = useState(1);
     useEffect(() => {
-        fetchData(onlinePeriod, setOnlineData, "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/online-users");
+        fetchData(onlinePeriod, setOnlineData, `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/online-users`);
     }, [onlinePeriod]);
 
     useEffect(() => {
-        fetchData(poemPeriod, setPoemData, "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/poem-uploads");
+        fetchData(poemPeriod, setPoemData, `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/poem-uploads`);
     }, [poemPeriod]);
 
     useEffect(() => {
-        fetchData(null, setPoemTypeData, "https://api-poemtown-staging.nodfeather.win/api/statistics/v1/poem-types");
+        fetchData(null, setPoemTypeData, `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/poem-types`);
     }, []);
 
     useEffect(() => {

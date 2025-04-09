@@ -27,7 +27,7 @@ const CommunityCollectionManagement = () => {
         });
   
         const response = await axios.get(
-          `https://api-poemtown-staging.nodfeather.win/api/collections/v1/community?${queryParams.toString()}`
+          `${process.env.REACT_APP_API_BASE_URL}/collections/v1/community?${queryParams.toString()}`
         );
         
         if (response.data.statusCode === 200) {

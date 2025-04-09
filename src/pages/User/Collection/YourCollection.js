@@ -68,12 +68,12 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
           if (isMine === true) {
             const [collectionsResponse, statisticResponse] = await Promise.all([
               fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/collections/v1?pageNumber=${currentPage}&pageSize=${pageSize}`,
+                `${process.env.REACT_APP_API_BASE_URL}/collections/v1?pageNumber=${currentPage}&pageSize=${pageSize}`,
                 {
                   headers: { Authorization: `Bearer ${accessToken}` },
                 }
               ),
-              fetch("https://api-poemtown-staging.nodfeather.win/api/statistics/v1", {
+              fetch(`${process.env.REACT_APP_API_BASE_URL}/statistics/v1`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
               }),
             ]);
@@ -107,7 +107,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
             }
           } else if (isMine === false) {
             const collectionsResponse = await fetch(
-              `https://api-poemtown-staging.nodfeather.win/api/collections/v1/user/${username}?pageNumber=${currentPage}&pageSize=${pageSize}`,
+              `${process.env.REACT_APP_API_BASE_URL}/collections/v1/user/${username}?pageNumber=${currentPage}&pageSize=${pageSize}`,
               {
                 headers: requestHeaders,
               }
@@ -155,7 +155,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
 
     try { 
       await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection/${id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`,
         {
           method,
           headers: {
@@ -186,7 +186,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
   const handleDelete = async (id, rowVersion) => {
     try {
       const response = await axios.delete(
-        `https://api-poemtown-staging.nodfeather.win/api/collections/v1/${id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/collections/v1/${id}`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
