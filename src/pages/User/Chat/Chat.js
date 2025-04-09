@@ -139,7 +139,7 @@ const MessengerPage = ({ refreshKey }) => {
             {/* Sidebar: danh sách cuộc trò chuyện */}
             <div style={styles.sidebar}>
                 <header style={styles.sidebarHeader}>
-                    <h2>Messenger</h2>
+                    <h2>Tin nhắn</h2>
                 </header>
                 <ul style={styles.conversationList}>
                     {conversations.map((conv) => (

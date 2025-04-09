@@ -587,7 +587,8 @@ const PoemDetail = () => {
 
     return (
         <div style={{
-            backgroundImage: `url("${backgroundImage}")`
+            backgroundImage: `url("${backgroundImage}")`,
+            paddingBottom: "100px"
         }}>
             {isLoading && (
                 <div

@@ -4,6 +4,7 @@ import { FaUserPlus } from "react-icons/fa6";
 import { IoIosMore } from "react-icons/io";
 import { MdReport } from "react-icons/md";
 import { RiDeleteBinFill } from "react-icons/ri";
+import { useNavigate } from "react-router-dom";
 
 
 const formatDate = (dateString) => {
@@ -41,6 +42,7 @@ const Comment = React.memo(({
             </Menu.Item>
         </Menu>
     );
+    const navigate = useNavigate();
 
     const defaultMenu = (
         <Menu>
@@ -68,7 +70,7 @@ const Comment = React.memo(({
             <div style={{ flex: 1 }}>
                 <div style={{ display: "flex", flexDirection: "row", alignItems: "center", justifyContent: "space-between" }}>
                     <div style={{ display: 'flex', gap: 5, alignItems: 'center', flexDirection: "row" }}>
-                        <span style={{ fontWeight: 500 }}>
+                        <span style={{ fontWeight: 500, cursor: "pointer" }} onClick={() => navigate(`/user/${comment.author?.userName}`)}>
                             {comment.author?.displayName || 'Ẩn danh'}
                         </span>
                         -
