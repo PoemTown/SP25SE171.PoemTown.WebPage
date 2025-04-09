@@ -14,6 +14,7 @@ export const SignalRProvider = ({ children }) => {
     const [announcementConnection, setAnnouncementConnection] = useState(null);
     const [announcements, setAnnouncements] = useState([]);
 
+    const API_BACKEND_URL = process.env.API_BACKEND_URL
     // Function to create the connection to AnnouncementHub
     const createAnnouncementConnection = (userId) => {
 
@@ -22,7 +23,7 @@ export const SignalRProvider = ({ children }) => {
         }
         // Kết nối tới AnnouncementHub
         const newAnnouncementConnection = new signalR.HubConnectionBuilder()
-            .withUrl("https://api-poemtown-staging.nodfeather.win/hub/announcementHub", {
+            .withUrl(`${API_BACKEND_URL}/hub/announcementHub`, {
                 skipNegotiation: false,
                 transport: signalR.HttpTransportType.WebSockets
             })

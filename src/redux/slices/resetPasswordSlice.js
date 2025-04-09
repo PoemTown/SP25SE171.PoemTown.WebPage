@@ -4,7 +4,7 @@ import axios from 'axios';
 
 
 export const resetPassword = createAsyncThunk('password/reset', async (data) => {
-  const response = await axios.post(`https://api-poemtown-staging.nodfeather.win/api/accounts/v1/password/recovery`, data);
+  const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/accounts/v1/password/recovery`, data);
   return response.data;
 });
 
