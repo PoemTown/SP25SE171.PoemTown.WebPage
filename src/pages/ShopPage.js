@@ -31,14 +31,17 @@ const Shop = () => {
             ...(accessToken && { Authorization: `Bearer ${accessToken}` })
         };
         const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates?${selectedType ? `filterOptions.type=${selectedType}&` : ""}sortOptions=${selectedSort}`;
-
+    
         const response = await fetch(apiUrl, { headers: requestHeaders });
         const data = await response.json();
-        console.log(data)
-        setTemplates(data.data || null);
-        setTotalItems(data.totalRecords || 0);
+        console.log(data);
+    
+        const filteredTemplates = (data.data || []).filter(item => item.tagName !== "DEFAULT");
+    
+        setTemplates(filteredTemplates);
+        setTotalItems(filteredTemplates.length); 
     }
-
+    
     const handleViewDetail = (id) => {
         navigate(`/shop/${id}`);
     };
