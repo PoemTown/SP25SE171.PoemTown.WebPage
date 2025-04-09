@@ -39,7 +39,7 @@ const Headeruser = () => {
         <a href="/latest" style={styles.navLink}>
           Trang chủ
         </a>
-        <a href="#about-poemtown" style={styles.navLink}>
+        <a href="/about-poemtown" style={styles.navLink}>
           Về PoemTown
         </a>
         <a href="#about-us" style={styles.navLink}>

@@ -13,6 +13,7 @@ const CollectionDetail = () => {
     const { id } = useParams();
     const accessToken = localStorage.getItem("accessToken");
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    
     const requestHeaders = {
         "Content-Type": "application/json",
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })

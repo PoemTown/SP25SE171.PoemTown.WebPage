@@ -16,6 +16,7 @@ import TemplateDetail from "./pages/TemplateDetail";
 import DesignPage from "./pages/User/DesignPage";
 import PoemDetail from "./pages/PoemDetail";
 import CollectionDetail from "./pages/CollectionDetail";
+import AboutPoemTown from "./pages/AboutPoemTown";
 
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
@@ -44,6 +45,7 @@ function App() {
                   <Route index element={<YourPoem borderColor="#ddd" />} />
                   <Route path="create-poem" element={<CreatePoem />} />
               </Route> */}
+              <Route path="/about-poemtown" element={<AboutPoemTown />} />
               <Route path="/design" element={<DesignPage />} />
               <Route path="/user/:username" element={<UserPage />} />
               <Route path="/poem/:id" element={<PoemDetail />} />

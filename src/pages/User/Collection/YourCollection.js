@@ -153,7 +153,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
     const isBookmarked = bookmarkedCollections.has(id);
     const method = isBookmarked ? "DELETE" : "POST";
 
-    try {
+    try { 
       await fetch(
         `https://api-poemtown-staging.nodfeather.win/api/target-marks/v1/collection/${id}`,
         {
