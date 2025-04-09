@@ -14,7 +14,7 @@ export const SignalRProvider = ({ children }) => {
     const [announcementConnection, setAnnouncementConnection] = useState(null);
     const [announcements, setAnnouncements] = useState([]);
 
-    const API_BACKEND_URL = process.env.API_BACKEND_URL
+    const API_BACKEND_URL = process.env.REACT_APP_API_BACKEND_URL
     // Function to create the connection to AnnouncementHub
     const createAnnouncementConnection = (userId) => {
 

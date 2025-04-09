@@ -3,7 +3,7 @@ import { useEffect, useRef } from "react";
 import * as signalR from "@microsoft/signalr";
 import axios from "axios";
 
-const API_BACKEND_URL = process.env.API_BACKEND_URL
+const API_BACKEND_URL = process.env.REACT_APP_API_BACKEND_URL
 const CHAT_HUB_URL = `${API_BACKEND_URL}/hub/chatHub`; // đổi thành local nếu cần
 
 export const useChat = (jwtToken, updateMessages) => {
