@@ -360,7 +360,7 @@ const NavigationEditModal = ({
                                 justifyContent: "center"
                               }}
                             >
-                              <p style={{ margin: 0, color: detail.colorCode }}>Màu chữ trên nền</p>
+                              <p style={{ margin: 0, color: detail.colorCode }}>PoemTown</p>
                             </div>
                           ) : (
                             <div

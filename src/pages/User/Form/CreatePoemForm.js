@@ -80,7 +80,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           }
         );
         setCollections(response.data.data);
-        setPoemData((prev) => ({ ...prev, collectionId: response.data.data[0].id }))
+        setPoemData((prev) => ({ ...prev, collectionId: response.data.data[0]?.id }))
       } catch (error) {
         console.error("Error fetching collections:", error);
       }
@@ -1125,7 +1125,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                 required
               >
                 {collections.map((collection) => (
-                  <option key={collection.id} value={collection.id}>
+                  <option key={collection?.id} value={collection?.id}>
                     {collection.collectionName}
                   </option>
                 ))}
