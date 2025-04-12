@@ -92,6 +92,14 @@ const PoetKnowledge = () => {
                     </button>
                 ))}
             </nav>
+            <div style={{
+                width: "100%",
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                backgroundRepeat: "no-repeat",
+            }}>
+                <h1 style={{margin: 0}}>Hello {poet?.name}</h1>
+            </div>
         </>
     )
 }

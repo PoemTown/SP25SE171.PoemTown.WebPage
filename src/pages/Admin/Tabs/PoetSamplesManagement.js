@@ -32,6 +32,7 @@ import {
   DeleteOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 
 const { Title, Text } = Typography;
 const { TextArea } = Input;
@@ -62,7 +63,7 @@ const PoetSamplesManagement = () => {
   const [uploading, setUploading] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const [editPreviewImage, setEditPreviewImage] = useState('');
-
+  const navigate = useNavigate();
   // Fetch poets data
   const fetchPoets = useCallback(async () => {
     try {
@@ -272,18 +273,18 @@ const PoetSamplesManagement = () => {
       setLoading(true);
       const values = await editForm.validateFields();
       const formattedDate = values.dateOfBirth ? dayjs(values.dateOfBirth).format('YYYY-MM-DD') : null;
-  
+
       const requestBody = {
-        id: currentPoet.id, 
+        id: currentPoet.id,
         name: values.name,
         bio: values.bio,
         dateOfBirth: formattedDate,
         gender: values.gender,
         avatar: values.avatar || ''
       };
-  
+
       const accessToken = localStorage.getItem('accessToken');
-  
+
       const response = await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1`,
         requestBody,
@@ -294,7 +295,7 @@ const PoetSamplesManagement = () => {
           }
         }
       );
-  
+
       if (response.data.statusCode === 202) {
         message.success('Cập nhật nhà thơ thành công!');
         setIsEditModalVisible(false);
@@ -475,6 +476,7 @@ const PoetSamplesManagement = () => {
         {poets.map(poet => (
           <Col key={poet.id} xs={24} sm={12} md={8} lg={6} xl={6}>
             <Card
+              onClick={() => navigate(`/knowledge/poet/${poet.id}`)}
               hoverable
               style={{
                 borderRadius: '12px',
