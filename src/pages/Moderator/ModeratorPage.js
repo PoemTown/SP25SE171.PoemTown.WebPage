@@ -10,7 +10,7 @@ import {
 } from "@mui/icons-material";
 import ReportFromUser from "../Admin/Tabs/ReportFromUser";
 import PoemManagement from "../Admin/Tabs/PoemManagement";
-import CollectionManagement from "../Admin/Tabs/CollectionManagement";
+import PoetSamplesManagement from "../Admin/Tabs/PoetSamplesManagement";
 import CommunityCollectionManagement from "../Admin/Tabs/CommunityCollectionManagement";
 import AccountManagement from "../Admin/Tabs/AccountManagement";
 
@@ -49,7 +49,7 @@ const ModeratorPage = () => {
                     {[ 
                         { key: "reports", icon: <Report />, text: "Report Management" },
                         { key: "poems", icon: <LibraryBooks />, text: "Poem Management" },
-                        { key: "collections", icon: <Collections />, text: "Collection Management" },
+                        { key: "poetsamples", icon: <Collections />, text: "PoetSamples Management" },
                         { key: "community-collections", icon: <Collections />, text: "Community Collection Management" },
                         { key: "users", icon: <ManageAccounts />, text: "User Management" },
                         { key: "notifications", icon: <Notifications />, text: "Notification Management" },
@@ -98,7 +98,7 @@ const ModeratorPage = () => {
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>Page: {currentPage}</Typography>
                 {currentPage === "reports" && <ReportFromUser />}
                 {currentPage === "poems" && <PoemManagement />}
-                {currentPage === "collections" && <CollectionManagement />}
+                {currentPage === "poetsamples" && <PoetSamplesManagement />}
                 {currentPage === "community-collections" && <CommunityCollectionManagement />}
                 {currentPage === "users" && <AccountManagement />}
             </Box>
