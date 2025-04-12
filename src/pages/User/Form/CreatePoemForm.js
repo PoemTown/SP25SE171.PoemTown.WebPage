@@ -966,7 +966,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           <Button key="cancel" color="danger" variant="solid" onClick={handleCancelModalContentComplete}>
             Đóng
           </Button>,
-          <Button color="green" variant="solid" onClick={()=> setIsPreviewModalOpen(true)}>
+          <Button color="green" variant="solid" onClick={() => setIsPreviewModalOpen(true)}>
             Xem lại ảnh đã tạo
           </Button>,
           <Button key="confirm" color="primary" variant="solid" onClick={handleAIRenderImage}>
@@ -1037,8 +1037,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
       <form style={{ borderRadius: "10px" }}>
         <div style={{ display: "flex", gap: "20px" }}>
-          <div style={{ flex: 7 }}>
-            <div style={{ marginBottom: "15px" }}>
+          <div style={{ flex: 7, display: "flex", flexDirection: "column" }}>
+            <div style={{ marginBottom: "15px", flex: 1 }}>
               <label style={{ display: "block", fontWeight: "bold" }}>Tiêu đề</label>
               <input
                 type="text"
@@ -1057,15 +1057,28 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               />
             </div>
 
-            <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>Mô tả</label>
-              <input
+            <div style={{ marginBottom: "15px", flex: 2, display: "flex", flexDirection: "column" }}>
+              <label style={{ display: "block", fontWeight: "bold", flex: 1 }}>Mô tả</label>
+              <textarea
                 type="text"
                 name="description"
                 value={poemData.description}
                 onChange={handleInputChange}
                 placeholder="Nhập mô tả bài thơ"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", outline: "none", }}
+                style={{
+                  width: "100%",
+                  fontFamily: "Arial, sans-serif",
+                  fontSize: "14px",
+                  flex: 2,
+                  padding: "10px",
+                  borderRadius: "5px",
+                  border: "1px solid #ccc",
+                  boxSizing: "border-box",
+                  outline: "none",
+                  resize: "none", // if you want to disable resizing
+                  textAlign: "left", // ensures the text is left-aligned
+                  verticalAlign: "top" // although this might be redundant for a textarea
+                }}
                 onFocus={(e) =>
                   (e.target.style.border = "1px solid #000") // Custom focus border
                 }
@@ -1089,7 +1102,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               />
             </div> */}
 
-            <div style={{ marginBottom: "15px" }}>
+            <div style={{ marginBottom: "15px", flex: 1 }}>
               <label style={{ display: "block", fontWeight: "bold" }}>Tập thơ</label>
               <select
                 name="collectionId"
