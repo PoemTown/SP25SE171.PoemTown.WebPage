@@ -121,6 +121,193 @@ const poemTypes = [
 
             return result.slice(0, 4).join('\n');
         }
+    },
+    {
+        value: 5,
+        label: "Thơ Ngũ ngôn tứ tuyệt",
+        description: "4 câu, mỗi câu 5 chữ",
+        validate: (lines) => {
+            if (lines.length !== 4) {
+                return { isValid: false, message: "Phải có đúng 4 câu" };
+            }
+
+            const isValid = lines.every(line => line.trim().split(/\s+/).length === 5);
+            return {
+                isValid,
+                message: isValid ? "" : "Mỗi câu phải có đúng 5 chữ"
+            };
+        },
+        format: (content) => {
+            const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.trim());
+            let result = [];
+
+            for (let i = 0; i < 20 && i < words.length; i += 5) {
+                result.push(words.slice(i, i + 5).join(' '));
+            }
+
+            // Đảm bảo đủ 4 câu
+            while (result.length < 4) {
+                result.push("");
+            }
+
+            return result.slice(0, 4).join('\n');
+        }
+    },
+    {
+        value: 6,
+        label: "Thơ Thất ngôn bát cú",
+        description: "8 câu, mỗi câu 7 chữ",
+        validate: (lines) => {
+            if (lines.length !== 8) {
+                return { isValid: false, message: "Phải có đúng 8 câu" };
+            }
+
+            const isValid = lines.every(line => line.trim().split(/\s+/).length === 7);
+            return {
+                isValid,
+                message: isValid ? "" : "Mỗi câu phải có đúng 7 chữ"
+            };
+        },
+        format: (content) => {
+            const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.trim());
+            let result = [];
+
+            for (let i = 0; i < 56 && i < words.length; i += 7) {
+                result.push(words.slice(i, i + 7).join(' '));
+            }
+
+            // Đảm bảo đủ 8 câu
+            while (result.length < 8) {
+                result.push("");
+            }
+
+            return result.slice(0, 8).join('\n');
+        }
+    },
+    {
+        value: 7,
+        label: "Thơ bốn chữ",
+        description: "Mỗi câu 4 chữ, không giới hạn số câu",
+        validate: (lines) => {
+            if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
+
+            const isValid = lines.every(line => line.trim().split(/\s+/).length === 4);
+            return {
+                isValid,
+                message: isValid ? "" : "Mỗi câu phải có đúng 4 chữ"
+            };
+        },
+        format: (content) => {
+            const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.trim());
+            let result = [];
+
+            for (let i = 0; i < words.length; i += 4) {
+                const line = words.slice(i, i + 4).join(' ');
+                result.push(line);
+            }
+
+            return result.join('\n');
+        }
+    },
+    {
+        value: 8,
+        label: "Thơ năm chữ",
+        description: "Mỗi câu 5 chữ, không giới hạn số câu",
+        validate: (lines) => {
+            if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
+
+            const isValid = lines.every(line => line.trim().split(/\s+/).length === 5);
+            return {
+                isValid,
+                message: isValid ? "" : "Mỗi câu phải có đúng 5 chữ"
+            };
+        },
+        format: (content) => {
+            const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.trim());
+            let result = [];
+
+            for (let i = 0; i < words.length; i += 5) {
+                const line = words.slice(i, i + 5).join(' ');
+                result.push(line);
+            }
+
+            return result.join('\n');
+        }
+    },
+    {
+        value: 9,
+        label: "Thơ sáu chữ",
+        description: "Mỗi câu 6 chữ, không giới hạn số câu",
+        validate: (lines) => {
+            if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
+
+            const isValid = lines.every(line => line.trim().split(/\s+/).length === 6);
+            return {
+                isValid,
+                message: isValid ? "" : "Mỗi câu phải có đúng 6 chữ"
+            };
+        },
+        format: (content) => {
+            const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.trim());
+            let result = [];
+
+            for (let i = 0; i < words.length; i += 6) {
+                const line = words.slice(i, i + 6).join(' ');
+                result.push(line);
+            }
+
+            return result.join('\n');
+        }
+    },
+    {
+        value: 10,
+        label: "Thơ bảy chữ",
+        description: "Mỗi câu 7 chữ, không giới hạn số câu",
+        validate: (lines) => {
+            if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
+
+            const isValid = lines.every(line => line.trim().split(/\s+/).length === 7);
+            return {
+                isValid,
+                message: isValid ? "" : "Mỗi câu phải có đúng 7 chữ"
+            };
+        },
+        format: (content) => {
+            const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.trim());
+            let result = [];
+
+            for (let i = 0; i < words.length; i += 7) {
+                const line = words.slice(i, i + 7).join(' ');
+                result.push(line);
+            }
+
+            return result.join('\n');
+        }
+    },
+    {
+        value: 11,
+        label: "Thơ tám chữ",
+        description: "Mỗi câu 8 chữ, không giới hạn số câu",
+        validate: (lines) => {
+            if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
+
+            const isValid = lines.every(line => line.trim().split(/\s+/).length === 8);
+            return {
+                isValid,
+                message: isValid ? "" : "Mỗi câu phải có đúng 8 chữ"
+            };
+        },
+        format: (content) => {
+            const words = content.replace(/<[^>]+>/g, ' ').split(/\s+/).filter(w => w.trim());
+            let result = [];
+
+            for (let i = 0; i < words.length; i += 8) {
+                const line = words.slice(i, i + 8).join(' ');
+                result.push(line);
+            }
+
+            return result.join('\n');
+        }
     }
 ];
 
