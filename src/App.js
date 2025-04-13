@@ -23,6 +23,8 @@ import FailPage from "./pages/FailPage";
 import KnowledgePage from "./pages/KnowledgePage";
 import YourWallet from "./pages/User/YourWallet";
 import SearchPage from "./pages/SearchPage";
+import PoetKnowledge from "./pages/PoetKnowledge";
+import PoetSamplesPage from "./pages/PoetSamplesPage"
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
 
@@ -70,6 +72,7 @@ function App() {
           }
         />
         <Route path="/knowledge" element={<KnowledgePage />} />
+        <Route path="/poetsamples" element={<PoetSamplesPage />} />
         <Route path="/admin" element={<AdminRoute element={<AdminPage />} />} />
         <Route path="/mod" element={<ModRoute element={<ModeratorPage />} />} />
 
@@ -83,6 +86,7 @@ function App() {
         <Route path="/user/:username" element={<UserPage />} />
         <Route path="/poem/:id" element={<PoemDetail />} />
         <Route path="/collection/:id" element={<CollectionDetail />} />
+        <Route path="/knowledge/poet/:id" element={<PoetKnowledge />}></Route>
       </Routes>
     </Router>
 

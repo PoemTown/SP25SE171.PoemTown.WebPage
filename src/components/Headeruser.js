@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ShopOutlined, BellOutlined, UserOutlined } from "@ant-design/icons";
-import { Dropdown, Menu, Badge, List, message } from "antd";
+import { Dropdown, Menu, Badge, List, message, Avatar } from "antd";
 import { useSignalR } from "../SignalR/SignalRContext";
 import { jwtDecode } from 'jwt-decode';
 import ChatDropdown from "../pages/User/Chat/ChatDropdown";
@@ -40,12 +40,11 @@ const Headeruser = ({ userData }) => {
     if (access_token != null) {
       const decodedToken = jwtDecode(access_token);
       setUserId(decodedToken.UserId);
-  
+
       if (!announcementConnection && userId) {
         createAnnouncementConnection(userId);
       }
     }
-
   }, [access_token, announcementConnection, createAnnouncementConnection, navigate]);
 
   // Fetch announcements after userId is set
@@ -59,7 +58,6 @@ const Headeruser = ({ userData }) => {
 
   // Handle notification click to mark as read
   const handleNotificationClick = async (notif) => {
-    console.log("Notification clicked:", notif);
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/announcements/v1/${notif.id}`, {
         method: "PUT",
@@ -71,9 +69,7 @@ const Headeruser = ({ userData }) => {
       if (!response.ok) {
         message.error("Failed to update notification status");
       }
-      console.log("Notification updated successfully");
 
-      // Mark the notification as read in the state
       setAnnouncements(prev => prev.map(item =>
         item.id === notif.id ? { ...item, isRead: true } : item
       ));
@@ -125,44 +121,65 @@ const Headeruser = ({ userData }) => {
     </Menu>
   );
 
-  const menuItems = [
-    {
-      key: "welcome",
-      label: (
-        <div
-          style={{
-            padding: "8px 12px",
-            fontWeight: "bold",
-            color: "#333",
-            cursor: "default",
-          }}
-        >
-          Chào mừng, {username}
+  const menu = (
+    <Menu
+      style={{
+        width: 220,
+        borderRadius: 10,
+        padding: "10px",
+        backgroundColor: "#fff",
+        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.15)",
+      }}
+    >
+      <Menu.Item disabled style={{ padding: "10px 12px", cursor: "default", borderBottom: "1px solid #eee" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <Avatar style={{ backgroundColor: "#4A90E2" }} icon={<UserOutlined />} />
+          <div>
+            <div style={{ fontWeight: "bold", fontSize: "15px", color:"black"}}>Xin chào {username}</div>
+          </div>
         </div>
-      ),
-    },
-    { key: "profile", label: "Hồ sơ người dùng", onClick: () => navigate("/profile") },
-    { key: "logout", label: (<div style={{color: "#f00"}}>Đăng xuất</div>), onClick: () => { localStorage.clear(); navigate("/"); window.location.reload(); } },
-  ];
+      </Menu.Item>
 
-  const menu = <Menu items={menuItems} />;
-  
+      <Menu.Item
+        key="profile"
+        onClick={() => navigate("/profile")}
+        style={{ padding: "10px 16px", fontSize: "14px", fontWeight: 500 }}
+      >
+        Hồ sơ người dùng
+      </Menu.Item>
+
+      <Menu.Item
+        key="logout"
+        onClick={() => {
+          localStorage.clear();
+          navigate("/");
+          window.location.reload();
+        }}
+        style={{
+          padding: "10px 16px",
+          color: "#f5222d",
+          fontWeight: 500,
+          fontSize: "14px",
+          borderTop: "1px solid #f0f0f0",
+          marginTop: "8px"
+        }}
+      >
+        Đăng xuất
+      </Menu.Item>
+    </Menu>
+  );
+
   return (
     <header style={styles.header}>
       <div style={styles.logo} onClick={() => navigate("/")}>
         <img src={`${process.env.PUBLIC_URL}/logo.png`} alt="PoemTown Logo" style={styles.logoImage} />
       </div>
       <nav style={styles.nav}>
-        <a href="/latest" style={styles.navLink}>
-          Trang chủ
-        </a>
-        <a href="/about-poemtown" style={styles.navLink}>
-          Về PoemTown
-        </a>
-        <a href="#about-us" style={styles.navLink}>
-          Về chúng tôi
-        </a>
-        <a href="/knowledge" style={styles.navLink} >Kiến thức </a>
+        <a href="/latest" style={styles.navLink}>Trang chủ</a>
+        <a href="/about-poemtown" style={styles.navLink}>Về PoemTown</a>
+        <a href="#about-us" style={styles.navLink}>Về chúng tôi</a>
+        <a href="/knowledge" style={styles.navLink}>Kiến thức</a>
+        <a href="/poetsamples" style={styles.navLink}>Nhà thơ nổi tiếng</a>
         {roles.includes("ADMIN") && <a style={styles.navLink} onClick={() => navigate("/admin")}>Dành cho quản trị viên</a>}
         {roles.includes("MODERATOR") && <a style={styles.navLink} onClick={() => navigate("/mod")}>Dành cho kiểm duyệt viên</a>}
       </nav>
@@ -170,15 +187,12 @@ const Headeruser = ({ userData }) => {
         <ChatDropdown userData={userData} refreshKey={refreshKey} setRefreshKey={setRefreshKey} />
         <ShopOutlined style={styles.icon} onClick={() => navigate("/shop")} />
         <Dropdown overlay={notificationMenu} trigger={["click"]} placement="bottomRight">
-          <Badge
-            count={announcements != null ? announcements.filter(notif => !notif.isRead).length : 0}
-            overflowCount={9}
-          >
+          <Badge count={announcements?.filter(notif => !notif.isRead).length || 0} overflowCount={9}>
             <BellOutlined style={styles.icon} />
           </Badge>
         </Dropdown>
         <Dropdown overlay={menu} trigger={["click"]}>
-          <UserOutlined style={{ ...styles.icon, cursor: "pointer" }} />
+          <Avatar style={{ backgroundColor: "#4A90E2", cursor: "pointer" }} icon={<UserOutlined />} />
         </Dropdown>
       </div>
     </header>
@@ -186,13 +200,54 @@ const Headeruser = ({ userData }) => {
 };
 
 const styles = {
-  header: { height: "80px", display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0px 20px", backgroundColor: "#fff", borderBottom: "1px solid #ddd", boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)", flexWrap: "wrap", gap: "10px", cursor: "pointer" },
-  logo: { flex: "1", display: "flex", justifyContent: "flex-start", cursor: "pointer" },
-  logoImage: { height: "60px" },
-  nav: { flex: "2", display: "flex", justifyContent: "center", gap: "20px", flexWrap: "wrap" },
-  navLink: { textDecoration: "none", fontSize: "16px", color: "#333", fontWeight: "bold", padding: "5px 10px" },
-  icons: { flex: "1", display: "flex", justifyContent: "flex-end", alignItems: "center", gap: "20px" },
-  icon: { fontSize: "24px", color: "#4A90E2", cursor: "pointer" },
+  header: {
+    height: "80px",
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "0px 20px",
+    backgroundColor: "#fff",
+    borderBottom: "1px solid #ddd",
+    boxShadow: "0px 2px 4px rgba(0, 0, 0, 0.1)",
+    flexWrap: "wrap",
+    gap: "10px",
+    cursor: "pointer"
+  },
+  logo: {
+    flex: "1",
+    display: "flex",
+    justifyContent: "flex-start",
+    cursor: "pointer"
+  },
+  logoImage: {
+    height: "60px"
+  },
+  nav: {
+    flex: "2",
+    display: "flex",
+    justifyContent: "center",
+    gap: "20px",
+    flexWrap: "wrap"
+  },
+  navLink: {
+    textDecoration: "none",
+    fontSize: "16px",
+    color: "#333",
+    fontWeight: "bold",
+    padding: "5px 10px"
+  },
+  icons: {
+    flex: "1",
+    display: "flex",
+    justifyContent: "flex-end",
+    alignItems: "center",
+    gap: "20px"
+  },
+  icon: {
+    fontSize: "24px",
+    color: "#4A90E2",
+    cursor: "pointer"
+  },
 };
 
 export default Headeruser;
