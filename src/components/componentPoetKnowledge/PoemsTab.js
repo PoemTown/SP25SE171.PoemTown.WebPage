@@ -12,7 +12,7 @@ const PoemsTab = ({ collections, poetId }) => {
 
     const canCreatePoem = roles.includes("ADMIN") || roles.includes("MODERATOR");
     const handleCloseModal = () => {
-        setIsModalVisible(false);
+        // setIsModalVisible(false);
     };
     return (
         <div style={{ padding: "20px" }}>

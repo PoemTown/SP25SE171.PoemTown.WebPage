@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import CollectionCard from "../../../components/componentHomepage/CollectionCard";
 import PoemCard from "../../../components/componentHomepage/PoemCard";
+import { message } from "antd";
 
 const YourBookmark = () => {
     const [isBookmarkCollectionTab, setIsBookmarkCollectionTab] = useState(false);
@@ -56,6 +57,10 @@ const YourBookmark = () => {
     };
 
     const handleBookmark = async (id, isCollection = false) => {
+        if (isLoggedIn === false) {
+            message.error("Vui lòng đăng nhập để sử dụng chức năng này!");
+            return;
+        }
         const endpoint = isCollection
             ? `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`
             : `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;

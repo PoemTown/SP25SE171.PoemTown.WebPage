@@ -293,7 +293,7 @@ const CollectionDetail = () => {
                 <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
                     <div style={{ margin: '0 auto', padding: '5px' }}>
                         {isEditingCollection ?
-                            <CreateCollection collection={collectionDetails} setIsEditingCollection={setIsEditingCollection} setIsCreatingCollection={setIsCreatingCollection} handleBack={handleBack} onCollectionCreated={onCollectionCreated} isKnowledgePoet={true} poetId={collectionDetails.poetSample?.id}/>
+                            <CreateCollection collection={collectionDetails} setIsEditingCollection={setIsEditingCollection} setIsCreatingCollection={setIsCreatingCollection} handleBack={handleBack} onCollectionCreated={onCollectionCreated} isKnowledgePoet={collectionDetails.isFamousPoet} poetId={collectionDetails.poetSample?.id}/>
                             :
                             <div
                                 key={id}

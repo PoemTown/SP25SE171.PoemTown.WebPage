@@ -10,8 +10,18 @@ const CollectionTab = ({ poet }) => {
     const [collections, setCollections] = useState([]);
     const [isCreatingCollection, setIsCreatingCollection] = useState(false);
     const [isEditingCollection, setIsEditingCollection] = useState(false);
+    const [bookmarkedCollections, setBookmarkedCollections] = useState(false);
     const accessToken = localStorage.getItem("accessToken");
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const requestHeaders = {
+        "Content-Type": "application/json",
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+    };
 
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!token);
+    }, []);
 
     useEffect(() => {
         if (storedRole) {
@@ -29,13 +39,16 @@ const CollectionTab = ({ poet }) => {
             const response = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/collections/v1/poet-sample/${poet.id}`,
                 {
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
+                    headers: requestHeaders
                 }
             );
             const data = await response.json();
             setCollections(data.data);
+            const initialCollectionBookmarks = {};
+            data.data.forEach(item => {
+                initialCollectionBookmarks[item.id] = !!item.targetMark;
+            });
+            setBookmarkedCollections(initialCollectionBookmarks);
             console.log("Fetched collections:", data.data);
         } catch (error) {
             console.error("Error fetching collections:", error);
@@ -89,6 +102,38 @@ const CollectionTab = ({ poet }) => {
         }
     };
 
+    const handleBookmark = async (id) => {
+        if (!isLoggedIn) {
+            message.error("Vui lòng đăng nhâp để sử dụng chức năng này");
+            return;
+        }
+
+        console.log(id);
+
+        const endpoint = `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`;
+
+        const currentState = bookmarkedCollections[id];
+
+        try {
+            const response = await fetch(endpoint, {
+                method: currentState ? "DELETE" : "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`
+                }
+            });
+
+            if (response.ok) {
+                setBookmarkedCollections(prev => ({
+                    ...prev,
+                    [id]: !currentState
+                }));
+            }
+        } catch (error) {
+            console.error("Error updating bookmark:", error);
+        }
+    };
+
     return (
         <>
 
@@ -133,6 +178,8 @@ const CollectionTab = ({ poet }) => {
                                     item={item}
                                     isKnowledgePoet={true}
                                     poetName={poet.name}
+                                    onBookmark={handleBookmark}
+                                    isBookmarked={bookmarkedCollections[item.id] || false}
                                     handleDeleteCollection={() => handleDeleteCollection(item.id)}
                                 />
                             ))}
