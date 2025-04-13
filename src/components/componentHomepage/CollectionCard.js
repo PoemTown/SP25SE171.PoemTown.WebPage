@@ -75,40 +75,40 @@ const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity, isKnowled
                             {isBookmarked ? <IoBookmark color="#FFCE1B" /> : <CiBookmark />}
                         </button>
                         <Dropdown
-                              overlay={
+                            overlay={
                                 <Menu>
-                                  <Menu.Item key="edit">
-                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                      <IoIosLink color="#666" size={16} />
-                                      <div>Sao chép liên kết</div>
-                                    </div>
-                                  </Menu.Item>
-                                  {hasPermission === true && (
-                                    <Menu.Item
-                                      key="delete"
-                                      onClick={handleDeleteCollection}
-                                    >
-                                      ❌ Xóa
+                                    <Menu.Item key="edit">
+                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                            <IoIosLink color="#666" size={16} />
+                                            <div>Sao chép liên kết</div>
+                                        </div>
                                     </Menu.Item>
-                                  )}
+                                    {hasPermission === true && (
+                                        <Menu.Item
+                                            key="delete"
+                                            onClick={handleDeleteCollection}
+                                        >
+                                            ❌ Xóa
+                                        </Menu.Item>
+                                    )}
                                 </Menu>
-                              }
-                              trigger={["click"]}
-                            >
-                              <IoIosMore
+                            }
+                            trigger={["click"]}
+                        >
+                            <IoIosMore
                                 style={{
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  padding: "4px",
-                                  fontSize: "1.2rem",
-                                  color: "#666",
-                                  display: "flex",
-                                  alignItems: "center",
+                                    background: "none",
+                                    border: "none",
+                                    cursor: "pointer",
+                                    padding: "4px",
+                                    fontSize: "1.2rem",
+                                    color: "#666",
+                                    display: "flex",
+                                    alignItems: "center",
                                 }}
                                 onClick={(e) => e.preventDefault()}
-                              />
-                            </Dropdown>
+                            />
+                        </Dropdown>
                     </div>
                 </div>
                 <p style={{
@@ -132,20 +132,14 @@ const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity, isKnowled
                     marginTop: "auto",
                 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                        {item.totalChapter ?
-                            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                <LuBook />
-                                <span>{item.totalChapter}</span>
-                            </div>
-                            : <></>
-                        }
-                        {item.totalRecord ?
-                            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                <MdOutlineKeyboardVoice />
-                                <span>{item.totalRecord}</span>
-                            </div>
-                            : <></>
-                        }
+                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                            <LuBook />
+                            <span>{item.totalChapter || 0}</span>
+                        </div>
+                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                            <MdOutlineKeyboardVoice />
+                            <span>{item.totalRecord || 0}</span>
+                        </div>
                     </div>
                     {/* Xem chi tiết bộ sưu tập */}
                     <div

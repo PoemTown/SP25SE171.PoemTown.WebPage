@@ -1,56 +1,54 @@
 import React, { useState, useEffect } from "react";
+import CreatePoemForPoetSample from "./CreatePoemForPoetSample";
 
-const PoemsTab = () => {
-  const [isCreatingPoem, setIsCreatingPoem] = useState(false);
-  const [roles, setRoles] = useState([]);
+const PoemsTab = ({ collections, poetId }) => {
+    const [isCreatingPoem, setIsCreatingPoem] = useState(false);
+    const [roles, setRoles] = useState([]);
 
-  useEffect(() => {
-    const storedRoles = JSON.parse(localStorage.getItem("role")) || [];
-    setRoles(storedRoles);
-  }, []);
+    useEffect(() => {
+        const storedRoles = JSON.parse(localStorage.getItem("role")) || [];
+        setRoles(storedRoles);
+    }, []);
 
-  const canCreatePoem = roles.includes("ADMIN") || roles.includes("MODERATOR");
+    const canCreatePoem = roles.includes("ADMIN") || roles.includes("MODERATOR");
+    const handleCloseModal = () => {
+        setIsModalVisible(false);
+    };
+    return (
+        <div style={{ padding: "20px" }}>
+            {canCreatePoem && !isCreatingPoem && (
+                <button
+                    onClick={() => setIsCreatingPoem(true)}
+                    style={{
+                        backgroundColor: "#007bff",
+                        color: "white",
+                        padding: "12px 20px",
+                        borderRadius: "5px",
+                        border: "none",
+                        fontWeight: "bold",
+                        cursor: "pointer",
+                        display: "block",
+                        marginBottom: "20px",
+                    }}
+                >
+                    SÁNG TÁC THƠ
+                </button>
+            )}
 
-  return (
-    <div style={{ padding: "20px" }}>
-      {canCreatePoem && (
-        <button
-          onClick={() => setIsCreatingPoem(true)}
-          style={{
-            backgroundColor: "#007bff",
-            color: "white",
-            padding: "12px 20px",
-            borderRadius: "5px",
-            border: "none",
-            fontWeight: "bold",
-            cursor: "pointer",
-            display: "block",
-            marginBottom: "20px",
-          }}
-        >
-          SÁNG TÁC THƠ
-        </button>
-      )}
+            {!isCreatingPoem ? (
+                <div>Nội dung thơ sẽ được hiển thị ở đây</div>
+            ) : (
+                <CreatePoemForPoetSample
+                    collections={collections}
+                    poetId={poetId}
+                    setDrafting={false}
+                    onBack={() => setIsCreatingPoem(false)}
+                    onClose={handleCloseModal}
+                />
 
-      {!isCreatingPoem ? (
-        <div>Nội dung thơ sẽ được hiển thị ở đây</div>
-      ) : (
-        <div>
-          <textarea
-            placeholder="Hãy viết bài thơ của bạn..."
-            style={{
-              width: "100%",
-              minHeight: "150px",
-              padding: "10px",
-              fontSize: "16px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",
-            }}
-          ></textarea>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default PoemsTab;

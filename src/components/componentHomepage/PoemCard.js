@@ -7,7 +7,7 @@ import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
 import { FaUserPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -29,7 +29,7 @@ const poemType = {
     11: "Thơ tám chữ",
 }
 
-const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove}) => {
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove }) => {
 
     const [moveMenuItems, setMoveMenuItems] = useState([]);
 
@@ -66,18 +66,18 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
     );
 
 
-       const handleMouseEnter = (poemId) => {
-            console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
-            console.log("aaaa" + collections);
-            setMoveMenuItems(
-                collections.map((collection) => (
-                    <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
-                        📂 {collection.name}
-                    </Menu.Item>
-                ))
-            );
-        };
-    
+    const handleMouseEnter = (poemId) => {
+        console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
+        console.log("aaaa" + collections);
+        setMoveMenuItems(
+            collections.map((collection) => (
+                <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
+                    📂 {collection.name}
+                </Menu.Item>
+            ))
+        );
+    };
+
 
     const collectionMenu = (
         <Menu>
@@ -100,7 +100,13 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
         ? collectionMenu
         : defaultMenu;
 
-
+    const handleNavigate = () => {
+        if (item.user !== null) {
+            navigate(`/user/${item.user?.userName}`)
+        } else if (item.poetSample !== null) {
+            navigate(`/knowledge/poet/${item.poetSample?.id}`)
+        }
+    }
 
     return (
         <div style={styles.poemCard}>
@@ -118,7 +124,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             </div>
             <div style={styles.avatarContainer}>
                 <img
-                    src={item.user?.avatar || "./default_avatar.png"}
+                    src={item.user ? item.user?.avatar : item.poetSample?.avatar || "./default_avatar.png"}
                     alt="avatar"
                     style={styles.avatar}
                     onError={(e) => { e.target.src = "./default_avatar.png"; }}
@@ -127,7 +133,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
-                        <span style={styles.author} onClick={() => navigate(`/user/${item.user?.userName}`)}> {item.user?.displayName || 'Anonymous'}</span>
+                        <span style={styles.author} onClick={handleNavigate}> {item.user ? item.user?.displayName : item.poetSample?.name || 'Anonymous'}</span>
                         <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
@@ -160,7 +166,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                         </p>
                     </div>
                 </div>
-                <p style={styles.poemCollection}>Tập thơ: <span style={{fontWeight: "bold", cursor: "pointer"}} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
+                <p style={styles.poemCollection}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
                 <div style={styles.footerContainer}>
                     <div style={styles.statsContainer}>
                         <button style={styles.likeButton} onClick={() => onLike(item.id)}>
@@ -175,7 +181,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     <button
                         style={{
                             ...styles.viewButton,
-                            ...( isHovered && styles.viewButtonHover)
+                            ...(isHovered && styles.viewButtonHover)
                         }}
                         onMouseEnter={() => setIsHovered(true)}
                         onMouseLeave={() => setIsHovered(false)}
@@ -286,7 +292,7 @@ const styles = {
         marginBottom: "auto",
         position: 'relative',
     },
-    
+
     poemTextContainer: {
         display: '-webkit-box',
         WebkitLineClamp: 5,
