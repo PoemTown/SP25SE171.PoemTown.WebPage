@@ -118,7 +118,7 @@ const PoemsTab = ({ collections, poetId }) => {
     };
 
     return (
-        <div style={{ padding: "20px" }}>
+        <div style={{ padding: "20px", maxWidth: "1200px" }}>
             {canCreatePoem && !isCreatingPoem && (
                 <button
                     onClick={() => setIsCreatingPoem(true)}
@@ -147,6 +147,7 @@ const PoemsTab = ({ collections, poetId }) => {
                         setIsCreatingPoem(false);
                         fetchPoems(); // Refresh danh sách sau khi tạo mới
                     }}
+                    onPoemCreated={fetchPoems}
                 />
             ) : (
                 <Spin spinning={loading}>

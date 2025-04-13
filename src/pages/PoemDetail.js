@@ -777,27 +777,29 @@ const PoemDetail = () => {
                 </div>
                 <div style={{ flex: 2, }}>
                     <div style={{ display: "flex", gap: "10px" }}>
-                        <img src={poem?.user.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff" }} />
+                        <img src={poem?.user ? poem?.user?.avatar : poem?.poetSample?.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff" }} />
                         <div>
-                            <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.user.displayName}</p>
-                            <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user.userName}</p>
-                            <div style={{ marginTop: "10px" }}>
-                                {poem?.isMine ? <></> :
-                                    poem?.isFollowed ? <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button> : <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
-                                }
-                            </div>
+                            <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.user ? poem?.user?.displayName : poem?.poetSample?.name}</p>
+                            {poem?.user ? <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user?.userName}</p> : <></>}
+                            {poem?.isFamousPoet ? <></> :
+                                <div style={{ marginTop: "10px" }}>
+                                    {poem?.isMine ? <></> :
+                                        poem?.isFollowed ? <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button> : <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
+                                    }
+                                </div>
+                            }
                         </div>
-                        {poem?.saleVersion.status !== 4 && (
+                        {poem?.saleVersion?.status !== 4 && (
                             <div style={{ margin: "0 auto" }}>
                                 <Button
                                     type="primary"
                                     onClick={() => {
-                                        if (poem?.saleVersion.status === 1) {
+                                        if (poem?.saleVersion?.status === 1) {
                                             showPurchaseConfirm(poem.id, poem?.saleVersion);
                                         }
                                     }}
                                 >
-                                    {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                    {poem?.saleVersion?.status === 1 ? "Mua ngay" : "Sử dụng"}
                                 </Button>
 
 
