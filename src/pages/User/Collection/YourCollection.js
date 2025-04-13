@@ -23,6 +23,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
   const accessToken = localStorage.getItem("accessToken");
   const [bookmarkedCollections, setBookmarkedCollections] = useState(new Set());
   const [isLoading, setIsLoading] = useState(true);
+  const [isEditingCollection, setIsEditingCollection] = useState(false);
   const navigate = useNavigate();
   // State phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -257,6 +258,11 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
               <CreateCollection
                 handleBack={handleBack}
                 setIsCreatingCollection={setIsCreatingCollection}
+                setIsEditingCollection={setIsEditingCollection}
+                onCollectionCreated={() => {
+                  setCurrentPage(1); // (optional) Reset to page 1
+                  setReloadTrigger(prev => !prev);
+                }}
               />
             </div>
           ) : (
