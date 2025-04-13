@@ -29,10 +29,18 @@ const poemType = {
     11: "Thơ tám chữ",
 }
 
-const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove }) => {
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collections, handleMove }) => {
     const [moveMenuItems, setMoveMenuItems] = useState([]);
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
+    const [roles, setRoles] = useState([]);
+
+    useEffect(() => {
+        const userRoles = JSON.parse(localStorage.getItem('role')) || [];
+        setRoles(userRoles);
+    }, []);
+
+    const canCreatePoem = roles.includes("ADMIN") || roles.includes("MODERATOR");
 
     // Xử lý nội dung bài thơ
     const lines = item.content?.split('\n') || [];
@@ -44,26 +52,30 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
         ? `${item.description.substring(0, 80)}...`
         : item.description;
 
-    // Menu dropdown
-    const defaultMenu = (
-        <Menu>
-            <Menu.Item key="report">
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <MdReport color="red" size={16} /><div> Báo cáo </div>
-                </div>
-            </Menu.Item>
-            <Menu.Item key="copylink">
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <IoIosLink color="#666" size={16} /><div> Sao chép liên kết </div>
-                </div>
-            </Menu.Item>
-            <Menu.Item key="follow">
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <FaUserPlus color="#666" size={16} /><div> Theo dõi nhà thơ </div>
-                </div>
-            </Menu.Item>
-        </Menu>
-    );
+    // Hàm xóa bài thơ
+    const handleDelete = async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        try {
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${item.id}?poetSampleId=${poetId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}` 
+                    }
+                }
+            );
+    
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Lỗi khi xóa bài thơ:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Lỗi khi gọi API xóa bài thơ:', error);
+        }
+    };
 
     const handleMouseEnter = (poemId) => {
         setMoveMenuItems(
@@ -77,7 +89,9 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 
     const collectionMenu = (
         <Menu>
-            <Menu.Item key="delete">❌ Xóa bài thơ</Menu.Item>
+            <Menu.Item key="delete" onClick={handleDelete}>
+                ❌ Xóa bài thơ
+            </Menu.Item>
             <Menu.SubMenu
                 key="move"
                 title="🔄 Chuyển bài thơ"
@@ -88,9 +102,9 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
         </Menu>
     );
 
-    const overlayMenu = collections && collections.length > 0
+    const overlayMenu = (collections && collections.length > 0 && canCreatePoem)
         ? collectionMenu
-        : defaultMenu;
+        : null;
 
     const handleNavigate = () => {
         navigate(`/knowledge/poet/${item.poetSample?.id}`);
@@ -129,11 +143,13 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                         <button style={styles.iconButton} onClick={() => onBookmark(item.id)}>
                             {bookmarked ? <IoBookmark color="#FFCE1B" /> : <CiBookmark />}
                         </button>
-                        <Dropdown overlay={overlayMenu} trigger={["click"]}>
-                            <button style={styles.iconButton}>
-                                <IoIosMore />
-                            </button>
-                        </Dropdown>
+                        {overlayMenu && (
+                            <Dropdown overlay={overlayMenu} trigger={["click"]}>
+                                <button style={styles.iconButton}>
+                                    <IoIosMore />
+                                </button>
+                            </Dropdown>
+                        )}
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
@@ -143,13 +159,13 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                 )}
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
-                        <span style={styles.quote}>“</span>
+                        <span style={styles.quote}>"</span>
                         {displayedLines.map((line, index) => (
                             <p key={index} style={styles.poemLine}>{line}</p>
                         ))}
                         <p style={styles.poemLine}>
                             {hasMoreLines && <span style={styles.ellipsis}>...</span>}
-                            <span style={styles.quoteClose}>”</span>
+                            <span style={styles.quoteClose}>"</span>
                         </p>
                     </div>
                 </div>
@@ -191,6 +207,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
         </div>
     )
 };
+
 const styles = {
     poemImageContainer: {
         width: "168px",
@@ -204,8 +221,8 @@ const styles = {
         width: "168px",
         maxWidth: "168px",
         height: "100%",
-        objectFit: "cover", // This will prevent stretching
-        objectPosition: "center" // Center the image
+        objectFit: "cover", 
+        objectPosition: "center"
     },
 
     avatarContainer: {
@@ -236,10 +253,11 @@ const styles = {
         border: "1px solid #ccc",
         boxShadow: "0px 3px 6px 0px #0000004D",
         alignItems: "stretch",
-        width: "100%", // Ensure it takes available width
-        marginBottom: "40px",
-        padding: "20px 0"
-    },
+        width: "80%",
+        margin: "0 auto 40px", 
+        padding: "20px"
+      },
+      
     cardHeader: {
         display: "flex",
         justifyContent: "space-between",

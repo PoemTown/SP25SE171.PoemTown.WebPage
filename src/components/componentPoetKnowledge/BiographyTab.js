@@ -22,7 +22,7 @@ const BiographyWithStats = ({ poet, achievements, userStatistic, isLoading }) =>
             display: "flex",
             gap: "30px",
             padding: "40px 40px",
-            maxWidth: "2000px",  
+            maxWidth: "1800px",  
             margin: "0 auto",
             fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
         }}>
@@ -237,7 +237,7 @@ const BiographyTab = ({ poet }) => {
                         background: "#fff",
                         position: "relative",
                         zIndex: 1,
-                        marginLeft: "-20px"  // Điều chỉnh để bù lại padding-left
+                        marginLeft: "-20px"  
                     }}>
                         <span style={{ 
                             color: "#e74c3c",

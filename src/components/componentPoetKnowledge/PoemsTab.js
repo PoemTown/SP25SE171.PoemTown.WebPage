@@ -118,7 +118,7 @@ const PoemsTab = ({ collections, poetId }) => {
     };
 
     return (
-        <div style={{ padding: "20px", maxWidth: "1200px" }}>
+        <div style={{ padding: "0", maxWidth: "1200px" }}>
             {canCreatePoem && !isCreatingPoem && (
                 <button
                     onClick={() => setIsCreatingPoem(true)}
@@ -131,7 +131,8 @@ const PoemsTab = ({ collections, poetId }) => {
                         fontWeight: "bold",
                         cursor: "pointer",
                         display: "block",
-                        marginBottom: "20px",
+                        marginTop: "10px",
+                        marginLeft: "40px"
                     }}
                 >
                     SÁNG TÁC THƠ
@@ -145,7 +146,7 @@ const PoemsTab = ({ collections, poetId }) => {
                     setDrafting={false}
                     onBack={() => {
                         setIsCreatingPoem(false);
-                        fetchPoems(); // Refresh danh sách sau khi tạo mới
+                        fetchPoems();
                     }}
                     onPoemCreated={fetchPoems}
                 />
@@ -163,6 +164,7 @@ const PoemsTab = ({ collections, poetId }) => {
                                     onLike={handleLike}
                                     collections={collections}
                                     handleMove={handleMove}
+                                    poetId={poetId}
                                 />
                             ))
                         ) : (

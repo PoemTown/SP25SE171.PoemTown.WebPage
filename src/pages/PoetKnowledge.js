@@ -206,7 +206,6 @@ const PoetKnowledge = () => {
                 width: "100%",
                 minHeight: "300px",
                 backgroundColor: "white",
-                padding: "20px"
             }}>
                 {renderTabContent()}
             </div>
