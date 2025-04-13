@@ -53,7 +53,7 @@ const PoetKnowledge = () => {
             case "Thơ của bạn":
                 return <PoemsTab />;
             case "Bộ sưu tập của bạn":
-                return <CollectionTab />;
+                return <CollectionTab poet={poet}/>;
             default:
                 return null;
         }
