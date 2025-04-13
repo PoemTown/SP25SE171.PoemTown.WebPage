@@ -26,6 +26,8 @@ import {
 import axios from 'axios';
 import Headeruser from '../components/Headeruser';
 import Headerdefault from '../components/Headerdefault';
+import { useNavigate } from 'react-router-dom';
+
 const { Title, Text, Paragraph } = Typography;
 
 const PoetSamplesPage = () => {
@@ -89,7 +91,7 @@ const PoetSamplesPage = () => {
         setPagination(prev => ({ ...prev, current: 1 }));
         fetchPoets();
     };
-
+    const navigate = useNavigate();
     const formatDate = (dateString) => {
         if (!dateString) return 'Unknown';
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
@@ -130,12 +132,13 @@ const PoetSamplesPage = () => {
                 </div>
 
                 {/* Search Section */}
-                <Card bordered={false} style={{
-                    marginBottom: '32px',
-                    borderRadius: '12px',
-                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
-                    background: '#fff'
-                }}>
+                <Card bordered={false}
+                    style={{
+                        marginBottom: '32px',
+                        borderRadius: '12px',
+                        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.05)',
+                        background: '#fff'
+                    }}>
                     <Row gutter={[16, 16]} align="middle" justify="center">
                         <Col xs={24} sm={18} md={16} lg={14}>
                             <Input
@@ -206,6 +209,7 @@ const PoetSamplesPage = () => {
                                 {poets.map(poet => (
                                     <Col key={poet.id} xs={24} sm={12} md={8} lg={6}>
                                         <Card
+                                            onClick={() => navigate(`/knowledge/poet/${poet.id}`)}
                                             hoverable
                                             bordered={false}
                                             style={{

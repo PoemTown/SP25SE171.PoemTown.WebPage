@@ -3,7 +3,7 @@ import axios from "axios";
 import React, { useEffect, useState } from "react";
 import { FiArrowLeft } from "react-icons/fi";
 
-const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreatingCollection }) => {
+const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditingCollection, setIsCreatingCollection, isKnowledgePoet, poetId, onCollectionCreated }) => {
     const [collectionFile, setCollectionFile] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [isModalAIRenderImageOpen, setIsModalAIRenderImageOpen] = useState(false);
@@ -51,22 +51,46 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsCreat
         }
         try {
             setIsLoading(true);
-            const url = `${process.env.REACT_APP_API_BASE_URL}/collections/v1`;
-            const method = collection ? "put" : "post";
-            const response = await axios[method](url, data, {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                    "Content-Type": "application/json",
-                },
-            });
+            console.log("isKnowledgePoet", isKnowledgePoet)
+            if (isKnowledgePoet) {
+                const method = collection ? "put" : "post";
+                let url = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/poet-sample/${poetId}`;
+                if (method === "post") {
+                    url = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/poet-sample/${poetId}`;
+                } else {
+                    url = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/poet-sample?poetSampleId=${poetId}`;
+                }
+                const response = await axios[method](url, data, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                });
+            } else {
+                const url = `${process.env.REACT_APP_API_BASE_URL}/collections/v1`;
+                const method = collection ? "put" : "post";
+                const response = await axios[method](url, data, {
+                    headers: {
+                        Authorization: `Bearer ${token}`,
+                        "Content-Type": "application/json",
+                    },
+                });
+            }
             message.success(collection ? "Cập nhật tập thơ thành công!" : "Tạo tập thơ thành công!");
-            console.log("Response:", response.data);
+            if (onCollectionCreated) {
+                onCollectionCreated();
+            }
         } catch (error) {
             console.error("Error:", error);
             message.error("Có lỗi xảy ra!");
         } finally {
             setIsLoading(false);
-            setIsCreatingCollection(false);
+            if (setIsCreatingCollection !== null) {
+                setIsCreatingCollection(false);
+            }
+            if (setIsEditingCollection !== null) {
+                setIsEditingCollection(false);
+            }
         }
     };
 

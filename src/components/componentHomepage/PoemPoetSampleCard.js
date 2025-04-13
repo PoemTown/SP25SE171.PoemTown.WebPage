@@ -29,59 +29,67 @@ const poemType = {
     11: "Thơ tám chữ",
 }
 
-const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove }) => {
-
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collections, handleMove }) => {
     const [moveMenuItems, setMoveMenuItems] = useState([]);
+    const navigate = useNavigate();
+    const [isHovered, setIsHovered] = useState(false);
+    const [roles, setRoles] = useState([]);
 
+    useEffect(() => {
+        const userRoles = JSON.parse(localStorage.getItem('role')) || [];
+        setRoles(userRoles);
+    }, []);
+
+    const canCreatePoem = roles.includes("ADMIN") || roles.includes("MODERATOR");
+
+    // Xử lý nội dung bài thơ
     const lines = item.content?.split('\n') || [];
     const displayedLines = lines.slice(0, 4);
     const hasMoreLines = lines.length > 4;
-    const navigate = useNavigate();
+    
+    // Xử lý mô tả
     const truncatedDescription = item.description?.length > 80
         ? `${item.description.substring(0, 80)}...`
         : item.description;
 
-    const [isHovered, setIsHovered] = useState(false);
-
-
-    // Menu dropdown mặc định (cho trường hợp action khác "collection")
-    const defaultMenu = (
-        <Menu>
-            <Menu.Item key="report">
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <MdReport color="red" size={16} /><div> Báo cáo </div>
-                </div>
-            </Menu.Item>
-            <Menu.Item key="copylink">
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <IoIosLink color="#666" size={16} /><div> Sao chép liên kết </div>
-                </div>
-            </Menu.Item>
-            <Menu.Item key="follow">
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <FaUserPlus color="#666" size={16} /><div> Theo dõi người dùng </div>
-                </div>
-            </Menu.Item>
-        </Menu>
-    );
-
+    // Hàm xóa bài thơ
+    const handleDelete = async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        try {
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${item.id}?poetSampleId=${poetId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}` 
+                    }
+                }
+            );
+    
+            if (response.ok) {
+                window.location.reload();
+            } else {
+                console.error('Lỗi khi xóa bài thơ:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Lỗi khi gọi API xóa bài thơ:', error);
+        }
+    };
 
     const handleMouseEnter = (poemId) => {
-        console.log("SubMenu được mở, gọi API hoặc cập nhật dữ liệu...");
-        console.log("aaaa" + collections);
         setMoveMenuItems(
-            collections.map((collection) => (
+            collections?.map((collection) => (
                 <Menu.Item key={collection.id} onClick={() => handleMove(collection.id, poemId)}>
-                    📂 {collection.name}
+                    📂 {collection.collectionName}
                 </Menu.Item>
-            ))
+            )) || []
         );
     };
 
-
     const collectionMenu = (
         <Menu>
-            <Menu.Item key="delete" >
+            <Menu.Item key="delete" onClick={handleDelete}>
                 ❌ Xóa bài thơ
             </Menu.Item>
             <Menu.SubMenu
@@ -90,22 +98,16 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                 onTitleMouseEnter={() => handleMouseEnter(item.id)}
             >
                 {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
-
             </Menu.SubMenu>
         </Menu>
     );
 
-    // Chọn overlay menu dựa trên prop action
-    const overlayMenu = collections && collections.length > 0
+    const overlayMenu = (collections && collections.length > 0 && canCreatePoem)
         ? collectionMenu
-        : defaultMenu;
+        : null;
 
     const handleNavigate = () => {
-        if (item.user !== null) {
-            navigate(`/user/${item.user?.userName}`)
-        } else if (item.poetSample !== null) {
-            navigate(`/knowledge/poet/${item.poetSample?.id}`)
-        }
+        navigate(`/knowledge/poet/${item.poetSample?.id}`);
     }
 
     return (
@@ -116,7 +118,6 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     alt="anh minh hoa"
                     style={styles.poemImage}
                     onError={(e) => {
-                        console.log("Image failed to load, switching to fallback");
                         e.target.onerror = null;
                         e.target.src = "/anhminhhoa.png";
                     }}
@@ -124,7 +125,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             </div>
             <div style={styles.avatarContainer}>
                 <img
-                    src={item.user ? item.user?.avatar : item.poetSample?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
+                    src={item.poetSample?.avatar || "./default_avatar.png"}
                     alt="avatar"
                     style={styles.avatar}
                     onError={(e) => { e.target.src = "./default_avatar.png"; }}
@@ -133,40 +134,52 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
-                        <span style={styles.author} onClick={handleNavigate}> {item.user ? item.user?.displayName : item.poetSample?.name || 'Anonymous'}</span>
+                        <span style={styles.author} onClick={handleNavigate}>
+                            {item.poetSample?.name || 'Nhà thơ nổi tiếng'}
+                        </span>
                         <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
                         <button style={styles.iconButton} onClick={() => onBookmark(item.id)}>
                             {bookmarked ? <IoBookmark color="#FFCE1B" /> : <CiBookmark />}
                         </button>
-
-
-                        <Dropdown overlay={overlayMenu} trigger={["click"]}>
-                            <button style={styles.iconButton}>
-                                <IoIosMore />
-                            </button>
-                        </Dropdown>
-
-
+                        {overlayMenu && (
+                            <Dropdown overlay={overlayMenu} trigger={["click"]}>
+                                <button style={styles.iconButton}>
+                                    <IoIosMore />
+                                </button>
+                            </Dropdown>
+                        )}
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
                 <p style={styles.poemType}>Thể loại: {poemType[item.type]}</p>
-                <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
+                {item.description && (
+                    <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
+                )}
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
-                        <span style={styles.quote}>“</span>
+                        <span style={styles.quote}>"</span>
                         {displayedLines.map((line, index) => (
                             <p key={index} style={styles.poemLine}>{line}</p>
                         ))}
                         <p style={styles.poemLine}>
                             {hasMoreLines && <span style={styles.ellipsis}>...</span>}
-                            <span style={styles.quoteClose}>”</span>
+                            <span style={styles.quoteClose}>"</span>
                         </p>
                     </div>
                 </div>
-                <p style={styles.poemCollection}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
+                {item.collection && (
+                    <p style={styles.poemCollection}>
+                        Tập thơ: 
+                        <span 
+                            style={{ fontWeight: "bold", cursor: "pointer" }} 
+                            onClick={() => navigate(`/collection/${item.collection.id}`)}
+                        >
+                            {item.collection.collectionName}
+                        </span>
+                    </p>
+                )}
                 <div style={styles.footerContainer}>
                     <div style={styles.statsContainer}>
                         <button style={styles.likeButton} onClick={() => onLike(item.id)}>
@@ -208,8 +221,8 @@ const styles = {
         width: "168px",
         maxWidth: "168px",
         height: "100%",
-        objectFit: "cover", // This will prevent stretching
-        objectPosition: "center" // Center the image
+        objectFit: "cover", 
+        objectPosition: "center"
     },
 
     avatarContainer: {
@@ -240,10 +253,11 @@ const styles = {
         border: "1px solid #ccc",
         boxShadow: "0px 3px 6px 0px #0000004D",
         alignItems: "stretch",
-        width: "100%", // Ensure it takes available width
-        marginBottom: "40px",
-        padding: "20px 0"
-    },
+        width: "80%",
+        margin: "0 auto 40px", 
+        padding: "20px"
+      },
+      
     cardHeader: {
         display: "flex",
         justifyContent: "space-between",

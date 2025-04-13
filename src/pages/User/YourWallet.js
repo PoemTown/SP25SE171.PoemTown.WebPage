@@ -41,7 +41,8 @@ const transactionTypeMap = {
   4: "Bài thơ",
   5: "Rút tiền",
   6: "Ủng hộ",
-  7: "Tiền hoa hồng"
+  7: "Tiền hoa hồng", 
+  8: "Rút tiền"
 };
 
 const orderTypeMap = {
@@ -99,7 +100,7 @@ const YourWallet = () => {
       }
 
       const response = await fetch(
-      `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/mine`,
+        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/mine`,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -107,14 +108,14 @@ const YourWallet = () => {
           },
         }
       );
-      
+
       const result = await response.json();
-      
+
       // Xử lý theo cấu trúc response mẫu
       if (result && typeof result.walletBalance !== 'undefined') {
         setWalletBalance(result.walletBalance);
         setWalletStatus(result.walletStatus);
-        
+
         // Log để debug
         console.log('Wallet info fetched:', {
           balance: result.walletBalance,
@@ -400,10 +401,10 @@ const YourWallet = () => {
       render: (status) => {
         const color = transactionStatusMap[status]?.color || "default";
         const text = transactionStatusMap[status]?.text || "Không xác định";
-    
+
         return <span style={{ color }}>{text}</span>;
       },
-    },    
+    },
     {
       title: "Mô tả",
       dataIndex: "description",
@@ -420,13 +421,13 @@ const YourWallet = () => {
       key: "amount",
       render: (_, record) => {
         const { amount, isAddToWallet } = record;
-    
+
         if (amount == null) return "";
-    
+
         const sign = isAddToWallet === true ? "+" : isAddToWallet === false ? "-" : "";
         return `${sign}₫${amount.toLocaleString()}`;
       },
-    },      
+    },
     {
       title: "Số dư còn lại",
       dataIndex: "balance",
@@ -471,10 +472,10 @@ const YourWallet = () => {
       render: (status) => {
         const color = orderStatusMap[status]?.color || "default";
         const text = orderStatusMap[status]?.text || "Không xác định";
-    
+
         return <span style={{ color }}>{text}</span>;
       },
-    },    
+    },
     {
       title: "Thao tác",
       key: "action",
@@ -552,7 +553,7 @@ const YourWallet = () => {
               {
                 type: 'number',
                 min: 10000,
-                message: 'Số tiền tối thiểu là 10,000 VNĐ'
+                message: 'Số tiền tối thiểu là 10,000 VNĐ',
               },
             ]}
           >
@@ -570,32 +571,61 @@ const YourWallet = () => {
             label="Phương thức thanh toán"
             rules={[{ required: true, message: "Vui lòng chọn phương thức thanh toán" }]}
           >
-            <Radio.Group>
-              {paymentMethodsLoading ? (
-                <div>Đang tải phương thức thanh toán...</div>
-              ) : paymentMethods.length > 0 ? (
-                paymentMethods.map(method => (
-                  <Radio key={method.id} value={method.id}>
-                    <Space>
-                      {method.imageIcon && (
-                        <Image
-                          src={method.imageIcon}
-                          alt={method.name}
-                          width={24}
-                          preview={false}
-                        />
+            {paymentMethodsLoading ? (
+              <div>Đang tải phương thức thanh toán...</div>
+            ) : paymentMethods.length > 0 ? (
+              <Radio.Group style={{ width: '90%' }}>
+                <Space direction="vertical" style={{ width: '100%' }}>
+                  {paymentMethods.map(method => (
+                    <div
+                      key={method.id}
+                      style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'space-between',
+                        border: '1px solid #d9d9d9',
+                        borderRadius: 8,
+                        padding: 12,
+                        width: '100%',
+                        backgroundColor: '#fafafa',
+                      }}
+                    >
+                      <Radio value={method.id} style={{ marginRight: 16 }} />
+                      <Space style={{ flexGrow: 1 }}>
+                        {method.imageIcon && (
+                          <Image
+                            src={method.imageIcon}
+                            alt={method.name}
+                            width={32}
+                            preview={false}
+                          />
+                        )}
+                        <span style={{ fontSize: 16, fontWeight: 500 }}>{method.name}</span>
+                      </Space>
+                      {/* Optional: Card types (Visa/MasterCard/etc.) */}
+                      {method.cardIcons?.length > 0 && (
+                        <Space>
+                          {method.cardIcons.map((icon, idx) => (
+                            <Image
+                              key={idx}
+                              src={icon}
+                              width={28}
+                              preview={false}
+                            />
+                          ))}
+                        </Space>
                       )}
-                      {method.name}
-                    </Space>
-                  </Radio>
-                ))
-              ) : (
-                <div>Không có phương thức thanh toán khả dụng</div>
-              )}
-            </Radio.Group>
+                    </div>
+                  ))}
+                </Space>
+              </Radio.Group>
+            ) : (
+              <div>Không có phương thức thanh toán khả dụng</div>
+            )}
           </Form.Item>
         </Form>
       </Modal>
+
 
       {/* Modal chi tiết đơn hàng */}
       <Modal
