@@ -51,6 +51,7 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
         }
         try {
             setIsLoading(true);
+            console.log("isKnowledgePoet", isKnowledgePoet)
             if (isKnowledgePoet) {
                 const method = collection ? "put" : "post";
                 let url = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/poet-sample/${poetId}`;
