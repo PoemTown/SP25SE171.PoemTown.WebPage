@@ -9,6 +9,7 @@ const CollectionTab = ({ poet }) => {
     const [hasPermission, setHasPermission] = useState(false);
     const [collections, setCollections] = useState([]);
     const [isCreatingCollection, setIsCreatingCollection] = useState(false);
+    const [isEditingCollection, setIsEditingCollection] = useState(false);
     const accessToken = localStorage.getItem("accessToken");
 
 
@@ -98,6 +99,7 @@ const CollectionTab = ({ poet }) => {
                             <CreateCollection
                                 handleBack={handleBack}
                                 setIsCreatingCollection={setIsCreatingCollection}
+                                setIsEditingCollection={setIsEditingCollection}
                                 isKnowledgePoet={true}
                                 poetId={poet.id}
                                 onCollectionCreated={fetchCollections}
