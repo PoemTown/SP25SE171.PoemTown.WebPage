@@ -11,6 +11,7 @@ import CollectionTab from "../components/componentPoetKnowledge/CollectionTab";
 const PoetKnowledge = () => {
     const { id } = useParams();
     const [poet, setPoet] = useState(null);
+    const [collections, setCollections] = useState([]); 
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeTab, setActiveTab] = useState("Tiểu sử");
 
@@ -22,19 +23,49 @@ const PoetKnowledge = () => {
 
     useEffect(() => {
         const fetchPoetSample = async () => {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1/${id}`, {
-                headers: {
-                    "Content-Type": "application/json",
+            try {
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1/${id}`, {
+                    headers: {
+                        "Content-Type": "application/json",
+                    }
+                });
+                if (!response.ok) {
+                    message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
+                    return;
                 }
-            });
-            if (!response.ok) {
-                message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
+                const data = await response.json();
+                setPoet(data.data);
+            } catch (error) {
+                console.error("Error fetching poet:", error);
+                message.error("Đã có lỗi xảy ra khi tải thông tin nhà thơ");
             }
-            const data = await response.json();
-            setPoet(data.data);
+        };
+
+        const fetchCollections = async () => {
+            try {
+                const response = await fetch(
+                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/poet-sample/${id}`,
+                    {
+                        headers: {
+                            "Content-Type": "application/json",
+                            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+                        }
+                    }
+                );
+                if (!response.ok) {
+                    message.error("Đã có lỗi xảy ra khi tải danh sách tập thơ");
+                    return;
+                }
+                const data = await response.json();
+                setCollections(data.data);
+            } catch (error) {
+                console.error("Error fetching collections:", error);
+                message.error("Đã có lỗi xảy ra khi tải danh sách tập thơ");
+            }
         };
 
         fetchPoetSample();
+        fetchCollections();
     }, [id]);
 
     useEffect(() => {
@@ -51,7 +82,7 @@ const PoetKnowledge = () => {
             case "Tiểu sử":
                 return <BiographyTab poet={poet} />;
             case "Thơ của bạn":
-                return <PoemsTab />;
+                return <PoemsTab collections={collections} poetId={id}></PoemsTab>; 
             case "Bộ sưu tập của bạn":
                 return <CollectionTab poet={poet}/>;
             default:
