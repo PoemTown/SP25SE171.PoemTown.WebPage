@@ -41,7 +41,8 @@ const transactionTypeMap = {
   4: "Bài thơ",
   5: "Rút tiền",
   6: "Ủng hộ",
-  7: "Tiền hoa hồng"
+  7: "Tiền hoa hồng", 
+  8: "Rút tiền"
 };
 
 const orderTypeMap = {

@@ -124,7 +124,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             </div>
             <div style={styles.avatarContainer}>
                 <img
-                    src={item.user ? item.user?.avatar : item.poetSample?.avatar || "./default_avatar.png"}
+                    src={item.user ? item.user?.avatar : item.poetSample?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
                     alt="avatar"
                     style={styles.avatar}
                     onError={(e) => { e.target.src = "./default_avatar.png"; }}

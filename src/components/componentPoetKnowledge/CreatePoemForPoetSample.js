@@ -311,7 +311,7 @@ const poemTypes = [
     }
 ];
 
-const CreatePoemForm = ({ initialData, onBack, collections, poetId, onClose= [] }) => {
+const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreated }) => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({
         title: "",
@@ -550,76 +550,79 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onClose= [] 
     };
 
     // Xử lý submit form
-const handleSubmit = async (status) => {
-    // Validate các trường bắt buộc
-    if (!formData.title.trim()) {
-        message.warning("Vui lòng nhập tiêu đề bài thơ");
-        return;
-    }
-
-    if (!formData.content.trim()) {
-        message.warning("Vui lòng nhập nội dung bài thơ");
-        return;
-    }
-
-    if (!formData.collectionId) {
-        message.warning("Vui lòng chọn tập thơ");
-        return;
-    }
-
-    // Validate nội dung theo thể loại
-    if (!validatePoemContent(formData.content, formData.type)) {
-        message.error("Nội dung thơ không đúng luật: " + validationError);
-        return;
-    }
-
-    try {
-        setLoading(true);
-        const formattedContent = formatPoemContent();
-
-        const payload = {
-            title: formData.title,
-            content: formattedContent,
-            description: formData.description,
-            status: status,
-            poemImage: formData.poemImage,
-            type: formData.type,
-            collectionId: formData.collectionId
-        };
-
-        const url = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${poetId}`;
-
-        const response = await axios.post(url, payload, {
-            headers: {
-                Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-                'Content-Type': 'application/json'
-            }
-        });
-
-        // Kiểm tra status code
-        if (response.status === 200) {
-            message.success(
-                status === 1
-                    ? "Bài thơ đã được đăng thành công!"
-                    : "Bài thơ đã được lưu nháp!"
-            );
-            // Đóng modal bằng cách gọi hàm onClose từ props
-            if (onClose) {
-                onClose();
-            } else {
-                // Hoặc navigate nếu không có hàm đóng modal
-                navigate(-1);
-            }
-        } else {
-            message.error(response.data?.message || "Có lỗi xảy ra khi gửi bài thơ");
+    const handleSubmit = async (status) => {
+        // Validate các trường bắt buộc
+        if (!formData.title.trim()) {
+            message.warning("Vui lòng nhập tiêu đề bài thơ");
+            return;
         }
-    } catch (error) {
-        console.error("Error submitting poem:", error);
-        message.error(error.response?.data?.message || "Có lỗi xảy ra khi gửi bài thơ");
-    } finally {
-        setLoading(false);
-    }
-};
+
+        if (!formData.content.trim()) {
+            message.warning("Vui lòng nhập nội dung bài thơ");
+            return;
+        }
+
+        if (!formData.collectionId) {
+            message.warning("Vui lòng chọn tập thơ");
+            return;
+        }
+
+        // Validate nội dung theo thể loại
+        if (!validatePoemContent(formData.content, formData.type)) {
+            message.error("Nội dung thơ không đúng luật: " + validationError);
+            return;
+        }
+
+        try {
+            setLoading(true);
+            const formattedContent = formatPoemContent();
+
+            const payload = {
+                title: formData.title,
+                content: formattedContent,
+                description: formData.description,
+                status: status,
+                poemImage: formData.poemImage,
+                type: formData.type,
+                collectionId: formData.collectionId
+            };
+
+            const url = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${poetId}`;
+
+            const response = await axios.post(url, payload, {
+                headers: {
+                    Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
+                    'Content-Type': 'application/json'
+                }
+            });
+
+            // Kiểm tra status code
+            if (response.status === 200) {
+                message.success(
+                    status === 1
+                        ? "Bài thơ đã được đăng thành công!"
+                        : "Bài thơ đã được lưu nháp!"
+                );
+                // Đóng modal bằng cách gọi hàm onClose từ props
+                if (onPoemCreated) {
+                    onPoemCreated();
+                }
+                if (onBack) {
+                    onBack();
+                } else {
+                    // Hoặc navigate nếu không có hàm đóng modal
+                    navigate(-1);
+                }
+            } else {
+                message.error(response.data?.message || "Có lỗi xảy ra khi gửi bài thơ");
+            }
+        } catch (error) {
+            console.error("Error submitting poem:", error);
+            message.error(error.response?.data?.message || "Có lỗi xảy ra khi gửi bài thơ");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     // Thêm hiển thị validation error
     const renderValidationError = () => {
@@ -714,7 +717,7 @@ const handleSubmit = async (status) => {
                                         ))}
                                     </Select>
                                 </div>
-                                
+
                                 <div style={formGroupStyle}>
                                     <label style={formLabelStyle}>Thể loại thơ</label>
                                     <Select
