@@ -29,7 +29,7 @@ const poemType = {
     11: "Thơ tám chữ",
 }
 
-const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove }) => {
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collections, handleMove }) => {
     const [moveMenuItems, setMoveMenuItems] = useState([]);
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
@@ -43,6 +43,33 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
     const truncatedDescription = item.description?.length > 80
         ? `${item.description.substring(0, 80)}...`
         : item.description;
+
+    // Hàm xóa bài thơ
+    const handleDelete = async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        try {
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${item.id}?poetSampleId=${poetId}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}` 
+                    }
+                }
+            );
+    
+
+            if (response.ok) {
+                // Xử lý sau khi xóa thành công, ví dụ: reload danh sách bài thơ
+                window.location.reload();
+            } else {
+                console.error('Lỗi khi xóa bài thơ:', response.statusText);
+            }
+        } catch (error) {
+            console.error('Lỗi khi gọi API xóa bài thơ:', error);
+        }
+    };
 
     // Menu dropdown
     const defaultMenu = (
@@ -77,7 +104,9 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 
     const collectionMenu = (
         <Menu>
-            <Menu.Item key="delete">❌ Xóa bài thơ</Menu.Item>
+            <Menu.Item key="delete" onClick={handleDelete}>
+                ❌ Xóa bài thơ
+            </Menu.Item>
             <Menu.SubMenu
                 key="move"
                 title="🔄 Chuyển bài thơ"
@@ -204,8 +233,8 @@ const styles = {
         width: "168px",
         maxWidth: "168px",
         height: "100%",
-        objectFit: "cover", // This will prevent stretching
-        objectPosition: "center" // Center the image
+        objectFit: "cover", 
+        objectPosition: "center"
     },
 
     avatarContainer: {
@@ -236,10 +265,11 @@ const styles = {
         border: "1px solid #ccc",
         boxShadow: "0px 3px 6px 0px #0000004D",
         alignItems: "stretch",
-        width: "100%", // Ensure it takes available width
-        marginBottom: "40px",
-        padding: "20px 0"
-    },
+        width: "80%",
+        margin: "0 auto 40px", 
+        padding: "20px"
+      },
+      
     cardHeader: {
         display: "flex",
         justifyContent: "space-between",
