@@ -7,12 +7,13 @@ import { BiCommentDetail, BiLike, BiSolidLike } from 'react-icons/bi';
 import { RiDeleteBinFill } from "react-icons/ri";
 import { IoBookmark } from 'react-icons/io5';
 import { CiBookmark, CiCirclePlus } from 'react-icons/ci';
-import { Button, Dropdown, Menu, message, Spin, Modal } from 'antd';
+import { Button, Dropdown, Menu, message, Spin, Modal, Form, Input, Upload, Progress } from 'antd';
 import { IoIosLink, IoIosMore } from 'react-icons/io';
 import { MdEdit, MdReport } from 'react-icons/md';
 import { FaCheck, FaUserPlus } from 'react-icons/fa';
 import Comment from '../components/componentHomepage/Comment';
 import axios from 'axios';
+import { UploadOutlined } from '@ant-design/icons';
 
 const PoemDetail = () => {
     const { id } = useParams();
@@ -28,6 +29,13 @@ const PoemDetail = () => {
     const [userData, setUserData] = useState([]);
     const [backgroundImage, setBackgroundImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+
+    // Thêm state create record
+    const [showCreateRecordModal, setShowCreateRecordModal] = useState(false);
+    const [uploadProgress, setUploadProgress] = useState(0);
+    const [audioUrl, setAudioUrl] = useState('');
+    const [isAudioUploading, setIsAudioUploading] = useState(false);
+    const [form] = Form.useForm();
     const navigate = useNavigate();
 
 
@@ -585,231 +593,388 @@ const PoemDetail = () => {
         }
     };
 
+
+    //------------------------------------------Create record---------------------------------------------------------------------------------------------//
+
+    // Thêm props upload
+    const uploadProps = {
+        name: 'file',
+        accept: 'audio/*',
+        showUploadList: false,
+        customRequest: async ({ file, onSuccess, onError, onProgress }) => {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                setIsAudioUploading(true);
+                const response = await axios.post(
+                    `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio`,
+                    formData,
+                    {
+                        headers: {
+                            Authorization: `Bearer ${accessToken}`,
+                            'Content-Type': 'multipart/form-data'
+                        },
+                        onUploadProgress: (progressEvent) => {
+                            const percent = Math.round(
+                                (progressEvent.loaded * 100) / progressEvent.total
+                            );
+                            setUploadProgress(percent);
+                            onProgress({ percent });
+                        }
+                    }
+                );
+
+                onSuccess(response.data);
+                form.setFieldsValue({ audioFile: response.data.data });
+                setAudioUrl(response.data.data);
+                message.success('Tải lên thành công!');
+            } catch (error) {
+                onError(error);
+                message.error('Tải lên thất bại!');
+            } finally {
+                setIsAudioUploading(false);
+            }
+        },
+        beforeUpload: (file) => {
+            if (!file.type.startsWith('audio/')) {
+                message.error('Chỉ chấp nhận file audio!');
+                return false;
+            }
+            return true;
+        }
+    };
+
+    // Thêm hàm tạo record
+    const handleCreateRecord = async () => {
+        try {
+            const values = await form.validateFields();
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_BASE_URL}/record-files/v1`,
+                {
+                    fileName: values.recordName,
+                    fileUrl: audioUrl
+                },
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json"
+                    },
+                    params: {
+                      poemId: poem.id // ✅ Truyền poemId đúng cách
+                    }
+                }
+            );
+
+                message.success('Tạo bản ghi thành công!');
+                setShowCreateRecordModal(false);
+                form.resetFields();
+                setAudioUrl('');
+        } catch (error) {
+            console.log("Error"+ error)
+            message.error(error.response?.data?.errorMessage || 'Lỗi khi tạo bản ghi');
+        }
+    };
+
+    // Trong phần return, thêm Modal
+    {
+
+        console.log('Modal state:', showCreateRecordModal);
+
+    }
+
+
+
+
+
     return (
-        <div style={{
-            backgroundImage: `url("${backgroundImage}")`,
-            paddingBottom: "100px"
-        }}>
-            {isLoading && (
+        <>
+            <div style={{
+                backgroundImage: `url("${backgroundImage}")`,
+                paddingBottom: "100px"
+            }}>
+                {isLoading && (
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: 0,
+                            left: 0,
+                            width: "100%",
+                            height: "100%",
+                            backgroundColor: "rgba(0, 0, 0, 0.5)",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            zIndex: 9999,
+                        }}
+                    >
+                        <Spin size="large" tip="Đang tải..." />
+                    </div>
+                )}
+                {isLoggedIn ? <Headeruser /> : <Headerdefault />}
                 <div
                     style={{
-                        position: "fixed",
-                        top: 0,
-                        left: 0,
-                        width: "100%",
-                        height: "100%",
-                        backgroundColor: "rgba(0, 0, 0, 0.5)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 9999,
+                        cursor: "pointer",
+                        color: "#007bff",
+                        fontSize: "18px",
+                        marginBottom: "10px",
+                        marginLeft: "20px",
+                        marginTop: "20px",
+                        fontWeight: "bold"
                     }}
+                    onClick={() => navigate(-1)}
                 >
-                    <Spin size="large" tip="Đang tải..." />
+                    <FiArrowLeft /> Quay về
                 </div>
-            )}
-            {isLoggedIn ? <Headeruser /> : <Headerdefault />}
-            <div
-                style={{
-                    cursor: "pointer",
-                    color: "#007bff",
-                    fontSize: "18px",
-                    marginBottom: "10px",
-                    marginLeft: "20px",
-                    marginTop: "20px",
-                    fontWeight: "bold"
-                }}
-                onClick={() => navigate(-1)}
-            >
-                <FiArrowLeft /> Quay về
-            </div>
-            <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
-                <div style={{ flex: 8, display: "flex", flexDirection: "column", gap: "40px" }}>
-                    <div style={{ flex: 1, display: "flex", gap: "40px" }}>
-                        <div style={{
-                            width: "336px",
-                            height: "536px",
-                            border: "1px solid #000",
-                            marginLeft: "20px"
-                        }}>
-                            <img
-                                src={poem?.poemImage || "/anhminhhoa.png"}
-                                alt='poem image'
-                                style={{
-                                    width: "336px",
-                                    maxWidth: "336px",
-                                    height: "100%",
-                                    objectFit: "cover",
-                                    objectPosition: "center",
-                                    border: "2px solid #fff"
-                                }}
-                            />
-                        </div>
-                        <div style={{ width: "100%" }}>
-                            <p style={{ margin: 0, fontSize: "0.9rem", color: "#666" }}>
-                                Ngày xuất bản: {formatDate(poem?.createdTime)}
-                            </p>
-                            <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between" }}>
-                                <p style={{ margin: 0, fontWeight: "bold", fontSize: "2rem" }}>
-                                    {poem?.title}
-                                </p>
-                                <div style={{ display: "flex", flexDirection: "row" }}>
-                                    <button
-                                        style={{
-                                            background: "none",
-                                            border: "none",
-                                            cursor: "pointer",
-                                            padding: "4px",
-                                            fontSize: "1.2rem",
-                                            color: "#666",
-                                            display: "flex",
-                                            alignItems: "center",
-                                        }}
-                                        onClick={handleBookmark}
-                                    >
-                                        {bookmarked ? <IoBookmark size={20} color="#FFCE1B" /> : <CiBookmark size={20} />}
-                                    </button>
-                                    <Dropdown overlay={overlayMenu} trigger={["click"]}>
-                                        <button style={{
-                                            background: "none",
-                                            border: "none",
-                                            cursor: "pointer",
-                                            padding: "4px",
-                                            fontSize: "1.2rem",
-                                            color: "#666",
-                                            display: "flex",
-                                            alignItems: "center",
-                                        }}>
-                                            <IoIosMore />
-                                        </button>
-                                    </Dropdown>
-                                </div>
-                            </div>
-                            <p style={{ margin: 0 }}>
-                                Mô tả: {poem?.description}
-                            </p>
-                            <p style={{ margin: 0 }}>
-                                Tập thơ: <span style={{ color: "#007bff", cursor: "pointer" }} onClick={() => navigate(`/collection/${poem?.collection.id}`)}>
-                                    {poem?.collection?.collectionName}
-                                </span>
-                            </p>
-                            <p style={{ margin: 0 }}>Thể loại: {poemType[poem?.type]}</p>
-                            <div style={{ display: "flex", flexDirection: "row", gap: "30px", marginTop: "10px" }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                    {poem?.like ? (
-                                        <BiSolidLike onClick={handleLike} size={20} color="#2a7fbf" style={{ cursor: "pointer" }} />
-                                    ) : (
-                                        <BiLike onClick={handleLike} size={20} style={{ cursor: "pointer" }} />
-                                    )}
-                                    <span>{poem?.likeCount || 0}</span>
-                                </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                    <BiCommentDetail size={20} style={{ cursor: "pointer" }} />
-                                    <span>{poem?.commentCount || 0}</span>
-                                </div>
-                            </div>
-                            <div style={{ width: "100%", display: "flex", alignItems: "center" }}>
-                                <div style={{ margin: "0px auto", display: "inline-block", boxSizing: "border-box" }}>
-                                    <p style={{ whiteSpace: "pre-wrap", textAlign: "left", fontSize: "1.2rem", lineHeight: "2" }}>
-                                        “{poem?.content}”
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div style={{ flex: 1, margin: "0 129px" }}>
-                        <h1>Bình luận</h1>
-                        <div style={{ marginBottom: 16, display: "flex", flexDirection: "column" }}>
-                            <textarea
-                                value={newComment}
-                                onChange={(e) => setNewComment(e.target.value)}
-                                placeholder="Viết bình luận..."
-                                style={{
-                                    width: '100%',
-                                    padding: 8,
-                                    marginBottom: 8,
-                                    border: '1px solid #ddd',
-                                    borderRadius: 4,
-                                    minHeight: 80,
-                                    boxSizing: "border-box"
-                                }}
-                            />
-                            <button
-                                onClick={handleSubmitComment}
-                                style={{
-                                    padding: '6px 16px',
-                                    background: '#007bff',
-                                    color: 'white',
-                                    border: 'none',
-                                    borderRadius: 4,
-                                    cursor: 'pointer',
-                                    alignSelf: "flex-end",
-                                    margin: 0
-                                }}
-                            >
-                                Đăng bình luận
-                            </button>
-                        </div>
-                        {commentTree.map((comment) => {
-                            return (
-                                <Comment
-                                    key={comment.id}
-                                    comment={comment}
-                                    depth={0}
-                                    currentReply={replyingTo}
-                                    replyTexts={replyTexts}
-                                    onReply={setReplyingTo}
-                                    onSubmitReply={handleSubmitReply}
-                                    onCancelReply={(commentId) => {
-                                        setReplyingTo(null);
-                                        setReplyTexts(prev => ({
-                                            ...prev,
-                                            [commentId]: ""
-                                        }));
+                <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
+                    <div style={{ flex: 8, display: "flex", flexDirection: "column", gap: "40px" }}>
+                        <div style={{ flex: 1, display: "flex", gap: "40px" }}>
+                            <div style={{
+                                width: "336px",
+                                height: "536px",
+                                border: "1px solid #000",
+                                marginLeft: "20px"
+                            }}>
+                                <img
+                                    src={poem?.poemImage || "/anhminhhoa.png"}
+                                    alt='poem image'
+                                    style={{
+                                        width: "336px",
+                                        maxWidth: "336px",
+                                        height: "100%",
+                                        objectFit: "cover",
+                                        objectPosition: "center",
+                                        border: "2px solid #fff"
                                     }}
-                                    onTextChange={handleReplyChange}
-                                    isMine={comment.isMine} // Adjust this based on your auth system
-                                    onDelete={handleDeleteComment}
                                 />
-                            )
-                        })}
-                    </div>
-                </div>
-                <div style={{ flex: 2, }}>
-                    <div style={{ display: "flex", gap: "10px" }}>
-                        <img src={poem?.user.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff" }} />
-                        <div>
-                            <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.user.displayName}</p>
-                            <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user.userName}</p>
-                            <div style={{ marginTop: "10px" }}>
-                                {poem?.isMine ? <></> :
-                                    poem?.isFollowed ? <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button> : <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
-                                }
+                            </div>
+                            <div style={{ width: "100%" }}>
+                                <p style={{ margin: 0, fontSize: "0.9rem", color: "#666" }}>
+                                    Ngày xuất bản: {formatDate(poem?.createdTime)}
+                                </p>
+                                <div style={{ display: "flex", alignItems: "center", gap: "10px", justifyContent: "space-between" }}>
+                                    <p style={{ margin: 0, fontWeight: "bold", fontSize: "2rem" }}>
+                                        {poem?.title}
+                                    </p>
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        <button
+                                            style={{
+                                                background: "none",
+                                                border: "none",
+                                                cursor: "pointer",
+                                                padding: "4px",
+                                                fontSize: "1.2rem",
+                                                color: "#666",
+                                                display: "flex",
+                                                alignItems: "center",
+                                            }}
+                                            onClick={handleBookmark}
+                                        >
+                                            {bookmarked ? <IoBookmark size={20} color="#FFCE1B" /> : <CiBookmark size={20} />}
+                                        </button>
+                                        <Dropdown overlay={overlayMenu} trigger={["click"]}>
+                                            <button style={{
+                                                background: "none",
+                                                border: "none",
+                                                cursor: "pointer",
+                                                padding: "4px",
+                                                fontSize: "1.2rem",
+                                                color: "#666",
+                                                display: "flex",
+                                                alignItems: "center",
+                                            }}>
+                                                <IoIosMore />
+                                            </button>
+                                        </Dropdown>
+                                    </div>
+                                </div>
+                                <p style={{ margin: 0 }}>
+                                    Mô tả: {poem?.description}
+                                </p>
+                                <p style={{ margin: 0 }}>
+                                    Tập thơ: <span style={{ color: "#007bff", cursor: "pointer" }} onClick={() => navigate(`/collection/${poem?.collection.id}`)}>
+                                        {poem?.collection?.collectionName}
+                                    </span>
+                                </p>
+                                <p style={{ margin: 0 }}>Thể loại: {poemType[poem?.type]}</p>
+                                <div style={{ display: "flex", flexDirection: "row", gap: "30px", marginTop: "10px" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        {poem?.like ? (
+                                            <BiSolidLike onClick={handleLike} size={20} color="#2a7fbf" style={{ cursor: "pointer" }} />
+                                        ) : (
+                                            <BiLike onClick={handleLike} size={20} style={{ cursor: "pointer" }} />
+                                        )}
+                                        <span>{poem?.likeCount || 0}</span>
+                                    </div>
+                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <BiCommentDetail size={20} style={{ cursor: "pointer" }} />
+                                        <span>{poem?.commentCount || 0}</span>
+                                    </div>
+                                </div>
+                                <div style={{ width: "100%", display: "flex", alignItems: "center" }}>
+                                    <div style={{ margin: "0px auto", display: "inline-block", boxSizing: "border-box" }}>
+                                        <p style={{ whiteSpace: "pre-wrap", textAlign: "left", fontSize: "1.2rem", lineHeight: "2" }}>
+                                            “{poem?.content}”
+                                        </p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        {poem?.saleVersion.status !== 4 && (
-                            <div style={{ margin: "0 auto" }}>
-                                <Button
-                                    type="primary"
-                                    onClick={() => {
-                                        if (poem?.saleVersion.status === 1) {
-                                            showPurchaseConfirm(poem.id, poem?.saleVersion);
-                                        }
+                        <div style={{ flex: 1, margin: "0 129px" }}>
+                            <h1>Bình luận</h1>
+                            <div style={{ marginBottom: 16, display: "flex", flexDirection: "column" }}>
+                                <textarea
+                                    value={newComment}
+                                    onChange={(e) => setNewComment(e.target.value)}
+                                    placeholder="Viết bình luận..."
+                                    style={{
+                                        width: '100%',
+                                        padding: 8,
+                                        marginBottom: 8,
+                                        border: '1px solid #ddd',
+                                        borderRadius: 4,
+                                        minHeight: 80,
+                                        boxSizing: "border-box"
+                                    }}
+                                />
+                                <button
+                                    onClick={handleSubmitComment}
+                                    style={{
+                                        padding: '6px 16px',
+                                        background: '#007bff',
+                                        color: 'white',
+                                        border: 'none',
+                                        borderRadius: 4,
+                                        cursor: 'pointer',
+                                        alignSelf: "flex-end",
+                                        margin: 0
                                     }}
                                 >
-                                    {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
-                                </Button>
-
-
-
+                                    Đăng bình luận
+                                </button>
                             </div>
-                        )}
-
+                            {commentTree.map((comment) => {
+                                return (
+                                    <Comment
+                                        key={comment.id}
+                                        comment={comment}
+                                        depth={0}
+                                        currentReply={replyingTo}
+                                        replyTexts={replyTexts}
+                                        onReply={setReplyingTo}
+                                        onSubmitReply={handleSubmitReply}
+                                        onCancelReply={(commentId) => {
+                                            setReplyingTo(null);
+                                            setReplyTexts(prev => ({
+                                                ...prev,
+                                                [commentId]: ""
+                                            }));
+                                        }}
+                                        onTextChange={handleReplyChange}
+                                        isMine={comment.isMine} // Adjust this based on your auth system
+                                        onDelete={handleDeleteComment}
+                                    />
+                                )
+                            })}
+                        </div>
                     </div>
-
+                    <div style={{ flex: 2, }}>
+                        <div style={{ display: "flex", gap: "10px" }}>
+                            <img src={poem?.user.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff" }} />
+                            <div>
+                                <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.user.displayName}</p>
+                                <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user.userName}</p>
+                                <div style={{ marginTop: "10px" }}>
+                                    {poem?.isMine ? <></> :
+                                        poem?.isFollowed ? <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button> : <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
+                                    }
+                                </div>
+                            </div>
+                            {poem?.isMine ? <></> :
+                                poem?.saleVersion.status !== 4 && (
+                                    <div style={{ margin: "0 auto" }}>
+                                        <Button
+                                            type="primary"
+                                            onClick={() => {
+                                                if (poem?.saleVersion.status === 1) {
+                                                    showPurchaseConfirm(poem.id, poem?.saleVersion);
+                                                } else {
+                                                    setShowCreateRecordModal(true);
+                                                }
+                                            }}
+                                        >
+                                            {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                        </Button>
+                                    </div>
+                                )
+                            }
+                        </div>
+                    </div>
                 </div>
+
+
             </div>
-        </div>
+            <Modal
+                title="Tạo Bản Ghi Mới"
+                open={showCreateRecordModal}
+                onOk={handleCreateRecord}
+                onCancel={() => setShowCreateRecordModal(false)}
+                okText="Tạo"
+                cancelText="Hủy"
+                width={600}
+            >
+                <Form form={form} layout="vertical">
+                    <Form.Item
+                        label="Tên bản ghi"
+                        name="recordName"
+                        rules={[{ required: true, message: 'Vui lòng nhập tên bản ghi' }]}
+                    >
+                        <Input placeholder="Nhập tên bản ghi..." />
+                    </Form.Item>
+
+                    <Form.Item
+                        label="File audio"
+                        name="audioFile"
+                        rules={[{ required: true, message: 'Vui lòng tải lên file audio' }]}
+                    >
+                        <Upload {...uploadProps}>
+                            <Button icon={<UploadOutlined />} loading={isAudioUploading}>
+                                Chọn file audio
+                            </Button>
+                        </Upload>
+                    </Form.Item>
+
+                    {uploadProgress > 0 && (
+                        <Progress
+                            percent={uploadProgress}
+                            status="active"
+                            style={{ marginTop: 16 }}
+                        />
+                    )}
+
+                    {audioUrl && (
+                        <div style={{ marginTop: 16 }}>
+                            <audio controls src={audioUrl} style={{ width: '100%' }} />
+                            <Button
+                                type="link"
+                                danger
+                                onClick={() => {
+                                    setAudioUrl('');
+                                    form.setFieldsValue({ audioFile: null });
+                                }}
+                            >
+                                Xóa file
+                            </Button>
+                        </div>
+                    )}
+                </Form>
+            </Modal>
+
+        </>
+
+
+
+
     );
 };
 
