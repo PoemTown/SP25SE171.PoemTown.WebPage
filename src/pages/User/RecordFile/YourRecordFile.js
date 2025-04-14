@@ -5,6 +5,7 @@ import { DownOutlined } from "@ant-design/icons"; // Icon mũi tên chỉ xuốn
 import CreateRecord from "./CreateRecord";
 import RecordCard from "../../../components/componentHomepage/RecordCard";
 import axios from "axios";
+import RecordListGroupedByPoem from "../../../components/componentHomepage/RecordListGroupedByPoem";
 
 export default function YourRecordFile({ statisticBorder, achievementBorder, isMine, username }) {
   const [isCreatingRecord, setIsCreatingRecord] = useState(false);
@@ -19,7 +20,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
 
   // State phân trang
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(8);
+  const [pageSize, setPageSize] = useState(3);
   const [totalRecords, setTotalRecords] = useState(0);
 
   useEffect(() => {
@@ -99,64 +100,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
 
   // Hàm xử lý chuyển đổi trạng thái của bản ghi (ví dụ: chuyển từ công khai sang riêng tư)
 
-  const handleToggleStatus = async (record) => {
-    const recordId = record.id;
-    if (record.isPublic) {
-      Modal.confirm({
-        title: "Nhập giá để chuyển sang Riêng tư",
-        content: (
-          <Input
-            type="number"
-            min={0}
-            placeholder="Nhập giá"
-            onKeyDown={(e) => {
-              // Chặn nhập dấu "-" và ký tự "e", "E" (tránh nhập dạng số mũ như 1e10)
-              if (e.key === "-" || e.key === "e" || e.key === "E") {
-                e.preventDefault();
-              }
-            }}
-            onChange={(e) => {
-              priceRef.current = e.target.value;
-            }}
-          />
 
-        ), 
-        onOk: async () => {
-          const inputPrice = priceRef.current;
-          if (!inputPrice) {
-            message.error("Vui lòng nhập giá!");
-            return;
-          }
-       
-          try {
-            const response = await fetch(
-              `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/enable-selling`,
-              {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${accessToken}`,
-                },
-                body: JSON.stringify({ recordId, price: inputPrice }),
-              }
-            );
-            if (!response.ok) {
-              throw new Error("Lỗi khi cập nhật trạng thái bán");
-            }
-            await response.json();
-            message.success("Trạng thái cập nhật thành công!");
-            setSelectedRecord((prev) => ({ ...prev, isPublic: false }));
-            setReloadTrigger((prev) => !prev);
-          } catch (err) {
-            console.error("Lỗi khi cập nhật trạng thái:", err);
-            message.error("Cập nhật trạng thái thất bại!");
-          }
-        },
-      });
-    } else {
-      message.info("Không cho chuyển từ riêng tư sang công khai");
-    }
-  };
 
   async function handlePurchaseRecord(recordId) {
     console.log(recordId);
@@ -196,9 +140,9 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
       <Menu.Item key="bought" onClick={() => handleClick("bought")}>
         Đã mua
       </Menu.Item>
-      <Menu.Item key="sold" onClick={() => handleClick("sold")}>
+      {/* <Menu.Item key="sold" onClick={() => handleClick("sold")}>
         Đã bán
-      </Menu.Item>
+      </Menu.Item> */}
     </Menu>
   );
 
@@ -211,7 +155,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
   };
   const showPurchaseConfirm = (id, price) => {
     Modal.confirm({
-      title: "Bạn có chắc chắn muốn mua với số tiền " + price.toLocaleString('vi-VN') + " ?",
+      title: "Bạn có chắc chắn muốn mua với số tiền " + price.toLocaleString('vi-VN') + " VND ?",
       content: "Hành động này không thể hoàn tác!",
       okText: "Mua",
       cancelText: "Hủy",
@@ -321,16 +265,21 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                   gap: "40px",
                   minHeight: "200px",
                 }}>
-                  {recordFiles.map((record) => (
+                  {/* {recordFiles.map((record) => (
 
-                    <RecordCard
+                    <RecordListGroupedByPoem
                       key={record.id}
                       record={record}
-                      handleToggleStatus={handleToggleStatus}
                       showDeleteConfirm={showDeleteConfirm}
                       isMine={isMine}
                       showPurchaseConfirm={showPurchaseConfirm} />
-                  ))}
+                  ))} */}
+                  <RecordListGroupedByPoem
+                    records={recordFiles}
+                    showDeleteConfirm={showDeleteConfirm}
+                    isMine={isMine}
+                    showPurchaseConfirm={showPurchaseConfirm}
+                  />
                 </div>
               )}
             </div>
@@ -343,7 +292,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                 total={totalRecords} // Tổng số record được tính từ totalPages * pageSize
                 onChange={handlePageChange}
                 showSizeChanger
-                pageSizeOptions={["1", "8", "16"]}
+                pageSizeOptions={["3", "6", "9"]}
               />
             </div>
           </>

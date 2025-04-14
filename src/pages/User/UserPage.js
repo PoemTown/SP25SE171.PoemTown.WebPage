@@ -68,8 +68,8 @@ const UserPage = () => {
     const [isCreatingCollection, setIsCreatingCollection] = useState(false);
     const [refreshTrigger, setRefreshTrigger] = useState(0);
     const { styles } = useStyle();
-    const { username } = useParams();
-    const navigate = useNavigate();
+    // const { username } = useParams();
+    // const navigate = useNavigate();
 
     const [isLoading, setIsLoading] = useState(true);
     const accessToken = localStorage.getItem("accessToken");
@@ -78,19 +78,48 @@ const UserPage = () => {
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
     };
 
+
+
+    const { username, activeTab: activeTabFromUrl } = useParams();
+    const navigate = useNavigate();
+
+    // 2. Khai báo state activeTab ngay sau hook routing
+    const [activeTab, setActiveTab] = useState(() => {
+        const validTabs = [
+            "Tiểu sử",
+            "Thơ của bạn",
+            "Bản ghi âm",
+            "Bộ sưu tập của bạn",
+            "Bookmark của bạn",
+            "Bản nháp của bạn",
+            "Lịch sử chỉnh sửa",
+            "Quản lý Bản Quyền",
+            "Quản lý ví"
+        ];
+        return validTabs.includes(activeTabFromUrl) ? activeTabFromUrl : "Tiểu sử";
+    });
+
+
+
+    // useEffect(() => {
+    //     const fetchData = async () => {
+    //         try {
+    //             await fetchUserProfile();
+    //         } finally {
+    //             setIsLoading(false);
+    //         }
+    //     };
+
+    //     fetchData();
+    // }, [refreshTrigger]); // Only trigger when refreshTrigger changes
+
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                await fetchUserProfile();
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        fetchData();
-    }, [refreshTrigger]); // Only trigger when refreshTrigger changes
-
-
+        // Chỉ cập nhật URL nếu tab thay đổi và khác với URL hiện tại
+        if (activeTab !== activeTabFromUrl) {
+            navigate(`/user/${username}/${activeTab}`, { replace: true });
+        }
+    }, [activeTab, activeTabFromUrl, navigate, username]);
+    
     useEffect(() => {
         let isMounted = true;
 
@@ -129,39 +158,39 @@ const UserPage = () => {
                         setCoverImage(cover.image ? encodeURI(cover.image) : null);
                         setCoverColorCode(cover.colorCode ? cover.colorCode : "#000000");
                     }
-    
+
                     const navBackground = result.data.userTemplateDetails.find(item => item.type === 2);
                     if (navBackground) {
                         setNavBackground(navBackground.image ? encodeURI(navBackground.image) : null);
                         setNavColorCode(navBackground.colorCode ? navBackground.colorCode : "#000000");
                     }
-    
+
                     const navBorder = result.data.userTemplateDetails.find(item => item.type === 3);
                     if (navBorder) {
                         setNavBorder(navBorder.colorCode || "#cccccc");
                     }
-    
+
                     const mainBackground = result.data.userTemplateDetails.find(item => item.type === 4);
                     if (mainBackground) {
                         setBackgroundImage(mainBackground.image ? encodeURI(mainBackground.image) : null);
                     }
-    
+
                     const achievementBorder = result.data.userTemplateDetails.find(item => item.type === 5)
                     if (achievementBorder) {
                         setAchievementBorder(achievementBorder.colorCode || "#cccccc");
                     }
-    
+
                     const achievementBackground = result.data.userTemplateDetails.find(item => item.type === 6)
                     if (achievementBackground) {
                         setAchievementBackground(achievementBackground.image || "none");
                         setAchievementBackgroundColorCode(achievementBackground.colorCode || "#000000");
                     }
-    
+
                     const statisticBorder = result.data.userTemplateDetails.find(item => item.type === 7)
                     if (statisticBorder) {
                         setStatisticBorder(statisticBorder.colorCode || "#cccccc");
                     }
-    
+
                     const statisticBackground = result.data.userTemplateDetails.find(item => item.type === 8)
                     if (statisticBackground) {
                         setStatisticBackground(statisticBackground.image || "none");
@@ -172,7 +201,7 @@ const UserPage = () => {
                         setAchievementTitleBackground(achievementTitle.image || "none");
                         setAchievementTitleColorCode(achievementTitle.colorCode || "#000000")
                     }
-    
+
                     const statisticTitle = result.data.userTemplateDetails.find(item => item.type === 10);
                     if (statisticTitle) {
                         setStatisticTitleBackground(statisticTitle.image || "none");
@@ -299,15 +328,15 @@ const UserPage = () => {
     };
 
 
-    const [activeTab, setActiveTab] = useState(() => "Tiểu sử");
+    // const [activeTab, setActiveTab] = useState(() => "Tiểu sử");
 
     useEffect(() => {
         localStorage.setItem("activeTab", activeTab);
-        
-        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
+
+        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử") {
             setIsCreatingPoem(false);
         }
-        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
+        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử") {
             setIsCreatingCollection(false);
         }
 
@@ -385,11 +414,11 @@ const UserPage = () => {
                         )}
                         {activeTab === "Lịch sử chỉnh sửa" && <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>}
                         {activeTab === "Quản lý Bản Quyền" && (
-                            <UsageRight/>
+                            <UsageRight />
                         )}
                         {/* {activeTab === "Trang trí" &&
                         <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor} />} */}
-                        {activeTab === "Quản lý ví" && (<YourWallet/>)}
+                        {activeTab === "Quản lý ví" && (<YourWallet />)}
                     </div>
                     {!isCreatingPoem && !isCreatingCollection &&
                         <div style={{ display: "flex", flex: 3 }}>

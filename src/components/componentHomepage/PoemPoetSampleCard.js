@@ -1,4 +1,4 @@
-import { Dropdown, Menu } from "antd";
+import { Dropdown, Menu, Modal } from "antd";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
 import { CiBookmark } from "react-icons/ci";
 import { IoIosMore } from "react-icons/io";
@@ -29,7 +29,7 @@ const poemType = {
     11: "Thơ tám chữ",
 }
 
-const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collections, handleMove }) => {
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collections, handleMove, onPoemCreated }) => {
     const [moveMenuItems, setMoveMenuItems] = useState([]);
     const navigate = useNavigate();
     const [isHovered, setIsHovered] = useState(false);
@@ -46,7 +46,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
     const lines = item.content?.split('\n') || [];
     const displayedLines = lines.slice(0, 4);
     const hasMoreLines = lines.length > 4;
-    
+
     // Xử lý mô tả
     const truncatedDescription = item.description?.length > 80
         ? `${item.description.substring(0, 80)}...`
@@ -62,19 +62,37 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
                     method: 'DELETE',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${accessToken}` 
+                        'Authorization': `Bearer ${accessToken}`
                     }
                 }
             );
-    
+
             if (response.ok) {
-                window.location.reload();
+                if(onPoemCreated) {
+                    onPoemCreated();
+                }
             } else {
                 console.error('Lỗi khi xóa bài thơ:', response.statusText);
+            }
+            if(onPoemCreated) {
+                onPoemCreated();
             }
         } catch (error) {
             console.error('Lỗi khi gọi API xóa bài thơ:', error);
         }
+    };
+
+    const confirmDelete = () => {
+        Modal.confirm({
+            title: "Bạn có chắc chắn muốn xóa bài thơ này?",
+            content: "Hành động này sẽ xóa bài thơ vĩnh viễn. Bạn có chắc không?",
+            okText: "Xóa",
+            cancelText: "Hủy",
+            okType: "danger",
+            onOk() {
+                handleDelete();
+            }
+        });
     };
 
     const handleMouseEnter = (poemId) => {
@@ -89,7 +107,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
 
     const collectionMenu = (
         <Menu>
-            <Menu.Item key="delete" onClick={handleDelete}>
+            <Menu.Item key="delete" onClick={confirmDelete}>
                 ❌ Xóa bài thơ
             </Menu.Item>
             <Menu.SubMenu
@@ -171,9 +189,9 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
                 </div>
                 {item.collection && (
                     <p style={styles.poemCollection}>
-                        Tập thơ: 
-                        <span 
-                            style={{ fontWeight: "bold", cursor: "pointer" }} 
+                        Tập thơ:
+                        <span
+                            style={{ fontWeight: "bold", cursor: "pointer" }}
                             onClick={() => navigate(`/collection/${item.collection.id}`)}
                         >
                             {item.collection.collectionName}
@@ -181,16 +199,18 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
                     </p>
                 )}
                 <div style={styles.footerContainer}>
-                    <div style={styles.statsContainer}>
-                        <button style={styles.likeButton} onClick={() => onLike(item.id)}>
-                            {liked ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
-                            <span style={styles.statItem}>{item.likeCount || 0}</span>
-                        </button>
-                        <button style={styles.likeButton}>
-                            <BiCommentDetail size={20} />
-                            <span style={styles.statItem}>{item.commentCount || 0}</span>
-                        </button>
-                    </div>
+                    {item?.isFamousPoet ? <></> :
+                        <div style={styles.statsContainer}>
+                            <button style={styles.likeButton} onClick={() => onLike(item.id)}>
+                                {liked ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
+                                <span style={styles.statItem}>{item.likeCount || 0}</span>
+                            </button>
+                            <button style={styles.likeButton}>
+                                <BiCommentDetail size={20} />
+                                <span style={styles.statItem}>{item.commentCount || 0}</span>
+                            </button>
+                        </div>
+                    }
                     <button
                         style={{
                             ...styles.viewButton,
@@ -221,7 +241,7 @@ const styles = {
         width: "168px",
         maxWidth: "168px",
         height: "100%",
-        objectFit: "cover", 
+        objectFit: "cover",
         objectPosition: "center"
     },
 
@@ -254,10 +274,10 @@ const styles = {
         boxShadow: "0px 3px 6px 0px #0000004D",
         alignItems: "stretch",
         width: "80%",
-        margin: "0 auto 40px", 
+        margin: "0 auto 40px",
         padding: "20px"
-      },
-      
+    },
+
     cardHeader: {
         display: "flex",
         justifyContent: "space-between",

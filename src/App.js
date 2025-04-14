@@ -25,6 +25,8 @@ import YourWallet from "./pages/User/YourWallet";
 import SearchPage from "./pages/SearchPage";
 import PoetKnowledge from "./pages/PoetKnowledge";
 import PoetSamplesPage from "./pages/PoetSamplesPage"
+import RecordDetail from "./pages/User/RecordFile/RecordDetail";
+import PoemVersionPage from "./pages/User/PoemVersionPage";
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
 
@@ -85,8 +87,11 @@ function App() {
         <Route path="/design" element={<DesignPage />} />
         <Route path="/user/:username" element={<UserPage />} />
         <Route path="/poem/:id" element={<PoemDetail />} />
+        <Route path="/record/:id" element={<RecordDetail />} />
         <Route path="/collection/:id" element={<CollectionDetail />} />
         <Route path="/knowledge/poet/:id" element={<PoetKnowledge />}></Route>
+        <Route path="/poems/versions/:poemId" element={<PoemVersionPage />} />
+        <Route path="/user/:username/:activeTab?" element={<UserPage />} />
       </Routes>
     </Router>
 
