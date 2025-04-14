@@ -959,7 +959,7 @@ const YourWallet = () => {
 
           <div style={{ color: '#faad14', marginBottom: 16 }}>
             <Text>
-              Lưu ý: Thời gian xử lý rút tiền từ 1-3 ngày làm việc. Phí rút tiền 1.5% (tối thiểu 5.000 VNĐ).
+              Lưu ý: Thời gian xử lý rút tiền từ 1-3 ngày làm việc. Phí rút tiền tối thiểu phải là 50,000 VNĐ.
             </Text>
           </div>
         </Form>
