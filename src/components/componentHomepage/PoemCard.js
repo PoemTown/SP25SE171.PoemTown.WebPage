@@ -168,16 +168,18 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                 </div>
                 <p style={styles.poemCollection}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
                 <div style={styles.footerContainer}>
-                    <div style={styles.statsContainer}>
-                        <button style={styles.likeButton} onClick={() => onLike(item.id)}>
-                            {liked ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
-                            <span style={styles.statItem}>{item.likeCount || 0}</span>
-                        </button>
-                        <button style={styles.likeButton}>
-                            <BiCommentDetail size={20} />
-                            <span style={styles.statItem}>{item.commentCount || 0}</span>
-                        </button>
-                    </div>
+                    {item?.isFamousPoet ? <></> :
+                        <div style={styles.statsContainer}>
+                            <button style={styles.likeButton} onClick={() => onLike(item.id)}>
+                                {liked ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
+                                <span style={styles.statItem}>{item.likeCount || 0}</span>
+                            </button>
+                            <button style={styles.likeButton}>
+                                <BiCommentDetail size={20} />
+                                <span style={styles.statItem}>{item.commentCount || 0}</span>
+                            </button>
+                        </div>
+                    }
                     <button
                         style={{
                             ...styles.viewButton,
