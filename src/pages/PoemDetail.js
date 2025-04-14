@@ -13,9 +13,10 @@ import { MdEdit, MdReport } from 'react-icons/md';
 import { FaCheck, FaFacebookSquare, FaUserPlus } from 'react-icons/fa';
 import Comment from '../components/componentHomepage/Comment';
 import axios from 'axios';
-import { FacebookOutlined, UploadOutlined } from '@ant-design/icons';
+import { FacebookOutlined, UploadOutlined, WarningFilled } from '@ant-design/icons';
 import FacebookSharePlugin from '../components/componentHomepage/FaceBookShareButton';
 import ReportPoemModal from '../components/componentHomepage/ReportPoemModal';
+import ReportUserModal from '../components/componentHomepage/ReportUserModal';
 
 const PoemDetail = () => {
     const { id } = useParams();
@@ -32,6 +33,7 @@ const PoemDetail = () => {
     const [backgroundImage, setBackgroundImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
+    const [showReportModalUser, setShowReportModalUser] = useState(false);
 
 
     // Thêm state create record
@@ -307,6 +309,11 @@ const PoemDetail = () => {
             },
         });
     };
+
+    const handleReportUser = () => {
+        setShowReportModalUser(true);
+    };
+
 
     const handleReportPoem = () => {
         setShowReportModal(true);
@@ -905,10 +912,12 @@ const PoemDetail = () => {
                     </div>
                     <div style={{ flex: 2, }}>
                         <div style={{ display: "flex", gap: "10px" }}>
-                            <img src={poem?.poetSample ? poem?.poetSample?.avatar : poem?.user?.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff" }} />
+                            <img onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)} src={poem?.poetSample ? poem?.poetSample?.avatar : poem?.user?.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff", cursor: "pointer" }} />
                             <div>
-                                <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.poetSample ? poem?.poetSample?.name : poem?.user?.displayName}</p>
-                                {poem?.poetSample ? <></> : <p onClick={() => navigate(`/user/${poem?.user?.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user?.userName}</p>}
+                                <p style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>
+                                    <span onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)}>{poem?.poetSample ? poem?.poetSample?.name : poem?.user?.displayName}</span> {poem?.isFamousPoet || poem?.isMine ? null : <WarningFilled style={{ color: "red", cursor: "pointer" }} onClick={handleReportUser} />}
+                                </p>
+                                {poem?.poetSample ? <></> : <p onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user?.userName}</p>}
                                 <div style={{ marginTop: "10px" }}>
                                     {poem?.isMine || poem?.isFamousPoet ? <></> :
                                         poem?.isFollowed ? <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button> : <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
@@ -940,10 +949,10 @@ const PoemDetail = () => {
 
             </div>
             <ReportPoemModal
-              visible={showReportModal}
-              onClose={() => setShowReportModal(false)}
-              poemId={poem?.id}
-              accessToken={localStorage.getItem("accessToken")}
+                visible={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                poemId={poem?.id}
+                accessToken={localStorage.getItem("accessToken")}
             />
             <Modal
                 title="Tạo Bản Ghi Mới"
@@ -1000,7 +1009,12 @@ const PoemDetail = () => {
                     )}
                 </Form>
             </Modal>
-
+            <ReportUserModal
+                visible={showReportModalUser}
+                onClose={() => setShowReportModalUser(false)}
+                userId={poem?.user?.id}
+                accessToken={localStorage.getItem("accessToken")}
+            />
         </>
 
 

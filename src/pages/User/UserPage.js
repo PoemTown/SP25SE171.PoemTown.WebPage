@@ -133,8 +133,10 @@ const UserPage = () => {
                 if (!isMounted) return;
 
                 const result = await response.json();
+                console.log(result)
                 if (response.ok && result.data) {
                     setUserData({
+                        id: result.data.id,
                         displayName: result.data.displayName,
                         email: result.data.email,
                         userName: result.data.userName,
@@ -247,6 +249,7 @@ const UserPage = () => {
             console.log("online user", result)
             if (response.ok && result.data) {
                 setUserData({
+                    id: result.data.id,
                     displayName: result.data.displayName,
                     email: result.data.email,
                     userName: result.data.userName,
