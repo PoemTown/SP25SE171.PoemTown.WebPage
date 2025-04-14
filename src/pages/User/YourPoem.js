@@ -133,6 +133,23 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     fetchPoems();
   }, [isMine]);
 
+  const handleCopyLink = (id) => {
+    const url = `${window.location.origin}/poem/${id}`;
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        message.success("Đã sao chép liên kết!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        message.error("Không sao chép được liên kết!");
+      });
+  };
+
+  const handleReportPoem = () => {
+    // Implement your reporting functionality here.
+    message.info("Báo cáo bài thơ được gửi đi!");
+  };
+
   const handleBookmark = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
@@ -391,12 +408,12 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             <Dropdown
                               overlay={
                                 <Menu>
-                                  <Menu.Item key="report" >
+                                  <Menu.Item key="report" onClick={handleReportPoem}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                       <MdReport color="red" size={"16"} /><div> Báo cáo </div>
                                     </div>
                                   </Menu.Item>
-                                  <Menu.Item key="copylink">
+                                  <Menu.Item key="copylink" onClick={() => handleCopyLink(poem.id)}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                       <IoIosLink color="#666" size={"16"} /><div> Sao chép liên kết </div>
                                     </div>
@@ -416,9 +433,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                         </div>
                       </div>
                       <h3 style={{
-                         color: "#222",
-                         margin: "0",
-                         fontSize: "1.2rem",
+                        color: "#222",
+                        margin: "0",
+                        fontSize: "1.2rem",
                       }}>{poem.title}</h3>
                       <p style={{
                         color: "#444",
@@ -486,10 +503,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                         </div>
                       </div>
                       <p style={{
-                         color: "#444",
-                         fontSize: "0.8rem",
-                         marginBottom: 0
-                      }}>Tập thơ: <span style={{fontWeight: "bold", cursor: "pointer"}} onClick={() => navigate(`/collection/${poem.collection.id}`)}>{poem.collection?.collectionName}</span></p>
+                        color: "#444",
+                        fontSize: "0.8rem",
+                        marginBottom: 0
+                      }}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${poem.collection.id}`)}>{poem.collection?.collectionName}</span></p>
                       <div
                         style={{
                           display: "flex",

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Switch, Table, Dropdown, Menu, Button, Spin } from "antd";
+import { Modal, Switch, Table, Dropdown, Menu, Button, Spin, message } from "antd";
 import { IoIosLink, IoIosMore } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -28,6 +28,18 @@ const RecordCard = ({
     const currentUser = localStorage.getItem("username");
     const accessToken = localStorage.getItem("accessToken");
 
+    const handleCopyLink = () => {
+        const url = `${window.location.origin}/record/${record.id}`;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                message.success("Đã sao chép liên kết!");
+            })
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+                message.error("Không sao chép được liên kết!");
+            });
+    };
+
     const overlayMenu = (
         <Menu>
             <Menu.Item key="detail" onClick={() => navigate(`/record/${record.id}`, {
@@ -41,7 +53,7 @@ const RecordCard = ({
                     Thông tin chi tiết
                 </div>
             </Menu.Item>
-            <Menu.Item key="copy">
+            <Menu.Item key="copylink" onClick={handleCopyLink}>
                 <div className="menu-item">
                     <IoIosLink className="menu-icon" />
                     Sao chép liên kết
