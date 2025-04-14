@@ -6,7 +6,7 @@ import {
 } from "@mui/material";
 import { 
     Dashboard, Logout, Gavel, Assignment, ReceiptLong, ManageAccounts, 
-    LibraryBooks, Collections, Report, Notifications, ShoppingCart, Home
+    LibraryBooks, Collections, Report, Notifications, ShoppingCart, Home, Wallet
 } from "@mui/icons-material";
 import TransactionsManagement from "./Tabs/TransactionsManagement";
 import OrderManagement from "./Tabs/OrderManagement";
@@ -18,7 +18,7 @@ import PoemManagement from "./Tabs/PoemManagement";
 import ReportFromUser from "./Tabs/ReportFromUser";
 import PoetSamplesManagement from "./Tabs/PoetSamplesManagement";
 import CommunityCollectionManagement from "./Tabs/CommunityCollectionManagement";
-
+import RequestFromUser from "./Tabs/RequestFromUser";
 const drawerWidth = 280;
 
 const AdminPage = () => {
@@ -61,6 +61,7 @@ const AdminPage = () => {
                         { key: "poetsamples", icon: <Collections />, text: "PoetSamples Management" },
                         { key: "community-collections", icon: <Collections />, text: "Community Collections Management" },
                         { key: "reports", icon: <Report />, text: "Reports from Users" },
+                        { key: "requests", icon: <Wallet />, text: "Requests from Users" },
                         { key: "notifications", icon: <Notifications />, text: "Notification Management" },
                     ].map((item) => (
                         <ListItem disablePadding key={item.key}>
@@ -113,6 +114,7 @@ const AdminPage = () => {
                 {currentPage === "moderators" && <ModeratorManager />}
                 {currentPage === "poems" && <PoemManagement />}
                 {currentPage === "reports" && <ReportFromUser />}
+                {currentPage === "requests" && <RequestFromUser />}
                 {currentPage === "community-collections" && <CommunityCollectionManagement />}
                 {currentPage === "poetsamples" && <PoetSamplesManagement />}
             </Box>
