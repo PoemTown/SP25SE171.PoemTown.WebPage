@@ -6,6 +6,8 @@ import { HiUsers } from "react-icons/hi2";
 import { RiMessengerLine } from "react-icons/ri";
 import CreateNewChat from "../Chat/CreateNewChat";
 import { useNavigate } from "react-router-dom";
+import { WarningFilled } from "@ant-design/icons";
+import ReportUserModal from "../../../components/componentHomepage/ReportUserModal";
 
 const { Text } = Typography;
 
@@ -15,6 +17,8 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const [followings, setFollowings] = useState([]);
     const [isFollowersVisible, setIsFollowersVisible] = useState(false);
     const [isFollowingsVisible, setIsFollowingsVisible] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+
 
     // Donate modal states
     const [isDonateVisible, setIsDonateVisible] = useState(false);
@@ -29,6 +33,11 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     };
 
     const navigate = useNavigate();
+
+    const handleReportUser = () => {
+        setShowReportModal(true);
+    };
+
 
     const openFollowersModal = async () => {
         try {
@@ -116,7 +125,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
         }
 
         setIsDonating(true);
-    
+
         try {
             const response = await fetch(
                 `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/donate`,
@@ -143,7 +152,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
             setIsDonateVisible(false);
             setDonateAmount("");
             setDonateMessage("");
-    
+
         } catch (error) {
             console.error("Donate error:", error);
             message.error(error.message || "Đã xảy ra lỗi khi donate.");
@@ -175,7 +184,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 boxSizing: "border-box",
                 display: "flex",
                 alignItems: "center",
-                
+
             }}>
                 <Avatar
                     src={userData.avatar || "./default-avatar.png"}
@@ -189,7 +198,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
                             <Text strong style={{ fontSize: "20px", margin: "0", color: coverColorCode || "white" }}>
-                                {userData.displayName}
+                                <span>{userData.displayName}</span> <WarningFilled style={{ color: "red", cursor: "pointer" }} onClick={handleReportUser} />
                             </Text>
                             <Text style={{ color: coverColorCode || "rgba(255,255,255,0.8)", margin: "0", fontSize: "0.9em" }}>
                                 @{userData.userName || "Anonymous"}
@@ -226,19 +235,19 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                         )}
                     </div>
                     <div style={{ fontSize: "14px", color: coverColorCode || "white", display: "flex", flexDirection: "row", gap: "16px", alignItems: "center" }}>
-                        <div 
-                            style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} 
+                        <div
+                            style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}
                             onClick={openFollowersModal}
                         >
-                            <HiUsers color={coverColorCode || "white"} /> 
+                            <HiUsers color={coverColorCode || "white"} />
                             <span>{userData.totalFollowers || 0} Người theo dõi</span>
                         </div>
                         <div style={{ color: coverColorCode || "white" }}>•</div>
-                        <div 
-                            style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }} 
+                        <div
+                            style={{ display: "flex", alignItems: "center", flexDirection: "row", gap: "6px", cursor: "pointer" }}
                             onClick={openFollowingsModal}
                         >
-                            <FaUserPlus color={coverColorCode || "white"} /> 
+                            <FaUserPlus color={coverColorCode || "white"} />
                             <span>{userData.totalFollowings || 0} Đang theo dõi</span>
                         </div>
                     </div>
@@ -256,7 +265,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     itemLayout="horizontal"
                     dataSource={followers}
                     renderItem={(follower) => (
-                        <List.Item 
+                        <List.Item
                             onClick={() => {
                                 setIsFollowersVisible(false);
                                 navigate(`/user/${follower.user.userName}`);
@@ -273,6 +282,12 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     )}
                 />
             </Modal>
+            <ReportUserModal
+                visible={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                userId={userData?.id}
+                accessToken={localStorage.getItem("accessToken")}
+            />
 
             {/* Followings Modal */}
             <Modal
@@ -285,7 +300,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     itemLayout="horizontal"
                     dataSource={followings}
                     renderItem={(following) => (
-                        <List.Item 
+                        <List.Item
                             onClick={() => {
                                 setIsFollowingsVisible(false);
                                 navigate(`/user/${following.user.userName}`);

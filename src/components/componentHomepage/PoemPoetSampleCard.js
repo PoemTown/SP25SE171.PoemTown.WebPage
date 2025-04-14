@@ -117,11 +117,6 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
             });
     };
 
-    const handleReportPoem = () => {
-        // Implement your reporting functionality here.
-        message.info("Báo cáo bài thơ được gửi đi!");
-    };
-
 
     const collectionMenu = (
         <Menu>
@@ -144,11 +139,6 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <IoIosLink color="#666" size={16} />
                     <div>Sao chép liên kết</div>
-                </div>
-            </Menu.Item>
-            <Menu.Item key="report" onClick={handleReportPoem}>
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <MdReport color="red" size={16} /><div> Báo cáo </div>
                 </div>
             </Menu.Item>
         </Menu>
