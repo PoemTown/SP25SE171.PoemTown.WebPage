@@ -10,7 +10,10 @@ import {
   Menu,
   Dropdown,
   Upload,
-  Progress // Thêm component Progress
+  Progress, // Thêm component Progress
+  Row,
+  Col,
+  Card
 } from "antd";
 import { FcFolder } from "react-icons/fc";
 import { DownOutlined, UploadOutlined } from "@ant-design/icons";
@@ -28,15 +31,10 @@ export default function CreateRecord({ onBack }) {
   const [isAudioUploading, setIsAudioUploading] = useState(false);
   const [activeButton, setActiveButton] = useState("mine");
   const [uploadProgress, setUploadProgress] = useState(0);
-
+  const [audioUrl, setAudioUrl] = useState("");
   // Thêm state mới
   const [currentFile, setCurrentFile] = useState(null);
   const accessToken = localStorage.getItem("accessToken");
-
-  const [data, setData] = useState({
-    recordName: "",
-    fileUrl: ""
-  });
 
   const fetchPoems = async (page, size) => {
     const url = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?pageNumber=${page}&pageSize=${size}`;
@@ -82,12 +80,22 @@ export default function CreateRecord({ onBack }) {
     fetchData(currentPage, pageSize).finally(() => setIsLoading(false));
   }, [activeButton, currentPage, pageSize]);
 
-  const handleCreateRecordFile = async (poemId) => {
+  const handleCreateRecordFile = async () => {
     try {
-      const url = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1`;
+      const values = await form.validateFields();
+      const poemId = selectedPoem?.poemId;
+
+      if (!poemId) {
+        message.error("Không tìm thấy bài thơ!");
+        return;
+      }
+
       const response = await axios.post(
-        url,
-        data,
+        `${process.env.REACT_APP_API_BASE_URL}/record-files/v1`,
+        {
+          fileName: values.recordName,
+          fileUrl: values.audioFile
+        },
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -96,8 +104,10 @@ export default function CreateRecord({ onBack }) {
           params: { poemId }
         }
       );
+
       message.success("Tạo bản ghi âm thành công!");
-      console.log("Response:", response.data);
+      setIsModalVisible(false);
+      form.resetFields();
     } catch (error) {
       console.error("Error:", error);
       message.error("Có lỗi xảy ra khi tạo bản ghi âm!");
@@ -105,7 +115,6 @@ export default function CreateRecord({ onBack }) {
   };
 
 
-  // Sửa lại phần uploadProps
   const uploadProps = {
     name: "file",
     accept: "audio/*",
@@ -116,7 +125,7 @@ export default function CreateRecord({ onBack }) {
 
       try {
         setIsAudioUploading(true);
-        setCurrentFile(file); // Lưu file hiện tại
+        setCurrentFile(file);
 
         const response = await axios.post(
           `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/audio`,
@@ -137,10 +146,8 @@ export default function CreateRecord({ onBack }) {
         );
 
         onSuccess(response.data);
-        setData(prev => ({
-          ...prev,
-          fileUrl: response.data.data // Sửa thành response.data.data
-        }));
+        form.setFieldsValue({ audioFile: response.data.data });
+        setAudioUrl(response.data.data);
         message.success(`${file.name} tải lên thành công`);
       } catch (error) {
         onError(error);
@@ -148,10 +155,14 @@ export default function CreateRecord({ onBack }) {
       } finally {
         setIsAudioUploading(false);
         setUploadProgress(0);
-        setCurrentFile(null); // Reset file hiện tại
+        setCurrentFile(null);
       }
     },
     beforeUpload: (file) => {
+      if (!file.type.startsWith("audio/")) {
+        message.error("Chỉ được phép tải lên file audio!");
+        return false;
+      }
       if (isAudioUploading) {
         message.warning("Vui lòng đợi file hiện tại upload xong");
         return false;
@@ -161,61 +172,70 @@ export default function CreateRecord({ onBack }) {
   };
 
 
-  const handleRowClick = (poem) => {
-    setSelectedPoem(poem);
+  const handleRowClick = (record) => {
+    const poemId = record.poem?.id || record.id;
+    setSelectedPoem({
+      ...record,
+      poemId
+    });
     form.resetFields();
-    setData({ recordName: "", fileUrl: "" });
     setIsModalVisible(true);
   };
 
-  const handleModalOk = async () => {
-    try {
-      const values = await form.validateFields();
-      const updatedData = {
-        ...data,
-        recordName: values.recordName
-      };
-      setData(updatedData);
-      const poemId = selectedPoem.poem ? selectedPoem.poem.id : selectedPoem.id;
-      await handleCreateRecordFile(poemId);
-      setIsModalVisible(false);
-    } catch (err) {
-      console.error("Validation Failed:", err);
-    }
-  };
 
   const columns = [
     {
       title: "Icon",
       dataIndex: "icon",
       render: () => <FcFolder size={32} />,
-      width: 70
+      width: 70,
+      align: 'center'
     },
     {
-      title: "Title",
+      title: "Tiêu đề",
+      dataIndex: "title",
       key: "title",
-      render: (_, record) => record.poem ? record.poem.title : record.title
+      render: (_, record) => (
+        <div style={{ fontWeight: 500 }}>
+          {record.poem ? record.poem.title : record.title}
+        </div>
+      )
     },
     {
-      title: "Description",
+      title: "Mô tả",
       key: "description",
-      render: (_, record) => record.poem ? record.poem.description : record.description
+      render: (_, record) => (
+        <div style={{ color: '#666' }}>
+          {record.poem ? record.poem.description : record.description}
+        </div>
+      )
     },
     {
-      title: "Owner",
+      title: "Chủ sở hữu",
       key: "owner",
-      render: (_, record) => record.poem?.user?.displayName || record.owner?.displayName || "Mine"
+      render: (_, record) => (
+        <div style={{ fontStyle: 'italic' }}>
+          {record.poem?.user?.displayName || record.owner?.displayName || "Của bạn"}
+        </div>
+      )
     },
     {
-      title: "Action",
+      title: "Thao tác",
       key: "action",
       render: (_, record) => (
-        <Button type="link" onClick={() => handleRowClick(record)}>
-          Select
+        <Button
+          type="primary"
+          onClick={() => handleRowClick({
+            ...record,
+            poemId: record.poem?.id || record.id // Đảm bảo có poemId
+          })}
+        >
+          Chọn
         </Button>
       )
     }
   ];
+
 
   const menu = (
     <Menu>
@@ -230,125 +250,179 @@ export default function CreateRecord({ onBack }) {
   };
 
   return (
-    <>
-      <Button
-        onClick={onBack}
+    <div style={{ padding: '24px' }}>
+      <Row justify="space-between" align="middle" style={{ marginBottom: 24 }}>
+        <Col>
+          <Button
+            onClick={onBack}
+            type="primary"
+            style={{
+              padding: '0 24px',
+              height: 40,
+              borderRadius: '8px',
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+            }}
+          >
+            ← Quay lại
+          </Button>
+        </Col>
+        <Col>
+          <Dropdown overlay={menu} trigger={["click"]}>
+            <Button
+              type="default"
+              style={{
+                width: 150,
+                borderRadius: '8px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between'
+              }}
+            >
+              {activeButton === "mine" ? "Của tôi" : "Đã mua"}
+              <DownOutlined />
+            </Button>
+          </Dropdown>
+        </Col>
+      </Row>
+
+      <Card
+        bordered={false}
         style={{
-          marginBottom: 16,
-          padding: "12px 20px",
-          backgroundColor: "#6c757d",
-          color: "white",
-          border: "none",
-          borderRadius: "8px",
-          fontWeight: "bold",
-          cursor: "pointer"
+          borderRadius: '12px',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
         }}
       >
-        ← Quay Lại Danh Sách
-      </Button>
-
-      <div style={{ marginBottom: "50px" }}>
-        <Dropdown.Button
-          overlay={menu}
-          trigger={["click"]}
-          icon={<DownOutlined />}
-          style={{ float: "right" }}
-        >
-          {activeButton === "mine" ? "Của tôi" : "Đã mua"}
-        </Dropdown.Button>
-      </div>
-
-      {isLoading ? (
-        <div style={{ textAlign: "center", padding: "50px 0" }}>
-          <Spin size="large" tip="Đang tải dữ liệu..." />
-        </div>
-      ) : (
-        <Table
-          dataSource={poems}
-          columns={columns}
-          rowKey={(record) => record.id}
-          pagination={{
-            current: currentPage,
-            pageSize,
-            total,
-            onChange: (page, size) => {
-              setCurrentPage(page);
-              setPageSize(size);
-            },
-            showSizeChanger: true,
-            pageSizeOptions: ["1", "10", "15"]
-          }}
-        />
-      )}
+        {isLoading ? (
+          <div style={{ textAlign: "center", padding: "50px 0" }}>
+            <Spin size="large" tip="Đang tải dữ liệu..." />
+          </div>
+        ) : (
+          <Table
+            dataSource={poems}
+            columns={columns}
+            rowKey={(record) => record.id}
+            pagination={{
+              current: currentPage,
+              pageSize,
+              total,
+              onChange: (page, size) => {
+                setCurrentPage(page);
+                setPageSize(size);
+              },
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+              locale: { items_per_page: '/ trang' }
+            }}
+            scroll={{ x: true }}
+          />
+        )}
+      </Card>
 
       <Modal
         title={
-          selectedPoem
-            ? `Tạo audio cho bài thơ: ${selectedPoem.poem ? selectedPoem.poem.title : selectedPoem.title}`
-            : "Tạo bản ghi âm"
+          <div style={{ fontSize: '20px', fontWeight: 600 }}>
+            {selectedPoem?.poem?.title || selectedPoem?.title}
+          </div>
         }
         open={isModalVisible}
-        onOk={handleModalOk}
-        onCancel={() => setIsModalVisible(false)}
-        okText="Lưu"
-        cancelText="Hủy"
-        okButtonProps={{ 
-          disabled: !data.fileUrl || isAudioUploading 
+        onOk={handleCreateRecordFile}
+        onCancel={() => {
+          setIsModalVisible(false);
+          form.resetFields();
         }}
+        okText="Tạo bản ghi"
+        cancelText="Hủy"
+        okButtonProps={{
+          disabled: isAudioUploading,
+          style: { borderRadius: '6px' }
+        }}
+        cancelButtonProps={{ style: { borderRadius: '6px' } }}
+        width={600}
       >
         <Form
           form={form}
           layout="vertical"
-          initialValues={{ recordName: "record_file" }}
+          initialValues={{ recordName: "", audioFile: null }}
         >
           <Form.Item
-            label="Tên bản ghi âm"
+            label="Tên bản ghi"
             name="recordName"
-            rules={[{ required: true, message: "Vui lòng nhập tên bản ghi âm!" }]}
+            rules={[{
+              required: true,
+              message: "Vui lòng nhập tên bản ghi!"
+            }]}
           >
-            <Input />
+            <Input
+              placeholder="Nhập tên bản ghi..."
+              style={{ borderRadius: '6px' }}
+            />
           </Form.Item>
-          <Form.Item label="Chọn file audio" name="audioFile">
+
+          <Form.Item
+            label="File audio"
+            name="audioFile"
+            rules={[{
+              required: true,
+              message: "Vui lòng tải lên file audio!"
+            }]}
+            valuePropName="fileUrl"
+          >
             <Upload {...uploadProps}>
-              <Button icon={<UploadOutlined />} disabled={isAudioUploading}>
+              <Button
+                icon={<UploadOutlined />}
+                disabled={isAudioUploading}
+                style={{ borderRadius: '6px' }}
+              >
                 Chọn file audio
               </Button>
             </Upload>
           </Form.Item>
 
           {isAudioUploading && (
-            <div style={{ marginTop: "8px" }}>
+            <div style={{ marginTop: 16 }}>
               <Progress
                 percent={uploadProgress}
                 status="active"
                 strokeColor={{
-                  '0%': '#108ee9',
-                  '100%': '#87d068',
+                  '0%': '#1890ff',
+                  '100%': '#52c41a',
                 }}
+                showInfo={false}
               />
-              <div style={{ marginTop: 4, color: '#666' }}>
-                Đang tải lên: {currentFile?.name} ({uploadProgress}%)
+              <div style={{
+                marginTop: 8,
+                display: 'flex',
+                justifyContent: 'space-between',
+                color: '#666'
+              }}>
+                <span>{currentFile?.name}</span>
+                <span>{uploadProgress}%</span>
               </div>
             </div>
           )}
 
-          {data.fileUrl && (
-            <Form.Item label="Audio đã tải lên">
-              <audio controls src={data.fileUrl} style={{ width: "100%" }} />
+          {audioUrl && (
+            <div style={{ marginTop: 16 }}>
+              <audio
+                controls
+                src={form.getFieldValue('audioFile')}
+                style={{ width: '100%' }}
+              />
               <Button
                 type="link"
+                danger
                 onClick={() => {
-                  setData(prev => ({ ...prev, fileUrl: "" }));
-                  form.setFieldValue('audioFile', null);
+                  setAudioUrl("");
+                  form.setFieldsValue({ audioFile: null }); // CHỈ CẦN RESET FORM
                 }}
                 style={{ marginTop: 8 }}
               >
-                Chọn file khác
+                Xóa file
               </Button>
-            </Form.Item>
+            </div>
           )}
         </Form>
       </Modal>
-    </>
+    </div>
   );
 }

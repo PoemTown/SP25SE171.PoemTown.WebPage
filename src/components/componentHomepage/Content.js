@@ -6,6 +6,7 @@ import PoemCard from "./PoemCard";
 import RecordCard from "./RecordCard";
 import { BiCommentDetail, BiLike } from "react-icons/bi";
 import { HiUsers } from "react-icons/hi2";
+import RecordListGroupedByPoem from "./RecordListGroupedByPoem";
 
 const Content = ({ activeTab }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -425,12 +426,15 @@ const Content = ({ activeTab }) => {
                     isCommunity={isCommunity}
                   />
                 ))}
-                {records.map((item) => (
+                {/* {records.map((item) => (
                   <RecordCard
                     key={item.id}
                     record={item}
                   />
-                ))}
+                ))} */}
+                <RecordListGroupedByPoem
+                    records={records}
+                  />
               </div>
             )}
             {totalPages > 1 && (
