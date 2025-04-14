@@ -152,7 +152,7 @@ const CollectionTab = ({ poet }) => {
                         </div>
                     </>
                 ) :
-                    <div style={{}}>
+                    <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
                         {hasPermission === true && (
                             <button
                                 onClick={handleChangeToCreate}

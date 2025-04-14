@@ -11,22 +11,44 @@ const PoemsTab = ({ collections, poetId }) => {
     const [loading, setLoading] = useState(false);
     const [bookmarkedPoems, setBookmarkedPoems] = useState([]);
     const [likedPoems, setLikedPoems] = useState([]);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const accessToken = localStorage.getItem("accessToken");
+
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!token);
+    }, []);
+
 
     useEffect(() => {
         const storedRoles = JSON.parse(localStorage.getItem("role")) || [];
         setRoles(storedRoles);
         fetchPoems();
-    }, [poetId]);
+    }, [poetId,]);
+
+    const requestHeaders = {
+        "Content-Type": "application/json",
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+    };
+
 
     const fetchPoems = async () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${poetId}`,
+                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${poetId}`,{
+                    headers: requestHeaders,
+                }
             );
-            
+
             if (response.data && response.data.data) {
                 setPoems(response.data.data);
+                console.log(response.data.data)
+                const initialBookmarkedState = {};
+                response.data.data.forEach(item => {
+                    initialBookmarkedState[item.id] = !!item.targetMark;
+                })
+                setBookmarkedPoems(initialBookmarkedState);
             }
         } catch (error) {
             console.error("Error fetching poems:", error);
@@ -38,26 +60,30 @@ const PoemsTab = ({ collections, poetId }) => {
 
     const canCreatePoem = roles.includes("ADMIN") || roles.includes("MODERATOR");
 
-    const handleBookmark = async (poemId) => {
+    const handleBookmark = async (id) => {
         try {
             // Gọi API bookmark
-            const response = await axios.post(
-                `https://api-poemtown-staging.nodfeather.win/api/bookmarks/v1/${poemId}`,
-                {},
-                {
-                    headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                    },
-                }
-            );
+            if (!isLoggedIn) {
+                message.error("Vui lòng đăng nhâp để sử dụng chức năng này");
+                return;
+            }
+            const endpoint = `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
 
-            if (response.data.success) {
-                // Cập nhật trạng thái bookmark
-                if (bookmarkedPoems.includes(poemId)) {
-                    setBookmarkedPoems(bookmarkedPoems.filter(id => id !== poemId));
-                } else {
-                    setBookmarkedPoems([...bookmarkedPoems, poemId]);
+            const currentState = bookmarkedPoems[id];
+            console.log(endpoint);
+            const response = await fetch(endpoint, {
+                method: currentState ? "DELETE" : "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`
                 }
+            });
+
+            if (response.ok) {
+                setBookmarkedPoems(prev => ({
+                    ...prev,
+                    [id]: !currentState
+                }));
             }
         } catch (error) {
             console.error("Error bookmarking poem:", error);
@@ -97,17 +123,19 @@ const PoemsTab = ({ collections, poetId }) => {
     const handleMove = async (collectionId, poemId) => {
         try {
             // Gọi API di chuyển bài thơ
-            const response = await axios.put(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${poemId}/move/${collectionId}`,
+            const response = await axios.post(
+                `${process.env.REACT_APP_API_BASE_URL}/collections/v1/${collectionId}/${poemId}`,
                 {},
                 {
                     headers: {
-                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                        Authorization: `Bearer ${accessToken}`,
+                        "Content-Type": "application/json",
                     },
                 }
             );
+            console.log(response)
 
-            if (response.data.success) {
+            if (response.data.statusCode === 200) {
                 message.success("Đã di chuyển bài thơ thành công");
                 fetchPoems(); // Refresh danh sách
             }
@@ -158,18 +186,19 @@ const PoemsTab = ({ collections, poetId }) => {
                                 <PoemCard
                                     key={poem.id}
                                     item={poem}
-                                    bookmarked={bookmarkedPoems.includes(poem.id)}
+                                    bookmarked={bookmarkedPoems[poem.id] || false}
                                     liked={likedPoems.includes(poem.id)}
                                     onBookmark={handleBookmark}
                                     onLike={handleLike}
                                     collections={collections}
                                     handleMove={handleMove}
                                     poetId={poetId}
+                                    onPoemCreated={fetchPoems}
                                 />
                             ))
                         ) : (
-                            <div style={{ 
-                                textAlign: "center", 
+                            <div style={{
+                                textAlign: "center",
                                 padding: "40px",
                                 color: "#666",
                                 fontSize: "16px"

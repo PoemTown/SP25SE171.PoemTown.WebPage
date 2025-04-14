@@ -51,7 +51,7 @@ const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity, isKnowled
                 }}>
                     <p style={{ marginBottom: '1%', fontWeight: 'bold', marginTop: 0 }}>
                         {item.collectionName} {isCommunity ? "" : "-"} <span style={{ color: "#007bff", fontWeight: "600", fontStyle: "italic", textDecoration: "underline", cursor: "pointer" }}>
-                            {isCommunity ? "" : isKnowledgePoet ? item.poetSample?.name : item.user?.displayName || "Anonymous"}
+                            {isCommunity ? "" : item.isFamousPoet ? item.poetSample?.name : item.user?.displayName || "Anonymous"}
                         </span>
                     </p>
                     <div style={{
