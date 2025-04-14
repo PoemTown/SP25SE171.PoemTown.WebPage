@@ -1,4 +1,4 @@
-import { Dropdown, Menu } from "antd";
+import { Dropdown, Menu, message } from "antd";
 import { useEffect, useState } from "react";
 import { CiBookmark } from "react-icons/ci";
 import { IoIosLink, IoIosMore } from "react-icons/io";
@@ -11,6 +11,18 @@ const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity, isKnowled
     const navigate = useNavigate();
     const [hasPermission, setHasPermission] = useState(false);
     const storedRole = localStorage.getItem("role");
+
+    const handleCopyLink = () => {
+        const url = `${window.location.origin}/collection/${item.id}`;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                message.success("Đã sao chép liên kết!");
+            })
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+                message.error("Không sao chép được liên kết!");
+            });
+    };
 
     useEffect(() => {
         if (storedRole) {
@@ -77,7 +89,7 @@ const CollectionCard = ({ item, onBookmark, isBookmarked, isCommunity, isKnowled
                         <Dropdown
                             overlay={
                                 <Menu>
-                                    <Menu.Item key="edit">
+                                    <Menu.Item key="edit" onClick={handleCopyLink}>
                                         <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                             <IoIosLink color="#666" size={16} />
                                             <div>Sao chép liên kết</div>
