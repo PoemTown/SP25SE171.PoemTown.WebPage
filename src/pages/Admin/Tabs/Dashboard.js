@@ -59,9 +59,15 @@ const orderTypeMapping = {
     4: "Bài thơ"
 };
 
+// const incomeTypeMapping = {
+//     1: "Nạp tiền ví điện tử",
+//     2: "Mua Master Templates"
+// };
 const incomeTypeMapping = {
-    1: "Nạp tiền ví điện tử",
-    2: "Mua Master Templates"
+    9: "Phí dịch vụ nạp tiền",
+    2: "Mua mẫu thiết kế",
+    3: "Mua bản ghi âm",
+    5: "Rút tiền"
 };
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
 
@@ -258,6 +264,21 @@ const fetchOrderTypes = async (setOrderTypeData) => {
     }
 };
 
+const getIncomeColor = (type) => {
+    switch(type) {
+        case 2:
+            return "#6abf81";
+        case 3:
+            return "#fa00f7";
+        case 5:
+            return "#ff2d00";
+        case 9: 
+            return "#006cff";
+        default:
+            return "#888888";
+    }
+}
+
 const fetchIncomes = async (period, setIncomeData) => {
     try {
         const result = await fetchWithAuth(
@@ -268,7 +289,7 @@ const fetchIncomes = async (period, setIncomeData) => {
             const transformedData = result.data.incomeTypeStatistics.map(type => ({
                 incomeType: type.incomeType,
                 name: incomeTypeMapping[type.incomeType] || `Loại ${type.incomeType}`,
-                color: type.incomeType === 1 ? '#0088FE' : '#00C49F',
+                color: getIncomeColor(type.incomeType),
                 samples: type.samples.samples.map(sample => ({
                     period: sample.period,
                     totalSamples: sample.totalSamples,
@@ -412,18 +433,19 @@ const DoubleLineChart = ({ data }) => {
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />
                 <YAxis yAxisId="left" label={{ value: "Số tiền", angle: -90, position: "insideLeft" }} />
-                <YAxis yAxisId="right" orientation="right" label={{ value: "Số lượng", angle: 90, position: "insideRight" }} />
-                
+
                 <Tooltip
                     content={({ payload }) => {
+
                         if (!payload || payload.length === 0) return null;
+                        const row = payload[0].payload; // full chart row for that period
 
                         return (
                             <div className="custom-tooltip" style={{ background: "white", padding: "10px", border: "1px solid #ccc" }}>
-                                <p><strong>Kỳ: {payload[0].payload.period}</strong></p>
+                                <p><strong>Kỳ: {row.period}</strong></p>
                                 {data.map((item) => {
-                                    const amount = payload.find(p => p.dataKey === `amount_${item.incomeType}`)?.value || 0;
-                                    const samples = payload.find(p => p.dataKey === `samples_${item.incomeType}`)?.value || 0;
+                                    const amount = row[`amount_${item.incomeType}`] ?? 0;
+                                    const samples = row[`samples_${item.incomeType}`] ?? 0;
 
                                     return (
                                         <p key={item.incomeType} style={{ color: item.color }}>
@@ -444,23 +466,14 @@ const DoubleLineChart = ({ data }) => {
                         <Line
                             key={`line_amount_${item.incomeType}`}
                             yAxisId="left"
-                            type="monotone"
+                            type="linear"
                             dataKey={`amount_${item.incomeType}`}
                             name={`Số tiền - ${item.name}`}
                             stroke={item.color}
                             strokeWidth={2}
                             dot={{ r: 4 }}
                         />
-                        <Line
-                            key={`line_samples_${item.incomeType}`}
-                            yAxisId="right"
-                            type="monotone"
-                            dataKey={`samples_${item.incomeType}`}
-                            name={`Số lượng - ${item.name}`}
-                            stroke={item.color}
-                            strokeDasharray="3 3"
-                            dot={{ r: 4 }}
-                        />
+
                     </>
                 ))}
             </ComposedChart>
