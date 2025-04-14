@@ -415,6 +415,7 @@ const Content = ({ activeTab }) => {
                     onBookmark={handleBookmark}
                     onLike={handleLike}
                     onHover={setIsHovered}
+                    onPoemCreated={fetchData}
                   />
                 ))}
                 {collections.map((item) => (

@@ -15,6 +15,7 @@ import Comment from '../components/componentHomepage/Comment';
 import axios from 'axios';
 import { FacebookOutlined, UploadOutlined } from '@ant-design/icons';
 import FacebookSharePlugin from '../components/componentHomepage/FaceBookShareButton';
+import ReportPoemModal from '../components/componentHomepage/ReportPoemModal';
 
 const PoemDetail = () => {
     const { id } = useParams();
@@ -30,6 +31,8 @@ const PoemDetail = () => {
     const [userData, setUserData] = useState([]);
     const [backgroundImage, setBackgroundImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+
 
     // Thêm state create record
     const [showCreateRecordModal, setShowCreateRecordModal] = useState(false);
@@ -305,12 +308,14 @@ const PoemDetail = () => {
         });
     };
 
-
+    const handleReportPoem = () => {
+        setShowReportModal(true);
+    };
 
     //------------------------------------------------Purchase------------------------------------------------
     const defaultMenu = (
         <Menu>
-            <Menu.Item key="report">
+            <Menu.Item key="report" onClick={handleReportPoem}>
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <MdReport color="red" size={16} /><div> Báo cáo </div>
                 </div>
@@ -934,6 +939,12 @@ const PoemDetail = () => {
 
 
             </div>
+            <ReportPoemModal
+              visible={showReportModal}
+              onClose={() => setShowReportModal(false)}
+              poemId={poem?.id}
+              accessToken={localStorage.getItem("accessToken")}
+            />
             <Modal
                 title="Tạo Bản Ghi Mới"
                 open={showCreateRecordModal}

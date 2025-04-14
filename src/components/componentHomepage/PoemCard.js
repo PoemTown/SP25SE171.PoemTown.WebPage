@@ -1,4 +1,4 @@
-import { Dropdown, Menu, message } from "antd";
+import { Dropdown, Menu, message, Modal } from "antd";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
 import { CiBookmark } from "react-icons/ci";
 import { IoIosMore } from "react-icons/io";
@@ -8,6 +8,7 @@ import { IoIosLink } from "react-icons/io";
 import { FaUserPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import ReportPoemModal from "./ReportPoemModal";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -29,8 +30,8 @@ const poemType = {
     11: "Thơ tám chữ",
 }
 
-const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove }) => {
-
+const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove, onPoemCreated }) => {
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [moveMenuItems, setMoveMenuItems] = useState([]);
 
     const lines = item.content?.split('\n') || [];
@@ -40,9 +41,13 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
     const truncatedDescription = item.description?.length > 80
         ? `${item.description.substring(0, 80)}...`
         : item.description;
-
+    const [showReportModal, setShowReportModal] = useState(false);
     const [isHovered, setIsHovered] = useState(false);
 
+    useEffect(() => {
+        const token = localStorage.getItem("accessToken");
+        setIsLoggedIn(!!token);
+    }, []);
 
     const handleCopyLink = () => {
         const url = `${window.location.origin}/poem/${item.id}`;
@@ -57,28 +62,31 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
     };
 
     const handleReportPoem = () => {
-        // Implement your reporting functionality here.
-        message.info("Báo cáo bài thơ được gửi đi!");
+        setShowReportModal(true);
     };
 
     // Menu dropdown mặc định (cho trường hợp action khác "collection")
     const defaultMenu = (
         <Menu>
-            <Menu.Item key="report" onClick={handleReportPoem}>
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <MdReport color="red" size={16} /><div> Báo cáo </div>
-                </div>
-            </Menu.Item>
+            {item?.isFamousPoet ? null :
+                <Menu.Item key="report" onClick={handleReportPoem}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <MdReport color="red" size={16} /><div> Báo cáo </div>
+                    </div>
+                </Menu.Item>
+            }
             <Menu.Item key="copylink" onClick={handleCopyLink}>
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <IoIosLink color="#666" size={16} /><div> Sao chép liên kết </div>
                 </div>
             </Menu.Item>
-            <Menu.Item key="follow">
-                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                    <FaUserPlus color="#666" size={16} /><div> Theo dõi người dùng </div>
-                </div>
-            </Menu.Item>
+            {item?.isFamousPoet ? null :
+                <Menu.Item key="follow">
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <FaUserPlus color="#666" size={16} /><div> Theo dõi người dùng </div>
+                    </div>
+                </Menu.Item>
+            }
         </Menu>
     );
 
@@ -95,20 +103,74 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
         );
     };
 
+    const confirmDelete = () => {
+        Modal.confirm({
+            title: "Bạn có chắc chắn muốn xóa bài thơ này?",
+            content: "Hành động này sẽ xóa bài thơ vĩnh viễn. Bạn có chắc không?",
+            okText: "Xóa",
+            cancelText: "Hủy",
+            okType: "danger",
+            onOk() {
+                handleDelete();
+            }
+        });
+    };
+
+    const handleDelete = async () => {
+        const accessToken = localStorage.getItem('accessToken');
+        try {
+            const response = await fetch(
+                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${item.id}`,
+                {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${accessToken}`
+                    }
+                }
+            );
+
+            if (response.ok) {
+                if (onPoemCreated) {
+                    onPoemCreated();
+                }
+            } else {
+                console.error('Lỗi khi xóa bài thơ:', response.statusText);
+            }
+            if (onPoemCreated) {
+                onPoemCreated();
+            }
+        } catch (error) {
+            console.error('Lỗi khi gọi API xóa bài thơ:', error);
+        }
+    };
+
 
     const collectionMenu = (
         <Menu>
-            <Menu.Item key="delete" >
-                ❌ Xóa bài thơ
-            </Menu.Item>
-            <Menu.SubMenu
-                key="move"
-                title="🔄 Chuyển bài thơ"
-                onTitleMouseEnter={() => handleMouseEnter(item.id)}
-            >
-                {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
+            {item?.isMine ?
+                <Menu.Item key="delete" onClick={confirmDelete}>
+                    ❌ Xóa bài thơ
+                </Menu.Item>
+                : null
+            }
+            {item?.isMine ?
+                <Menu.SubMenu
+                    key="move"
+                    title="🔄 Chuyển bài thơ"
+                    onTitleMouseEnter={() => handleMouseEnter(item.id)}
+                >
+                    {moveMenuItems.length > 0 ? moveMenuItems : <Menu.Item>Đang tải...</Menu.Item>}
 
-            </Menu.SubMenu>
+                </Menu.SubMenu>
+                : null
+            }
+            <Menu.Item key="edit" onClick={handleCopyLink}>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <IoIosLink color="#666" size={16} />
+                    <div>Sao chép liên kết</div>
+                </div>
+            </Menu.Item>
         </Menu>
     );
 
@@ -210,6 +272,12 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     </button>
                 </div>
             </div>
+            <ReportPoemModal
+                visible={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                poemId={item.id}
+                accessToken={localStorage.getItem("accessToken")}
+            />
         </div>
     )
 };
