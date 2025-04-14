@@ -26,12 +26,12 @@ const FacebookSharePlugin = ({ url }) => {
     <div
       className="fb-share-button"
       data-href={url}
-      data-layout="button_count"
+      data-layout="button"
       data-size="small">
       <a
         target="_blank"
         rel="noopener noreferrer"
-        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent("https://poemtown-staging.nodfeather.win/poem/61947543-1557-437f-8d9a-08dd7abce3db")}&amp;src=sdkpreparse`}
+        href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&amp;src=sdkpreparse`}
         className="fb-xfbml-parse-ignore">
         Chia sẻ
       </a>
