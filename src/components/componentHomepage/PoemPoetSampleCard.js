@@ -1,4 +1,4 @@
-import { Dropdown, Menu, Modal } from "antd";
+import { Dropdown, Menu, message, Modal } from "antd";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
 import { CiBookmark } from "react-icons/ci";
 import { IoIosMore } from "react-icons/io";
@@ -68,13 +68,13 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
             );
 
             if (response.ok) {
-                if(onPoemCreated) {
+                if (onPoemCreated) {
                     onPoemCreated();
                 }
             } else {
                 console.error('Lỗi khi xóa bài thơ:', response.statusText);
             }
-            if(onPoemCreated) {
+            if (onPoemCreated) {
                 onPoemCreated();
             }
         } catch (error) {
@@ -105,6 +105,24 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
         );
     };
 
+    const handleCopyLink = () => {
+        const url = `${window.location.origin}/poem/${item.id}`;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                message.success("Đã sao chép liên kết!");
+            })
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+                message.error("Không sao chép được liên kết!");
+            });
+    };
+
+    const handleReportPoem = () => {
+        // Implement your reporting functionality here.
+        message.info("Báo cáo bài thơ được gửi đi!");
+    };
+
+
     const collectionMenu = (
         <Menu>
             <Menu.Item key="delete" onClick={confirmDelete}>
@@ -120,10 +138,28 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
         </Menu>
     );
 
+    const defaultMenu = (
+        <Menu>
+            <Menu.Item key="copylink" onClick={handleCopyLink}>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <IoIosLink color="#666" size={16} />
+                    <div>Sao chép liên kết</div>
+                </div>
+            </Menu.Item>
+            <Menu.Item key="report" onClick={handleReportPoem}>
+                <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                    <MdReport color="red" size={16} /><div> Báo cáo </div>
+                </div>
+            </Menu.Item>
+        </Menu>
+    );
+    
+
     const overlayMenu = (collections && collections.length > 0 && canCreatePoem)
         ? collectionMenu
-        : null;
+        : defaultMenu;
 
+  
     const handleNavigate = () => {
         navigate(`/knowledge/poet/${item.poetSample?.id}`);
     }
@@ -194,7 +230,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
                             style={{ fontWeight: "bold", cursor: "pointer" }}
                             onClick={() => navigate(`/collection/${item.collection.id}`)}
                         >
-                            {item.collection.collectionName}
+                            {" "}{item.collection.collectionName}
                         </span>
                     </p>
                 )}

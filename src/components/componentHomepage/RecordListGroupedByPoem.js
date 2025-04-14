@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Modal, Switch, Table, Dropdown, Menu, Button, Spin, Collapse } from "antd";
+import { Modal, Switch, Table, Dropdown, Menu, Button, Spin, Collapse, message } from "antd";
 import { IoIosLink, IoIosMore } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
@@ -26,7 +26,7 @@ const PoemRecordGroup = ({
 }) => {
     const navigate = useNavigate();
     const currentUser = localStorage.getItem("username");
-    
+
     return (
         <div style={{ ...styles.cardContainer, width: '100%' }}>
             {/* Poem Header */}
@@ -45,30 +45,30 @@ const PoemRecordGroup = ({
                     <p style={styles.poemAuthor}>Tác giả: {poem.user?.displayName || "Không rõ"}</p>
                 </div>
             </div>
-            
+
             {/* Records Collapse */}
-            <Collapse 
-                bordered={false} 
+            <Collapse
+                bordered={false}
                 defaultActiveKey={['0']}
                 expandIcon={({ isActive }) => <DownOutlined rotate={isActive ? 180 : 0} />}
                 style={styles.collapse}
             >
                 {records.map((record, index) => (
-                    <Panel 
+                    <Panel
                         header={
-                            <RecordHeader 
-                                record={record} 
-                                isMine={isMine} 
+                            <RecordHeader
+                                record={record}
+                                isMine={isMine}
                                 currentUser={currentUser}
                             />
-                        } 
+                        }
                         key={index}
                         style={styles.panel}
                     >
-                        <RecordContent 
-                            record={record} 
-                            showDeleteConfirm={showDeleteConfirm} 
-                            isMine={isMine} 
+                        <RecordContent
+                            record={record}
+                            showDeleteConfirm={showDeleteConfirm}
+                            isMine={isMine}
                             showPurchaseConfirm={showPurchaseConfirm}
                         />
                     </Panel>
@@ -98,8 +98,8 @@ const RecordHeader = ({ record, isMine, currentUser }) => {
                     record.buyer?.userName,
                     ...(record.buyers?.map(b => b.userName) || []),
                 ].includes(currentUser) && !record.isPublic) && (
-                    <LockFilled style={{ color: '#ff4d4f', marginLeft: 8 }} />
-                )}
+                        <LockFilled style={{ color: '#ff4d4f', marginLeft: 8 }} />
+                    )}
             </div>
         </div>
     );
@@ -118,6 +118,18 @@ const RecordContent = ({
     const currentUser = localStorage.getItem("username");
     const accessToken = localStorage.getItem("accessToken");
 
+    const handleCopyLink = () => {
+        const url = `${window.location.origin}/record/${record.id}`;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                message.success("Đã sao chép liên kết!");
+            })
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+                message.error("Không sao chép được liên kết!");
+            });
+    };
+
     const overlayMenu = (
         <Menu>
             <Menu.Item key="detail" onClick={() => navigate(`/record/${record.id}`, {
@@ -131,7 +143,7 @@ const RecordContent = ({
                     Thông tin chi tiết
                 </div>
             </Menu.Item>
-            <Menu.Item key="copy">
+            <Menu.Item key="copy" onClick={handleCopyLink}>
                 <div className="menu-item">
                     <IoIosLink className="menu-icon" />
                     Sao chép liên kết
@@ -415,10 +427,10 @@ const styles = {
 // Hàm helper để nhóm các bản ghi theo poem
 export const groupRecordsByPoem = (records) => {
     const poemMap = {};
-    
+
     records.forEach(record => {
         if (!record.poem) return;
-        
+
         const poemId = record.poem.id;
         if (!poemMap[poemId]) {
             poemMap[poemId] = {
@@ -428,14 +440,14 @@ export const groupRecordsByPoem = (records) => {
         }
         poemMap[poemId].records.push(record);
     });
-    
+
     return Object.values(poemMap);
 };
 
 // Component chính để hiển thị danh sách bản ghi đã được nhóm
 const RecordListGroupedByPoem = ({ records, ...props }) => {
     const groupedRecords = groupRecordsByPoem(records);
-    
+
     return (
         <div style={{ width: '100%' }}>
             {groupedRecords.map((group, index) => (

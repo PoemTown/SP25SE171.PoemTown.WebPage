@@ -1,4 +1,4 @@
-import { Dropdown, Menu } from "antd";
+import { Dropdown, Menu, message } from "antd";
 import { BiCommentDetail, BiLike, BiSolidLike } from "react-icons/bi";
 import { CiBookmark } from "react-icons/ci";
 import { IoIosMore } from "react-icons/io";
@@ -44,15 +44,32 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
     const [isHovered, setIsHovered] = useState(false);
 
 
+    const handleCopyLink = () => {
+        const url = `${window.location.origin}/poem/${item.id}`;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                message.success("Đã sao chép liên kết!");
+            })
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+                message.error("Không sao chép được liên kết!");
+            });
+    };
+
+    const handleReportPoem = () => {
+        // Implement your reporting functionality here.
+        message.info("Báo cáo bài thơ được gửi đi!");
+    };
+
     // Menu dropdown mặc định (cho trường hợp action khác "collection")
     const defaultMenu = (
         <Menu>
-            <Menu.Item key="report">
+            <Menu.Item key="report" onClick={handleReportPoem}>
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <MdReport color="red" size={16} /><div> Báo cáo </div>
                 </div>
             </Menu.Item>
-            <Menu.Item key="copylink">
+            <Menu.Item key="copylink" onClick={handleCopyLink}>
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <IoIosLink color="#666" size={16} /><div> Sao chép liên kết </div>
                 </div>
