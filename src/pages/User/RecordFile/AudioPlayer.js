@@ -57,40 +57,55 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
         };
     }, [record, accessToken]);
 
+
+    
+    
+    
+
+    const isAllowedUser = [
+        record.owner?.userName,
+        record.buyer?.userName,
+        ...(record.buyers?.map(b => b.userName) || []),
+        ...(record.coOwners?.map(co => co.userName) || []), // Thêm cả đồng sở hữu
+    ].includes(currentUser);
     return (
         <div style={styles.audioSection}>
             {record.fileUrl ? (
-                [
-                    record.owner?.userName,
-                    record.buyer?.userName,
-                    ...(record.buyers?.map(b => b.userName) || []),
-                ].includes(currentUser) || record.isPublic ? (
-                    <div style={styles.audioWrapper}>
-                        <audio controls style={styles.audioPlayer} src={audioUrl} />
-                        <span style={styles.priceTag}>
-                            {record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}
-                        </span>
-                    </div>
-                ) : (
-                    <div style={styles.purchaseBlock}>
-                        <LockFilled style={styles.lockIcon} />
-                        <p style={styles.purchaseText}>Mua để nghe bản ghi này</p>
-                        <Button
-                            type="primary"
-                            shape="round"
-                            size="large"
-                            onClick={() => showPurchaseConfirm(record.id, record.price)}
-                        >
-                            Mua ngay - {record.price.toLocaleString()} VND
-                        </Button>
-                    </div>
-                )
+                (record.isAbleToRemoveFromPoem && !isAllowedUser) ||
+                    (!isAllowedUser && !record.isPublic)
+                    ? (
+                        <div style={styles.purchaseBlock}>
+                            <LockFilled style={styles.lockIcon} />
+                            <p style={styles.purchaseText}>
+                                {record.isAbleToRemoveFromPoem
+                                    ? "Bài thơ đã bị khóa do thu hồi bản quyền sử dụng"
+                                    : "Mua để nghe bản ghi này"}
+                            </p>
+                            {!record.isAbleToRemoveFromPoem && (
+                                <Button
+                                    type="primary"
+                                    shape="round"
+                                    size="large"
+                                    onClick={() => showPurchaseConfirm(record.id, record.price)}
+                                >
+                                    Mua ngay - {record.price.toLocaleString()} VND
+                                </Button>
+                            )}
+                        </div>
+                    ) : (
+                        <div style={styles.audioWrapper}>
+                            <audio controls style={styles.audioPlayer} src={audioUrl} />
+                            <span style={styles.priceTag}>
+                                {record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}
+                            </span>
+                        </div>
+                    )
             ) : (
                 <Spin size="large" />
             )}
         </div>
     );
-}; 
+};
 const styles = {
     audioSection: {
         margin: '12px 0'

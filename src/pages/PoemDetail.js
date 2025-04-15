@@ -707,7 +707,11 @@ const PoemDetail = () => {
     }
 
 
-
+    const formatDuration = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
 
 
     return (
@@ -943,6 +947,81 @@ const PoemDetail = () => {
                                     }
                                 </div>
                             </div>
+                        </div>
+
+                        <div style={{ marginTop: 30 }}>
+                            <h3 style={{ borderBottom: '2px solid #f0f0f0', paddingBottom: 8 }}>
+                                Bản ghi ({poem?.recordFiles?.data?.length || 0})
+                            </h3>
+
+                            {poem?.recordFiles?.data?.length > 0 ? (
+                                <div style={{
+                                    display: 'grid',
+                                    gap: '16px',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                                    marginRight:"5px"
+                                }}>
+                                    {poem.recordFiles.data?.map(record => (
+                                        <div
+                                            key={record.id}
+                                            onClick={() => navigate(`/record/${record.id}`)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                padding: 12,
+                                                borderRadius: 8,
+                                                backgroundColor: '#fff',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                transition: 'transform 0.2s',
+                                                ':hover': {
+                                                    transform: 'translateY(-2px)'
+                                                }
+                                            }}
+                                        >
+                                            <div style={{ display: 'flex', gap: 12 }}>
+                                                <img
+                                                    src={record.owner?.avatar || '/default-record-thumbnail.jpg'}
+                                                    alt="record thumbnail"
+                                                    style={{
+                                                        width: 64,
+                                                        height: 64,
+                                                        borderRadius: 8,
+                                                        objectFit: 'cover'
+                                                    }}
+                                                />
+                                                <div style={{ flex: 1 }}>
+                                                    <h4 style={{
+                                                        margin: 0,
+                                                        fontSize: 14,
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
+                                                    }}>
+                                                        {record.title}
+                                                    </h4>
+                                                    <div style={{
+                                                        fontSize: 12,
+                                                        color: '#666',
+                                                        marginTop: 4
+                                                    }}>
+                                                        <div>Lượt nghe: {record.totalView ? record.totalView : 0}</div>
+                                                        <div>Giá: {record.price === 0 ? 'Miễn phí' : `${record.price.toLocaleString()} VND`}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{
+                                    padding: 16,
+                                    textAlign: 'center',
+                                    color: '#666',
+                                    backgroundColor: '#fafafa',
+                                    borderRadius: 8
+                                }}>
+                                    Chưa có bản ghi nào
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

@@ -41,7 +41,12 @@ const PoemVersionPage = () => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const accessToken = localStorage.getItem("accessToken");
-
+    const Status = Object.freeze({
+        1: "Trả phí",
+        3: "Miễn phí",
+        4: "Default",
+        2: "Không sử dụng"
+    });
     useEffect(() => {
         fetchVersions();
         setIsLoggedIn(!!accessToken);
@@ -234,7 +239,7 @@ const PoemVersionPage = () => {
                     <div className="version-details-grid">
                         <DetailItem
                             label="Trạng thái"
-                            value={currentVersion?.price === 0 ? "MIỄN PHÍ" : "TRẢ PHÍ"}
+                            value={Status[currentVersion?.status] || "Không xác định"}
                             icon={<Tag color={currentVersion?.price === 0 ? "green" : "gold"} />}
                         />
                         <DetailItem
@@ -368,10 +373,10 @@ const PoemVersionPage = () => {
                                             style={{ width: '100%' }}
                                             extra={<Tag color="volcano">CŨ</Tag>}
                                         >
-                                            <div className="version-details-grid">
+                                            <div className="version-details-grid"> 
                                                 <DetailItem
                                                     label="Trạng thái"
-                                                    value={version?.price === 0 ? "MIỄN PHÍ" : "TRẢ PHÍ"}
+                                                    value={Status[version?.status] || "Không xác định"}
                                                     icon={<Tag color={version?.price === 0 ? "green" : "gold"} />}
                                                 />
                                                 <DetailItem
