@@ -395,6 +395,7 @@ const CollectionDetail = () => {
                                         onHover={setIsHovered}
                                         collections={collections}
                                         handleMove={handleMove}
+                                        onPoemCreated={fetchData}
                                     />
 
                                 ))}

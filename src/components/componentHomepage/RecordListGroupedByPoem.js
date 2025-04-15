@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Modal, Switch, Table, Dropdown, Menu, Button, Spin, Collapse, message } from "antd";
 import { IoIosLink, IoIosMore } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
@@ -117,6 +117,11 @@ const RecordContent = ({
     const [duration, setDuration] = useState('00:00');
     const currentUser = localStorage.getItem("username");
     const accessToken = localStorage.getItem("accessToken");
+    const audioRef = useRef(null);
+    const [isSeeking, setIsSeeking] = useState(false);
+    const [playStartTime, setPlayStartTime] = useState(0);
+    const [totalPlayedTime, setTotalPlayedTime] = useState(0);
+    const [hasCounted, setHasCounted] = useState(false);
 
     const handleCopyLink = () => {
         const url = `${window.location.origin}/record/${record.id}`;
@@ -164,6 +169,7 @@ const RecordContent = ({
         return `${String(minutes).padStart(2, '0')}:${String(remainingSeconds).padStart(2, '0')}`;
     };
 
+
     useEffect(() => {
         let audio = null;
 
@@ -204,36 +210,163 @@ const RecordContent = ({
         };
     }, [record, accessToken]);
 
+
+    const handlePlay = () => {
+        if (audioRef.current.currentTime === 0) {
+            resetCount();
+        }
+        setIsSeeking(false);
+        setPlayStartTime(Date.now());
+    };
+
+    const handlePause = () => {
+        if (!isSeeking) {
+            const sessionTime = (Date.now() - playStartTime) / 1000;
+            setTotalPlayedTime(prev => prev + sessionTime);
+        }
+    };
+
+    const handleSeeking = () => {
+        setIsSeeking(true);
+        audioRef.current.pause();
+    };
+
+    const handleSeeked = () => {
+        setIsSeeking(false);
+        setPlayStartTime(Date.now());
+        audioRef.current.play();
+    };
+
+    const handleTimeUpdate = () => {
+        if (!isSeeking && !hasCounted) {
+            const sessionTime = (Date.now() - playStartTime) / 1000;
+            const newTotal = totalPlayedTime + sessionTime;
+
+            if (newTotal >= 62) {
+                handleCountView();
+                setHasCounted(true);
+            }
+        }
+    };
+
+    const resetCount = () => {
+        setHasCounted(false);
+        setTotalPlayedTime(0);
+        setPlayStartTime(0);
+    };
+
+    // Thêm event listeners cho audio element
+    useEffect(() => {
+        const audio = audioRef.current;
+
+        if (audio) {
+            const handleSeeking = () => setIsSeeking(true);
+            const handleSeeked = () => setIsSeeking(false);
+
+            audio.addEventListener('seeking', handleSeeking);
+            audio.addEventListener('seeked', handleSeeked);
+
+            // Cleanup function
+            return () => {
+                audio.removeEventListener('seeking', handleSeeking);
+                audio.removeEventListener('seeked', handleSeeked);
+            };
+        }
+    }, []);
+
+    const handleCountView = async () => {
+        try {
+            await axios.put(
+                `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/${record.id}/count-view`,
+                null,
+                {
+                    headers: {
+                        "Content-Type": "application/json",
+
+                    },
+                    params: {
+                        duration: Math.floor(audioRef.current.currentTime)
+                    }
+                }
+            );
+            console.log('View counted!');
+        } catch (error) {
+            console.error('Failed to record view:', error);
+        }
+    };
     return (
         <div style={styles.recordContent}>
             {/* Audio Player Section */}
             <div style={styles.audioSection}>
                 {record.fileUrl ? (
-                    [
-                        record.owner?.userName,
-                        record.buyer?.userName,
-                        ...(record.buyers?.map(b => b.userName) || []),
-                    ].includes(currentUser) || record.isPublic ? (
-                        <div style={styles.audioWrapper}>
-                            <audio controls style={styles.audioPlayer} src={audioUrl} />
-                            <span style={styles.priceTag}>
-                                {record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}
-                            </span>
-                        </div>
-                    ) : (
-                        <div style={styles.purchaseBlock}>
-                            <LockFilled style={styles.lockIcon} />
-                            <p style={styles.purchaseText}>Mua để nghe bản ghi này</p>
-                            <Button
-                                type="primary"
-                                shape="round"
-                                size="small"
-                                onClick={() => showPurchaseConfirm(record.id, record.price)}
-                            >
-                                Mua ngay - {record.price.toLocaleString()} VND
-                            </Button>
-                        </div>
-                    )
+                    <>
+                        {
+                            (record.isAbleToRemoveFromPoem ||
+                                ![
+                                    record.owner?.userName,
+                                    record.buyer?.userName,
+                                    ...(record.buyers?.map(b => b.userName) || []),
+                                ].includes(currentUser) && !record.isPublic)
+                                ? (
+                                    <div style={styles.purchaseBlock}>
+                                        <LockFilled style={styles.lockIcon} />
+                                        <p style={styles.purchaseText}>
+                                            {record.isAbleToRemoveFromPoem
+                                                ? "Bài thơ đã bị khóa do thu hồi bản quyền sử dụng"
+                                                : "Mua để nghe bản ghi này"}
+                                        </p>
+                                        {!record.isAbleToRemoveFromPoem && (
+                                            <Button
+                                                type="primary"
+                                                shape="round"
+                                                size="small"
+                                                onClick={() => showPurchaseConfirm(record.id, record.price)}
+                                            >
+                                                Mua ngay - {record.price === 0 ? "Miễn phí" : record.price.toLocaleString() + " VND"}
+                                            </Button>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <div style={styles.audioWrapper}>
+                                        <audio ref={audioRef}
+                                            onPlay={handlePlay}
+                                            onPause={handlePause}
+                                            onTimeUpdate={handleTimeUpdate}
+                                            controls
+                                            style={styles.audioPlayer}
+                                            src={audioUrl} />
+                                        <span style={styles.priceTag}>
+                                            {record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}
+                                        </span>
+                                    </div>
+                                )
+                        }
+                    </>
+                    //     [
+                    //     record.owner?.userName,
+                    //     record.buyer?.userName,
+                    //         ...(record.buyers?.map(b => b.userName) || []),
+                    // ].includes(currentUser) || record.isPublic ? (
+                    // <div style={styles.audioWrapper}>
+                    //     <audio controls style={styles.audioPlayer} src={audioUrl} />
+                    //     <span style={styles.priceTag}>
+                    //         {record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}
+                    //     </span>
+                    // </div>
+                    // ) : (
+                    // <div style={styles.purchaseBlock}>
+                    //     <LockFilled style={styles.lockIcon} />
+                    //     <p style={styles.purchaseText}>Mua để nghe bản ghi này</p>
+                    //     <Button
+                    //         type="primary"
+                    //         shape="round"
+                    //         size="small"
+                    //         onClick={() => showPurchaseConfirm(record.id, record.price)}
+                    //     >
+                    //         Mua ngay - {record.price.toLocaleString()} VND
+                    //     </Button>
+                    // </div>
+                    // )
                 ) : (
                     <div style={{ textAlign: "center", marginTop: "20px" }}>
                         <Spin size="large" />
@@ -245,7 +378,7 @@ const RecordContent = ({
             <div style={styles.recordFooter}>
                 <div style={styles.stats}>
                     <div style={styles.statItem}>
-                        <PlayCircleFilled /> {record.playCount || 0}
+                        <PlayCircleFilled /> {record.totalView || 0}
                     </div>
                     <div style={styles.statItem}>
                         <ShoppingCartOutlined /> {record.buyers?.length || 0}

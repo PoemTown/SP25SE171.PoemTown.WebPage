@@ -68,11 +68,6 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
       });
   };
 
-  const handleReportPoem = () => {
-    // Implement your reporting functionality here.
-    message.info("Báo cáo bài thơ được gửi đi!");
-  };
-
   useEffect(() => {
     console.log("isMine", isMine);
     const fetchCollections = async () => {

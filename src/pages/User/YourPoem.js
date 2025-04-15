@@ -10,6 +10,7 @@ import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import "./button-hover.css"
+import ReportPoemModal from "../../components/componentHomepage/ReportPoemModal";
 
 const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, isCreatingPoem }) => {
   const [poems, setPoems] = useState([]);
@@ -21,6 +22,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
   const [isHovered, setIsHovered] = useState(false);
   const [poemToDelete, setPoemToDelete] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportPoemId, setReportPoemId] = useState(null);
+
   const accessToken = localStorage.getItem("accessToken");
   const requestHeaders = {
     "Content-Type": "application/json",
@@ -145,9 +149,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       });
   };
 
-  const handleReportPoem = () => {
-    // Implement your reporting functionality here.
-    message.info("Báo cáo bài thơ được gửi đi!");
+  const handleReportPoem = (id) => {
+    setReportPoemId(id);
+    setShowReportModal(true);
   };
 
   const handleBookmark = async (id) => {
@@ -408,7 +412,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             <Dropdown
                               overlay={
                                 <Menu>
-                                  <Menu.Item key="report" onClick={handleReportPoem}>
+                                  <Menu.Item key="report" onClick={() => handleReportPoem(poem.id)}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                       <MdReport color="red" size={"16"} /><div> Báo cáo </div>
                                     </div>
@@ -581,6 +585,14 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
         <CreatePoemForm setDrafting={false} onBack={() => setIsCreatingPoem(false)} />
       )}
 
+      {showReportModal && (
+        <ReportPoemModal
+          visible={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          poemId={reportPoemId}
+          accessToken={localStorage.getItem("accessToken")}
+        />
+      )}
       {/* Modal Xác nhận Xóa */}
       <Modal
         title="Xóa bài thơ"

@@ -331,7 +331,7 @@ const PoemVersionPage = () => {
                         >
                             <InputNumber
                                 style={{ width: '100%' }}
-                                min={1}
+                                min={0}
                                 max={100}
                                 addonAfter={
                                     <Switch
