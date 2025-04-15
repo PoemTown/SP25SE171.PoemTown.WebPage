@@ -294,52 +294,52 @@ const RecordContent = ({
             console.error('Failed to record view:', error);
         }
     };
+    const isAllowedUser = [
+        record.owner?.userName,
+        record.buyer?.userName,
+        ...(record.buyers?.map(b => b.userName) || [])
+    ].includes(currentUser);
     return (
         <div style={styles.recordContent}>
             {/* Audio Player Section */}
             <div style={styles.audioSection}>
                 {record.fileUrl ? (
                     <>
-                        {
-                            (record.isAbleToRemoveFromPoem ||
-                                ![
-                                    record.owner?.userName,
-                                    record.buyer?.userName,
-                                    ...(record.buyers?.map(b => b.userName) || []),
-                                ].includes(currentUser) && !record.isPublic)
-                                ? (
-                                    <div style={styles.purchaseBlock}>
-                                        <LockFilled style={styles.lockIcon} />
-                                        <p style={styles.purchaseText}>
-                                            {record.isAbleToRemoveFromPoem
-                                                ? "Bài thơ đã bị khóa do thu hồi bản quyền sử dụng"
-                                                : "Mua để nghe bản ghi này"}
-                                        </p>
-                                        {!record.isAbleToRemoveFromPoem && (
-                                            <Button
-                                                type="primary"
-                                                shape="round"
-                                                size="small"
-                                                onClick={() => showPurchaseConfirm(record.id, record.price)}
-                                            >
-                                                Mua ngay - {record.price === 0 ? "Miễn phí" : record.price.toLocaleString() + " VND"}
-                                            </Button>
-                                        )}
-                                    </div>
-                                ) : (
-                                    <div style={styles.audioWrapper}>
-                                        <audio ref={audioRef}
-                                            onPlay={handlePlay}
-                                            onPause={handlePause}
-                                            onTimeUpdate={handleTimeUpdate}
-                                            controls
-                                            style={styles.audioPlayer}
-                                            src={audioUrl} />
-                                        <span style={styles.priceTag}>
-                                            {record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}
-                                        </span>
-                                    </div>
-                                )
+                        {(record.isAbleToRemoveFromPoem && !isAllowedUser) ||
+                            (!isAllowedUser && !record.isPublic)
+                            ? (
+                                <div style={styles.purchaseBlock}>
+                                    <LockFilled style={styles.lockIcon} />
+                                    <p style={styles.purchaseText}>
+                                        {record.isAbleToRemoveFromPoem
+                                            ? "Bài thơ đã bị khóa do thu hồi bản quyền sử dụng"
+                                            : "Mua để nghe bản ghi này"}
+                                    </p>
+                                    {!record.isAbleToRemoveFromPoem && (
+                                        <Button
+                                            type="primary"
+                                            shape="round"
+                                            size="small"
+                                            onClick={() => showPurchaseConfirm(record.id, record.price)}
+                                        >
+                                            Mua ngay - {record.price === 0 ? "Miễn phí" : record.price.toLocaleString() + " VND"}
+                                        </Button>
+                                    )}
+                                </div>
+                            ) : (
+                                <div style={styles.audioWrapper}>
+                                    <audio ref={audioRef}
+                                        onPlay={handlePlay}
+                                        onPause={handlePause}
+                                        onTimeUpdate={handleTimeUpdate}
+                                        controls
+                                        style={styles.audioPlayer}
+                                        src={audioUrl} />
+                                    <span style={styles.priceTag}>
+                                        {record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}
+                                    </span>
+                                </div>
+                            )
                         }
                     </>
                     //     [

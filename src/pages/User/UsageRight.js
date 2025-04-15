@@ -441,7 +441,9 @@ const handleRenew = async (usageRightId) => {
                                 {/* Thêm nút renew ở đây */}
                                 {activeButton === "bought" &&
                                     poem.saleVersion?.isInUse &&
-                                    formatDateISO(poem.copyRightValidTo) < formatDateISO(new Date()) && (
+                                    //formatDateISO(poem.copyRightValidTo) < formatDateISO(new Date())
+                                    poem?.status === 2 
+                                    && (
                                         <div style={{
                                             position: 'absolute',
                                             top: 16,
