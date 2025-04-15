@@ -661,17 +661,17 @@ const PoemDetail = () => {
                         "Content-Type": "application/json"
                     },
                     params: {
-                      poemId: poem.id // ✅ Truyền poemId đúng cách
+                        poemId: poem.id // ✅ Truyền poemId đúng cách
                     }
                 }
             );
 
-                message.success('Tạo bản ghi thành công!');
-                setShowCreateRecordModal(false);
-                form.resetFields();
-                setAudioUrl('');
+            message.success('Tạo bản ghi thành công!');
+            setShowCreateRecordModal(false);
+            form.resetFields();
+            setAudioUrl('');
         } catch (error) {
-            console.log("Error"+ error)
+            console.log("Error" + error)
             message.error(error.response?.data?.errorMessage || 'Lỗi khi tạo bản ghi');
         }
     };
@@ -811,6 +811,24 @@ const PoemDetail = () => {
                                         <span>{poem?.commentCount || 0}</span>
                                     </div>
                                 </div>
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                    {poem?.isMine ? null :
+                                        poem?.saleVersion.status !== 4 && (
+                                            <Button
+                                                type="primary"
+                                                onClick={() => {
+                                                    if (poem?.saleVersion.status === 1) {
+                                                        showPurchaseConfirm(poem.id, poem?.saleVersion);
+                                                    } else {
+                                                        setShowCreateRecordModal(true);
+                                                    }
+                                                }}
+                                            >
+                                                {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                            </Button>
+                                        )
+                                    }
+                                </div>
                                 <div style={{ width: "100%", display: "flex", alignItems: "center" }}>
                                     <div style={{ margin: "0px auto", display: "inline-block", boxSizing: "border-box" }}>
                                         <p style={{ whiteSpace: "pre-wrap", textAlign: "left", fontSize: "1.2rem", lineHeight: "2" }}>
@@ -818,6 +836,8 @@ const PoemDetail = () => {
                                         </p>
                                     </div>
                                 </div>
+
+
                             </div>
                         </div>
                         <div style={{ flex: 1, margin: "0 129px" }}>
@@ -890,24 +910,7 @@ const PoemDetail = () => {
                                     }
                                 </div>
                             </div>
-                            {poem?.isMine ? <></> :
-                                poem?.saleVersion.status !== 4 && (
-                                    <div style={{ margin: "0 auto" }}>
-                                        <Button
-                                            type="primary"
-                                            onClick={() => {
-                                                if (poem?.saleVersion.status === 1) {
-                                                    showPurchaseConfirm(poem.id, poem?.saleVersion);
-                                                } else {
-                                                    setShowCreateRecordModal(true);
-                                                }
-                                            }}
-                                        >
-                                            {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
-                                        </Button>
-                                    </div>
-                                )
-                            }
+
                         </div>
                     </div>
                 </div>
