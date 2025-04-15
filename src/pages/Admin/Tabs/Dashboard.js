@@ -71,7 +71,8 @@ const incomeTypeMapping = {
 
 const profitTypeMapping = {
     1: "Nguồn thu",
-    2: "Rút tiền"
+    2: "Rút tiền",
+    3: "Lợi nhuận"
 }
 
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8', '#82CA9D'];
@@ -288,6 +289,8 @@ const getProfitColor = (type) => {
             return "#239d02";
         case 2:
             return "#ff0000";
+        case 3:
+            return "#022c9d";
     }
 }
 
