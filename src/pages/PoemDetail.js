@@ -842,18 +842,18 @@ const PoemDetail = () => {
                                 </div>
                                 <div style={{ display: "flex", justifyContent: "flex-end" }}>
                                     {poem?.isMine ? null :
-                                        poem?.saleVersion.status !== 4 && (
+                                        poem?.saleVersion?.status !== 4 && (
                                             <Button
                                                 type="primary"
                                                 onClick={() => {
-                                                    if (poem?.saleVersion.status === 1) {
+                                                    if (poem?.saleVersion?.status === 1) {
                                                         showPurchaseConfirm(poem.id, poem?.saleVersion);
                                                     } else {
                                                         setShowCreateRecordModal(true);
                                                     }
                                                 }}
                                             >
-                                                {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                                {poem?.saleVersion?.status === 1 ? "Mua ngay" : "Sử dụng"}
                                             </Button>
                                         )
                                     }
