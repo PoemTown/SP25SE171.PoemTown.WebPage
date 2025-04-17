@@ -45,8 +45,9 @@ const transactionTypeMap = {
   4: "Bài thơ",
   5: "Rút tiền",
   6: "Ủng hộ",
-  7: "Tiền hoa hồng",
-  8: "Rút tiền"
+  7: "Tiền hoa hồng", 
+  8: "Hoàn tiền",
+  9: "Phí dịch vụ nạp tiền"
 };
 
 const orderTypeMap = {
@@ -958,7 +959,7 @@ const YourWallet = () => {
 
           <div style={{ color: '#faad14', marginBottom: 16 }}>
             <Text>
-              Lưu ý: Thời gian xử lý rút tiền từ 1-3 ngày làm việc. Phí rút tiền 1.5% (tối thiểu 5.000 VNĐ).
+              Lưu ý: Thời gian xử lý rút tiền từ 1-3 ngày làm việc. Phí rút tiền tối thiểu phải là 50,000 VNĐ.
             </Text>
           </div>
         </Form>

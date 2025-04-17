@@ -120,6 +120,7 @@ const ReportFromUser = () => {
                 }
             );
             setReports(response.data.data);
+            console.log(response.data.data)
             setPagination({
                 pageNumber: response.data.pageNumber,
                 totalPages: response.data.totalPages,
@@ -158,7 +159,7 @@ const ReportFromUser = () => {
         setResolveResponse(report.resolveResponse || "");
         setOpenDialog(true);
         setShowViewOnlyAlert(report.status !== 1);
-        
+
         if (report.isSystem === true) {
             setPoemDetect(report.poem);
             setPlagiarismFromPoems(report.plagiarismFromPoems);
@@ -402,22 +403,58 @@ const ReportFromUser = () => {
                                     </div>
                                     <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
                                         <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
-                                            <textarea 
-                                                value={poemDetect?.content || ""} 
-                                                style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} 
+                                            <textarea
+                                                value={poemDetect?.content || ""}
+                                                style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box", resize: "none" }}
                                                 readOnly
                                             ></textarea>
                                         </div>
                                         <div style={{ flex: 1, display: "flex", alignItems: "center", flexDirection: "column" }}>
-                                            <textarea 
-                                                value={plagiarismFromPoems[selectedPlagiarismIndex].content} 
-                                                style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box" }} 
+                                            <textarea
+                                                value={plagiarismFromPoems[selectedPlagiarismIndex].content}
+                                                style={{ height: "300px", width: "100%", padding: "10px 20px", boxSizing: "border-box", resize: "none" }}
                                                 readOnly
                                             ></textarea>
                                         </div>
                                     </div>
                                 </>
                             ) : null}
+                            {selectedReport?.type === 1 && (
+                                <div>
+                                    <h3 style={{ textAlign: "center" }}>Bài thơ bị báo cáo</h3>
+                                    <div style={{ display: "flex", flexDirection: "row", gap: "20px" }}>
+                                        <div style={{
+                                            width: "168px",
+                                            height: "268px",
+                                            border: "1px solid #000",
+                                            marginLeft: "20px",
+                                            alignSelf: "center"
+                                        }}>
+                                            <img src={selectedReport?.poem?.poemImage} alt="poem image" style={{
+                                                width: "168px",
+                                                maxWidth: "168px",
+                                                height: "100%",
+                                                objectFit: "cover", // This will prevent stretching
+                                                objectPosition: "center" // Center the image
+                                            }} />
+                                        </div>
+                                        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>
+                                            <div style={{ flex: 1, display: "flex", flexDirection: "column", boxSizing: "border-box" }}>
+                                                <p style={{ margin: 0, paddingTop: "10px" }}><span style={{ fontWeight: "bold" }}>Tựa đề:</span> {selectedReport?.poem?.title} </p>
+                                            </div>
+                                            <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
+                                                <p style={{ margin: 0 }}><span style={{ fontWeight: "bold" }}>Mô tả:</span> {selectedReport?.poem?.description}</p>
+                                            </div>
+                                            <p style={{ fontWeight: "bold", margin: 0 }}>Nội dung:</p>
+                                            <textarea
+                                                value={selectedReport?.poem?.content || ""}
+                                                style={{ height: "250px", width: "100%", padding: "10px 20px", boxSizing: "border-box", resize: "none" }}
+                                                readOnly
+                                            ></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                             <FormControl fullWidth sx={{ mt: 2 }}>
                                 <InputLabel>Trạng thái</InputLabel>
                                 <Select
@@ -451,9 +488,9 @@ const ReportFromUser = () => {
                 <DialogActions>
                     <Button onClick={handleCloseDialog}>Đóng</Button>
                     {isEditable && (
-                        <Button 
-                            onClick={handleSubmit} 
-                            variant="contained" 
+                        <Button
+                            onClick={handleSubmit}
+                            variant="contained"
                             color="primary"
                         >
                             Lưu thay đổi

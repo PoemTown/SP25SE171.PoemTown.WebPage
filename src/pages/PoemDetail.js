@@ -10,10 +10,13 @@ import { CiBookmark, CiCirclePlus } from 'react-icons/ci';
 import { Button, Dropdown, Menu, message, Spin, Modal, Form, Input, Upload, Progress } from 'antd';
 import { IoIosLink, IoIosMore } from 'react-icons/io';
 import { MdEdit, MdReport } from 'react-icons/md';
-import { FaCheck, FaUserPlus } from 'react-icons/fa';
+import { FaCheck, FaFacebookSquare, FaUserPlus } from 'react-icons/fa';
 import Comment from '../components/componentHomepage/Comment';
 import axios from 'axios';
-import { UploadOutlined } from '@ant-design/icons';
+import { FacebookOutlined, UploadOutlined, WarningFilled } from '@ant-design/icons';
+import FacebookSharePlugin from '../components/componentHomepage/FaceBookShareButton';
+import ReportPoemModal from '../components/componentHomepage/ReportPoemModal';
+import ReportUserModal from '../components/componentHomepage/ReportUserModal';
 
 const PoemDetail = () => {
     const { id } = useParams();
@@ -29,6 +32,9 @@ const PoemDetail = () => {
     const [userData, setUserData] = useState([]);
     const [backgroundImage, setBackgroundImage] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [showReportModalUser, setShowReportModalUser] = useState(false);
+
 
     // Thêm state create record
     const [showCreateRecordModal, setShowCreateRecordModal] = useState(false);
@@ -180,7 +186,17 @@ const PoemDetail = () => {
         setIsLoggedIn(!!token);
     }, []);
 
-
+    const handleCopyLink = () => {
+        const url = `${window.location.origin}/poem/${id}`;
+        navigator.clipboard.writeText(url)
+            .then(() => {
+                message.success("Đã sao chép liên kết!");
+            })
+            .catch((err) => {
+                console.error("Failed to copy: ", err);
+                message.error("Không sao chép được liên kết!");
+            });
+    };
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -294,17 +310,24 @@ const PoemDetail = () => {
         });
     };
 
+    const handleReportUser = () => {
+        setShowReportModalUser(true);
+    };
 
+
+    const handleReportPoem = () => {
+        setShowReportModal(true);
+    };
 
     //------------------------------------------------Purchase------------------------------------------------
     const defaultMenu = (
         <Menu>
-            <Menu.Item key="report">
+            <Menu.Item key="report" onClick={handleReportPoem}>
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <MdReport color="red" size={16} /><div> Báo cáo </div>
                 </div>
             </Menu.Item>
-            <Menu.Item key="copylink">
+            <Menu.Item key="copylink" onClick={handleCopyLink}>
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <IoIosLink color="#666" size={16} /><div> Sao chép liên kết </div>
                 </div>
@@ -324,7 +347,7 @@ const PoemDetail = () => {
                     <MdEdit color='#FFCE1B' size={16} /> <div>Chỉnh sửa</div>
                 </div>
             </Menu.Item>
-            <Menu.Item key="copylink">
+            <Menu.Item key="delete">
                 <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                     <RiDeleteBinFill color='#f00' size={16} /> <div>Xóa bài thơ</div>
                 </div>
@@ -661,17 +684,17 @@ const PoemDetail = () => {
                         "Content-Type": "application/json"
                     },
                     params: {
-                      poemId: poem.id // ✅ Truyền poemId đúng cách
+                        poemId: poem.id // ✅ Truyền poemId đúng cách
                     }
                 }
             );
 
-                message.success('Tạo bản ghi thành công!');
-                setShowCreateRecordModal(false);
-                form.resetFields();
-                setAudioUrl('');
+            message.success('Tạo bản ghi thành công!');
+            setShowCreateRecordModal(false);
+            form.resetFields();
+            setAudioUrl('');
         } catch (error) {
-            console.log("Error"+ error)
+            console.log("Error" + error)
             message.error(error.response?.data?.errorMessage || 'Lỗi khi tạo bản ghi');
         }
     };
@@ -684,7 +707,11 @@ const PoemDetail = () => {
     }
 
 
-
+    const formatDuration = (seconds) => {
+        const mins = Math.floor(seconds / 60);
+        const secs = seconds % 60;
+        return `${mins}:${secs.toString().padStart(2, '0')}`;
+    };
 
 
     return (
@@ -797,19 +824,43 @@ const PoemDetail = () => {
                                     </span>
                                 </p>
                                 <p style={{ margin: 0 }}>Thể loại: {poemType[poem?.type]}</p>
+
                                 <div style={{ display: "flex", flexDirection: "row", gap: "30px", marginTop: "10px" }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                        {poem?.like ? (
-                                            <BiSolidLike onClick={handleLike} size={20} color="#2a7fbf" style={{ cursor: "pointer" }} />
-                                        ) : (
-                                            <BiLike onClick={handleLike} size={20} style={{ cursor: "pointer" }} />
-                                        )}
-                                        <span>{poem?.likeCount || 0}</span>
-                                    </div>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                                        <BiCommentDetail size={20} style={{ cursor: "pointer" }} />
-                                        <span>{poem?.commentCount || 0}</span>
-                                    </div>
+                                    {poem?.isFamousPoet ? <></> :
+                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                            {poem?.like ? (
+                                                <BiSolidLike onClick={handleLike} size={20} color="#2a7fbf" style={{ cursor: "pointer" }} />
+                                            ) : (
+                                                <BiLike onClick={handleLike} size={20} style={{ cursor: "pointer" }} />
+                                            )}
+                                            <span>{poem?.likeCount || 0}</span>
+                                        </div>
+                                    }
+                                    {poem?.isFamousPoet ? <></> :
+                                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                            <BiCommentDetail size={20} style={{ cursor: "pointer" }} />
+                                            <span>{poem?.commentCount || 0}</span>
+                                        </div>
+                                    }
+                                    <FacebookSharePlugin url={window.location.href} />
+                                </div>
+                                <div style={{ display: "flex", justifyContent: "flex-end" }}>
+                                    {poem?.isMine ? null :
+                                        poem?.saleVersion?.status !== 4 && (
+                                            <Button
+                                                type="primary"
+                                                onClick={() => {
+                                                    if (poem?.saleVersion?.status === 1) {
+                                                        showPurchaseConfirm(poem.id, poem?.saleVersion);
+                                                    } else {
+                                                        setShowCreateRecordModal(true);
+                                                    }
+                                                }}
+                                            >
+                                                {poem?.saleVersion?.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                            </Button>
+                                        )
+                                    }
                                 </div>
                                 <div style={{ width: "100%", display: "flex", alignItems: "center" }}>
                                     <div style={{ margin: "0px auto", display: "inline-block", boxSizing: "border-box" }}>
@@ -818,102 +869,171 @@ const PoemDetail = () => {
                                         </p>
                                     </div>
                                 </div>
+
+
                             </div>
                         </div>
-                        <div style={{ flex: 1, margin: "0 129px" }}>
-                            <h1>Bình luận</h1>
-                            <div style={{ marginBottom: 16, display: "flex", flexDirection: "column" }}>
-                                <textarea
-                                    value={newComment}
-                                    onChange={(e) => setNewComment(e.target.value)}
-                                    placeholder="Viết bình luận..."
-                                    style={{
-                                        width: '100%',
-                                        padding: 8,
-                                        marginBottom: 8,
-                                        border: '1px solid #ddd',
-                                        borderRadius: 4,
-                                        minHeight: 80,
-                                        boxSizing: "border-box"
-                                    }}
-                                />
-                                <button
-                                    onClick={handleSubmitComment}
-                                    style={{
-                                        padding: '6px 16px',
-                                        background: '#007bff',
-                                        color: 'white',
-                                        border: 'none',
-                                        borderRadius: 4,
-                                        cursor: 'pointer',
-                                        alignSelf: "flex-end",
-                                        margin: 0
-                                    }}
-                                >
-                                    Đăng bình luận
-                                </button>
-                            </div>
-                            {commentTree.map((comment) => {
-                                return (
-                                    <Comment
-                                        key={comment.id}
-                                        comment={comment}
-                                        depth={0}
-                                        currentReply={replyingTo}
-                                        replyTexts={replyTexts}
-                                        onReply={setReplyingTo}
-                                        onSubmitReply={handleSubmitReply}
-                                        onCancelReply={(commentId) => {
-                                            setReplyingTo(null);
-                                            setReplyTexts(prev => ({
-                                                ...prev,
-                                                [commentId]: ""
-                                            }));
+                        {poem?.isFamousPoet ? <></> :
+                            <div style={{ flex: 1, margin: "0 129px" }}>
+                                <h1>Bình luận</h1>
+                                <div style={{ marginBottom: 16, display: "flex", flexDirection: "column" }}>
+                                    <textarea
+                                        value={newComment}
+                                        onChange={(e) => setNewComment(e.target.value)}
+                                        placeholder="Viết bình luận..."
+                                        style={{
+                                            width: '100%',
+                                            padding: 8,
+                                            marginBottom: 8,
+                                            border: '1px solid #ddd',
+                                            borderRadius: 4,
+                                            minHeight: 80,
+                                            boxSizing: "border-box"
                                         }}
-                                        onTextChange={handleReplyChange}
-                                        isMine={comment.isMine} // Adjust this based on your auth system
-                                        onDelete={handleDeleteComment}
                                     />
-                                )
-                            })}
-                        </div>
+                                    <button
+                                        onClick={handleSubmitComment}
+                                        style={{
+                                            padding: '6px 16px',
+                                            background: '#007bff',
+                                            color: 'white',
+                                            border: 'none',
+                                            borderRadius: 4,
+                                            cursor: 'pointer',
+                                            alignSelf: "flex-end",
+                                            margin: 0
+                                        }}
+                                    >
+                                        Đăng bình luận
+                                    </button>
+                                </div>
+                                {commentTree.map((comment) => {
+                                    return (
+                                        <Comment
+                                            key={comment.id}
+                                            comment={comment}
+                                            depth={0}
+                                            currentReply={replyingTo}
+                                            replyTexts={replyTexts}
+                                            onReply={setReplyingTo}
+                                            onSubmitReply={handleSubmitReply}
+                                            onCancelReply={(commentId) => {
+                                                setReplyingTo(null);
+                                                setReplyTexts(prev => ({
+                                                    ...prev,
+                                                    [commentId]: ""
+                                                }));
+                                            }}
+                                            onTextChange={handleReplyChange}
+                                            isMine={comment.isMine} // Adjust this based on your auth system
+                                            onDelete={handleDeleteComment}
+                                        />
+                                    )
+                                })}
+                            </div>
+                        }
                     </div>
                     <div style={{ flex: 2, }}>
                         <div style={{ display: "flex", gap: "10px" }}>
-                            <img src={poem?.user.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff" }} />
+                            <img onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)} src={poem?.poetSample ? poem?.poetSample?.avatar : poem?.user?.avatar} alt='avatar' style={{ width: "60px", height: "60px", borderRadius: "50%", border: "2px solid #fff", cursor: "pointer" }} />
                             <div>
-                                <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>{poem?.user.displayName}</p>
-                                <p onClick={() => navigate(`/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user.userName}</p>
+                                <p style={{ margin: 0, fontSize: "0.9rem", cursor: "pointer", color: "#005cc5" }}>
+                                    <span onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)}>{poem?.poetSample ? poem?.poetSample?.name : poem?.user?.displayName}</span> {poem?.isFamousPoet || poem?.isMine ? null : <WarningFilled style={{ color: "red", cursor: "pointer" }} onClick={handleReportUser} />}
+                                </p>
+                                {poem?.poetSample ? <></> : <p onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)} style={{ margin: 0, fontSize: "0.875rem", cursor: "pointer" }}>@{poem?.user?.userName}</p>}
                                 <div style={{ marginTop: "10px" }}>
-                                    {poem?.isMine ? <></> :
+                                    {poem?.isMine || poem?.isFamousPoet ? <></> :
                                         poem?.isFollowed ? <Button onClick={handleFollow} variant="solid" color="primary" icon={<FaCheck />} iconPosition="end">Đã Theo dõi </Button> : <Button onClick={handleFollow} variant="outlined" color="primary" icon={<CiCirclePlus />} iconPosition='end'>Theo dõi</Button>
                                     }
                                 </div>
                             </div>
-                            {poem?.isMine ? <></> :
-                                poem?.saleVersion.status !== 4 && (
-                                    <div style={{ margin: "0 auto" }}>
-                                        <Button
-                                            type="primary"
-                                            onClick={() => {
-                                                if (poem?.saleVersion.status === 1) {
-                                                    showPurchaseConfirm(poem.id, poem?.saleVersion);
-                                                } else {
-                                                    setShowCreateRecordModal(true);
+                        </div>
+
+                        <div style={{ marginTop: 30 }}>
+                            <h3 style={{ borderBottom: '2px solid #f0f0f0', paddingBottom: 8 }}>
+                                Bản ghi ({poem?.recordFiles?.data?.length || 0})
+                            </h3>
+
+                            {poem?.recordFiles?.data?.length > 0 ? (
+                                <div style={{
+                                    display: 'grid',
+                                    gap: '16px',
+                                    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+                                    marginRight:"5px"
+                                }}>
+                                    {poem.recordFiles.data?.map(record => (
+                                        <div
+                                            key={record.id}
+                                            onClick={() => navigate(`/record/${record.id}`)}
+                                            style={{
+                                                cursor: 'pointer',
+                                                padding: 12,
+                                                borderRadius: 8,
+                                                backgroundColor: '#fff',
+                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                                                transition: 'transform 0.2s',
+                                                ':hover': {
+                                                    transform: 'translateY(-2px)'
                                                 }
                                             }}
                                         >
-                                            {poem?.saleVersion.status === 1 ? "Mua ngay" : "Sử dụng"}
-                                        </Button>
-                                    </div>
-                                )
-                            }
+                                            <div style={{ display: 'flex', gap: 12 }}>
+                                                <img
+                                                    src={record.owner?.avatar || '/default-record-thumbnail.jpg'}
+                                                    alt="record thumbnail"
+                                                    style={{
+                                                        width: 64,
+                                                        height: 64,
+                                                        borderRadius: 8,
+                                                        objectFit: 'cover'
+                                                    }}
+                                                />
+                                                <div style={{ flex: 1 }}>
+                                                    <h4 style={{
+                                                        margin: 0,
+                                                        fontSize: 14,
+                                                        whiteSpace: 'nowrap',
+                                                        overflow: 'hidden',
+                                                        textOverflow: 'ellipsis'
+                                                    }}>
+                                                        {record.title}
+                                                    </h4>
+                                                    <div style={{
+                                                        fontSize: 12,
+                                                        color: '#666',
+                                                        marginTop: 4
+                                                    }}>
+                                                        <div>Lượt nghe: {record.totalView ? record.totalView : 0}</div>
+                                                        <div>Giá: {record.price === 0 ? 'Miễn phí' : `${record.price.toLocaleString()} VND`}</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            ) : (
+                                <div style={{
+                                    padding: 16,
+                                    textAlign: 'center',
+                                    color: '#666',
+                                    backgroundColor: '#fafafa',
+                                    borderRadius: 8
+                                }}>
+                                    Chưa có bản ghi nào
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
 
 
             </div>
+            <ReportPoemModal
+                visible={showReportModal}
+                onClose={() => setShowReportModal(false)}
+                poemId={poem?.id}
+                accessToken={localStorage.getItem("accessToken")}
+            />
             <Modal
                 title="Tạo Bản Ghi Mới"
                 open={showCreateRecordModal}
@@ -969,7 +1089,12 @@ const PoemDetail = () => {
                     )}
                 </Form>
             </Modal>
-
+            <ReportUserModal
+                visible={showReportModalUser}
+                onClose={() => setShowReportModalUser(false)}
+                userId={poem?.user?.id}
+                accessToken={localStorage.getItem("accessToken")}
+            />
         </>
 
 

@@ -17,8 +17,8 @@ const PoetKnowledge = () => {
 
     const tabs = [
         "Tiểu sử",
-        "Thơ của bạn",
-        "Bộ sưu tập của bạn",
+        `Thơ của ${poet?.name}`,
+        `Tập thơ của ${poet?.name}`,
     ];
 
     useEffect(() => {
@@ -81,9 +81,9 @@ const PoetKnowledge = () => {
         switch (activeTab) {
             case "Tiểu sử":
                 return <BiographyTab poet={poet} />;
-            case "Thơ của bạn":
+            case `Thơ của ${poet?.name}`:
                 return <PoemsTab collections={collections} poetId={id}></PoemsTab>; 
-            case "Bộ sưu tập của bạn":
+            case `Tập thơ của ${poet?.name}`:
                 return <CollectionTab poet={poet}/>;
             default:
                 return null;

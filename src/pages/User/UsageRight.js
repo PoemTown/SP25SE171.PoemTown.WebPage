@@ -297,68 +297,6 @@ const UsageRight = () => {
         setIsDetailModalVisible(true);
     };
 
-    const columns = [
-        {
-            title: "Icon",
-            dataIndex: "icon",
-            render: (_, poem) => <FcFolder size={32} />,
-            width: 70,
-        },
-        {
-            title: "Title",
-            key: "title",
-            render: (_, poem) => (poem.poem ? poem.poem.title : poem.title),
-        },
-        {
-            title: "Description",
-            key: "description",
-            render: (_, poem) => (poem.poem ? poem.poem.description : poem.description),
-        },
-        {
-            title: "Owner",
-            key: "owner",
-            render: (_, poem) => (poem.owner ? poem.owner.displayName : "Mine"),
-        },
-
-        ...(activeButton === "mine"
-            ? [
-                {
-                    title: "Status",
-                    key: "status",
-                    render: (_, poem) => {
-                        const saleVersion = poem.saleVersion;
-                        if (!saleVersion) return "Unknown";
-
-                        if (saleVersion.status === 1) return Status[1];
-                        if (saleVersion.status === 3) return Status[3];
-                        if (saleVersion.status === 2) return Status[2];
-
-                        return Status[4];
-                    },
-                },
-            ]
-            : []),
-
-        ...(activeButton === "sold"
-            ? [
-                {
-                    title: "Buyer",
-                    key: "buyer",
-                    render: (_, poem) => poem.buyer ? poem.buyer.displayName : "Error",
-                },
-            ]
-            : []),
-        {
-            title: "Action",
-            key: "action",
-            render: (_, poem) => (
-                <Button type="link" onClick={() => handleRowClick(poem)}>
-                    Select
-                </Button>
-            ),
-        },
-    ];
-
 
     const menu = (
         <Menu onClick={({ key }) => handleClick(key)}>
@@ -375,61 +313,7 @@ const UsageRight = () => {
         setCurrentPage(1);
     };
 
-    // Xử lý khi chọn phiên bản từ select box
-    const handleSelectChange = (value) => {
-        setSelectedVersion(value);
-        if (value === "1") {
-            // Nếu chọn trả tiền, hiện modal nhập giá
-            setIsPriceModalVisible(true);
-        } else {
-            // Nếu chọn miễn phí, xoá giá (nếu có)
-            setPrice(null);
-            setCommissionFee(null);
-            setTime(null)
-        }
-    };
 
-    // Xử lý khi nhấn lưu ở modal nhập giá
-    const handlePriceModalOk = () => {
-        form
-            .validateFields()
-            .then((values) => {
-                setPrice(values.price);
-                setCommissionFee(values.commission)
-                setTime(values.time);
-                setIsPriceModalVisible(false);
-            })
-            .catch((err) => {
-                console.log("Validation failed:", err);
-            });
-
-    };
-    const handlePoemModalOk = async () => {
-        console.log(selectedPoem.id);
-
-        if (selectedVersion === "3") {
-            await enableFreeVersion(selectedPoem.id);
-        } else {
-            await enableSellVersion(selectedPoem.id);
-        }
-
-        if (activeButton === "mine") {
-            await fetchPoems(currentPage, pageSize);
-        } else if (activeButton === "bought") {
-            await fetchBoughtPoems(currentPage, pageSize);
-        } else if (activeButton === "sold") {
-            await fetchSoldPoems(currentPage, pageSize);
-        }
-
-        // Reset lại các state
-        setPrice(null);
-        setCommissionFee(null);
-        setSelectedVersion(null);
-        setTime(null);
-        setShowVersionOptions(false);
-        setIsDetailModalVisible(false);
-        setIsLoading(false); // Để sau cùng là an toàn nhất
-    };
     // Component phụ trợ
     const StatItem = ({ icon, value }) => (
         <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -442,7 +326,40 @@ const UsageRight = () => {
             <Text style={{ fontSize: 12 }}>{value}</Text>
         </div>
     );
+    const formatDateISO = (date) => {
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+        return `${year}-${month}-${day}`;
+      };
+    const isExpired = (validTo) => {
+        
+        const currentDate = new Date();
+        console.log(formatDate(validTo) + " - " + formatDate(currentDate))
+        return formatDateISO(validTo) < formatDateISO(currentDate);
+    };
 
+    // Thêm hàm renew vào component
+const handleRenew = async (usageRightId) => {
+    try {
+        const response = await axios.put(
+            `${process.env.REACT_APP_API_BASE_URL}/usage-rights/v1/renew/${usageRightId}`,
+            null,
+            {
+                headers: {
+                    Authorization: `Bearer ${accessToken}`,
+                },
+            }
+        );
+        message.success("Gia hạn thành công!");
+        // Refresh danh sách sau khi renew
+        fetchBoughtPoems(currentPage, pageSize);
+    } catch (error) {
+        console.error("Lỗi khi gia hạn:", error);
+        message.error(error.response?.data?.errorMessage || "Gia hạn thất bại!");
+    }
+};
     return (
         <>
             <Container>
@@ -500,7 +417,10 @@ const UsageRight = () => {
                                                 {poem?.saleVersion?.price?.toLocaleString('vi-VN') || '0'}đ
                                             </Text>
                                             {poem?.copyRightValidFrom && (
-                                                <div style={{ fontSize: 12 }}>
+                                                <div style={{
+                                                    fontSize: 12,
+                                                    color: poem.copyRightValidTo && isExpired(poem.copyRightValidTo) ? '#ff4d4f' : 'inherit'
+                                                }}>
                                                     {poem?.copyRightValidFrom ?
                                                         `${formatDate(poem.copyRightValidFrom)} - ${formatDate(poem.copyRightValidTo)}` :
                                                         'Vô thời hạn'}
@@ -517,6 +437,32 @@ const UsageRight = () => {
                                 }}
                                 bodyStyle={{ padding: 16 }}
                             >
+
+                                {/* Thêm nút renew ở đây */}
+                                {activeButton === "bought" &&
+                                    poem.saleVersion?.isInUse &&
+                                    //formatDateISO(poem.copyRightValidTo) < formatDateISO(new Date())
+                                    poem?.status === 2 
+                                    && (
+                                        <div style={{
+                                            position: 'absolute',
+                                            top: 16,
+                                            left: 16,
+                                            zIndex: 2
+                                        }}>
+                                            <Button
+                                                type="primary"
+                                                danger
+                                                size="small"
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleRenew(poem.id);
+                                                }}
+                                            >
+                                                Gia hạn
+                                            </Button>
+                                        </div>
+                                    )}
                                 {poem.isSellUsageRight && (
                                     <div style={{
                                         position: 'absolute',
@@ -618,7 +564,7 @@ const UsageRight = () => {
                         <Spin size="large" tip="Đang tải dữ liệu..." />
                     </div>
                 )}
-            </Container>
+            </Container >
         </>
     );
 };

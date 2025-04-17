@@ -10,6 +10,7 @@ import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import "./button-hover.css"
+import ReportPoemModal from "../../components/componentHomepage/ReportPoemModal";
 
 const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, isCreatingPoem }) => {
   const [poems, setPoems] = useState([]);
@@ -21,6 +22,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   const [bookmarkedPoems, setBookmarkedPoems] = useState(new Set());
   const [isHovered, setIsHovered] = useState(false);
   const [poemToDelete, setPoemToDelete] = useState(null);
+  const [showReportModal, setShowReportModal] = useState(false);
+  const [reportPoemId, setReportPoemId] = useState(null);
+
   const accessToken = localStorage.getItem("accessToken");
   const requestHeaders = {
     "Content-Type": "application/json",
@@ -132,6 +136,23 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
     fetchPoems();
   }, [isMine]);
+
+  const handleCopyLink = (id) => {
+    const url = `${window.location.origin}/poem/${id}`;
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        message.success("Đã sao chép liên kết!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        message.error("Không sao chép được liên kết!");
+      });
+  };
+
+  const handleReportPoem = (id) => {
+    setReportPoemId(id);
+    setShowReportModal(true);
+  };
 
   const handleBookmark = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
@@ -391,12 +412,12 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             <Dropdown
                               overlay={
                                 <Menu>
-                                  <Menu.Item key="report" >
+                                  <Menu.Item key="report" onClick={() => handleReportPoem(poem.id)}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                       <MdReport color="red" size={"16"} /><div> Báo cáo </div>
                                     </div>
                                   </Menu.Item>
-                                  <Menu.Item key="copylink">
+                                  <Menu.Item key="copylink" onClick={() => handleCopyLink(poem.id)}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                       <IoIosLink color="#666" size={"16"} /><div> Sao chép liên kết </div>
                                     </div>
@@ -416,9 +437,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                         </div>
                       </div>
                       <h3 style={{
-                         color: "#222",
-                         margin: "0",
-                         fontSize: "1.2rem",
+                        color: "#222",
+                        margin: "0",
+                        fontSize: "1.2rem",
                       }}>{poem.title}</h3>
                       <p style={{
                         color: "#444",
@@ -486,10 +507,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                         </div>
                       </div>
                       <p style={{
-                         color: "#444",
-                         fontSize: "0.8rem",
-                         marginBottom: 0
-                      }}>Tập thơ: <span style={{fontWeight: "bold", cursor: "pointer"}} onClick={() => navigate(`/collection/${poem.collection.id}`)}>{poem.collection?.collectionName}</span></p>
+                        color: "#444",
+                        fontSize: "0.8rem",
+                        marginBottom: 0
+                      }}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${poem.collection.id}`)}>{poem.collection?.collectionName}</span></p>
                       <div
                         style={{
                           display: "flex",
@@ -564,6 +585,14 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
         <CreatePoemForm setDrafting={false} onBack={() => setIsCreatingPoem(false)} />
       )}
 
+      {showReportModal && (
+        <ReportPoemModal
+          visible={showReportModal}
+          onClose={() => setShowReportModal(false)}
+          poemId={reportPoemId}
+          accessToken={localStorage.getItem("accessToken")}
+        />
+      )}
       {/* Modal Xác nhận Xóa */}
       <Modal
         title="Xóa bài thơ"

@@ -56,6 +56,18 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
     }, {});
   };
 
+  const handleCopyLink = (id) => {
+    const url = `${window.location.origin}/collection/${id}`;
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        message.success("Đã sao chép liên kết!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy: ", err);
+        message.error("Không sao chép được liên kết!");
+      });
+  };
+
   useEffect(() => {
     console.log("isMine", isMine);
     const fetchCollections = async () => {
@@ -154,7 +166,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
     const isBookmarked = bookmarkedCollections.has(id);
     const method = isBookmarked ? "DELETE" : "POST";
 
-    try { 
+    try {
       await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`,
         {
@@ -355,7 +367,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                             <Dropdown
                               overlay={
                                 <Menu>
-                                  <Menu.Item key="edit">
+                                  <Menu.Item key="copylink" onClick={() => handleCopyLink(collection.id)}>
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
                                       <IoIosLink color="#666" size={16} />
                                       <div>Sao chép liên kết</div>

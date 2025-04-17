@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Button, Spin, Card, Typography, Divider, Modal, Input, message } from "antd";
+import { Button, Spin, Card, Typography, Divider, Modal, Input, message, notification } from "antd";
 import { LockFilled, PlayCircleFilled, ShoppingCartOutlined } from "@ant-design/icons";
 import AudioPlayer from "./AudioPlayer";
 import Headeruser from "../../../components/Headeruser";
@@ -120,6 +120,45 @@ const RecordDetail = () => {
             }
         });
     };
+
+    const showPurchaseConfirm = (id, price) => {
+        Modal.confirm({
+          title: "Bạn có chắc chắn muốn mua với số tiền " + price.toLocaleString('vi-VN') + " VND ?",
+          content: "Hành động này không thể hoàn tác!",
+          okText: "Mua",
+          cancelText: "Hủy",
+          okType: "primary",
+          onOk() {
+            handlePurchaseRecord(id);
+          },
+        });
+      };
+
+          async function handlePurchaseRecord(recordId) {
+              console.log(recordId);
+              const url = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/purchase`;
+          
+              try {
+                const response = await axios.put(url, null, {
+                  headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${accessToken}`,
+                  },
+                  params: {
+                    recordId: recordId, // Truyền recordId vào query params
+                  },
+                });
+          
+                notification.info({
+                    message: 'Thông báo',
+                    description: response.data.message,
+                  });
+                  
+                  window.location.reload();
+              } catch (error) {
+                message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
+              }
+            }
     return (
         <>
             {isLoggedIn ? <Headeruser /> : <Headerdefault />}
@@ -172,7 +211,7 @@ const RecordDetail = () => {
                             <AudioPlayer
                                 record={record}
                                 currentUser={currentUser}
-                                showPurchaseConfirm={() => { }} // Thêm logic mua nếu cần
+                                showPurchaseConfirm={() => showPurchaseConfirm(record.id, record.price)} // Thêm logic mua nếu cần
                             />
 
                             {/* Thông tin chi tiết */}
