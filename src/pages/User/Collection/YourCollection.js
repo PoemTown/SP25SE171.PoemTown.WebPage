@@ -10,7 +10,7 @@ import CreateCollection from "./CreateCollection";
 import axios from "axios";
 import { IoBookmark } from "react-icons/io5";
 import { CiBookmark } from "react-icons/ci";
-import { MoreOutlined } from "@ant-design/icons";
+import { ArrowRightOutlined, DeleteOutlined, LoadingOutlined, MoreOutlined, PlusOutlined } from "@ant-design/icons";
 import YourCollectionDetail from "./YourCollectionDetail";
 import { useNavigate } from "react-router-dom";
 
@@ -251,14 +251,26 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
   };
 
   return (
-    <div style={{ maxWidth: "1200px", minHeight: "650px", margin: "0 auto" }}>
+    <div style={{ 
+      maxWidth: "1200px", 
+      margin: "0 auto",
+      padding: "20px",
+      fontFamily: "'Merriweather', serif" // Sử dụng font phù hợp với thơ ca
+    }}>
       {isLoading ? (
-        <div style={{ textAlign: "center", padding: "50px 0" }}>
-          <Spin size="large" tip="Đang tải dữ liệu..." />
+        <div style={{ 
+          textAlign: "center", 
+          padding: "100px 0",
+          background: "linear-gradient(45deg, #f8f9fa, #f1f3f5)"
+        }}>
+          <Spin 
+            size="large" 
+            tip="Đang tải dữ liệu..." 
+            indicator={<LoadingOutlined style={{ fontSize: 48, color: "#2c3e50" }} spin />}
+          />
         </div>
       ) : (
         <>
-          {/* Ưu tiên hiển thị chi tiết tuyển tập nếu có selectedCollection */}
           {selectedCollection ? (
             <YourCollectionDetail
               collection={selectedCollection}
@@ -266,190 +278,273 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
               avatar={avatar}
             />
           ) : isCreatingCollection ? (
-            <div style={{ padding: "0px" }}>
-              <CreateCollection
-                handleBack={handleBack}
-                setIsCreatingCollection={setIsCreatingCollection}
-                setIsEditingCollection={setIsEditingCollection}
-                onCollectionCreated={() => {
-                  setCurrentPage(1); // (optional) Reset to page 1
-                  setReloadTrigger(prev => !prev);
-                }}
-              />
-            </div>
+            <CreateCollection
+              handleBack={handleBack}
+              setIsCreatingCollection={setIsCreatingCollection}
+              setIsEditingCollection={setIsEditingCollection}
+              onCollectionCreated={() => {
+                setCurrentPage(1);
+                setReloadTrigger(prev => !prev);
+              }}
+            />
           ) : (
             <>
-              {isMine === true && (
+              {isMine && (
                 <button
                   onClick={handleCreate}
                   style={{
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    padding: "12px 20px",
-                    borderRadius: "5px",
+                    backgroundColor: "#2c3e50",
+                    color: "#ecf0f1",
+                    padding: "15px 30px",
+                    borderRadius: "30px",
                     border: "none",
-                    fontWeight: "bold",
+                    fontWeight: "600",
                     cursor: "pointer",
-                    display: "block",
-                    marginBottom: "20px",
+                    marginBottom: "30px",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "10px",
+                    fontSize: "0.8em",
+                    ':hover': {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
+                      backgroundColor: "#34495e"
+                    }
                   }}
                 >
-                  BỘ SƯU TẬP MỚI
+                  <PlusOutlined />
+                  TẠO BỘ SƯU TẬP MỚI
                 </button>
               )}
-
-              <div style={{ display: "flex", gap: "40px", alignItems: "flex-start" }}>
-                <div style={{ flex: 7 }}>
-                  {collections.map((collection) => (
-                    <div
-                      key={collection.id}
-                      style={{
-                        borderRadius: "2px",
-                        border: "1px solid #ccc",
-                        display: 'flex',
-                        marginBottom: "2%",
-                        boxShadow: "0px 3px 6px 0px #0000004D",
-                        backgroundColor: "#fff",
-                        borderRadius: "5px"
-                      }}
-                    >
-                      <div style={{ flex: 1, width: "260px", height: "146px" }}>
-                        <img
-                          style={{
-                            width: "260px",
-                            height: "146px",
-                            objectFit: "cover",
-                            borderTopLeftRadius: "5px",
-                            borderBottomLeftRadius: "5px",
-                          }}
-                          src={collection.image ? collection.image : "/anhminhhoa.png"}
-                          alt="Ảnh bộ sưu tập"
-                        />
-                      </div>
+  
+              <div style={{ 
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
+                gap: "30px",
+                position: "relative",
+                padding: "20px 0"
+              }}>
+                {collections.map((collection) => (
+                  <div
+                    key={collection.id}
+                    style={{
+                      borderRadius: "15px",
+                      border: "1px solid #e0e0e0",
+                      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+                      backgroundColor: "#ffffff",
+                      transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      overflow: "hidden",
+                      position: "relative",
+                      ':hover': {
+                        transform: "translateY(-5px)",
+                        boxShadow: "0 15px 35px rgba(0, 0, 0, 0.12)"
+                      }
+                    }}
+                  >
+                    <div style={{ 
+                      position: "relative",
+                      height: "200px",
+                      overflow: "hidden",
+                      borderTopLeftRadius: "15px",
+                      borderTopRightRadius: "15px"
+                    }}>
+                      <img
+                        style={{
+                          width: "100%",
+                          height: "100%",
+                          objectFit: "cover",
+                          filter: "brightness(0.95)",
+                          transition: "transform 0.3s ease"
+                        }}
+                        src={collection.image || "/poetry-placeholder.jpg"}
+                        alt="Ảnh bộ sưu tập"
+                      />
                       <div style={{
-                        flex: 4, display: "flex", flexDirection: "column", padding: "16px"
+                        position: "absolute",
+                        top: "15px",
+                        right: "15px",
+                        display: "flex",
+                        gap: "10px",
+                        alignItems: "center"
                       }}>
-                        <div style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                        }}>
-                          <p style={{ marginBottom: '1%', fontWeight: 'bold', marginTop: 0 }}>
-                            {collection.name} -{" "}
-                            <span style={{ color: "#007bff", fontWeight: "600", fontStyle: "italic", textDecoration: "underline", cursor: "pointer" }}>
-                              {collection?.displayName || "Anonymous"}
-                            </span>
-                          </p>
-                          <div style={{
-                            display: "flex",
-                            gap: "12px",
-                            alignItems: "center",
-                          }}>
-                            <button
-                              style={{
-                                background: "none",
-                                border: "none",
-                                cursor: "pointer",
-                                padding: "4px",
-                                fontSize: "1.2rem",
-                                color: "#666",
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                              onClick={() => handleBookmark(collection.id)}
-                            >
-                              {bookmarkedCollections.has(collection.id) ? (
-                                <IoBookmark color="#FFCE1B" />
-                              ) : (
-                                <CiBookmark />
-                              )}
-                            </button>
-                            <Dropdown
-                              overlay={
-                                <Menu>
-                                  <Menu.Item key="copylink" onClick={() => handleCopyLink(collection.id)}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                      <IoIosLink color="#666" size={16} />
-                                      <div>Sao chép liên kết</div>
-                                    </div>
-                                  </Menu.Item>
-                                  {isMine === true && (
-                                    <Menu.Item
-                                      key="delete"
-                                      onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}
-                                    >
-                                      ❌ Xóa
-                                    </Menu.Item>
-                                  )}
-                                </Menu>
-                              }
-                              trigger={["click"]}
-                            >
-                              <MoreOutlined
-                                style={{
-                                  background: "none",
-                                  border: "none",
-                                  cursor: "pointer",
-                                  padding: "4px",
-                                  fontSize: "1.2rem",
-                                  color: "#666",
-                                  display: "flex",
-                                  alignItems: "center",
-                                }}
-                                onClick={(e) => e.preventDefault()}
-                              />
-                            </Dropdown>
-                          </div>
-                        </div>
-                        <p
+                        <button
                           style={{
-                            marginRight: "20%",
-                            marginBottom: 'auto',
-                            marginTop: 0,
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            display: "-webkit-box",
-                            WebkitLineClamp: 2,
-                            WebkitBoxOrient: "vertical",
-                            overflow: "hidden",
-                            textOverflow: "ellipsis",
-                            whiteSpace: "normal",  //  Cho phép xuống dòng
-                            wordBreak: "break-word",  //  Bắt buộc nếu có từ dài
+                            background: "rgba(255, 255, 255, 0.9)",
+                            borderRadius: "50%",
+                            width: "36px",
+                            height: "36px",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            border: "none",
+                            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                            cursor: "pointer",
+                            transition: "all 0.2s ease"
                           }}
+                          onClick={() => handleBookmark(collection.id)}
                         >
-
-                          <span style={{ fontWeight: 500 }}>Mô tả:</span> <span style={{ color: "#444" }}> {collection.description} </span>
-                        </p>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "auto" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "20px" }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                              <LuBook />
-                              <span>{collection.totalPoem}</span>
-                            </div>
-                            <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                              <MdOutlineKeyboardVoice />
-                              <span>{collection.totalRecord}</span>
-                            </div>
-                          </div>
-                          <div style={{ color: "#007bff", fontWeight: "600", cursor: "pointer" }} onClick={() => handleMoveToDetail(collection.id)}>
-                            <span>Xem tuyển tập &gt;</span>
-                          </div>
-                        </div>
+                          {bookmarkedCollections.has(collection.id) ? (
+                            <IoBookmark color="#f1c40f" size={20} />
+                          ) : (
+                            <CiBookmark size={20} color="#2c3e50" />
+                          )}
+                        </button>
                       </div>
                     </div>
-                  ))}
-                </div>
+  
+                    <div style={{ 
+                      padding: "20px",
+                      background: "linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)"
+                    }}>
+                      <div style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "flex-start",
+                        marginBottom: "15px"
+                      }}>
+                        <h3 style={{
+                          margin: 0,
+                          color: "#2c3e50",
+                          fontSize: "1.4em",
+                          fontWeight: "700",
+                          fontFamily: "'Playfair Display', serif"
+                        }}>
+                          {collection.name}
+                        </h3>
+                        <Dropdown
+                          overlay={
+                            <Menu style={{
+                              borderRadius: "8px",
+                              boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)"
+                            }}>
+                              <Menu.Item 
+                                key="copylink" 
+                                style={{
+                                  padding: "12px 20px",
+                                  display: "flex",
+                                  gap: "10px",
+                                  alignItems: "center",
+                                  fontSize: "0.95em"
+                                }}
+                                onClick={() => handleCopyLink(collection.id)}
+                              >
+                                <IoIosLink color="#7f8c8d" />
+                                Sao chép liên kết
+                              </Menu.Item>
+                              {isMine && (
+                                <Menu.Item 
+                                  key="delete"
+                                  style={{
+                                    padding: "12px 20px",
+                                    color: "#e74c3c",
+                                    fontSize: "0.95em"
+                                  }}
+                                  onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}
+                                >
+                                  <DeleteOutlined /> Xóa bộ sưu tập
+                                </Menu.Item>
+                              )}
+                            </Menu>
+                          }
+                        >
+                          <MoreOutlined 
+                            style={{ 
+                              fontSize: "20px",
+                              color: "#7f8c8d",
+                              cursor: "pointer",
+                              padding: "5px",
+                              borderRadius: "50%",
+                              transition: "all 0.2s ease",
+                              ':hover': {
+                                backgroundColor: "rgba(0, 0, 0, 0.05)"
+                              }
+                            }}
+                          />
+                        </Dropdown>
+                      </div>
+  
+                      <div style={{
+                        marginBottom: "15px",
+                        color: "#34495e",
+                        fontSize: "0.95em",
+                        lineHeight: "1.6",
+                        minHeight: "60px"
+                      }}>
+                        {collection.description || "Không có mô tả"}
+                      </div>
+  
+                      <div style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        borderTop: "1px solid #eee",
+                        paddingTop: "15px"
+                      }}>
+                        <div style={{ display: "flex", gap: "15px" }}>
+                          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                            <LuBook color="#3498db" />
+                            <span style={{ color: "#7f8c8d" }}>{collection.totalPoem}</span>
+                          </div>
+                          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                            <MdOutlineKeyboardVoice color="#e74c3c" />
+                            <span style={{ color: "#7f8c8d" }}>{collection.totalRecord}</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleMoveToDetail(collection.id)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#2c3e50",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "8px",
+                            fontWeight: "600",
+                            transition: "all 0.2s ease",
+                            padding: "8px 15px",
+                            borderRadius: "20px",
+                            backgroundColor: "rgba(52, 152, 219, 0.1)",
+                            ':hover': {
+                              backgroundColor: "rgba(52, 152, 219, 0.2)"
+                            }
+                          }}
+                        >
+                          <span>Khám phá</span>
+                          <ArrowRightOutlined />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              {/* Phân trang */}
-              <div style={{ textAlign: "center", marginTop: "20px", display: "flex", justifyContent: "flex-end" }}>
+  
+              <div style={{ 
+                marginTop: "40px",
+                display: "flex",
+                justifyContent: "center",
+                padding: "20px 0"
+              }}>
                 <Pagination
                   current={currentPage}
                   pageSize={pageSize}
                   total={totalRecords}
                   onChange={handlePageChange}
                   showSizeChanger
-                  pageSizeOptions={["8", "16", "24"]}
+                  pageSizeOptions={["8", "12", "16"]}
+                  itemRender={(current, type, originalElement) => (
+                    <div style={{
+                      color: type === 'page' ? '#2c3e50' : '#3498db',
+                      fontWeight: type === 'page' ? 'normal' : 'bold'
+                    }}>
+                      {originalElement}
+                    </div>
+                  )}
+                  style={{
+                    fontFamily: "'Merriweather', serif"
+                  }}
                 />
               </div>
             </>
@@ -458,6 +553,5 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
       )}
     </div>
   );
-};
-
+}
 export default YourCollection;
