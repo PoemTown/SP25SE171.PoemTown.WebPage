@@ -169,7 +169,7 @@ const RequestFromUser = () => {
             );
 
             if (response.data.statusCode === 201) {
-                return response.data.data; // Return image URL
+                return response.data.data;
             }
             throw new Error(response.data.message || 'Upload failed');
         } catch (error) {
