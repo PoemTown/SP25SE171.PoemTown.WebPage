@@ -121,7 +121,7 @@ const Homepage = () => {
                 href={`/${tabItem.key}`}
                 style={styles.navLink}
                 onClick={(e) => {
-                  e.preventDefault();
+                  e.preventDefault(); 
                   handleTabClick(tabItem.key);
                 }}
               >

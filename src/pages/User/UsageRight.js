@@ -515,6 +515,11 @@ return (
                   justifyContent: 'space-between',
                   fontSize: '12px'
                 }}
+                onClick={() => {
+                  // Thay ngay URL -> trình duyệt sẽ tự reload
+                  window.location.href = `/user/${poem?.owner?.userName}`;
+                }}
+
               >
                 <StatItem
                   icon={<UserOutlined style={{ fontSize: '12px' }} />}

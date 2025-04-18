@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import Headeruser from '../components/Headeruser';
 import Headerdefault from '../components/Headerdefault';
-import { FiArrowLeft } from 'react-icons/fi';
+import { FiArrowLeft, FiBook, FiCalendar, FiHeadphones, FiMusic, FiTag } from 'react-icons/fi';
 import { BiCommentDetail, BiLike, BiSolidLike } from 'react-icons/bi';
 import { RiDeleteBinFill } from "react-icons/ri";
 import { IoBookmark } from 'react-icons/io5';
@@ -282,7 +282,7 @@ const PoemDetail = () => {
             );
 
             const data = response.data; // vì dùng axios, không cần `.json()`
-            message.info(response.data.message);
+            message.success(response.data.message);
 
         } catch (error) {
             console.error("Error fetching poem:", error);
@@ -720,7 +720,9 @@ const PoemDetail = () => {
             backgroundSize: 'cover',
             backgroundAttachment: 'fixed',
             minHeight: '100vh',
-            paddingBottom: '40px'
+            paddingBottom: '40px',
+            fontFamily: "'Noto Serif', serif",
+            color: '#333'
         }}>
             {/* Loading Overlay */}
             {isLoading && (
@@ -736,7 +738,7 @@ const PoemDetail = () => {
                     justifyContent: "center",
                     zIndex: 9999,
                 }}>
-                    <Spin size="large" tip="Đang tải..." indicator={<LoadingOutlined style={{ color: '#b19cd9' }} />} />
+                    <Spin size="large" tip="Đang tải..." indicator={<LoadingOutlined style={{ color: '#8a63d2' }} />} />
                 </div>
             )}
 
@@ -760,13 +762,19 @@ const PoemDetail = () => {
                     marginBottom: '20px',
                     cursor: 'pointer',
                     transition: 'all 0.3s',
-                    ':hover': { color: '#b19cd9' }
+                    padding: '8px 12px',
+                    borderRadius: '6px',
+                    width: 'fit-content',
+                    ':hover': {
+                        color: '#8a63d2',
+                        backgroundColor: 'rgba(138, 99, 210, 0.1)'
+                    }
                 }} onClick={() => navigate(-1)}>
                     <FiArrowLeft size={20} />
                     <span>Quay về</span>
                 </div>
 
-                {/* Poem Container */}
+                {/* Poem Layout */}
                 <div style={{
                     display: 'grid',
                     gridTemplateColumns: '1fr',
@@ -775,302 +783,402 @@ const PoemDetail = () => {
                         gridTemplateColumns: '2fr 1fr'
                     }
                 }}>
-                    {/* Left Column - Poem Content */}
-                    <div style={{
-                        backgroundColor: 'rgba(255, 255, 255, 0.92)',
-                        borderRadius: '12px',
-                        padding: '24px',
-                        boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
-                    }}>
-                        {/* Poem Header */}
+                    {/* Poem Content Column */}
+                    <div>
+                        {/* Poem Card */}
                         <div style={{
-                            display: 'flex',
-                            flexDirection: 'column',
-                            gap: '20px',
-                            '@media (min-width: 768px)': {
-                                flexDirection: 'row'
-                            }
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            borderRadius: '12px',
+                            padding: '24px',
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                            backdropFilter: 'blur(8px)'
                         }}>
-                            {/* Poem Image - Vertical Orientation */}
+                            {/* Poem Header */}
                             <div style={{
-                                width: '100%',
-                                maxWidth: '280px',
-                                height: '420px',
-                                borderRadius: '8px',
-                                overflow: 'hidden',
-                                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-                                margin: '0 auto',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '24px',
                                 '@media (min-width: 768px)': {
-                                    margin: '0'
+                                    flexDirection: 'row'
                                 }
                             }}>
-                                <img
-                                    src={poem?.poemImage || "/anhminhhoa.png"}
-                                    alt='poem image'
-                                    style={{
-                                        width: '100%',
-                                        height: '100%',
-                                        objectFit: 'cover',
-                                        objectPosition: 'center'
-                                    }}
-                                />
-                            </div>
-
-                            {/* Poem Info */}
-                            <div style={{ flex: 1 }}>
-                                <p style={{
-                                    margin: '0 0 8px 0',
-                                    fontSize: '14px',
-                                    color: '#8a7a9a',
-                                    fontStyle: 'italic'
-                                }}>
-                                    Ngày xuất bản: {formatDate(poem?.createdTime)}
-                                </p>
-
+                                {/* Poem Cover */}
                                 <div style={{
-                                    display: 'flex',
-                                    justifyContent: 'space-between',
-                                    alignItems: 'flex-start',
-                                    marginBottom: '12px'
+                                    width: '100%',
+                                    maxWidth: '280px',
+                                    height: '380px',
+                                    borderRadius: '8px',
+                                    overflow: 'hidden',
+                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
+                                    margin: '0 auto',
+                                    position: 'relative',
+                                    '@media (min-width: 768px)': {
+                                        margin: '0'
+                                    }
                                 }}>
-                                    <h1 style={{
-                                        margin: 0,
-                                        fontSize: '24px',
-                                        fontWeight: 600,
-                                        color: '#5a4b7a',
-                                        lineHeight: 1.3
-                                    }}>
-                                        {poem?.title}
-                                    </h1>
-
-                                    <div style={{ display: 'flex', gap: '8px' }}>
-                                        <button
-                                            style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                color: bookmarked ? '#FFCE1B' : '#8a7a9a',
-                                                fontSize: '20px'
-                                            }}
-                                            onClick={handleBookmark}
-                                        >
-                                            {bookmarked ? <IoBookmark /> : <CiBookmark />}
-                                        </button>
-                                        <Dropdown overlay={overlayMenu} trigger={["click"]}>
-                                            <button style={{
-                                                background: 'none',
-                                                border: 'none',
-                                                cursor: 'pointer',
-                                                color: '#8a7a9a',
-                                                fontSize: '20px'
-                                            }}>
-                                                <IoIosMore />
-                                            </button>
-                                        </Dropdown>
-                                    </div>
-                                </div>
-
-                                <p style={{
-                                    margin: '8px 0',
-                                    fontSize: '15px',
-                                    color: '#5a4b7a'
-                                }}>
-                                    {poem?.description}
-                                </p>
-
-                                <div style={{
-                                    display: 'flex',
-                                    flexWrap: 'wrap',
-                                    gap: '8px',
-                                    margin: '12px 0'
-                                }}>
-                                    {poem?.collection && (
-                                        <Tag
-                                            color="purple"
-                                            onClick={() => navigate(`/collection/${poem?.collection.id}`)}
-                                            style={{ cursor: 'pointer' }}
-                                        >
-                                            Tập thơ: {poem?.collection?.collectionName}
-                                        </Tag>
-                                    )}
-                                    <Tag color="geekblue">
-                                        Thể loại: {poem?.type?.name ?? ""}
-                                    </Tag>
-                                </div>
-
-                                {/* Interaction Buttons */}
-                                <div style={{
-                                    display: 'flex',
-                                    gap: '16px',
-                                    marginBottom: '16px'
-                                }}>
-                                    {!poem?.isFamousPoet && (
-                                        <>
-                                            <Button
-                                                icon={poem?.like ? <BiSolidLike size={20} /> : <BiLike size={20} />}
-                                                onClick={handleLike}
-                                                type="text"
-                                                style={{ color: poem?.like ? '#2a7fbf' : undefined }}
-                                            >
-                                                {poem?.likeCount || 0}
-                                            </Button>
-                                            <Button
-                                                icon={<BiCommentDetail size={20} />}
-                                                type="text"
-                                            >
-                                                {poem?.commentCount || 0}
-                                            </Button>
-                                        </>
-                                    )}
-                                    <FacebookSharePlugin url={window.location.href} />
-                                </div>
-
-                                {!poem?.isMine && poem?.saleVersion?.status !== 4 && (
-                                    <Button
-                                        type="primary"
-                                        onClick={() => {
-                                            if (poem?.saleVersion?.status === 1) {
-                                                showPurchaseConfirm(poem.id, poem?.saleVersion);
-                                            } else {
-                                                setShowCreateRecordModal(true);
-                                            }
-                                        }}
+                                    <img
+                                        src={poem?.poemImage || "/default-poem-cover.jpg"}
+                                        alt='poem cover'
                                         style={{
-                                            background: '#b19cd9',
-                                            border: 'none',
-                                            fontWeight: 500
+                                            width: '100%',
+                                            height: '100%',
+                                            objectFit: 'cover',
+                                            objectPosition: 'center'
                                         }}
-                                    >
-                                        {poem?.saleVersion?.status === 1 ? "Mua ngay" : "Sử dụng"}
-                                    </Button>
-                                )}
-                            </div>
-                        </div>
-
-                        {/* Poem Text */}
-                        <div style={{
-                            marginTop: '24px',
-                            padding: '20px',
-                            backgroundColor: 'rgba(249, 247, 255, 0.7)',
-                            borderRadius: '8px',
-                            borderLeft: '3px solid #b19cd9'
-                        }}>
-                            <pre style={{
-                                whiteSpace: 'pre-wrap',
-                                fontFamily: "'Playfair Display', serif",
-                                fontSize: '17px',
-                                lineHeight: '1.8',
-                                color: '#5a4b7a',
-                                margin: 0,
-                                textAlign: 'center',
-                                fontStyle: 'italic'
-                            }}>
-                                {poem?.content}
-                            </pre>
-                        </div>
-
-                        {/* Comments Section */}
-                        {!poem?.isFamousPoet && (
-                            <div style={{ marginTop: '32px' }}>
-                                <h3 style={{
-                                    color: '#5a4b7a',
-                                    borderBottom: '1px solid #f0f0f0',
-                                    paddingBottom: '8px',
-                                    fontSize: '18px'
-                                }}>
-                                    Bình luận ({poem?.commentCount || 0})
-                                </h3>
-
-                                <div style={{ margin: '16px 0' }}>
-                                    <Input.TextArea
-                                        value={newComment}
-                                        onChange={e => setNewComment(e.target.value)}
-                                        placeholder="Viết bình luận của bạn..."
-                                        rows={4}
-                                        style={{ marginBottom: '12px' }}
                                     />
-                                    <div style={{ textAlign: 'right' }}>
-                                        <Button
-                                            onClick={handleSubmitComment}
-                                            type="primary"
-                                            style={{
-                                                background: '#b19cd9',
-                                                border: 'none',
-                                            }}
-                                        >
-                                            Đăng bình luận
-                                        </Button>
+                                    <div style={{
+                                        position: 'absolute',
+                                        bottom: '12px',
+                                        left: '12px',
+                                        backgroundColor: 'rgba(255, 255, 255, 0.9)',
+                                        padding: '6px 10px',
+                                        borderRadius: '20px',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '6px',
+                                        fontSize: '14px',
+                                        color: '#5a4b7a'
+                                    }}>
+                                        <FiCalendar />
+                                        <span>{formatDate(poem?.createdTime)}</span>
                                     </div>
                                 </div>
 
+                                {/* Poem Meta */}
+                                <div style={{ flex: 1 }}>
+                                    <div style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'flex-start',
+                                        marginBottom: '12px'
+                                    }}>
+                                        <h1 style={{
+                                            margin: 0,
+                                            fontSize: '28px',
+                                            fontWeight: 600,
+                                            color: '#3a2a5a',
+                                            lineHeight: 1.3,
+                                            fontFamily: "'Playfair Display', serif"
+                                        }}>
+                                            {poem?.title}
+                                        </h1>
 
-                                <div style={{ marginTop: '16px' }}>
-                                    {commentTree.map((comment) => (
-                                        <Comment
-                                            key={comment.id}
-                                            comment={comment}
-                                            depth={0}
-                                            currentReply={replyingTo}
-                                            replyTexts={replyTexts}
-                                            onReply={setReplyingTo}
-                                            onSubmitReply={handleSubmitReply}
-                                            onCancelReply={(commentId) => {
-                                                setReplyingTo(null);
-                                                setReplyTexts(prev => ({
-                                                    ...prev,
-                                                    [commentId]: ""
-                                                }));
+                                        <div style={{ display: 'flex', gap: '8px' }}>
+                                            <button
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    color: bookmarked ? '#FFCE1B' : '#8a7a9a',
+                                                    fontSize: '20px',
+                                                    transition: 'all 0.2s',
+                                                    ':hover': {
+                                                        transform: 'scale(1.1)'
+                                                    }
+                                                }}
+                                                onClick={handleBookmark}
+                                            >
+                                                {bookmarked ? <IoBookmark /> : <CiBookmark />}
+                                            </button>
+                                            <Dropdown overlay={overlayMenu} trigger={["click"]}>
+                                                <button style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    cursor: 'pointer',
+                                                    color: '#8a7a9a',
+                                                    fontSize: '20px',
+                                                    transition: 'all 0.2s',
+                                                    ':hover': {
+                                                        transform: 'scale(1.1)'
+                                                    }
+                                                }}>
+                                                    <IoIosMore />
+                                                </button>
+                                            </Dropdown>
+                                        </div>
+                                    </div>
+
+                                    <p style={{
+                                        margin: '12px 0',
+                                        fontSize: '16px',
+                                        color: '#5a4b7a',
+                                        lineHeight: 1.6
+                                    }}>
+                                        {poem?.description}
+                                    </p>
+
+                                    {/* Tags */}
+                                    <div style={{
+                                        display: 'flex',
+                                        flexWrap: 'wrap',
+                                        gap: '8px',
+                                        margin: '16px 0'
+                                    }}>
+                                        {poem?.collection && (
+                                            <div
+                                                style={{
+                                                    backgroundColor: '#f3f0ff',
+                                                    color: '#5a4b7a',
+                                                    padding: '6px 12px',
+                                                    borderRadius: '20px',
+                                                    fontSize: '14px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '6px',
+                                                    cursor: 'pointer',
+                                                    transition: 'all 0.2s',
+                                                    ':hover': {
+                                                        backgroundColor: '#e6e0ff'
+                                                    }
+                                                }}
+                                                onClick={() => navigate(`/collection/${poem?.collection.id}`)}
+                                            >
+                                                <FiBook size={14} />
+                                                <span>Tập thơ: {poem?.collection?.collectionName}</span>
+                                            </div>
+                                        )}
+                                        <div style={{
+                                            backgroundColor: '#f0f5ff',
+                                            color: '#3a5a8a',
+                                            padding: '6px 12px',
+                                            borderRadius: '20px',
+                                            fontSize: '14px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px'
+                                        }}>
+                                            <FiTag size={14} />
+                                            <span>Thể loại: {poem?.type?.name ?? ""}</span>
+                                        </div>
+                                    </div>
+
+                                    {/* Interaction Bar */}
+                                    <div style={{
+                                        display: 'flex',
+                                        gap: '16px',
+                                        marginBottom: '20px',
+                                        paddingBottom: '16px',
+                                        borderBottom: '1px solid #f0f0f0'
+                                    }}>
+                                        {!poem?.isFamousPoet && (
+                                            <>
+                                                <Button
+                                                    icon={poem?.like ? <BiSolidLike size={18} /> : <BiLike size={18} />}
+                                                    onClick={handleLike}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: poem?.like ? '#2a7fbf' : '#8a7a9a',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        padding: '6px 12px',
+                                                        ':hover': {
+                                                            backgroundColor: 'rgba(42, 127, 191, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    {poem?.likeCount || 0}
+                                                </Button>
+                                                <Button
+                                                    icon={<BiCommentDetail size={18} />}
+                                                    style={{
+                                                        background: 'none',
+                                                        border: 'none',
+                                                        color: '#8a7a9a',
+                                                        display: 'flex',
+                                                        alignItems: 'center',
+                                                        gap: '6px',
+                                                        padding: '6px 12px',
+                                                        ':hover': {
+                                                            backgroundColor: 'rgba(138, 99, 210, 0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    {poem?.commentCount || 0}
+                                                </Button>
+                                            </>
+                                        )}
+                                        <div style={{ marginLeft: 'auto', alignItems: 'center', display: 'flex', transform: 'scale(1.2)' }}>
+                                            <FacebookSharePlugin url={window.location.href} />
+                                        </div>
+
+                                    </div>
+
+                                    {!poem?.isMine && poem?.saleVersion?.status !== 4 && (
+                                        <Button
+                                            type="primary"
+                                            onClick={() => {
+                                                if (poem?.saleVersion?.status === 1) {
+                                                    showPurchaseConfirm(poem.id, poem?.saleVersion);
+                                                } else {
+                                                    setShowCreateRecordModal(true);
+                                                }
                                             }}
-                                            onTextChange={handleReplyChange}
-                                            isMine={comment.isMine}
-                                            onDelete={handleDeleteComment}
-                                        />
-                                    ))}
+                                            style={{
+                                                background: 'linear-gradient(135deg, #8a63d2, #6a4baa)',
+                                                border: 'none',
+                                                fontWeight: 500,
+                                                height: '40px',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 12px rgba(138, 99, 210, 0.3)',
+                                                ':hover': {
+                                                    background: 'linear-gradient(135deg, #7a53c2, #5a3b9a)',
+                                                    transform: 'translateY(-2px)'
+                                                }
+                                            }}
+                                        >
+                                            {poem?.saleVersion?.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                        </Button>
+                                    )}
                                 </div>
                             </div>
-                        )}
+
+                            {/* Poem Text */}
+                            <div style={{
+                                marginTop: '32px',
+                                padding: '24px',
+                                backgroundColor: 'rgba(249, 247, 255, 0.7)',
+                                borderRadius: '8px',
+                                borderLeft: '3px solid #8a63d2',
+                                fontFamily: "'Noto Serif', serif"
+                            }}>
+                                <pre style={{
+                                    whiteSpace: 'pre-wrap',
+                                    fontFamily: "'Noto Serif', serif",
+                                    fontSize: '18px',
+                                    lineHeight: '2',
+                                    color: '#3a2a5a',
+                                    margin: 0,
+                                    textAlign: 'center'
+                                }}>
+                                    {poem?.content}
+                                </pre>
+                            </div>
+
+                            {/* Comments Section */}
+                            {!poem?.isFamousPoet && (
+                                <div style={{ marginTop: '40px' }}>
+                                    <h3 style={{
+                                        color: '#3a2a5a',
+                                        borderBottom: '1px solid #f0f0f0',
+                                        paddingBottom: '12px',
+                                        fontSize: '20px',
+                                        fontWeight: 500,
+                                        fontFamily: "'Playfair Display', serif",
+                                        marginBottom: '24px'
+                                    }}>
+                                        <BiCommentDetail style={{ marginRight: '8px' }} />
+                                        Bình luận ({poem?.commentCount || 0})
+                                    </h3>
+
+                                    <div style={{ marginBottom: '24px' }}>
+                                        <Input.TextArea
+                                            value={newComment}
+                                            onChange={e => setNewComment(e.target.value)}
+                                            placeholder="Viết bình luận của bạn..."
+                                            rows={4}
+                                            style={{
+                                                marginBottom: '12px',
+                                                borderRadius: '8px',
+                                                borderColor: '#e0e0e0',
+                                                ':focus': {
+                                                    borderColor: '#8a63d2',
+                                                    boxShadow: '0 0 0 2px rgba(138, 99, 210, 0.2)'
+                                                }
+                                            }}
+                                        />
+                                        <div style={{ textAlign: 'right' }}>
+                                            <Button
+                                                onClick={handleSubmitComment}
+                                                type="primary"
+                                                style={{
+                                                    background: 'linear-gradient(135deg, #8a63d2, #6a4baa)',
+                                                    border: 'none',
+                                                    borderRadius: '8px',
+                                                    padding: '8px 24px',
+                                                    height: 'auto',
+                                                    fontWeight: 500
+                                                }}
+                                            >
+                                                Đăng bình luận
+                                            </Button>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ marginTop: '16px' }}>
+                                        {commentTree.map((comment) => (
+                                            <Comment
+                                                key={comment.id}
+                                                comment={comment}
+                                                depth={0}
+                                                currentReply={replyingTo}
+                                                replyTexts={replyTexts}
+                                                onReply={setReplyingTo}
+                                                onSubmitReply={handleSubmitReply}
+                                                onCancelReply={(commentId) => {
+                                                    setReplyingTo(null);
+                                                    setReplyTexts(prev => ({
+                                                        ...prev,
+                                                        [commentId]: ""
+                                                    }));
+                                                }}
+                                                onTextChange={handleReplyChange}
+                                                isMine={comment.isMine}
+                                                onDelete={handleDeleteComment}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    {/* Right Column - Author & Records */}
+                    {/* Sidebar Column */}
                     <div>
                         {/* Author Card */}
                         <div style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
                             borderRadius: '12px',
-                            padding: '16px',
-                            marginBottom: '20px',
-                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                            padding: '20px',
+                            marginBottom: '24px',
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                            backdropFilter: 'blur(8px)'
                         }}>
                             <div style={{
                                 display: 'flex',
-                                gap: '12px',
+                                gap: '16px',
                                 alignItems: 'center',
-                                marginBottom: '16px'
+                                marginBottom: '20px'
                             }}>
                                 <Avatar
                                     src={poem?.poetSample ? poem?.poetSample?.avatar : poem?.user?.avatar}
-                                    size={64}
+                                    size={72}
                                     onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)}
                                     style={{
                                         cursor: 'pointer',
-                                        border: '2px solid #fff',
-                                        boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                                        border: '3px solid #fff',
+                                        boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
                                     }}
                                 />
                                 <div>
                                     <h4 style={{
                                         margin: 0,
-                                        fontSize: '16px',
-                                        color: '#5a4b7a',
-                                        cursor: 'pointer'
+                                        fontSize: '18px',
+                                        color: '#3a2a5a',
+                                        cursor: 'pointer',
+                                        fontWeight: 500,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        gap: '8px'
                                     }} onClick={() => navigate(poem?.isFamousPoet ? `/knowledge/poet/${poem?.poetSample?.id}` : `/user/${poem?.user.userName}`)}>
                                         {poem?.poetSample ? poem?.poetSample?.name : poem?.user?.displayName}
                                         {!poem?.isFamousPoet && !poem?.isMine && (
                                             <Tooltip title="Báo cáo người dùng">
                                                 <WarningFilled style={{
                                                     color: '#ff4d4f',
-                                                    marginLeft: '8px',
-                                                    cursor: 'pointer'
+                                                    cursor: 'pointer',
+                                                    fontSize: '16px'
                                                 }} onClick={handleReportUser} />
                                             </Tooltip>
                                         )}
@@ -1093,9 +1201,16 @@ const PoemDetail = () => {
                                     onClick={handleFollow}
                                     block
                                     style={{
-                                        background: poem?.isFollowed ? '#f0f0f0' : '#b19cd9',
+                                        background: poem?.isFollowed ? '#f0f0f0' : 'linear-gradient(135deg, #8a63d2, #6a4baa)',
                                         color: poem?.isFollowed ? '#5a4b7a' : '#fff',
-                                        border: 'none'
+                                        border: 'none',
+                                        height: '40px',
+                                        borderRadius: '8px',
+                                        fontWeight: 500,
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center',
+                                        gap: '8px'
                                     }}
                                     icon={poem?.isFollowed ? <FaCheck /> : <CiCirclePlus />}
                                 >
@@ -1104,13 +1219,13 @@ const PoemDetail = () => {
                             )}
                         </div>
 
-
                         {/* Records Section */}
                         <div style={{
-                            backgroundColor: 'rgba(255, 255, 255, 0.92)',
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
                             borderRadius: '12px',
-                            padding: '16px',
-                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)'
+                            padding: '20px',
+                            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
+                            backdropFilter: 'blur(8px)'
                         }}>
                             <Collapse
                                 ghost
@@ -1120,81 +1235,102 @@ const PoemDetail = () => {
                                 <Panel
                                     header={
                                         <h3 style={{
-                                            color: '#5a4b7a',
+                                            color: '#3a2a5a',
                                             borderBottom: '1px solid #f0f0f0',
-                                            paddingBottom: '8px',
-                                            fontSize: '18px',
-                                            marginTop: 0
+                                            paddingBottom: '12px',
+                                            fontSize: '20px',
+                                            fontWeight: 500,
+                                            fontFamily: "'Playfair Display', serif",
+                                            marginTop: 0,
+                                            marginBottom: '20px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '8px'
                                         }}>
-                                            Bản ghi ({poem?.recordFiles?.data?.length || 0})
+                                            <FiMusic />
+                                            <span>Bản ghi ({poem?.recordFiles?.data?.length || 0})</span>
                                         </h3>
                                     }
                                 >
-                                    <div >
+                                    <div style={{
+                                        display: 'grid',
+                                        gap: '12px'
+                                    }}>
                                         {poem?.recordFiles?.data?.length > 0 ? (
-                                            <div style={{
-                                                display: 'grid',
-                                                gap: '12px',
-                                                marginTop: '12px'
-                                            }}>
-                                                {poem.recordFiles.data?.map(record => (
-                                                    <div
-                                                        key={record.id}
-                                                        onClick={() => navigate(`/record/${record.id}`)}
+                                            poem.recordFiles.data?.map(record => (
+                                                <div
+                                                    key={record.id}
+                                                    onClick={() => navigate(`/record/${record.id}`)}
+                                                    style={{
+                                                        cursor: 'pointer',
+                                                        padding: '12px',
+                                                        borderRadius: '8px',
+                                                        backgroundColor: '#fff',
+                                                        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                                                        display: 'flex',
+                                                        gap: '12px',
+                                                        alignItems: 'center',
+                                                        transition: 'all 0.2s',
+                                                        ':hover': {
+                                                            transform: 'translateY(-2px)',
+                                                            boxShadow: '0 4px 12px rgba(0,0,0,0.1)'
+                                                        }
+                                                    }}
+                                                >
+                                                    <Avatar
+                                                        src={record.owner?.avatar || '/default-record-thumbnail.jpg'}
+                                                        size={48}
                                                         style={{
-                                                            cursor: 'pointer',
-                                                            padding: '10px',
                                                             borderRadius: '6px',
-                                                            backgroundColor: '#fff',
-                                                            boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                                                            display: 'flex',
-                                                            gap: '10px',
-                                                            alignItems: 'center',
-                                                            transition: 'all 0.2s',
-                                                            ':hover': {
-                                                                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-                                                            }
+                                                            boxShadow: '0 2px 6px rgba(0,0,0,0.1)'
                                                         }}
-                                                    >
-                                                        <Avatar
-                                                            src={record.owner?.avatar || '/default-record-thumbnail.jpg'}
-                                                            size={40}
-                                                            style={{ borderRadius: '4px' }}
-                                                        />
-                                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                                            <h5 style={{
-                                                                margin: 0,
-                                                                fontSize: '14px',
-                                                                color: '#5a4b7a',
-                                                                whiteSpace: 'nowrap',
-                                                                overflow: 'hidden',
-                                                                textOverflow: 'ellipsis'
+                                                    />
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <h5 style={{
+                                                            margin: 0,
+                                                            fontSize: '15px',
+                                                            color: '#3a2a5a',
+                                                            whiteSpace: 'nowrap',
+                                                            overflow: 'hidden',
+                                                            textOverflow: 'ellipsis',
+                                                            fontWeight: 500
+                                                        }}>
+                                                            {record.title}
+                                                        </h5>
+                                                        <div style={{
+                                                            fontSize: '12px',
+                                                            color: '#8a7a9a',
+                                                            marginTop: '4px',
+                                                            display: 'flex',
+                                                            justifyContent: 'space-between'
+                                                        }}>
+                                                            <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                                                <FiHeadphones />
+                                                                {record.totalView || 0} lượt nghe
+                                                            </span>
+                                                            <span style={{
+                                                                fontWeight: 500,
+                                                                color: record.price === 0 ? '#8a63d2' : '#ff6b6b'
                                                             }}>
-                                                                {record.title}
-                                                            </h5>
-                                                            <div style={{
-                                                                fontSize: '11px',
-                                                                color: '#8a7a9a',
-                                                                marginTop: '2px',
-                                                                display: 'flex',
-                                                                justifyContent: 'space-between'
-                                                            }}>
-                                                                <span>{record.totalView || 0} lượt nghe</span>
-                                                                <span>{record.price === 0 ? 'Miễn phí' : `${record.price.toLocaleString()}₫`}</span>
-                                                            </div>
+                                                                {record.price === 0 ? 'Miễn phí' : `${record.price.toLocaleString()}₫`}
+                                                            </span>
                                                         </div>
                                                     </div>
-                                                ))}
-                                            </div>
+                                                </div>
+                                            ))
                                         ) : (
-                                            <Empty
-                                                image={<FileTextOutlined style={{ fontSize: '32px', color: '#b19cd9' }} />}
-                                                description="Chưa có bản ghi nào"
-                                                style={{
-                                                    margin: '16px 0',
-                                                    color: '#8a7a9a'
-                                                }}
-                                            />
+                                            <div style={{
+                                                padding: '24px',
+                                                textAlign: 'center',
+                                                color: '#8a7a9a'
+                                            }}>
+                                                <FileTextOutlined style={{
+                                                    fontSize: '32px',
+                                                    color: '#d0c0e8',
+                                                    marginBottom: '12px'
+                                                }} />
+                                                <p style={{ margin: 0 }}>Chưa có bản ghi nào</p>
+                                            </div>
                                         )}
                                     </div>
                                 </Panel>
@@ -1222,6 +1358,20 @@ const PoemDetail = () => {
                 okText="Tạo"
                 cancelText="Hủy"
                 width={600}
+                styles={{
+                    header: {
+                        borderBottom: '1px solid #f0f0f0',
+                        paddingBottom: '12px',
+                        marginBottom: '20px'
+                    },
+                    body: {
+                        padding: '24px'
+                    },
+                    footer: {
+                        borderTop: '1px solid #f0f0f0',
+                        paddingTop: '16px'
+                    }
+                }}
             >
                 <Form form={form} layout="vertical">
                     <Form.Item
@@ -1229,7 +1379,13 @@ const PoemDetail = () => {
                         name="recordName"
                         rules={[{ required: true, message: 'Vui lòng nhập tên bản ghi' }]}
                     >
-                        <Input placeholder="Nhập tên bản ghi..." />
+                        <Input
+                            placeholder="Nhập tên bản ghi..."
+                            style={{
+                                borderRadius: '6px',
+                                padding: '10px 12px'
+                            }}
+                        />
                     </Form.Item>
 
                     <Form.Item
@@ -1238,7 +1394,14 @@ const PoemDetail = () => {
                         rules={[{ required: true, message: 'Vui lòng tải lên file audio' }]}
                     >
                         <Upload {...uploadProps}>
-                            <Button icon={<UploadOutlined />} loading={isAudioUploading}>
+                            <Button
+                                icon={<UploadOutlined />}
+                                loading={isAudioUploading}
+                                style={{
+                                    borderRadius: '6px',
+                                    height: '40px'
+                                }}
+                            >
                                 Chọn file audio
                             </Button>
                         </Upload>
@@ -1248,12 +1411,23 @@ const PoemDetail = () => {
                         <Progress
                             percent={uploadProgress}
                             status="active"
-                            strokeColor="#b19cd9"
+                            strokeColor={{
+                                '0%': '#8a63d2',
+                                '100%': '#6a4baa',
+                            }}
+                            style={{
+                                marginBottom: '16px'
+                            }}
                         />
                     )}
 
                     {audioUrl && (
-                        <div style={{ marginTop: '16px' }}>
+                        <div style={{
+                            marginTop: '16px',
+                            backgroundColor: '#f9f7ff',
+                            borderRadius: '8px',
+                            padding: '12px'
+                        }}>
                             <audio controls src={audioUrl} style={{ width: '100%' }} />
                             <Button
                                 type="text"
@@ -1263,6 +1437,9 @@ const PoemDetail = () => {
                                     form.setFieldsValue({ audioFile: null });
                                 }}
                                 icon={<DeleteOutlined />}
+                                style={{
+                                    marginTop: '8px'
+                                }}
                             >
                                 Xóa file
                             </Button>
