@@ -280,150 +280,306 @@ const CollectionDetail = () => {
     }
 
     return (
-        <div>
-            <div>
-                {isLoggedIn ? <Headeruser /> : <Headerdefault />}
-
-                <div
-                    style={{ cursor: "pointer", color: "#007bff", fontSize: "18px", marginBottom: "10px", marginLeft: "20px", marginTop: "20px", fontWeight: "bold" }}
-                    onClick={() => navigate(-1)}
-                >
-                    <FiArrowLeft /> Quay về
-                </div>
-                <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
-                    <div style={{ margin: '0 auto', padding: '5px' }}>
-                        {isEditingCollection ?
-                            <CreateCollection collection={collectionDetails} setIsEditingCollection={setIsEditingCollection} setIsCreatingCollection={setIsCreatingCollection} handleBack={handleBack} onCollectionCreated={onCollectionCreated} isKnowledgePoet={collectionDetails.isFamousPoet} poetId={collectionDetails.poetSample?.id}/>
-                            :
-                            <div
-                                key={id}
-                                style={{
-                                    display: 'flex',
-                                    padding: "16px",
-                                    marginBottom: "20px",
-                                    position: 'relative',
-                                    gap: '16px',
-                                    border: '1px solid #ddd',
-                                    borderRadius: '12px',
-                                    boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-                                    backgroundColor: '#fff',
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        flex: 1,
-                                        width: "260px",
-                                        height: "146px",
-                                        display: "flex",
-                                        justifyContent: "center", // căn giữa theo chiều ngang
-                                        alignItems: "center",     // căn giữa theo chiều dọc
-                                    }}
-                                >
-                                    <img
-                                        src={collectionDetails.collectionImage ? collectionDetails.collectionImage : "./collection1.png"}
-                                        alt="Ảnh bộ sưu tập"
-                                        style={{
-                                            width: "260px", height: "146px", objectFit: "cover", borderTopLeftRadius: "5px", borderBottomLeftRadius: "5px"
-                                        }}
-                                    />
-                                </div>
-
-                                <div style={{ flex: 4, position: 'relative', paddingBottom: '50px' /* thêm padding dưới */ }}>
-                                    <div>
-                                        <p style={{ marginBottom: '2%', fontWeight: 'bold', fontSize: '1.2rem', marginTop: "0" }}>
-                                            Bộ sưu tập: {collectionDetails.collectionName}
-                                        </p>
-                                        <p
-                                            style={{
-                                                marginRight: '2%',
-                                                marginBottom: '1%',
-                                                marginTop: '1%',
-                                                overflow: "hidden",
-                                                textOverflow: "ellipsis",
-                                                display: "-webkit-box",
-                                                WebkitLineClamp: 2,
-                                                WebkitBoxOrient: "vertical",
-                                                maxWidth: "100%",
-                                                fontSize: '1rem',
-                                                color: "#555"
-                                            }}
-                                        >
-                                            Mô tả: {collectionDetails.collectionDescription}
-                                        </p>
-                                    </div>
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "20px",
-                                            position: 'absolute',
-                                            bottom: 10,
-                                            width: '100%',
-                                        }}
-                                    >
-                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                            <LuBook />
-                                            <span>{collectionDetails.totalChapter}</span>
-                                        </div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                            <MdOutlineKeyboardVoice />
-                                            <span>{collectionDetails.totalRecord}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                {collectionDetails.isMine || (hasPermission && collectionDetails.isFamousPoet) ?
-                                    <div onClick={handleMoveToUpdate} style={{ color: "#007bff", cursor: 'pointer', fontSize: '1rem' }}>
-                                        Chỉnh sửa <span><MdEdit /></span>
-                                    </div>
-                                    :
-                                    <></>}
-                            </div>
-                        }
-
-                    </div>
-                    {isEditingCollection ? <></> :
-                        <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
-                            <div style={{ flex: 7, display: "flex", flexDirection: "column", gap: "15px" }}>
-                                {poems.map((poem) => (
-                                    <PoemCard
-                                        key={poem.id}
-                                        item={poem}
-                                        liked={likedPosts[poem.id]}
-                                        bookmarked={bookmarkedPosts[poem.id]}
-                                        onBookmark={handleBookmark}
-                                        onLike={handleLike}
-                                        onHover={setIsHovered}
-                                        collections={collections}
-                                        handleMove={handleMove}
-                                        onPoemCreated={fetchData}
-                                    />
-
-                                ))}
-                            </div>
-                            <div style={{ flex: 3, minWidth: "300px" }}>
-                                <div style={{
-                                    backgroundColor: "white",
-                                    borderRadius: "10px",
-                                    border: `1px solid #aaa`,
-                                    padding: "15px",
-                                    marginBottom: "15px"
-                                }}>
-                                    <h3 style={{ fontWeight: "bold", textAlign: 'center', margin: "0" }}>Thống kê tập thơ</h3>
-                                    <ul style={{ fontSize: "14px", color: "#000", listStyle: "none", padding: 0, }}>
-                                        <li><span style={{ fontWeight: "bold" }}>Tổng số bài thơ:</span> <span >{collectionDetails.totalChapter}</span></li>
-                                        <li><span style={{ fontWeight: "bold" }}>Tổng số audio:</span> <span>{collectionDetails.totalRecord}</span></li>
-                                        <li><span style={{ fontWeight: "bold" }}>Ngày phát hành:</span> <span>{formatDate(collectionDetails.createdTime)}</span></li>
-                                        <li><span style={{ fontWeight: "bold" }}>Cập nhật gần nhất:</span> <span>{formatDate(collectionDetails.lastUpdatedTime)}</span></li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    }
-                </div>
-
+        <div style={{ fontFamily: "'Noto Serif', serif", backgroundColor: "#f9f7f5" }}>
+          {isLoggedIn ? <Headeruser /> : <Headerdefault />}
+      
+          <div style={{ maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
+            {/* Nút quay lại */}
+            <div 
+              style={{ 
+                display: "flex", 
+                alignItems: "center", 
+                gap: "8px",
+                color: "#5d4037",
+                fontSize: "16px",
+                marginBottom: "24px",
+                cursor: "pointer",
+                transition: "all 0.3s ease",
+                ":hover": {
+                  color: "#3e2723",
+                  transform: "translateX(-2px)"
+                }
+              }}
+              onClick={() => navigate(-1)}
+            >
+              <FiArrowLeft size={20} />
+              <span>Quay về</span>
             </div>
+      
+            {isEditingCollection ? (
+              <CreateCollection 
+                collection={collectionDetails} 
+                setIsEditingCollection={setIsEditingCollection} 
+                setIsCreatingCollection={setIsCreatingCollection} 
+                handleBack={handleBack} 
+                onCollectionCreated={onCollectionCreated} 
+                isKnowledgePoet={collectionDetails.isFamousPoet} 
+                poetId={collectionDetails.poetSample?.id}
+              />
+            ) : (
+              <>
+                {/* Phần thông tin bộ sưu tập */}
+                <div
+                  style={{
+                    display: 'flex',
+                    padding: "24px",
+                    marginBottom: "32px",
+                    gap: '24px',
+                    border: '1px solid #e0d6cc',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 12px rgba(0, 0, 0, 0.05)',
+                    backgroundColor: '#fff',
+                    backgroundImage: 'linear-gradient(to bottom right, #fff, #f5f0e9)',
+                    position: 'relative',
+                    overflow: 'hidden',
+                    "::before": {
+                      content: '""',
+                      position: 'absolute',
+                      top: 0,
+                      left: 0,
+                      width: '4px',
+                      height: '100%',
+                      backgroundColor: '#8d6e63'
+                    }
+                  }}
+                >
+                  {/* Hình ảnh bộ sưu tập */}
+                  <div
+                    style={{
+                      width: "240px",
+                      minWidth: "240px",
+                      height: "180px",
+                      borderRadius: "8px",
+                      overflow: "hidden",
+                      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+                      position: 'relative'
+                    }}
+                  >
+                    <img
+                      src={collectionDetails.collectionImage || "./collection1.png"}
+                      alt="Ảnh bộ sưu tập"
+                      style={{
+                        width: "100%",
+                        height: "100%",
+                        objectFit: "cover",
+                        transition: 'transform 0.3s ease',
+                        ":hover": {
+                          transform: 'scale(1.02)'
+                        }
+                      }}
+                    />
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      padding: '8px',
+                      background: 'linear-gradient(to top, rgba(0,0,0,0.7), transparent)',
+                      color: 'white',
+                      fontSize: '12px',
+                      textAlign: 'center'
+                    }}>
+                      {collectionDetails.totalChapter} bài thơ • {collectionDetails.totalRecord} bản ghi
+                    </div>
+                  </div>
+      
+                  {/* Thông tin chi tiết */}
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <div style={{ marginBottom: '16px' }}>
+                      <h1 style={{ 
+                        margin: 0,
+                        marginBottom: '8px',
+                        fontSize: '24px',
+                        fontWeight: '600',
+                        color: '#3e2723',
+                        fontFamily: "'Playfair Display', serif"
+                      }}>
+                        {collectionDetails.collectionName}
+                      </h1>
+                      
+                      <p style={{
+                        margin: 0,
+                        color: "#5d4037",
+                        fontStyle: 'italic',
+                        fontSize: '14px'
+                      }}>
+                        {collectionDetails.isFamousPoet 
+                          ? `Tác giả: ${collectionDetails.poetSample?.name}` 
+                          : `Người tạo: ${collectionDetails.user?.displayName || "Ẩn danh"}`}
+                      </p>
+                    </div>
+      
+                    <div style={{
+                      marginBottom: '16px',
+                      padding: '12px',
+                      backgroundColor: '#f5f0e9',
+                      borderRadius: '6px',
+                      borderLeft: '3px solid #8d6e63'
+                    }}>
+                      <p style={{
+                        margin: 0,
+                        color: "#4e342e",
+                        fontSize: '15px',
+                        lineHeight: '1.6'
+                      }}>
+                        {collectionDetails.collectionDescription || "Chưa có mô tả"}
+                      </p>
+                    </div>
+      
+                    <div style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      position: 'absolute',
+                      bottom: 0,
+                      width: '100%'
+                    }}>
+                      <div style={{ display: "flex", gap: "16px" }}>
+                        <div style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: "4px",
+                          color: "#5d4037",
+                          fontSize: '14px'
+                        }}>
+                          <LuBook size={16} />
+                          <span>{collectionDetails.totalChapter || 0} bài thơ</span>
+                        </div>
+                        <div style={{ 
+                          display: "flex", 
+                          alignItems: "center", 
+                          gap: "4px",
+                          color: "#5d4037",
+                          fontSize: '14px'
+                        }}>
+                          <MdOutlineKeyboardVoice size={16} />
+                          <span>{collectionDetails.totalRecord || 0} bản ghi</span>
+                        </div>
+                      </div>
+      
+                      {(collectionDetails.isMine || (hasPermission && collectionDetails.isFamousPoet)) && (
+                        <button
+                          onClick={handleMoveToUpdate}
+                          style={{
+                            background: "none",
+                            border: "1px solid #8d6e63",
+                            color: "#5d4037",
+                            padding: "6px 12px",
+                            borderRadius: "4px",
+                            cursor: "pointer",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "6px",
+                            fontSize: "14px",
+                            transition: "all 0.3s ease",
+                            ":hover": {
+                              backgroundColor: "#8d6e63",
+                              color: "white"
+                            }
+                          }}
+                        >
+                          <MdEdit size={16} />
+                          <span>Chỉnh sửa</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+      
+                {/* Phần nội dung chính */}
+                <div style={{ display: "flex", gap: "32px" }}>
+                  {/* Danh sách bài thơ */}
+                  <div style={{ flex: 7 }}>
+                    <h2 style={{
+                      color: "#3e2723",
+                      borderBottom: "2px solid #d7ccc8",
+                      paddingBottom: "8px",
+                      marginBottom: "20px",
+                      fontSize: "20px"
+                    }}>
+                      Danh sách bài thơ
+                    </h2>
+                    
+                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                      {poems.map((poem) => (
+                        <PoemCard
+                          key={poem.id}
+                          item={poem}
+                          liked={likedPosts[poem.id]}
+                          bookmarked={bookmarkedPosts[poem.id]}
+                          onBookmark={handleBookmark}
+                          onLike={handleLike}
+                          onHover={setIsHovered}
+                          collections={collections}
+                          handleMove={handleMove}
+                          onPoemCreated={fetchData}
+                        />
+                      ))}
+                    </div>
+                  </div>
+      
+                  {/* Thống kê */}
+                  <div style={{ flex: 3, minWidth: "300px" }}>
+                    <div style={{
+                      backgroundColor: "white",
+                      borderRadius: "10px",
+                      border: "1px solid #e0d6cc",
+                      padding: "20px",
+                      boxShadow: "0 2px 8px rgba(0, 0, 0, 0.05)",
+                      marginBottom: "20px"
+                    }}>
+                      <h3 style={{ 
+                        fontWeight: "600", 
+                        textAlign: 'center', 
+                        margin: "0 0 16px 0",
+                        color: "#5d4037",
+                        fontSize: "18px",
+                        borderBottom: "1px solid #e0d6cc",
+                        paddingBottom: "8px"
+                      }}>
+                        Thống kê tập thơ
+                      </h3>
+                      
+                      <ul style={{ 
+                        fontSize: "15px", 
+                        color: "#4e342e", 
+                        listStyle: "none", 
+                        padding: 0,
+                        "& li": {
+                          padding: "8px 0",
+                          borderBottom: "1px dashed #e0d6cc",
+                          display: "flex",
+                          justifyContent: "space-between"
+                        },
+                        "& li:last-child": {
+                          borderBottom: "none"
+                        }
+                      }}>
+                        <li>
+                          <span style={{ fontWeight: "500" }}>Tổng số bài thơ:</span> 
+                          <span style={{ color: "#5d4037" }}>{collectionDetails.totalChapter}</span>
+                        </li>
+                        <li>
+                          <span style={{ fontWeight: "500" }}>Tổng số audio:</span> 
+                          <span style={{ color: "#5d4037" }}>{collectionDetails.totalRecord}</span>
+                        </li>
+                        <li>
+                          <span style={{ fontWeight: "500" }}>Ngày phát hành:</span> 
+                          <span style={{ color: "#5d4037" }}>{formatDate(collectionDetails.createdTime)}</span>
+                        </li>
+                        <li>
+                          <span style={{ fontWeight: "500" }}>Cập nhật gần nhất:</span> 
+                          <span style={{ color: "#5d4037" }}>{formatDate(collectionDetails.lastUpdatedTime)}</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+          </div>
         </div>
-    );
+      );
 }
 
 export default CollectionDetail;

@@ -270,11 +270,12 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                     <RecordListGroupedByPoem
                       key={record.id}
                       record={record}
-                      showDeleteConfirm={showDeleteConfirm}
+                      showDeleteConfirm={showDeleteConfirm} 
                       isMine={isMine}
                       showPurchaseConfirm={showPurchaseConfirm} />
                   ))} */}
                   <RecordListGroupedByPoem
+                    //pageSize={pageSize}
                     records={recordFiles}
                     showDeleteConfirm={showDeleteConfirm}
                     isMine={isMine}
