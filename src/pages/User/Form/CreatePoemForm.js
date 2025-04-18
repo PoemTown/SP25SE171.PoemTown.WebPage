@@ -2,9 +2,13 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Button, Carousel, Input, message, Modal, Select, Spin } from "antd";
+import { Button, Input, message, Modal, Select, Spin, Card, Upload } from "antd";
 import { FcIdea } from "react-icons/fc";
 import { FaSpellCheck } from "react-icons/fa6";
+import { UploadOutlined, ArrowLeftOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
+
+const { TextArea } = Input;
+const { Option } = Select;
 
 const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const [poemData, setPoemData] = useState({
@@ -20,6 +24,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     sourceCopyRightId: null,
     type: 1
   });
+  const [imageLoading, setImageLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
   const [collections, setCollections] = useState([]);
@@ -27,7 +32,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const [suggestion, setSuggestion] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isModalContentCompleteOpen, setIsModalContentCompleteOpen] = useState(false);
-  const accessToken = localStorage.getItem("accessToken");
   const [plagiarismResult, setPlagiarismResult] = useState(null);
   const [plagiarismPoems, setPlagiarismPoems] = useState([]);
   const [previewImages, setPreviewImages] = useState([]);
@@ -35,27 +39,132 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
   const [popupContentPlagiarism, setPopupContentPlagiarism] = useState(false);
   const [contentPlagiarism, setContentPlagiarism] = useState(null);
-
   const [imagePrompt, setImagePrompt] = useState("");
   const [previewImage, setPreviewImage] = useState(null);
-
-
-  const { Option } = Select;
   const [imageType, setImageType] = useState("cơ bản");
-
-  const handleOptionChange = (value) => {
-    setImageType(value);
-  };
-
-  const handleImagePromptChange = (e) => {
-    setImagePrompt(e.target.value);
-  };
-
   const [poemTypes, setPoemTypes] = useState([]);
+
+  const quillRef = useRef(null);
+  const accessToken = localStorage.getItem("accessToken");
+
+  // Styles
+  const containerStyle = {
+    maxWidth: '1200px',
+    margin: '0 auto',
+    padding: '20px',
+    fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
+  };
+
+  const headerStyle = {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '24px'
+  };
+
+  const titleStyle = {
+    fontSize: '28px',
+    color: '#333',
+    margin: 0,
+    fontWeight: 600
+  };
+
+  const formContentStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '24px'
+  };
+
+  const cardStyle = {
+    borderRadius: '8px',
+    boxShadow: '0 2px 8px rgba(0, 0, 0, 0.1)',
+    border: 'none'
+  };
+
+  const cardHeadStyle = {
+    backgroundColor: '#fafafa',
+    borderBottom: '1px solid #e8e8e8'
+  };
+
+  const gridStyle = {
+    display: 'grid',
+    gridTemplateColumns: '1fr 1fr',
+    gap: '24px',
+    '@media (max-width: 768px)': {
+      gridTemplateColumns: '1fr'
+    }
+  };
+
+  const formGroupStyle = {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '16px'
+  };
+
+  const formLabelStyle = {
+    display: 'block',
+    marginBottom: '8px',
+    fontWeight: 500,
+    color: '#333'
+  };
+
+  const inputStyle = {
+    width: '100%'
+  };
+
+  const editorStyle = {
+    height: '300px',
+    marginBottom: '20px'
+  };
+
+  const footerStyle = {
+    display: 'flex',
+    justifyContent: 'flex-end',
+    gap: '12px',
+    marginTop: '24px',
+    paddingTop: '16px',
+    borderTop: '1px solid #f0f0f0'
+  };
+
+  const imagePreviewStyle = {
+    width: '100%',
+    maxHeight: '300px',
+    objectFit: 'cover',
+    borderRadius: '8px',
+    border: '1px solid #e8e8e8'
+  };
+
+  const validationErrorStyle = {
+    color: '#f5222d',
+    margin: '10px 0',
+    padding: '10px',
+    backgroundColor: '#fff1f0',
+    borderRadius: '4px',
+    border: '1px solid #ffa39e'
+  };
+
+  const plagiarismWarningStyle = {
+    color: '#f5222d',
+    fontWeight: 'bold',
+    marginTop: '10px'
+  };
+
+  const plagiarismListStyle = {
+    margin: '10px 0',
+    paddingLeft: '20px'
+  };
+
+  const plagiarismItemStyle = {
+    color: '#005CC5',
+    textDecoration: 'underline',
+    cursor: 'pointer',
+    margin: '5px 0'
+  };
+
+  // Effect hooks
   useEffect(() => {
     const fetchPoemTypes = async () => {
       try {
-        const response = await axios.get('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1');
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
         if (response.data && response.data.data) {
           setPoemTypes(response.data.data);
         }
@@ -69,16 +178,13 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   }, []);
 
   useEffect(() => {
-    console.log("initial", initialData);
     if (initialData) {
-      // Convert newline characters to <br> for ReactQuill content if needed
       const htmlContent = initialData.content.replace(/\n/g, "<br>");
       setPoemData({
         id: initialData.id || "",
         title: initialData.title || "",
         description: initialData.description || "",
         poemImage: initialData.poemImage || "",
-        // Use initialData.collection.id so the select's value matches an option's value
         chapterNumber: initialData.chapterNumber || 0,
         chapterName: initialData.chapterName || "",
         status: initialData.status || 0,
@@ -87,16 +193,33 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         content: htmlContent,
         type: initialData.type || "1",
         recordFiles: initialData.recordFiles,
-
       });
       setSelectedType(initialData.type ? initialData.type.toString() : "1");
     }
   }, [initialData]);
 
+  useEffect(() => {
+    if (quillRef.current) {
+      const quill = quillRef.current.getEditor();
+      const Delta = Quill.import("delta");
+      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
+        const newOps = delta.ops.map((op) => {
+          if (typeof op.insert === "string") {
+            if (op.insert === " " || op.insert === "\n") {
+              return op;
+            }
+            return { insert: op.insert };
+          }
+          return op;
+        });
+        return new Delta(newOps);
+      });
+    }
+  }, []);
 
+  // Handler functions
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    console.log(name, value);
     setPoemData((prev) => ({ ...prev, [name]: value }));
   };
 
@@ -110,7 +233,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
   const handleSubmit = async (status) => {
     setIsLoading(true);
-    const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
       message.error("Vui lòng đăng nhập để đăng bài.");
       setIsLoading(false);
@@ -118,12 +240,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     }
 
     if (status === 1) {
-      if (poemData.title === null || poemData.title.trim() === "") {
+      if (!poemData.title.trim()) {
         message.error("Vui lòng nhập tiêu đề");
         setIsLoading(false);
         return;
       }
-      if (poemData.description === null || poemData.description.trim() === "") {
+      if (!poemData.description.trim()) {
         message.error("Vui lòng nhập mô tả");
         setIsLoading(false);
         return;
@@ -141,106 +263,36 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       };
 
       switch (selectedType) {
-        case '1': // Thơ tự do - không có ràng buộc về số chữ
-          return true;
+        case '1': return true;
         case '2':
           const lastLineWords = lines[lines.length - 1].trim().split(/\s+/).length;
           if (lastLineWords !== 8) {
             message.error("Lục bát phải kết thúc bằng câu 8 chữ!");
             return false;
           }
-
-          const isValid = lines.every((line, index) => {
+          return lines.every((line, index) => {
             const wordCount = line.trim().split(/\s+/).length;
             return index % 2 === 0 ? wordCount === 6 : wordCount === 8;
           });
-
-          if (!isValid) {
-            message.error("Lục bát phải theo đúng luật: câu 6 chữ - câu 8 chữ luân phiên!");
-            return false;
-          }
-          return true;
-
-        case '3': // Song thất lục bát
-          if (lines.length % 4 !== 0) {
-            message.error("Song thất lục bát phải có kết thúc bằng câu số 4, 8, 12, 16...!");
-            return false;
-          }
-
-          // Check 7-7-6-8 pattern for each stanza
+        case '3':
+          if (lines.length % 4 !== 0) return false;
           const pattern = [7, 7, 6, 8];
-          const isValidSongThat = lines.every((line, index) => {
+          return lines.every((line, index) => {
             const stanzaIndex = index % 4;
-            const expectedWords = pattern[stanzaIndex];
-            return line.trim().split(/\s+/).length === expectedWords;
+            return line.trim().split(/\s+/).length === pattern[stanzaIndex];
           });
-
-          if (!isValidSongThat) {
-            message.error("Song thất lục bát phải theo đúng luật: 7-7-6-8 cho mỗi khổ!");
-            return false;
-          }
-          return true;
-
-
-        case '4': // Thất ngôn tứ tuyệt
-          if (lines.length !== 4) {
-            message.error("Thất ngôn tứ tuyệt phải có đúng 4 câu 7 chữữ!");
-            return false;
-          }
-          if (lines.some(line => line.trim().split(/\s+/).length !== 7)) {
-            message.error("Mỗi câu Thất ngôn tứ tuyệt phải có đúng 7 chữ!");
-            return false;
-          }
-          return true;
-
-        case '5': // Ngũ ngôn tứ tuyệt
-          if (lines.length !== 4) {
-            message.error("Ngũ ngôn tứ tuyệt phải có đúng 4 câu 5 chữ!");
-            return false;
-          }
-          if (lines.some(line => line.trim().split(/\s+/).length !== 5)) {
-            message.error("Mỗi câu Ngũ ngôn tứ tuyệt phải có đúng 5 chữ!");
-            return false;
-          }
-          return true;
-
-        case '6': // Thất ngôn bát cú
-          if (lines.length !== 8) {
-            message.error("Thất ngôn bát cú phải có đúng 8 câu 7 chữ!");
-            return false;
-          }
-          if (lines.some(line => line.trim().split(/\s+/).length !== 7)) {
-            message.error("Mỗi câu Thất ngôn bát cú phải có đúng 7 chữ!");
-            return false;
-          }
-          return true;
-        case '7': // Thơ bốn chữ (4 words/line)
-          return lines.every(line =>
-            line.trim().split(/\s+/).length === 4
-          );
-
-        case '8': // Thơ năm chữ (5 words/line)
-          return lines.every(line =>
-            line.trim().split(/\s+/).length === 5
-          );
-
-        case '9': // Thơ sáu chữ (6 words/line)
-          return lines.every(line =>
-            line.trim().split(/\s+/).length === 6
-          );
-
-        case '10': // Thơ bảy chữ (7 words/line)
-          return lines.every(line =>
-            line.trim().split(/\s+/).length === 7
-          );
-
-        case '11': // Thơ tám chữ (8 words/line)
-          return lines.every(line =>
-            line.trim().split(/\s+/).length === 8
-          );
-
-        default:
-          return true;
+        case '4':
+          return lines.length === 4 && lines.every(line => line.trim().split(/\s+/).length === 7);
+        case '5':
+          return lines.length === 4 && lines.every(line => line.trim().split(/\s+/).length === 5);
+        case '6':
+          return lines.length === 8 && lines.every(line => line.trim().split(/\s+/).length === 7);
+        case '7': return lines.every(line => line.trim().split(/\s+/).length === 4);
+        case '8': return lines.every(line => line.trim().split(/\s+/).length === 5);
+        case '9': return lines.every(line => line.trim().split(/\s+/).length === 6);
+        case '10': return lines.every(line => line.trim().split(/\s+/).length === 7);
+        case '11': return lines.every(line => line.trim().split(/\s+/).length === 8);
+        default: return true;
       }
     };
 
@@ -254,17 +306,13 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       return;
     }
 
-
-
-    // Get formatted content from textarea preview
     const formattedContent = formatContent(poemData.content, selectedType);
-
     const requestData = {
       title: poemData.title,
-      content: formattedContent,  // Use formatted textarea content
+      content: formattedContent,
       description: poemData.description,
-      chapterNumber: isNaN(poemData.chapter) ? 0 : Number(poemData.chapter),
-      chapterName: poemData.chapter || null,
+      chapterNumber: isNaN(poemData.chapterNumber) ? 0 : Number(poemData.chapterNumber),
+      chapterName: poemData.chapterName || null,
       status: status,
       collectionId: poemData.collectionId ? poemData.collectionId : null,
       sourceCopyRightId: null,
@@ -273,7 +321,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       type: parseInt(selectedType),
       isPublic: true,
     };
-    console.log(requestData)
+
     try {
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
@@ -287,10 +335,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       );
 
       if (response.status === 200) {
-        message.success(status === 1 ? "Bài thơ đã được đăng thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn! " : "Bài thơ đã được lưu nháp!");
+        message.success(status === 1 
+          ? "Bài thơ đã được đăng thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn!" 
+          : "Bài thơ đã được lưu nháp!");
         window.location.reload();
-      } else {
-        message.error("Có lỗi xảy ra, vui lòng thử lại.");
       }
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
@@ -301,23 +349,15 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   };
 
   const handleInputContent = (value) => {
-    setPoemData(prev => ({
-      ...prev,
-      content: value,
-    }));
+    setPoemData(prev => ({ ...prev, content: value }));
   };
 
   const formatContent = (content, typeId) => {
-    // Tìm thể loại thơ tương ứng trong danh sách từ API
-    const poemType = poemTypes.find(type => type.id === typeId);
-
-    // Nếu không tìm thấy hoặc là thơ tự do (type = 1)
+    const poemType = poemTypes.find(type => type.id.toString() === typeId);
     if (!poemType || typeId === '1') {
-      // Xử lý thơ tự do (giữ nguyên format)
       const parser = new DOMParser();
       const doc = parser.parseFromString(content, 'text/html');
       const lines = [];
-
       doc.body.childNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
           let lineContent = '';
@@ -333,7 +373,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           });
         }
       });
-
       return lines
         .map((line) => {
           const leadingWhitespace = line.match(/^\s*/)[0];
@@ -343,11 +382,9 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         .join('\n');
     }
 
-    // Chuyển đổi content HTML sang plain text
     const plainText = content.replace(/<[^>]+>/g, '\n').replace(/\n+/g, '\n');
     const allWords = plainText.split(/\s+/).filter(word => word.trim() !== '');
 
-    // Hàm phụ trợ định dạng thơ có số chữ cố định mỗi dòng
     const formatFixedWordPoem = (words, wordsPerLine) => {
       const lines = [];
       for (let i = 0; i < words.length; i += wordsPerLine) {
@@ -357,35 +394,28 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       return lines.join('\n');
     };
 
-    // Xác định cách định dạng dựa trên tên thể loại thơ
     switch (poemType.name) {
       case 'Thơ Lục Bát':
         let lucBatLines = [];
         let currentLine = [];
-        let currentLineType = 6; // Bắt đầu với câu lục (6 chữ)
-
+        let currentLineType = 6;
         allWords.forEach((word) => {
           currentLine.push(word);
           if (currentLine.length === currentLineType) {
-            const isBatLine = currentLineType === 8;
             lucBatLines.push({
               text: currentLine.join(' '),
-              type: isBatLine ? 'bat' : 'luc'
+              type: currentLineType === 8 ? 'bat' : 'luc'
             });
             currentLine = [];
-            currentLineType = isBatLine ? 6 : 8; // Luân phiên 6-8
+            currentLineType = currentLineType === 8 ? 6 : 8;
           }
         });
-
-        // Thêm dòng cuối nếu còn
         if (currentLine.length > 0) {
           lucBatLines.push({
             text: currentLine.join(' '),
             type: currentLineType === 8 ? 'bat' : 'luc'
           });
         }
-
-        // Định dạng với thụt đầu dòng
         return lucBatLines.map((line, index) => {
           const indent = line.type === 'luc' ? '       ' : '';
           return indent + line.text;
@@ -393,68 +423,48 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
       case 'Thơ Song Thất Lục Bát':
         const songThatLines = [];
-        const linePattern = [7, 7, 6, 8]; // 2 câu 7, 1 câu 6, 1 câu 8
+        const linePattern = [7, 7, 6, 8];
         let patternIndex = 0;
         let currentLine2 = [];
-
         allWords.forEach(word => {
           currentLine2.push(word);
           const targetLength = linePattern[patternIndex];
-
           if (currentLine2.length === targetLength) {
             songThatLines.push({
               text: currentLine2.join(' '),
               type: targetLength
             });
             currentLine2 = [];
-            patternIndex = (patternIndex + 1) % 4; // Lặp lại pattern
+            patternIndex = (patternIndex + 1) % 4;
           }
         });
-
-        // Thêm dòng cuối nếu còn
         if (currentLine2.length > 0) {
           songThatLines.push({
             text: currentLine2.join(' '),
             type: linePattern[patternIndex]
           });
         }
-
         return songThatLines.map(line => line.text).join('\n');
 
       case 'Thơ Thất Ngôn Tứ Tuyệt':
         return formatFixedWordPoem(allWords, 7).split('\n').slice(0, 4).join('\n');
-
       case 'Thơ Ngũ Ngôn Tứ Tuyệt':
         return formatFixedWordPoem(allWords, 5).split('\n').slice(0, 4).join('\n');
-
       case 'Thơ Thất Ngôn Bát Cú':
         return formatFixedWordPoem(allWords, 7).split('\n').slice(0, 8).join('\n');
-
-      case 'Thơ 4 Chữ':
-        return formatFixedWordPoem(allWords, 4);
-
-      case 'Thơ 5 Chữ':
-        return formatFixedWordPoem(allWords, 5);
-
-      case 'Thơ 6 Chữ':
-        return formatFixedWordPoem(allWords, 6);
-
-      case 'Thơ 7 Chữ':
-        return formatFixedWordPoem(allWords, 7);
-
-      case 'Thơ 8 Chữ':
-        return formatFixedWordPoem(allWords, 8);
-
-      default:
-        // Mặc định trả về nội dung gốc nếu không xác định được thể loại
-        return allWords.join(' ');
+      case 'Thơ 4 Chữ': return formatFixedWordPoem(allWords, 4);
+      case 'Thơ 5 Chữ': return formatFixedWordPoem(allWords, 5);
+      case 'Thơ 6 Chữ': return formatFixedWordPoem(allWords, 6);
+      case 'Thơ 7 Chữ': return formatFixedWordPoem(allWords, 7);
+      case 'Thơ 8 Chữ': return formatFixedWordPoem(allWords, 8);
+      default: return allWords.join(' ');
     }
   };
 
   const handleUploadImage = async (event) => {
     const file = event.target.files[0];
     if (file) {
-      setIsLoading(true); // Start loading
+      setIsLoading(true);
       const imageUrl = URL.createObjectURL(file);
       setPoemFile(imageUrl);
 
@@ -472,151 +482,99 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           }
         );
 
-        if (!response.ok) {
-          throw new Error("Failed to upload image");
-        }
-
+        if (!response.ok) throw new Error("Failed to upload image");
         const data = await response.json();
-        const uploadedImageUrl = data.data;
-
         message.success("Poem Image updated successfully!");
-        sessionStorage.setItem("poemImage", uploadedImageUrl);
-        setPoemData((prev) => ({ ...prev, poemImage: uploadedImageUrl }));
-        setPoemFile(uploadedImageUrl);
+        setPoemData((prev) => ({ ...prev, poemImage: data.data }));
       } catch (error) {
         message.error("Error uploading image!");
         console.error(error);
       } finally {
-        setIsLoading(false); // Stop loading
+        setIsLoading(false);
       }
     }
   };
-
 
   const handleAISuggest = async () => {
     const content = formatContent(poemData.content, selectedType);
-
-    let question = null;
-
-    if (selectedType === 4 || selectedType === 5 || selectedType === 6) {
-      question = "Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh"
-    } else if (selectedType === 3) {
-      question = "Hãy sáng tác tiếp đoạn thơ trên hoàn chỉnh cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh"
-    } else {
-      question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh"
+    const poemType = poemTypes.find(type => type.id.toString() === selectedType);
+    
+    if (!poemType) {
+      message.error("Vui lòng chọn thể loại thơ trước khi yêu cầu gợi ý");
+      return;
     }
-
+  
+    let question = '';
+    switch(poemType.id) {
+      case 4: // Thất ngôn tứ tuyệt
+      case 5: // Ngũ ngôn tứ tuyệt
+      case 6: // Thất ngôn bát cú
+        question = "Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
+        break;
+      case 3: // Song thất lục bát
+        question = "Hãy sáng tác tiếp đoạn thơ trên hoàn chỉnh cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
+        break;
+      default:
+        question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
+    }
+  
     const requestBody = {
-      type: parseInt(selectedType),
+      poemTypeId: poemType.id, 
       poemContent: content,
       chatContent: question,
       maxToken: 1000
-    }
+    };
+  
     setIsLoading(true);
-    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/ai-chat-completion`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody),
-    })
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status} - ${await response.text()}`);
-    }
-    const data = await response.json();
-
-    setSuggestion(data.data);
-    showModal();
-    setIsLoading(false);
-  }
-
-  const showModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const handleCancel = () => {
-    setIsModalOpen(false);
-  }
-
-  const handleCopyToContent = () => {
-    const formattedContent = suggestion
-      .split('\n')
-      .map(line => `<p>${line}</p>`)
-      .join('');
-    setPoemData(prev => ({
-      ...prev,
-      content: formattedContent,
-    }));
-    setIsModalOpen(false);
-  }
-
-  const handleCancelPreview = () => {
-    // setPreviewImage(null);
-    setIsPreviewModalOpen(false);
-    // setIsModalContentCompleteOpen(true);
-  };
-
-  const handleApplyPreviewImage = async () => {
-    if (previewSelectedIndex === null || !previewImages[previewSelectedIndex]) {
-      message.error("Vui lòng chọn hình ảnh để áp dụng!");
-      return;
-    }
     try {
-      setIsLoading(true);
-      // Use the selected image from the preview images list.
-      const selectedImageUrl = previewImages[previewSelectedIndex];
-
-      const applyResponse = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image/ai`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ imageUrl: selectedImageUrl }),
-        }
-      );
-      if (!applyResponse.ok) {
-        throw new Error("Failed to apply the image");
-      }
-      const imageData = await applyResponse.json();
-      console.log("Image data", imageData);
-      message.success("Poem Image updated successfully!");
-      setPoemData((prev) => ({ ...prev, poemImage: imageData.data }));
-      setPoemFile(imageData.data);
-      setPreviewSelectedIndex(null);
-      setIsPreviewModalOpen(false);
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/ai-chat-completion`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody),
+      });
+      if (!response.ok) throw new Error(`HTTP error! Status: ${response.status}`);
+      const data = await response.json();
+      setSuggestion(data.data);
+      setIsModalOpen(true);
     } catch (error) {
-      message.error("Lỗi khi áp dụng hình ảnh!");
-      console.error(error);
+      console.error("Error getting AI suggestion:", error);
+      message.error("Không thể lấy gợi ý từ AI");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const handleAICheckPlagiarism = async () => {
+    const content = formatContent(poemData.content, selectedType);
+    const requestBody = { poemContent: content };
+    setIsLoading(true);
+    try {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/plagiarism`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(requestBody)
+      });
+      const data = await response.json();
+      setPlagiarismResult(data.data.score);
+      setPlagiarismPoems(data.data.plagiarismFrom);
+    } catch (error) {
+      console.error("Error checking plagiarism:", error);
+      message.error("Không thể kiểm tra đạo văn");
     } finally {
       setIsLoading(false);
     }
   };
 
-
-
-  const showModalContentComplete = () => {
-    setIsModalContentCompleteOpen(true);
-  }
-
-  const handleCancelModalContentComplete = () => {
-    setIsModalContentCompleteOpen(false);
-  }
-
   const handleAIRenderImage = async () => {
-    let content = formatContent(poemData.content, selectedType);
-    // Limit to the first 600 characters
-    content = content.substring(0, 600);
-    // Optional: Clear any previous preview image selection if desired.
-    // setPreviewSelectedIndex(null);
-    // We'll update previewImages instead of previewImage
+    let content = formatContent(poemData.content, selectedType).substring(0, 600);
+    setIsLoading(true);
     try {
-      setIsLoading(true);
-      let responseImage = null;
-
+      let responseImage;
       if (imageType === "nâng cao") {
         responseImage = await fetch(
           `${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/open-ai?imageSize=2&imageStyle=2&poemText=${encodeURIComponent(
@@ -644,7 +602,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           outPutFormat: 2,
           outPutQuality: 100,
         };
-
         responseImage = await fetch(
           `${process.env.REACT_APP_API_BASE_URL}/poems/v1/text-to-image/the-hive-ai/sdxl-enhanced`,
           {
@@ -662,20 +619,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       let generatedImageUrl;
       if (imageType === "nâng cao") {
         generatedImageUrl = data.data;
-      } else if (imageType === "cơ bản") {
-        if (data.data.output && data.data.output.length > 0) {
-          generatedImageUrl = data.data.output[0].url;
-        } else {
-          generatedImageUrl = data.data;
-        }
+      } else {
+        generatedImageUrl = data.data.output?.[0]?.url || data.data;
       }
 
-      // Append the newly generated image to our temporary list.
-      setPreviewImages((prevImages) => [...prevImages, generatedImageUrl]);
-      // Select the newly added image automatically.
-      setPreviewSelectedIndex(previewImages.length); // new image index is at the end
-
-      // Close the content complete modal and open the preview modal.
+      setPreviewImages(prev => [...prev, generatedImageUrl]);
+      setPreviewSelectedIndex(previewImages.length);
       setIsModalContentCompleteOpen(false);
       setIsPreviewModalOpen(true);
     } catch (error) {
@@ -686,73 +635,22 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     }
   };
 
-
-  const handleAICheckPlagiarism = async () => {
-    const content = formatContent(poemData.content, selectedType);
-    const requestBody = {
-      poemContent: content
-    }
-    setIsLoading(true);
-    const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/plagiarism`, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${accessToken}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(requestBody)
-    })
-
-    const data = await response.json();
-    console.log("plagiarism", data)
-    setPlagiarismResult(data.data.score);
-    setPlagiarismPoems(data.data.plagiarismFrom);
-    setIsLoading(false);
-  }
-
-  const quillRef = useRef(null);
-
-  useEffect(() => {
-    if (quillRef.current) {
-      const quill = quillRef.current.getEditor();
-      const Delta = Quill.import("delta");
-      quill.clipboard.addMatcher(Node.ELEMENT_NODE, (node, delta) => {
-        // Process each op in the pasted delta:
-        const newOps = delta.ops.map((op) => {
-          if (typeof op.insert === "string") {
-            // If the inserted text is exactly a space or newline, leave it as is.
-            if (op.insert === " " || op.insert === "\n") {
-              return op;
-            }
-            // Otherwise, insert the text without any formatting attributes.
-            return { insert: op.insert };
-          }
-          // For non-string inserts (e.g. images) you might decide to keep them or remove them.
-          return op;
-        });
-        return new Delta(newOps);
-      });
-    }
-  }, []);
-
   const handleSaveDraft = async () => {
     setIsLoading(true);
-    const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
       message.error("Vui lòng đăng nhập để lưu nháp.");
       setIsLoading(false);
       return;
     }
 
-    // Build the request body using the current poemData.
-    // Ensure that poemData.id exists when editing an existing draft.
-    const requestBody = {
-      id: poemData.id, // must be present in initialData for updates
+    const payload = {
+      id: poemData.id,
       title: poemData.title,
-      content: formatContent(poemData.content, selectedType), // Use your formatting function
+      content: formatContent(poemData.content, selectedType),
       description: poemData.description,
       chapterNumber: isNaN(poemData.chapterNumber) ? 0 : Number(poemData.chapterNumber),
       chapterName: poemData.chapterName || null,
-      status: 0, // assuming 0 means draft
+      status: 0,
       collectionId: poemData.collectionId,
       sourceCopyRightId: poemData.sourceCopyRightId,
       poemImage: poemData.poemImage || null,
@@ -760,12 +658,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       type: parseInt(selectedType),
     };
 
-    console.log("Draft request:", requestBody);
-
     try {
       const response = await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
-        requestBody,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -777,12 +673,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       if (response.status === 200) {
         message.success("Bài thơ nháp đã được lưu thành công!");
         window.location.reload();
-      } else {
-        message.error("Có lỗi xảy ra, vui lòng thử lại.");
       }
     } catch (error) {
       console.error("Lỗi khi lưu nháp:", error);
-      message.error("Không thể lưu nháp. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.");
+      message.error("Không thể lưu nháp. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -790,23 +684,20 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
   const handleSubmitDraft = async () => {
     setIsLoading(true);
-    const accessToken = localStorage.getItem("accessToken");
     if (!accessToken) {
       message.error("Vui lòng đăng nhập để lưu nháp.");
       setIsLoading(false);
       return;
     }
 
-    // Build the request body using the current poemData.
-    // Ensure that poemData.id exists when editing an existing draft.
-    const requestBody = {
-      id: poemData.id, // must be present in initialData for updates
+    const payload = {
+      id: poemData.id,
       title: poemData.title,
-      content: formatContent(poemData.content, selectedType), // Use your formatting function
+      content: formatContent(poemData.content, selectedType),
       description: poemData.description,
       chapterNumber: isNaN(poemData.chapterNumber) ? 0 : Number(poemData.chapterNumber),
       chapterName: poemData.chapterName || null,
-      status: 1, // assuming 1 means posts
+      status: 1,
       collectionId: poemData.collectionId,
       sourceCopyRightId: poemData.sourceCopyRightId,
       poemImage: poemData.poemImage || null,
@@ -814,12 +705,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       type: parseInt(selectedType),
     };
 
-    console.log("Draft request:", requestBody);
-
     try {
       const response = await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
-        requestBody,
+        payload,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -831,29 +720,72 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       if (response.status === 200) {
         message.success("Bài thơ nháp đã được đăng tải thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn!");
         window.location.reload();
-        // Optionally, update UI or navigate as needed.
-      } else {
-        message.error("Có lỗi xảy ra, vui lòng thử lại.");
       }
     } catch (error) {
-      console.error("Lỗi khi lưu nháp:", error);
-      message.error("Không thể lưu nháp. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.");
+      console.error("Lỗi khi đăng bài:", error);
+      message.error("Không thể đăng bài. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
-  }
+  };
+
+  // Modal handlers
+  const showModal = () => setIsModalOpen(true);
+  const handleCancel = () => setIsModalOpen(false);
+  const handleCopyToContent = () => {
+    const formattedContent = suggestion.split('\n').map(line => `<p>${line}</p>`).join('');
+    setPoemData(prev => ({ ...prev, content: formattedContent }));
+    setIsModalOpen(false);
+  };
+
+  const showModalContentComplete = () => setIsModalContentCompleteOpen(true);
+  const handleCancelModalContentComplete = () => setIsModalContentCompleteOpen(false);
+
+  const handleCancelPreview = () => setIsPreviewModalOpen(false);
+  const handleApplyPreviewImage = async () => {
+    if (previewSelectedIndex === null || !previewImages[previewSelectedIndex]) {
+      message.error("Vui lòng chọn hình ảnh để áp dụng!");
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const selectedImageUrl = previewImages[previewSelectedIndex];
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image/ai`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ imageUrl: selectedImageUrl }),
+        }
+      );
+      if (!response.ok) throw new Error("Failed to apply the image");
+      const imageData = await response.json();
+      message.success("Poem Image updated successfully!");
+      setPoemData(prev => ({ ...prev, poemImage: imageData.data }));
+      setPoemFile(imageData.data);
+      setIsPreviewModalOpen(false);
+    } catch (error) {
+      message.error("Lỗi khi áp dụng hình ảnh!");
+      console.error(error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handlePopupContentPlagiarism = (content) => {
     setPopupContentPlagiarism(true);
-    setContentPlagiarism(content)
-  }
+    setContentPlagiarism(content);
+  };
+  const handleCancelPopupContentPlagiarism = () => setPopupContentPlagiarism(false);
 
-  const handleCancelPopupContentPlagiarism = () => {
-    setPopupContentPlagiarism(false);
-  }
+  const handleOptionChange = (value) => setImageType(value);
+  const handleImagePromptChange = (e) => setImagePrompt(e.target.value);
 
   return (
-    <div>
+    <div style={containerStyle}>
       {isLoading && (
         <div
           style={{
@@ -872,390 +804,319 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           <Spin size="large" tip="Đang tải..." />
         </div>
       )}
-      <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
-        <>
-          <Button color="danger" variant="solid" onClick={handleCancel}>
-            Đóng
-          </Button>
-          <Button color="primary" variant="solid" onClick={handleCopyToContent}>
-            Dán
-          </Button>
 
-        </>
-      )}>
-        <div>
-          <h2 style={{ textAlign: "center", fontSize: "1.8rem", marginBottom: "0px" }}>Gợi ý nội dung từ AI</h2>
-          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>Đây là nội dung chúng tôi sử dụng AI để gợi ý cho bạn. Hãy bấm <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Dán"</span> để áp dụng vào bài thơ của bạn nhé.</p>
-          <textarea
-            style={{ width: "100%", height: "300px" }}
-            value={suggestion} x
-          >
-          </textarea>
-        </div>
+      <div style={headerStyle}>
+        <Button
+          type="text"
+          icon={<ArrowLeftOutlined />}
+          onClick={onBack}
+          style={{ fontSize: '16px', marginRight: '20px', color: '#1890ff' }}
+        >
+          Quay lại
+        </Button>
+        <h1 style={titleStyle}>{initialData ? "Chỉnh sửa bài thơ" : "Sáng tác mới"}</h1>
+      </div>
 
-      </Modal>
-
-      <Modal
-        open={isModalContentCompleteOpen}
-        onCancel={handleCancelModalContentComplete}
-        footer={[
-          <Button key="cancel" color="danger" variant="solid" onClick={handleCancelModalContentComplete}>
-            Đóng
-          </Button>,
-          <Button color="green" variant="solid" onClick={() => setIsPreviewModalOpen(true)}>
-            Xem lại ảnh đã tạo
-          </Button>,
-          <Button key="confirm" color="primary" variant="solid" onClick={handleAIRenderImage}>
-            Xác nhận
-          </Button>,
-        ]}
-      >
-        <div>
-          <h2 style={{ textAlign: "center", fontSize: "1.8rem", marginBottom: "0px" }}>
-            AI tạo hình ảnh 🏞
-          </h2>
-          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
-            Hãy đảm bảo rằng bạn muốn AI tạo hình ảnh dựa trên{" "}
-            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>nội dung hiện tại</span> hoặc{" "}
-            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>yêu cầu của bạn</span> dưới đây.
-            Bấm <span style={{ color: "#3A86ff", fontWeight: "bold" }}>Xác nhận</span> để bắt đầu.
-          </p>
-          <div style={{ marginBottom: "10px" }}>
-            <div style={{ marginBottom: "10px" }}>
-              <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>
-                Loại hình ảnh
-              </label>
-              <Select defaultValue="cơ bản" style={{ width: "100%" }} onChange={handleOptionChange}>
-                <Option value="cơ bản">Cơ bản</Option>
-                <Option value="nâng cao">Nâng cao</Option>
-              </Select>
-            </div>
-            <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>
-              Yêu cầu của bạn{" "}
-              <span style={{ fontWeight: "normal", color: "#666" }}>
-                (Nếu không nhập, chúng tôi sẽ tạo dựa trên nội dung)
-              </span>
-            </label>
-            <Input
-              placeholder="Hãy miêu tả hình ảnh bạn muốn"
-              value={imagePrompt}
-              onChange={handleImagePromptChange}
-            />
-          </div>
-          <div style={{ marginBottom: "10px" }}>
-            <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>Nội dung thơ</label>
-            <textarea
-              style={{ width: "100%", height: "300px" }}
-              value={formatContent(poemData.content, selectedType)}
-              readOnly
-            />
-          </div>
-        </div>
-      </Modal>
-
-      <button
-        onClick={onBack}
-        style={{
-          marginBottom: "20px",
-          padding: "10px 15px",
-          backgroundColor: "#6c757d",
-          color: "white",
-          border: "none",
-          borderRadius: "5px",
-          cursor: "pointer",
-          fontWeight: "bold",
-        }}
-      >
-        ← Quay Lại Danh Sách
-      </button>
-
-      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Sáng Tác Bài Thơ</h2>
-
-      <form style={{ borderRadius: "10px" }}>
-        <div style={{ display: "flex", gap: "20px" }}>
-          <div style={{ flex: 7, display: "flex", flexDirection: "column" }}>
-            <div style={{ marginBottom: "15px", flex: 1 }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>Tiêu đề</label>
-              <input
-                type="text"
-                name="title"
-                value={poemData.title}
-                onChange={handleInputChange}
-                placeholder="Nhập tiêu đề bài thơ"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", outline: "none", }}
-                onFocus={(e) =>
-                  (e.target.style.border = "1px solid #000") // Custom focus border
-                }
-                onBlur={(e) =>
-                  (e.target.style.border = "1px solid #ccc") // Reset on blur
-                }
-                required
-              />
-            </div>
-
-            <div style={{ marginBottom: "15px", flex: 2, display: "flex", flexDirection: "column" }}>
-              <label style={{ display: "block", fontWeight: "bold", flex: 1 }}>Mô tả</label>
-              <textarea
-                type="text"
-                name="description"
-                value={poemData.description}
-                onChange={handleInputChange}
-                placeholder="Nhập mô tả bài thơ"
-                style={{
-                  width: "100%",
-                  fontFamily: "Arial, sans-serif",
-                  fontSize: "14px",
-                  flex: 2,
-                  padding: "10px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                  boxSizing: "border-box",
-                  outline: "none",
-                  resize: "none", // if you want to disable resizing
-                  textAlign: "left", // ensures the text is left-aligned
-                  verticalAlign: "top" // although this might be redundant for a textarea
-                }}
-                onFocus={(e) =>
-                  (e.target.style.border = "1px solid #000") // Custom focus border
-                }
-                onBlur={(e) =>
-                  (e.target.style.border = "1px solid #ccc") // Reset on blur
-                }
-                required
-              />
-            </div>
-
-
-            {/* <div style={{ marginBottom: "15px" }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>Chương số</label>
-              <input
-                type="text"
-                name="chapter"
-                value={poemData.chapterNumber}
-                onChange={handleInputChange}
-                placeholder="Ex: 1, 2, 3 or I, II, III"
-                style={{ width: "100%", padding: "10px", borderRadius: "5px", border: "1px solid #ccc", boxSizing: "border-box", }}
-              />
-            </div> */}
-
-            <div style={{ marginBottom: "15px", flex: 1 }}>
-              <label style={{ display: "block", fontWeight: "bold" }}>Tập thơ</label>
-              <select
-                name="collectionId"
-                value={poemData.collectionId}
-                onChange={handleInputChange}
-                style={{
-                  width: "100%",
-                  padding: "10px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                  boxSizing: "border-box",
-                  outline: "none",
-                }}
-                onFocus={(e) =>
-                  (e.target.style.border = "1px solid #000") // Custom focus border
-                }
-                onBlur={(e) =>
-                  (e.target.style.border = "1px solid #ccc") // Reset on blur
-                }
-                required
-              >
-                {collections.map((collection) => (
-                  <option key={collection?.id} value={collection?.id}>
-                    {collection.collectionName}
-                  </option>
-                ))}
-              </select>
-
-            </div>
-          </div>
-          <div style={{
-            flex: 3,
-            display: "flex",
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "10px"
-          }}>
-            <div
-              size={80}
-              style={{
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                backgroundImage: `url(${poemFile ? poemFile : poemData.poemImage ? poemData.poemImage : '/check.png'})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                height: "268px",
-                width: "168px",
-                objectFit: "cover",
-                border: "1px solid #000",
-
-              }}
-            ></div>
-            {/* Nút tải ảnh */}
-            <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-              <label
-                style={{
-                  backgroundColor: '#3A86FF',
-                  color: '#FBFBFB',
-                  padding: "10px",
-                  borderRadius: "5px",
-                  cursor: "pointer",
-                  boxSizing: "border-box",
-                  textAlign: "center",
-                  fontSize: "0.9rem"
-                }}
-              >
-                Tải ảnh lên
-                <input
-                  type="file"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={handleUploadImage}
+      <div style={formContentStyle}>
+        <Card
+          title="Thông tin cơ bản"
+          style={cardStyle}
+          headStyle={cardHeadStyle}
+        >
+          <div style={gridStyle}>
+            <div style={formGroupStyle}>
+              <div style={formGroupStyle}>
+                <label style={formLabelStyle}>Tiêu đề bài thơ</label>
+                <Input
+                  placeholder="Nhập tiêu đề..."
+                  name="title"
+                  value={poemData.title}
+                  onChange={handleInputChange}
+                  style={inputStyle}
                 />
-              </label>
-              <Button onClick={showModalContentComplete} color="default" variant="solid" style={{ padding: "20px" }}>AI tạo hình 🏞</Button>
+              </div>
+
+              <div style={formGroupStyle}>
+                <label style={formLabelStyle}>Mô tả ngắn</label>
+                <Input.TextArea
+                  rows={3}
+                  placeholder="Mô tả về bài thơ..."
+                  name="description"
+                  value={poemData.description}
+                  onChange={handleInputChange}
+                  style={inputStyle}
+                />
+              </div>
+
+              <div style={formGroupStyle}>
+                <label style={formLabelStyle}>Tập thơ</label>
+                <Select
+                  name="collectionId"
+                  value={poemData.collectionId}
+                  onChange={(value) => handleInputChange({ target: { name: 'collectionId', value } })}
+                  style={inputStyle}
+                  placeholder="Chọn tập thơ"
+                >
+                  {collections.map((collection) => (
+                    <Select.Option key={collection?.id} value={collection?.id}>
+                      {collection.collectionName}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
             </div>
-          </div>
-        </div>
-        <label style={{ display: "block", fontWeight: "bold" }}>Nội dung</label>
-        <div style={{ marginBottom: "60px", display: "flex", gap: "20px", height: "300px" }}>
-          <div style={{ flex: 7, display: "flex", height: "100%", flexDirection: "column", gap: "5px" }}>
-            <ReactQuill
-              ref={quillRef}
-              formats={"none"}
-              modules={{ toolbar: false }}
-              value={poemData.content}
-              onChange={handleInputContent}
-              style={{ height: "100%", backgroundColor: "#fff" }}
 
-            />
-            {plagiarismResult != null ? plagiarismResult > 0.75 ?
-              <div>
-                <p style={{ color: "#f00", fontWeight: "bold", alignSelf: "flex-end" }}>
-                  Nội dung của bạn đang dính đạo văn ở mức {plagiarismResult * 100}%. Vui lòng chỉnh sửa nội dung!
-                </p>
-                <div>
-                  <p style={{ color: "#000", fontWeight: "bold", marginBottom: "5px", fontSize: "0.95rem" }}>Những bài thơ tương tự:</p>
-                  <ul style={{ margin: 0 }}>
-                    {plagiarismPoems !== null && plagiarismPoems?.map((item) =>
-                      <li onClick={() => handlePopupContentPlagiarism(item.content)} style={{ margin: "2px", color: "#005CC5", textDecoration: "underline", cursor: "pointer", fontSize: "0.9rem" }}>
-                        {item.title} - {item.user?.displayName}
-                      </li>
-                    )}
-
-
-                  </ul>
+            <div style={formGroupStyle}>
+              <label style={formLabelStyle}>Ảnh minh họa</label>
+              <div style={{ display: 'flex', gap: '16px' }}>
+                <div style={{ flex: 1 }}>
+                  <Upload
+                    accept="image/*"
+                    showUploadList={false}
+                    beforeUpload={(file) => {
+                      handleUploadImage({ target: { files: [file] } });
+                      return false;
+                    }}
+                  >
+                    <Button
+                      icon={<UploadOutlined />}
+                      loading={imageLoading}
+                      block
+                    >
+                      Tải ảnh lên
+                    </Button>
+                  </Upload>
+                  <Button 
+                    onClick={showModalContentComplete} 
+                    style={{ marginTop: '16px' }}
+                    block
+                  >
+                    AI tạo hình 🏞
+                  </Button>
                 </div>
-              </div> : <p style={{ color: "#0f0", fontWeight: "bold", alignSelf: "flex-end" }}>
-                Chúc mừng! Nội dung của bạn hiện tại không dính đạo văn.
-              </p> : <></>}
-            <div style={{ display: "flex", flexDirection: "row", alignSelf: "flex-end", gap: "10px" }}>
-              <Button onClick={handleAICheckPlagiarism} color="default" variant="solid" style={{ alignSelf: "flex-end", padding: "10px" }}>Kiểm tra đạo văn<FaSpellCheck /></Button>
-              <Button onClick={handleAISuggest} color="default" variant="solid" style={{ padding: "10px" }}>Gợi ý nội dung từ AI<FcIdea /></Button>
+                
+                {(poemFile || poemData.poemImage) && (
+                  <div style={{ flex: 1 }}>
+                    <img
+                      src={poemFile || poemData.poemImage}
+                      alt="Ảnh minh họa bài thơ"
+                      style={imagePreviewStyle}
+                    />
+                  </div>
+                )}
+              </div>
             </div>
-            {/* <div style={{flex: 1}}>
-            </div> */}
           </div>
-          <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "5px", height: "100%" }}>
-            <div style={{ marginBottom: "8px" }}>
-              <label style={{ fontWeight: "bold", fontSize: "16px" }}>Thể loại thơ</label>
-            </div>
-            <Select
-              value={selectedType}
-              onChange={(value) => setSelectedType(value)}
-              style={{
-                padding: "5px",
-                fontSize: "16px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
-            >
-              {poemTypes.map((type) => (
-                <Option key={type.id} value={type.id}>
-                  {type.name}
-                </Option>
-              ))}
-            </Select>
+        </Card>
 
-            <div style={{ width: "100%", flexGrow: 1, display: "flex", flexDirection: "column" }}>
-              <label style={{ display: "block", fontSize: "12px", fontWeight: "bold" }}>
-                Cách thơ bạn hiển thị
-              </label>
-              <textarea
-                style={{
-                  width: "100%",
-                  flexGrow: 1,
-                  padding: "10px",
-                  borderRadius: "5px",
-                  border: "1px solid #ccc",
-                  backgroundColor: "#fff",
-                  fontFamily: "Arial, sans-serif",
-                  lineHeight: "1.5",
-                  resize: "none", // optional: prevent manual resizing
-                  boxSizing: "border-box",
-                  outline: "none",
+        <Card
+          title="Nội dung bài thơ"
+          style={cardStyle}
+          headStyle={cardHeadStyle}
+        >
+          <div style={{ display: 'flex', gap: '24px', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
+            <div style={{ flex: 2 }}>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={formLabelStyle}>Thể loại thơ</label>
+                <Select
+                  value={selectedType}
+                  onChange={(value) => setSelectedType(value)}
+                  style={inputStyle}
+                >
+                  {poemTypes.map((type) => (
+                    <Select.Option key={type.id} value={type.id}>
+                      {type.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+              </div>
+
+              <ReactQuill
+                ref={quillRef}
+                theme="snow"
+                value={poemData.content}
+                onChange={handleInputContent}
+                modules={{
+                  toolbar: [
+                    ['bold', 'italic', 'underline'],
+                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                    ['clean']
+                  ]
                 }}
-                onFocus={(e) =>
-                  (e.target.style.border = "1px solid #000") // Custom focus border
-                }
-                onBlur={(e) =>
-                  (e.target.style.border = "1px solid #ccc") // Reset on blur
-                }
+                style={editorStyle}
+                placeholder="Viết nội dung bài thơ tại đây..."
+              />
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '16px' }}>
+                <Button 
+                  onClick={handleAICheckPlagiarism} 
+                  icon={<FaSpellCheck />}
+                >
+                  Kiểm tra đạo văn
+                </Button>
+                <Button 
+                  onClick={handleAISuggest} 
+                  icon={<FcIdea />}
+                >
+                  Gợi ý từ AI
+                </Button>
+              </div>
+
+              {plagiarismResult != null && (
+                <div style={{ marginTop: '16px' }}>
+                  {plagiarismResult > 0.75 ? (
+                    <div>
+                      <div style={validationErrorStyle}>
+                        Nội dung của bạn đang dính đạo văn ở mức {(plagiarismResult * 100).toFixed(2)}%. Vui lòng chỉnh sửa nội dung!
+                      </div>
+                      <div style={{ marginTop: '8px' }}>
+                        <p style={{ fontWeight: 'bold' }}>Những bài thơ tương tự:</p>
+                        <ul style={plagiarismListStyle}>
+                          {plagiarismPoems?.map((item, index) => (
+                            <li 
+                              key={index}
+                              onClick={() => handlePopupContentPlagiarism(item.content)}
+                              style={plagiarismItemStyle}
+                            >
+                              {item.title} - {item.user?.displayName}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  ) : (
+                    <div style={{ color: '#52c41a', fontWeight: 'bold' }}>
+                      Chúc mừng! Nội dung của bạn hiện tại không dính đạo văn.
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+
+            <div style={{ flex: 1 }}>
+              <label style={formLabelStyle}>Xem trước</label>
+              <Input.TextArea
+                style={{ 
+                  height: '300px',
+                  fontFamily: 'Arial, sans-serif',
+                  lineHeight: 1.5
+                }}
                 value={formatContent(poemData.content, selectedType)}
                 readOnly
               />
             </div>
           </div>
-        </div>
+        </Card>
+      </div>
 
+      <div style={footerStyle}>
+        <Button
+          type="default"
+          icon={<SaveOutlined />}
+          onClick={setDrafting ? handleSaveDraft : handleSave}
+          loading={isLoading}
+        >
+          {setDrafting ? "Lưu nháp" : "Lưu vào nháp"}
+        </Button>
+        <Button
+          type="primary"
+          icon={<SendOutlined />}
+          onClick={setDrafting ? handleSubmitDraft : () => handleSubmit(1)}
+          loading={isLoading}
+        >
+          Đăng bài
+        </Button>
+      </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px", marginBottom: "100px" }}>
-          <button
-            type="button"
-            onClick={setDrafting ? handleSaveDraft : handleSave}
-            style={{ backgroundColor: "#ffc107", color: "white", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
-          >
-            {setDrafting ? "LƯU NHÁP" : "LƯU VÀO NHÁP"}
-          </button>
-          <button
-            type="button"
-            onClick={setDrafting ? handleSubmitDraft : () => handleSubmit(1)}
-            style={{ backgroundColor: "#28a745", color: "white", padding: "10px 20px", border: "none", borderRadius: "5px", cursor: "pointer", fontWeight: "bold" }}
-          >
-            ĐĂNG BÀI
-          </button>
-        </div>
-      </form>
-      <Modal
-        open={isPreviewModalOpen}
-        onCancel={handleCancelPreview}
+      {/* Modal gợi ý từ AI */}
+      <Modal 
+        title="Gợi ý nội dung từ AI"
+        open={isModalOpen} 
+        onCancel={handleCancel}
         footer={[
-          <Button key="cancel" color="danger" variant="solid" onClick={handleCancelPreview}>
-            Hủy
-          </Button>,
-          <Button key="renew" color="green" variant="solid" onClick={handleAIRenderImage}>
-            Tạo mới
-          </Button>,
-          <Button key="apply" color="primary" variant="solid" onClick={handleApplyPreviewImage}>
-            Áp dụng
-          </Button>,
+          <Button key="cancel" onClick={handleCancel}>Đóng</Button>,
+          <Button key="copy" type="primary" onClick={handleCopyToContent}>Dán vào nội dung</Button>
         ]}
       >
-        <div style={{ textAlign: "center" }}>
-          <h2>Bạn có muốn sử dụng hình này?</h2>
-          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "10px", fontWeight: "bold" }}>
-            Hãy chọn hình bạn muốn sử dụng. Nếu không hài lòng, bấm “Tạo mới” để tạo thêm.
-          </p>
+        <div style={{ marginBottom: '16px', color: '#666' }}>
+          Đây là nội dung chúng tôi sử dụng AI để gợi ý cho bạn. Hãy bấm "Dán vào nội dung" để áp dụng vào bài thơ của bạn.
+        </div>
+        <TextArea
+          value={suggestion}
+          readOnly
+          autoSize={{ minRows: 6, maxRows: 10 }}
+        />
+      </Modal>
+
+      {/* Modal tạo hình ảnh AI */}
+      <Modal
+        title="AI tạo hình ảnh 🏞"
+        open={isModalContentCompleteOpen}
+        onCancel={handleCancelModalContentComplete}
+        footer={[
+          <Button key="cancel" onClick={handleCancelModalContentComplete}>Đóng</Button>,
+          <Button key="preview" onClick={() => setIsPreviewModalOpen(true)}>Xem lại ảnh đã tạo</Button>,
+          <Button key="confirm" type="primary" onClick={handleAIRenderImage}>Xác nhận tạo ảnh</Button>
+        ]}
+      >
+        <div style={{ marginBottom: '16px' }}>
+          <div style={{ marginBottom: '16px' }}>
+            <label style={formLabelStyle}>Loại hình ảnh</label>
+            <Select 
+              value={imageType} 
+              onChange={handleOptionChange}
+              style={inputStyle}
+            >
+              <Option value="cơ bản">Cơ bản</Option>
+              <Option value="nâng cao">Nâng cao</Option>
+            </Select>
+          </div>
+          
+          <div style={{ marginBottom: '16px' }}>
+            <label style={formLabelStyle}>Yêu cầu của bạn</label>
+            <Input
+              placeholder="Hãy miêu tả hình ảnh bạn muốn"
+              value={imagePrompt}
+              onChange={handleImagePromptChange}
+            />
+            <div style={{ fontSize: '12px', color: '#999', marginTop: '4px' }}>
+              Nếu không nhập, hệ thống sẽ tạo dựa trên nội dung bài thơ
+            </div>
+          </div>
+          
+          <div>
+            <label style={formLabelStyle}>Nội dung tham khảo</label>
+            <TextArea
+              value={formatContent(poemData.content, selectedType)}
+              readOnly
+              autoSize={{ minRows: 4, maxRows: 6 }}
+            />
+          </div>
+        </div>
+      </Modal>
+
+      {/* Modal preview ảnh */}
+      <Modal
+        title="Chọn hình ảnh bạn muốn sử dụng"
+        open={isPreviewModalOpen}
+        onCancel={handleCancelPreview}
+        width={800}
+        footer={[
+          <Button key="cancel" onClick={handleCancelPreview}>Hủy</Button>,
+          <Button key="renew" onClick={handleAIRenderImage}>Tạo mới</Button>,
+          <Button key="apply" type="primary" onClick={handleApplyPreviewImage}>Áp dụng hình này</Button>
+        ]}
+      >
+        <div style={{ textAlign: 'center' }}>
           {previewImages.length > 0 ? (
             <div
               style={{
-                display: "grid",
-                gridTemplateColumns: "repeat(auto-fit, minmax(168px, 1fr))",
-                gap: "10px",
-                height: "400px",
-                overflow: "scroll"
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))',
+                gap: '16px',
+                maxHeight: '500px',
+                overflowY: 'auto',
+                padding: '8px'
               }}
             >
               {previewImages.map((imgUrl, index) => (
@@ -1263,61 +1124,52 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                   key={index}
                   onClick={() => setPreviewSelectedIndex(index)}
                   style={{
-                    border:
-                      previewSelectedIndex === index ? "2px solid #1890ff" : "2px solid transparent",
-                    padding: "4px",
-                    cursor: "pointer",
-                    height: "268px",
-                    width: "168px",
-                    objectFit: "cover",
-                    margin: "0 auto"
+                    border: previewSelectedIndex === index ? '2px solid #1890ff' : '1px solid #d9d9d9',
+                    borderRadius: '8px',
+                    padding: '4px',
+                    cursor: 'pointer'
                   }}
                 >
                   <img
                     src={imgUrl}
                     alt={`Preview ${index + 1}`}
                     style={{
-                      height: "268px",
-                      width: "168px",
-                      objectFit: "cover",
+                      width: '100%',
+                      height: '200px',
+                      objectFit: 'cover',
+                      borderRadius: '4px'
                     }}
                   />
+                  <div style={{ marginTop: '8px' }}>
+                    {previewSelectedIndex === index ? 'Đã chọn' : 'Nhấn để chọn'}
+                  </div>
                 </div>
               ))}
             </div>
           ) : (
-            <p>No image to preview</p>
+            <div style={{ padding: '40px 0', color: '#999' }}>
+              Chưa có hình ảnh nào được tạo
+            </div>
           )}
         </div>
       </Modal>
 
+      {/* Modal kiểm tra đạo văn */}
       <Modal
+        title="Nội dung bài thơ tương tự"
         open={popupContentPlagiarism}
         onCancel={handleCancelPopupContentPlagiarism}
-        footer={
-          <>
-            <Button color="danger" variant="solid" onClick={handleCancelPopupContentPlagiarism}>
-              Đóng
-            </Button>
-          </>
-        }
+        footer={<Button onClick={handleCancelPopupContentPlagiarism}>Đóng</Button>}
+        width={700}
       >
-        <div style={{ textAlign: "center" }}>
-          <h2>Nội dung bài thơ</h2>
-          <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
-            Đây là nội dung của bài thơ nghi vấn bạn đạo văn. Hãy kiểm tra kĩ và chỉnh sửa nhé{" "}
-            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>kiểm tra</span> và{" "}
-            <span style={{ color: "#3A86ff", fontWeight: "bold" }}>chỉnh sửa</span> nhé
-          </p>
-          {contentPlagiarism && (
-            <textarea
-              style={{ width: "100%", height: "300px", boxSizing: "border-box" }}
-              value={contentPlagiarism} x
-            >
-
-            </textarea>
-          )}
+        <div style={{ marginBottom: '16px', color: '#666' }}>
+          Đây là nội dung của bài thơ nghi vấn bạn đã tham khảo. Hãy kiểm tra kỹ và chỉnh sửa nếu cần thiết.
         </div>
+        <TextArea
+          value={contentPlagiarism}
+          readOnly
+          autoSize={{ minRows: 10, maxRows: 15 }}
+        />
       </Modal>
     </div>
   );
