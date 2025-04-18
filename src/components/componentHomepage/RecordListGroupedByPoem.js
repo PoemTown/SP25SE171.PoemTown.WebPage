@@ -210,7 +210,7 @@ const RecordContent = ({
         };
     }, [record, accessToken]);
 
-
+ 
     const handlePlay = () => {
         if (audioRef.current.currentTime === 0) {
             resetCount();

@@ -360,213 +360,200 @@ const handleRenew = async (usageRightId) => {
         message.error(error.response?.data?.errorMessage || "Gia hạn thất bại!");
     }
 };
-    return (
-        <>
-            <Container>
+return (
+    <Container style={{ padding: '16px' }}>
+      <div style={{
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: 16,
+        flexWrap: 'wrap',
+        gap: '12px'
+      }}>
+        <Title level={4} style={{ margin: 0 }}>Quản lý Bản quyền</Title>
+        <Dropdown.Button
+          overlay={menu}
+          trigger={["click"]}
+          icon={<DownOutlined />}
+          size="small"
+        >
+          {activeButton === "mine"
+            ? "Của tôi"
+            : activeButton === "bought"
+              ? "Đã mua"
+              : "Đã bán"}
+        </Dropdown.Button>
+      </div>
+  
+      <Row gutter={[16, 16]}>
+        {poems.map(poem => (
+          <Col key={poem?.id} xs={24} sm={12} md={8} lg={6} xl={6}>
+            <Card
+              hoverable
+              onClick={() => {
+                if (activeButton !== "bought") {
+                  handleViewVersions(poem.poem ? poem.poem?.id : poem.id);
+                }
+              }}
+              cover={
                 <div style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    marginBottom: 24
+                  background: `linear-gradient(135deg, #${Math.floor(Math.random() * 16777215).toString(16)} 0%, #${Math.floor(Math.random() * 16777215).toString(16)} 100%)`,
+                  height: 140,
+                  position: 'relative',
+                  overflow: 'hidden'
                 }}>
-                    <Title level={3}>Quản lý Bản quyền</Title>
-                    <div >
-
-                        <Dropdown.Button
-                            overlay={menu}
-                            trigger={["click"]}
-                            icon={<DownOutlined />}
-                            style={{ float: "right" }}
+                  {/* Renew Button */}
+                  {activeButton === "bought" &&
+                    poem.saleVersion?.isInUse &&
+                    poem?.status === 2 && (
+                      <div style={{
+                        position: 'absolute',
+                        top: 8,
+                        left: 8,
+                        zIndex: 2
+                      }}>
+                        <Button
+                          type="primary"
+                          danger
+                          size="small"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRenew(poem.id);
+                          }}
+                          style={{ fontSize: '12px', padding: '0 8px', height: '24px' }}
                         >
-                            {activeButton === "mine"
-                                ? "Của tôi"
-                                : activeButton === "bought"
-                                    ? "Đã mua"
-                                    : "Đã bán"}
-                        </Dropdown.Button>
+                          Gia hạn
+                        </Button>
+                      </div>
+                    )}
+  
+                  {/* Status Indicator */}
+                  {poem.isSellUsageRight && (
+                    <div style={{
+                      position: 'absolute',
+                      top: 8,
+                      right: 8,
+                    }}>
+                      {renderStatus(poem?.isSellUsageRight)}
                     </div>
-
+                  )}
+  
+                  <div style={{
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    padding: '8px 12px',
+                    background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+                    color: 'white'
+                  }}>
+                    <Text strong style={{ color: 'white', fontSize: '14px' }}>
+                      {poem?.saleVersion?.price?.toLocaleString('vi-VN') || '0'}đ
+                    </Text>
+                    {poem?.copyRightValidFrom && (
+                      <div style={{
+                        fontSize: 11,
+                        color: poem.copyRightValidTo && isExpired(poem.copyRightValidTo) ? '#ff4d4f' : 'inherit'
+                      }}>
+                        {poem?.copyRightValidFrom ?
+                          `${formatDate(poem.copyRightValidFrom)} - ${formatDate(poem.copyRightValidTo)}` :
+                          'Vô thời hạn'}
+                      </div>
+                    )}
+                  </div>
                 </div>
-
-                <Row gutter={[24, 24]}>
-                    {poems.map(poem => (
-                        <Col key={poem?.id} xs={24} sm={12} md={8} lg={6}>
-                            <Card
-                                hoverable
-                                onClick={() => {
-                                    if (activeButton !== "bought") {
-                                        handleViewVersions(poem.poem ? poem.poem?.id : poem.id);
-                                    }
-                                }}
-                                cover={
-                                    <div style={{
-                                        background: `linear(135deg, #${Math.floor(Math.random() * 16777215).toString(16)} 0%, #${Math.floor(Math.random() * 16777215).toString(16)} 100%)`,
-                                        height: 160,
-                                        position: 'relative',
-                                        overflow: 'hidden'
-                                    }}>
-                                        <div style={{
-                                            position: 'absolute',
-                                            bottom: 0,
-                                            left: 0,
-                                            right: 0,
-                                            padding: '12px 16px',
-                                            background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
-                                            color: 'white'
-                                        }}>
-                                            <Text strong style={{ color: 'white' }}>
-                                                {poem?.saleVersion?.price?.toLocaleString('vi-VN') || '0'}đ
-                                            </Text>
-                                            {poem?.copyRightValidFrom && (
-                                                <div style={{
-                                                    fontSize: 12,
-                                                    color: poem.copyRightValidTo && isExpired(poem.copyRightValidTo) ? '#ff4d4f' : 'inherit'
-                                                }}>
-                                                    {poem?.copyRightValidFrom ?
-                                                        `${formatDate(poem.copyRightValidFrom)} - ${formatDate(poem.copyRightValidTo)}` :
-                                                        'Vô thời hạn'}
-                                                </div>
-                                            )}
-
-                                        </div>
-                                    </div>
-                                }
-                                style={{
-                                    borderRadius: 16,
-                                    transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
-                                }}
-                                bodyStyle={{ padding: 16 }}
-                            >
-
-                                {/* Thêm nút renew ở đây */}
-                                {activeButton === "bought" &&
-                                    poem.saleVersion?.isInUse &&
-                                    //formatDateISO(poem.copyRightValidTo) < formatDateISO(new Date())
-                                    poem?.status === 2 
-                                    && (
-                                        <div style={{
-                                            position: 'absolute',
-                                            top: 16,
-                                            left: 16,
-                                            zIndex: 2
-                                        }}>
-                                            <Button
-                                                type="primary"
-                                                danger
-                                                size="small"
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handleRenew(poem.id);
-                                                }}
-                                            >
-                                                Gia hạn
-                                            </Button>
-                                        </div>
-                                    )}
-                                {poem.isSellUsageRight && (
-                                    <div style={{
-                                        position: 'absolute',
-                                        top: 16,
-                                        right: 16,
-                                        display: 'flex',
-                                        gap: 8,
-                                        flexDirection: 'column',
-                                        alignItems: 'flex-end'
-                                    }}>
-                                        {renderStatus(poem?.isSellUsageRight)}
-                                    </div>
-                                )}
-
-
-                                <div style={{ marginTop: 8 }}>
-                                    <Title
-                                        level={5}
-                                        ellipsis
-                                        style={{
-                                            marginBottom: 4,
-                                            fontSize: 16,
-                                            lineHeight: 1.3,
-                                            minHeight: 44
-                                        }}
-                                    >
-                                        {poem?.poem?.title || poem?.title || 'Không có tiêu đề'}
-                                    </Title>
-
-                                    <Text
-                                        type="secondary"
-                                        ellipsis={{ rows: 2 }}
-                                        style={{
-                                            fontSize: 13,
-                                            lineHeight: 1.4,
-                                            minHeight: 40,
-                                            display: '-webkit-box',
-                                            WebkitBoxOrient: 'vertical'
-                                        }}
-                                    >
-                                        {poem?.poem?.description || poem?.description || 'Chưa có mô tả'}
-                                    </Text>
-                                </div>
-
-                                <Divider
-                                    dashed
-                                    style={{
-                                        margin: '12px 0',
-                                        borderColor: '#f0f0f0'
-                                    }}
-                                />
-
-                                <Space
-                                    size="small"
-                                    style={{
-                                        width: '100%',
-                                        justifyContent: 'space-between'
-                                    }}
-                                >
-                                    <StatItem
-                                        icon={<UserOutlined />}
-                                        value={poem?.owner ? poem?.owner?.displayName : poem.user.displayName}
-                                    />
-
-                                    {/* <StatItem
-                                        icon={<FieldTimeOutlined />}
-                                        value={poem?.createdAt ? formatDate(poem.createdAt) : 'N/A'}
-                                    /> */}
-                                </Space>
-                            </Card>
-                        </Col>
-
-
-
-                    ))}
-                </Row>
-
-                {/* Pagination và loading */}
-                <div style={{
-                    marginTop: 32,
-                    display: "flex",
-                    justifyContent: "center"
-                }}>
-                    <Pagination
-                        current={currentPage}
-                        pageSize={pageSize}
-                        total={total}
-                        onChange={(page, size) => {
-                            setCurrentPage(page);
-                            setPageSize(size);
-                        }}
-                        showSizeChanger
-                        pageSizeOptions={[12, 24, 48]}
-                    />
-                </div>
-
-                {loading && (
-                    <div style={{ textAlign: "center", padding: "48px 0" }}>
-                        <Spin size="large" tip="Đang tải dữ liệu..." />
-                    </div>
-                )}
-            </Container >
-        </>
-    );
+              }
+              style={{
+                borderRadius: 12,
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                boxShadow: '0 2px 8px rgba(0, 0, 0, 0.08)',
+                height: '100%'
+              }}
+              bodyStyle={{ padding: 12 }}
+            >
+              <div style={{ marginTop: 4 }}>
+                <Title
+                  level={5}
+                  ellipsis
+                  style={{
+                    marginBottom: 4,
+                    fontSize: 14,
+                    lineHeight: 1.3,
+                    minHeight: 38
+                  }}
+                >
+                  {poem?.poem?.title || poem?.title || 'Không có tiêu đề'}
+                </Title>
+  
+                <Text
+                  type="secondary"
+                  ellipsis={{ rows: 2 }}
+                  style={{
+                    fontSize: 12,
+                    lineHeight: 1.4,
+                    minHeight: 34,
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical'
+                  }}
+                >
+                  {poem?.poem?.description || poem?.description || 'Chưa có mô tả'}
+                </Text>
+              </div>
+  
+              <Divider
+                dashed
+                style={{
+                  margin: '8px 0',
+                  borderColor: '#f0f0f0'
+                }}
+              />
+  
+              <Space
+                size="small"
+                style={{
+                  width: '100%',
+                  justifyContent: 'space-between',
+                  fontSize: '12px'
+                }}
+              >
+                <StatItem
+                  icon={<UserOutlined style={{ fontSize: '12px' }} />}
+                  value={poem?.owner ? poem?.owner?.displayName : poem.user.displayName}
+                />
+              </Space>
+            </Card>
+          </Col>
+        ))}
+      </Row>
+  
+      {/* Pagination */}
+      <div style={{
+        marginTop: 24,
+        display: "flex",
+        justifyContent: "center"
+      }}>
+        <Pagination
+          current={currentPage}
+          pageSize={pageSize}
+          total={total}
+          onChange={(page, size) => {
+            setCurrentPage(page);
+            setPageSize(size);
+          }}
+          showSizeChanger
+          pageSizeOptions={['12', '24', '48']}
+          size="small"
+          showLessItems
+        />
+      </div>
+  
+      {loading && (
+        <div style={{ textAlign: "center", padding: "24px 0" }}>
+          <Spin size="large" tip="Đang tải dữ liệu..." />
+        </div>
+      )}
+    </Container>
+  );
 };
 
 export default UsageRight;

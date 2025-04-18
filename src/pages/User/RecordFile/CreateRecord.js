@@ -402,7 +402,7 @@ export default function CreateRecord({ onBack }) {
           )}
 
           {audioUrl && (
-            <div style={{ marginTop: 16 }}>
+            <div style={{ marginTop: 16 }}> 
               <audio
                 controls
                 src={form.getFieldValue('audioFile')}

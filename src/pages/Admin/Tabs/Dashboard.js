@@ -59,13 +59,8 @@ const orderTypeMapping = {
     4: "Bài thơ"
 };
 
-// const incomeTypeMapping = {
-//     1: "Nạp tiền ví điện tử",
-//     2: "Mua Master Templates"
-// };
 const incomeTypeMapping = {
     2: "Mua mẫu thiết kế",
-    3: "Mua bản ghi âm",
     9: "Phí dịch vụ nạp tiền"
 };
 
@@ -274,8 +269,6 @@ const getIncomeColor = (type) => {
     switch(type) {
         case 2:
             return "#6abf81";
-        case 3:
-            return "#fa00f7";
         case 9: 
             return "#006cff";
         default:
@@ -301,7 +294,12 @@ const fetchIncomes = async (period, setIncomeData) => {
             period
         );
         if (result.statusCode === 200) {
-            const transformedData = result.data.incomeTypeStatistics.map(type => ({
+            // Lọc bỏ loại thu nhập 3 (Mua bản ghi âm)
+            const filteredData = result.data.incomeTypeStatistics.filter(
+                type => type.incomeType !== 3
+            );
+            
+            const transformedData = filteredData.map(type => ({
                 incomeType: type.incomeType,
                 name: incomeTypeMapping[type.incomeType] || `Loại ${type.incomeType}`,
                 color: getIncomeColor(type.incomeType),
@@ -317,7 +315,6 @@ const fetchIncomes = async (period, setIncomeData) => {
         console.error("Error fetching incomes statistics:", error);
     }
 };
-
 const fetchProfit = async (period, setProfitData) => {
     try {
         const result = await fetchWithAuth(
@@ -449,7 +446,7 @@ const KPIBox = ({ title, value, color }) => (
     </Card>
 );
 
-const DoubleLineChart = ({ data }) => {
+const IncomeBarChart = ({ data }) => {
     // Lấy tất cả các kỳ (period) từ dữ liệu
     const allPeriods = Array.from(new Set(
         data.flatMap(item => item.samples.map(s => s.period))
@@ -468,19 +465,26 @@ const DoubleLineChart = ({ data }) => {
 
     return (
         <ResponsiveContainer width="100%" height={400}>
-            <ComposedChart data={chartData}>
+            <BarChart
+                data={chartData}
+                margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+            >
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis dataKey="period" />
                 <YAxis yAxisId="left" label={{ value: "Số tiền", angle: -90, position: "insideLeft" }} />
-
+                
                 <Tooltip
                     content={({ payload }) => {
-
                         if (!payload || payload.length === 0) return null;
-                        const row = payload[0].payload; // full chart row for that period
+                        const row = payload[0].payload;
 
                         return (
-                            <div className="custom-tooltip" style={{ background: "white", padding: "10px", border: "1px solid #ccc" }}>
+                            <div className="custom-tooltip" style={{ 
+                                background: "white", 
+                                padding: "10px", 
+                                border: "1px solid #ccc",
+                                borderRadius: "5px"
+                            }}>
                                 <p><strong>Kỳ: {row.period}</strong></p>
                                 {data.map((item) => {
                                     const amount = row[`amount_${item.incomeType}`] ?? 0;
@@ -489,7 +493,7 @@ const DoubleLineChart = ({ data }) => {
                                     return (
                                         <p key={item.incomeType} style={{ color: item.color }}>
                                             {item.name}: <br />
-                                            - Số tiền: {amount} <br />
+                                            - Số tiền: {amount.toLocaleString()} <br />
                                             - Số lượng: {samples}
                                         </p>
                                     );
@@ -498,24 +502,20 @@ const DoubleLineChart = ({ data }) => {
                         );
                     }}
                 />
-
+                
                 <Legend />
-                {data.map(item => (
-                    <>
-                        <Line
-                            key={`line_amount_${item.incomeType}`}
-                            yAxisId="left"
-                            type="linear"
-                            dataKey={`amount_${item.incomeType}`}
-                            name={`Số tiền - ${item.name}`}
-                            stroke={item.color}
-                            strokeWidth={2}
-                            dot={{ r: 4 }}
-                        />
-
-                    </>
+                
+                {data.map((item) => (
+                    <Bar
+                        key={`bar_amount_${item.incomeType}`}
+                        yAxisId="left"
+                        dataKey={`amount_${item.incomeType}`}
+                        name={item.name}
+                        fill={item.color}
+                        barSize={30}
+                    />
                 ))}
-            </ComposedChart>
+            </BarChart>
         </ResponsiveContainer>
     );
 };
@@ -546,7 +546,6 @@ const DoubleLineChartProfit = ({ data }) => {
 
                 <Tooltip
                     content={({ payload }) => {
-
                         if (!payload || payload.length === 0) return null;
                         const row = payload[0].payload; // full chart row for that period
 
@@ -571,8 +570,26 @@ const DoubleLineChartProfit = ({ data }) => {
                 />
 
                 <Legend />
-                {data.map(item => (
-                    <>
+                
+                {/* Hiển thị Nguồn thu (1) và Rút tiền (2) dưới dạng cột */}
+                {data.map(item => {
+                    if (item.profitType === 3) return null; // Bỏ qua Lợi nhuận ở đây
+                    return (
+                        <Bar
+                            key={`bar_amount_${item.profitType}`}
+                            yAxisId="left"
+                            dataKey={`amount_${item.profitType}`}
+                            name={item.name}
+                            fill={item.color}
+                            barSize={20}
+                        />
+                    );
+                })}
+                
+                {/* Hiển thị Lợi nhuận (3) dưới dạng đường line */}
+                {data.map(item => {
+                    if (item.profitType !== 3) return null; // Chỉ lấy Lợi nhuận
+                    return (
                         <Line
                             key={`line_amount_${item.profitType}`}
                             yAxisId="left"
@@ -583,14 +600,12 @@ const DoubleLineChartProfit = ({ data }) => {
                             strokeWidth={2}
                             dot={{ r: 4 }}
                         />
-
-                    </>
-                ))}
+                    );
+                })}
             </ComposedChart>
         </ResponsiveContainer>
     );
 };
-
 const UserOnline = () => {
     const [onlineData, setOnlineData] = useState([]);
     const [poemData, setPoemData] = useState([]);
@@ -622,6 +637,7 @@ const UserOnline = () => {
     const [incomePeriod, setIncomePeriod] = useState(1);
     const [profitData, setProfitData] = useState([]);
     const [profitPeriod, setProfitPeriod] = useState(1);
+
     useEffect(() => {
         fetchData(onlinePeriod, setOnlineData, `${process.env.REACT_APP_API_BASE_URL}/statistics/v1/online-users`);
     }, [onlinePeriod]);
@@ -693,6 +709,7 @@ const UserOnline = () => {
     const handleProfitFilterChange = (value) => {
         setProfitPeriod(value);
     };
+
     return (
         <div style={{ padding: 24 }}>
             <Row gutter={[16, 16]} justify="center">
@@ -723,59 +740,62 @@ const UserOnline = () => {
                     />
                 </Col>
             </Row>
-            <Col span={24}>
-                <Card
-                    title="Thống kê lợi nhuận"
-                    bordered={false}
-                    style={{ textAlign: 'center', marginBottom: 16 }}
-                    extra={
-                        <Select
-                            defaultValue={1}
-                            style={{ width: 120 }}
-                            onChange={handleProfitFilterChange}
-                        >
-                            {periodOptions.map(option => (
-                                <Option key={option.value} value={option.value}>{option.label}</Option>
-                            ))}
-                        </Select>
-                    }
-                >
-                    {profitData.length > 0 ? (
-                        <DoubleLineChartProfit data={profitData} period={profitPeriod} />
-                    ) : (
-                        <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Spin size="large" />
-                        </div>
-                    )}
-                </Card>
-            </Col>
-            <Col span={24}>
-                <Card
-                    title="Thống kê thu nhập"
-                    bordered={false}
-                    style={{ textAlign: 'center', marginBottom: 16 }}
-                    extra={
-                        <Select
-                            defaultValue={1}
-                            style={{ width: 120 }}
-                            onChange={handleIncomeFilterChange}
-                        >
-                            {periodOptions.map(option => (
-                                <Option key={option.value} value={option.value}>{option.label}</Option>
-                            ))}
-                        </Select>
-                    }
-                >
-                    {incomeData.length > 0 ? (
-                        <DoubleLineChart data={incomeData} period={incomePeriod} />
-                    ) : (
-                        <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <Spin size="large" />
-                        </div>
-                    )}
-                </Card>
-            </Col>
+
             <Row gutter={[16, 16]}>
+                <Col span={24}>
+                    <Card
+                        title="Thống kê thu nhập"
+                        bordered={false}
+                        style={{ textAlign: 'center', marginBottom: 16 }}
+                        extra={
+                            <Select
+                                defaultValue={1}
+                                style={{ width: 120 }}
+                                onChange={handleIncomeFilterChange}
+                            >
+                                {periodOptions.map(option => (
+                                    <Option key={option.value} value={option.value}>{option.label}</Option>
+                                ))}
+                            </Select>
+                        }
+                    >
+                        {incomeData.length > 0 ? (
+                            <IncomeBarChart data={incomeData} />
+                        ) : (
+                            <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Spin size="large" />
+                            </div>
+                        )}
+                    </Card>
+                </Col>
+
+                <Col span={24}>
+                    <Card
+                        title="Thống kê lợi nhuận"
+                        bordered={false}
+                        style={{ textAlign: 'center', marginBottom: 16 }}
+                        extra={
+                            <Select
+                                defaultValue={1}
+                                style={{ width: 120 }}
+                                onChange={handleProfitFilterChange}
+                            >
+                                {periodOptions.map(option => (
+                                    <Option key={option.value} value={option.value}>{option.label}</Option>
+                                ))}
+                            </Select>
+                        }
+                    >
+                        {profitData.length > 0 ? (
+                            <DoubleLineChartProfit data={profitData} />
+                        ) : (
+                            <div style={{ height: 400, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <Spin size="large" />
+                            </div>
+                        )}
+                    </Card>
+                </Col>
+
                 <Col span={24}>
                     <ChartCard
                         title="Người dùng online"

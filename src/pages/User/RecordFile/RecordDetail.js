@@ -314,6 +314,7 @@ const styles = {
         marginBottom: '24px'
     },
     poemContent: {
+        textAlign:"center",
         backgroundColor: '#f8f9fa',
         borderRadius: '8px',
         padding: '24px',

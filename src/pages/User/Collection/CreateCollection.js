@@ -1,7 +1,8 @@
+import { LoadingOutlined } from "@ant-design/icons";
 import { Button, Input, message, Modal, Select, Spin } from "antd";
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { FiArrowLeft } from "react-icons/fi";
+import { FiArrowLeft, FiBookOpen, FiCheck, FiCheckCircle, FiEdit2, FiEdit3, FiImage, FiRefreshCw, FiSliders, FiUpload, FiXCircle, FiZap } from "react-icons/fi";
 
 const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditingCollection, setIsCreatingCollection, isKnowledgePoet, poetId, onCollectionCreated }) => {
     const [collectionFile, setCollectionFile] = useState(null);
@@ -264,7 +265,14 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
     };
 
     return (
-        <div style={{ position: "relative", maxWidth: "1200px", margin: "0 auto", padding: "20px" }}>
+        <div style={{
+            position: "relative",
+            maxWidth: "800px",
+            margin: "0 auto",
+            padding: "40px 20px",
+            fontFamily: "'Cormorant Garamond', serif",
+            minHeight: "100vh"
+        }}>
             {/* Overlay when loading */}
             {isLoading && (
                 <div
@@ -278,9 +286,20 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
                         justifyContent: "center",
                         alignItems: "center",
                         zIndex: 9999,
+                        background: "rgba(255, 255, 255, 0.8)"
                     }}
                 >
-                    <Spin size="large" />
+                    <div style={{ textAlign: "center" }}>
+                        <Spin
+                            indicator={<LoadingOutlined style={{ fontSize: 48, color: "#8b5a2b" }} spin />}
+                        />
+                        <p style={{
+                            marginTop: "20px",
+                            color: "#5a3921",
+                            fontSize: "1.2em",
+                            fontStyle: "italic"
+                        }}>Đang chuẩn bị không gian thơ...</p>
+                    </div>
                 </div>
             )}
 
@@ -288,75 +307,227 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
             <div
                 style={{
                     cursor: "pointer",
-                    color: "#007bff",
-                    fontSize: "18px",
-                    marginBottom: "20px",
+                    color: "#8b5a2b",
+                    fontSize: "1.1em",
+                    marginBottom: "30px",
                     display: "flex",
                     alignItems: "center",
+                    transition: "all 0.3s ease",
+                    ':hover': {
+                        color: "#5a3921",
+                        transform: "translateX(-3px)"
+                    }
                 }}
                 onClick={handleBack || handleBackDetail}
             >
-                <FiArrowLeft size={20} style={{ marginRight: "8px" }} /> Quay về
+                <FiArrowLeft size={22} style={{ marginRight: "10px" }} />
+                <span style={{ borderBottom: "1px dashed #8b5a2b" }}>Trở về trang trước</span>
             </div>
 
-            <div style={{ display: "flex", gap: "20px", alignItems: "flex-start", backgroundColor: "#fff" }}>
+            <div style={{
+                display: "flex",
+                gap: "40px",
+                backgroundColor: "#fff",
+                borderRadius: "12px",
+                padding: "30px",
+                boxShadow: "0 10px 30px rgba(139, 90, 43, 0.1)",
+                border: "1px solid #e8d9c5"
+            }}>
                 {/* Image Frame */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                    <div style={{ flex: 1, width: "260px", height: "146px" }}>
+                <div style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "20px",
+                    minWidth: "300px"
+                }}>
+                    <div style={{
+                        position: "relative",
+                        width: "300px",
+                        height: "200px",
+                        borderRadius: "8px",
+                        overflow: "hidden",
+                        boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)",
+                        border: "1px solid #e8d9c5"
+                    }}>
                         <img
                             style={{
-                                width: "260px",
-                                height: "146px",
+                                width: "100%",
+                                height: "100%",
                                 objectFit: "cover",
-                                borderTopLeftRadius: "5px",
-                                borderBottomLeftRadius: "5px",
+                                transition: "transform 0.3s ease"
                             }}
                             src={collectionFile || data.collectionImage || "/check.png"}
-                            alt="Ảnh bộ sưu tập"
+                            alt="Ảnh bìa tập thơ"
+                            onError={(e) => e.target.src = "/check.png"}
                         />
+                        <div style={{
+                            position: "absolute",
+                            bottom: "10px",
+                            right: "10px",
+                            background: "rgba(255, 255, 255, 0.9)",
+                            padding: "5px 10px",
+                            borderRadius: "20px",
+                            fontSize: "0.8em",
+                            color: "#5a3921",
+                            border: "1px solid #e8d9c5"
+                        }}>
+                            {collectionFile ? "Ảnh mới" : "Ảnh mặc định"}
+                        </div>
                     </div>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "15px" }}>
                         <label
                             style={{
-                                backgroundColor: "#3A86FF",
-                                color: "#FBFBFB",
-                                padding: "10px",
-                                borderRadius: "5px",
+                                backgroundColor: "#8b5a2b",
+                                color: "#fff",
+                                padding: "12px",
+                                borderRadius: "6px",
                                 cursor: "pointer",
-                                boxSizing: "border-box",
                                 textAlign: "center",
-                                fontSize: "0.9rem",
+                                fontSize: "1em",
+                                transition: "all 0.3s ease",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "8px",
+                                ':hover': {
+                                    backgroundColor: "#5a3921",
+                                    transform: "translateY(-2px)"
+                                }
                             }}
                         >
+                            <FiUpload />
                             Tải ảnh lên
                             <input type="file" accept="image/*" style={{ display: "none" }} onChange={handleUploadImage} />
                         </label>
-                        <Button onClick={showModalAIRenderImage} color="default" variant="solid" style={{ padding: "20px" }}>
-                            AI tạo hình 🏞
+
+                        <Button
+                            onClick={showModalAIRenderImage}
+                            style={{
+                                padding: "12px",
+                                background: "linear-gradient(135deg, #d4a373, #8b5a2b)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "6px",
+                                fontSize: "1em",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                gap: "8px",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                ':hover': {
+                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 5px 15px rgba(139, 90, 43, 0.3)"
+                                }
+                            }}
+                        >
+                            <FiImage />
+                            AI tạo hình ảnh
                         </Button>
                     </div>
                 </div>
 
                 {/* Information Form */}
-                <div style={{ flex: "2", display: "flex", flexDirection: "column" }}>
-                    <div style={{ marginBottom: "15px" }}>
-                        <h4 style={{ marginBottom: "5px", marginTop: "0px" }}>Tên tập thơ</h4>
-                        <Input name="collectionName" placeholder="Nhập tên tập thơ" value={data.collectionName} onChange={handleChange} />
-                    </div>
-                    <div style={{ marginBottom: "15px" }}>
-                        <h4 style={{ marginBottom: "5px", marginTop: "0px" }}>Mô tả</h4>
-                        <Input.TextArea
-                            name="collectionDescription"
-                            placeholder="Nhập mô tả tập thơ"
-                            value={data.collectionDescription}
+                <div style={{
+                    flex: "1",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "25px"
+                }}>
+                    <div>
+                        <h4 style={{
+                            marginBottom: "10px",
+                            color: "#5a3921",
+                            fontSize: "1.3em",
+                            fontWeight: "600",
+                            borderBottom: "1px solid #e8d9c5",
+                            paddingBottom: "5px"
+                        }}>
+                            <FiBookOpen style={{ marginRight: "10px" }} />
+                            Tên tập thơ
+                        </h4>
+                        <Input
+                            name="collectionName"
+                            placeholder="Ví dụ: Mùa thu vàng, Gió mùa về..."
+                            value={data.collectionName}
                             onChange={handleChange}
-                            rows={4}
+                            style={{
+                                padding: "12px 15px",
+                                borderRadius: "6px",
+                                border: "1px solid #e8d9c5",
+                                fontSize: "1.1em",
+                                fontFamily: "'Cormorant Garamond', serif",
+                                ':focus': {
+                                    borderColor: "#8b5a2b",
+                                    boxShadow: "0 0 0 2px rgba(139, 90, 43, 0.2)"
+                                }
+                            }}
                         />
                     </div>
+
+                    <div>
+                        <h4 style={{
+                            marginBottom: "10px",
+                            color: "#5a3921",
+                            fontSize: "1.3em",
+                            fontWeight: "600",
+                            borderBottom: "1px solid #e8d9c5",
+                            paddingBottom: "5px"
+                        }}>
+                            <FiEdit2 style={{ marginRight: "10px" }} />
+                            Mô tả tập thơ
+                        </h4>
+                        <Input.TextArea
+                            name="collectionDescription"
+                            placeholder="Hãy miêu tả về tập thơ của bạn..."
+                            value={data.collectionDescription}
+                            onChange={handleChange}
+                            rows={5}
+                            style={{
+                                padding: "12px 15px",
+                                borderRadius: "6px",
+                                border: "1px solid #e8d9c5",
+                                fontSize: "1.1em",
+                                fontFamily: "'Cormorant Garamond', serif",
+                                resize: "none",
+                                ':focus': {
+                                    borderColor: "#8b5a2b",
+                                    boxShadow: "0 0 0 2px rgba(139, 90, 43, 0.2)"
+                                }
+                            }}
+                        />
+                    </div>
+
                     {/* Confirm Button */}
-                    <div style={{ alignSelf: "flex-end" }}>
-                        <Button color="green" variant="solid" size="large" onClick={handleSubmit} style={{ padding: "10px 20px" }}>
-                            Xác nhận
+                    <div style={{
+                        alignSelf: "flex-end",
+                        marginTop: "20px"
+                    }}>
+                        <Button
+                            onClick={handleSubmit}
+                            style={{
+                                padding: "12px 30px",
+                                background: "linear-gradient(135deg, #8b5a2b, #5a3921)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "30px",
+                                fontSize: "1.1em",
+                                fontWeight: "500",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "10px",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                boxShadow: "0 4px 6px rgba(139, 90, 43, 0.2)",
+                                ':hover': {
+                                    transform: "translateY(-3px)",
+                                    boxShadow: "0 6px 12px rgba(139, 90, 43, 0.3)"
+                                }
+                            }}
+                        >
+                            <FiCheckCircle />
+                            Lưu tập thơ
                         </Button>
                     </div>
                 </div>
@@ -366,37 +537,140 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
             <Modal
                 open={isModalAIRenderImageOpen}
                 onCancel={handleCancelRenderAIImageModal}
-                footer={
-                    <>
-                        <Button color="danger" variant="solid" onClick={handleCancelRenderAIImageModal}>
-                            Đóng
-                        </Button>
-                        <Button color="green" variant="solid" onClick={() => setIsPreviewModalOpen(true)}>
-                            Xem lại ảnh đã tạo
-                        </Button>
-                        <Button color="primary" variant="solid" onClick={handleAIRenderImage}>
-                            Xác nhận
-                        </Button>
-                    </>
-                }
+                footer={null}
+                centered
+                style={{
+                    fontFamily: "'Cormorant Garamond', serif"
+                }}
+                bodyStyle={{
+                    padding: "30px"
+                }}
             >
-                <div>
-                    <h2 style={{ textAlign: "center", fontSize: "1.8rem", marginBottom: "0px" }}>AI tạo hình ảnh 🏞</h2>
-                    <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "5px", fontWeight: "bold" }}>
-                        Hãy đảm bảo rằng bạn muốn AI tạo hình ảnh dựa trên{" "}
-                        <span style={{ color: "#3A86ff", fontWeight: "bold" }}>yêu cầu của bạn</span> dưới đây. Hãy bấm{" "}
-                        <span style={{ color: "#3A86ff", fontWeight: "bold" }}>"Xác nhận"</span> để AI bắt đầu tạo hình ảnh cho tập thơ của bạn.
+                <div style={{ textAlign: "center" }}>
+                    <h2 style={{
+                        fontSize: "1.8rem",
+                        color: "#5a3921",
+                        marginBottom: "10px",
+                        fontWeight: "600"
+                    }}>
+                        <FiImage style={{ marginRight: "10px" }} />
+                        AI Tạo Hình Ảnh
+                    </h2>
+
+                    <p style={{
+                        fontSize: "1.1em",
+                        color: "#8b5a2b",
+                        marginBottom: "25px",
+                        fontStyle: "italic"
+                    }}>
+                        "Mỗi tập thơ là một thế giới riêng, hãy để AI giúp bạn thể hiện điều đó qua hình ảnh"
                     </p>
-                    <div style={{ marginBottom: "10px" }}>
-                        <div style={{ marginBottom: "10px" }}>
-                            <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>Loại hình ảnh</label>
-                            <Select defaultValue="cơ bản" style={{ width: "100%" }} onChange={handleOptionChange}>
+
+                    <div style={{
+                        marginBottom: "25px",
+                        textAlign: "left"
+                    }}>
+                        <div style={{ marginBottom: "20px" }}>
+                            <label style={{
+                                display: "block",
+                                marginBottom: "8px",
+                                fontWeight: "600",
+                                color: "#5a3921",
+                                fontSize: "1.1em"
+                            }}>
+                                <FiSliders style={{ marginRight: "8px" }} />
+                                Phong cách hình ảnh
+                            </label>
+                            <Select
+                                defaultValue="cơ bản"
+                                style={{ width: "100%" }}
+                                onChange={handleOptionChange}
+                                dropdownStyle={{
+                                    fontFamily: "'Cormorant Garamond', serif"
+                                }}
+                            >
                                 <Option value="cơ bản">Cơ bản</Option>
                                 <Option value="nâng cao">Nâng cao</Option>
                             </Select>
                         </div>
-                        <label style={{ display: "block", marginBottom: "4px", fontWeight: "bold" }}>Yêu cầu của bạn</label>
-                        <Input placeholder="Hãy miêu tả hình ảnh bạn muốn" value={imagePrompt} onChange={handleImagePromptChange} />
+
+                        <div>
+                            <label style={{
+                                display: "block",
+                                marginBottom: "8px",
+                                fontWeight: "600",
+                                color: "#5a3921",
+                                fontSize: "1.1em"
+                            }}>
+                                <FiEdit3 style={{ marginRight: "8px" }} />
+                                Gợi ý cho AI
+                            </label>
+                            <Input.TextArea
+                                placeholder="Ví dụ: 'Một bức tranh mùa thu với lá vàng rơi, phong cách thủy mặc cổ điển'"
+                                value={imagePrompt}
+                                onChange={handleImagePromptChange}
+                                rows={3}
+                                style={{
+                                    padding: "12px 15px",
+                                    borderRadius: "6px",
+                                    border: "1px solid #e8d9c5",
+                                    fontSize: "1.1em",
+                                    fontFamily: "'Cormorant Garamond', serif",
+                                    resize: "none"
+                                }}
+                            />
+                        </div>
+                    </div>
+
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: "15px",
+                        marginTop: "30px"
+                    }}>
+                        <Button
+                            onClick={handleCancelRenderAIImageModal}
+                            style={{
+                                padding: "10px 25px",
+                                background: "none",
+                                color: "#8b5a2b",
+                                border: "1px solid #e8d9c5",
+                                borderRadius: "30px",
+                                fontSize: "1em",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                ':hover': {
+                                    backgroundColor: "#f8f4f0"
+                                }
+                            }}
+                        >
+                            <FiXCircle style={{ marginRight: "8px" }} />
+                            Đóng
+                        </Button>
+
+                        <Button
+                            onClick={handleAIRenderImage}
+                            style={{
+                                padding: "10px 25px",
+                                background: "linear-gradient(135deg, #8b5a2b, #5a3921)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "30px",
+                                fontSize: "1em",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                ':hover': {
+                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 4px 8px rgba(139, 90, 43, 0.3)"
+                                }
+                            }}
+                        >
+                            <FiZap style={{ marginRight: "8px" }} />
+                            Tạo hình ảnh
+                        </Button>
                     </div>
                 </div>
             </Modal>
@@ -405,36 +679,44 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
             <Modal
                 open={isPreviewModalOpen}
                 onCancel={handleCancelPreview}
-                footer={
-                    <>
-                        <Button color="danger" variant="solid" onClick={handleCancelPreview}>
-                            Hủy
-                        </Button>
-                        <Button color="green" variant="solid" onClick={handleAIRenderImage}>
-                            Tạo mới
-                        </Button>
-                        <Button color="primary" variant="solid" onClick={handleApplyPreviewImage}>
-                            Áp dụng
-                        </Button>
-                    </>
-                }
+                footer={null}
+                centered
+                width="800px"
+                style={{
+                    fontFamily: "'Cormorant Garamond', serif"
+                }}
+                bodyStyle={{
+                    padding: "30px"
+                }}
             >
                 <div style={{ textAlign: "center" }}>
-                    <h2>Bạn có muốn sử dụng hình này?</h2>
-                    <p style={{ fontSize: "0.95em", color: "#999", marginBottom: "10px", fontWeight: "bold" }}>
-                        Hãy chọn hình bạn muốn sử dụng. Nếu không hài lòng, bấm “Tạo mới” để tạo thêm.
+                    <h2 style={{
+                        fontSize: "1.8rem",
+                        color: "#5a3921",
+                        marginBottom: "5px",
+                        fontWeight: "600"
+                    }}>
+                        <FiImage style={{ marginRight: "10px" }} />
+                        Hình ảnh đã tạo
+                    </h2>
+
+                    <p style={{
+                        fontSize: "1.1em",
+                        color: "#8b5a2b",
+                        marginBottom: "25px"
+                    }}>
+                        Chọn hình ảnh bạn muốn sử dụng cho tập thơ
                     </p>
+
                     {previewImages.length > 0 ? (
                         <div
                             style={{
                                 display: "grid",
-                                gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))",
-                                gap: "0px",
+                                gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+                                gap: "20px",
                                 maxHeight: "400px",
                                 overflowY: "auto",
-                                width: "100%",
-                                maxWidth: "280px",
-                                margin: "0 auto"
+                                padding: "10px"
                             }}
                         >
                             {previewImages.map((imgUrl, index) => (
@@ -442,12 +724,19 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
                                     key={index}
                                     onClick={() => setPreviewSelectedIndex(index)}
                                     style={{
+                                        position: "relative",
                                         border: previewSelectedIndex === index
-                                            ? "2px solid #1890ff"
-                                            : "2px solid transparent",
-                                        padding: "4px",
+                                            ? "3px solid #8b5a2b"
+                                            : "2px solid #e8d9c5",
+                                        borderRadius: "8px",
+                                        padding: "5px",
                                         cursor: "pointer",
-                                        marginBottom: "10px"
+                                        transition: "all 0.3s ease",
+                                        overflow: "hidden",
+                                        ':hover': {
+                                            transform: "translateY(-5px)",
+                                            boxShadow: "0 10px 20px rgba(139, 90, 43, 0.1)"
+                                        }
                                     }}
                                 >
                                     <img
@@ -455,21 +744,132 @@ const CreateCollection = ({ handleBack, handleBackDetail, collection, setIsEditi
                                         alt={`Preview ${index + 1}`}
                                         style={{
                                             width: "100%",
-                                            height: "146px",
-                                            objectFit: "cover"
+                                            height: "160px",
+                                            objectFit: "cover",
+                                            borderRadius: "5px"
                                         }}
                                     />
+                                    {previewSelectedIndex === index && (
+                                        <div style={{
+                                            position: "absolute",
+                                            top: "10px",
+                                            right: "10px",
+                                            background: "rgba(139, 90, 43, 0.9)",
+                                            color: "#fff",
+                                            borderRadius: "50%",
+                                            width: "28px",
+                                            height: "28px",
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "center"
+                                        }}>
+                                            <FiCheck />
+                                        </div>
+                                    )}
                                 </div>
                             ))}
                         </div>
                     ) : (
-                        <p>Chưa có hình ảnh nào được tạo</p>
+                        <div style={{
+                            padding: "40px",
+                            border: "2px dashed #e8d9c5",
+                            borderRadius: "8px",
+                            margin: "20px 0"
+                        }}>
+                            <FiImage style={{
+                                fontSize: "3em",
+                                color: "#e8d9c5",
+                                marginBottom: "15px"
+                            }} />
+                            <p style={{
+                                color: "#8b5a2b",
+                                fontSize: "1.1em"
+                            }}>
+                                Chưa có hình ảnh nào được tạo
+                            </p>
+                        </div>
                     )}
+
+                    <div style={{
+                        display: "flex",
+                        justifyContent: "center",
+                        gap: "15px",
+                        marginTop: "30px"
+                    }}>
+                        <Button
+                            onClick={handleCancelPreview}
+                            style={{
+                                padding: "10px 25px",
+                                background: "none",
+                                color: "#8b5a2b",
+                                border: "1px solid #e8d9c5",
+                                borderRadius: "30px",
+                                fontSize: "1em",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                ':hover': {
+                                    backgroundColor: "#f8f4f0"
+                                }
+                            }}
+                        >
+                            <FiXCircle style={{ marginRight: "8px" }} />
+                            Hủy bỏ
+                        </Button>
+
+                        <Button
+                            onClick={handleAIRenderImage}
+                            style={{
+                                padding: "10px 25px",
+                                background: "linear-gradient(135deg, #d4a373, #8b5a2b)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "30px",
+                                fontSize: "1em",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                ':hover': {
+                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 4px 8px rgba(139, 90, 43, 0.3)"
+                                }
+                            }}
+                        >
+                            <FiRefreshCw style={{ marginRight: "8px" }} />
+                            Tạo mới
+                        </Button>
+
+                        <Button
+                            onClick={handleApplyPreviewImage}
+                            style={{
+                                padding: "10px 25px",
+                                background: "linear-gradient(135deg, #8b5a2b, #5a3921)",
+                                color: "#fff",
+                                border: "none",
+                                borderRadius: "30px",
+                                fontSize: "1em",
+                                cursor: "pointer",
+                                transition: "all 0.3s ease",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: "8px",
+                                ':hover': {
+                                    transform: "translateY(-2px)",
+                                    boxShadow: "0 4px 8px rgba(139, 90, 43, 0.3)"
+                                }
+                            }}
+                        >
+                            <FiCheck style={{ marginRight: "8px" }} />
+                            Áp dụng
+                        </Button>
+                    </div>
                 </div>
             </Modal>
-
         </div>
     );
 };
 
 export default CreateCollection;
+
+
