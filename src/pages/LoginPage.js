@@ -53,12 +53,12 @@ const LoginPage = () => {
             );
 
             if (response.status === 200) {
-                const { accessToken, refreshToken, role } = response.data.data;
+                const { accessToken, refreshToken, role,avatar } = response.data.data;
 
                 localStorage.setItem("accessToken", accessToken);
                 localStorage.setItem("refreshToken", refreshToken);
                 localStorage.setItem("role", JSON.stringify(role));
-
+                localStorage.setItem("avatar", JSON.stringify(avatar));
                 console.log("Login successful:", response.data.message);
 
                 const decodedToken = jwtDecode(accessToken);
