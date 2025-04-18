@@ -16,20 +16,6 @@ const formatDate = (dateString) => {
     return date.toLocaleDateString('vi-VN', options);
 };
 
-const poemType = {
-    1: "Thơ tự do",
-    2: "Thơ Lục bát",
-    3: "Thơ Song thất lục bát",
-    4: "Thơ Thất ngôn tứ tuyệt",
-    5: "Thơ Ngũ ngôn tứ tuyệt",
-    6: "Thơ Thất ngôn bát cú",
-    7: "Thơ bốn chữ",
-    8: "Thơ năm chữ",
-    9: "Thơ sáu chữ",
-    10: "Thơ bảy chữ",
-    11: "Thơ tám chữ",
-}
-
 const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collections, handleMove, onPoemCreated }) => {
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [moveMenuItems, setMoveMenuItems] = useState([]);
@@ -217,13 +203,13 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     </div>
                     <div style={styles.headerRight}>
                         <button style={styles.iconButton} onClick={() => onBookmark(item.id)}>
-                            {bookmarked ? <IoBookmark color="#FFCE1B" /> : <CiBookmark />}
+                            {bookmarked ? <IoBookmark size={15} color="#FFCE1B" /> : <CiBookmark size={15} />}
                         </button>
 
 
                         <Dropdown overlay={overlayMenu} trigger={["click"]}>
                             <button style={styles.iconButton}>
-                                <IoIosMore />
+                                <IoIosMore size={15} />
                             </button>
                         </Dropdown>
 
@@ -231,7 +217,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
-                <p style={styles.poemType}>Thể loại: {poemType[item.type]}</p>
+                <p style={styles.poemType}>Thể loại: {item?.type?.name}</p>
                 <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
@@ -250,11 +236,11 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     {item?.isFamousPoet ? <></> :
                         <div style={styles.statsContainer}>
                             <button style={styles.likeButton} onClick={() => onLike(item.id)}>
-                                {liked ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
+                                {liked ? <BiSolidLike size={17} color="#2a7fbf" /> : <BiLike size={18} />}
                                 <span style={styles.statItem}>{item.likeCount || 0}</span>
                             </button>
                             <button style={styles.likeButton}>
-                                <BiCommentDetail size={20} />
+                                <BiCommentDetail size={17} />
                                 <span style={styles.statItem}>{item.commentCount || 0}</span>
                             </button>
                         </div>
@@ -284,16 +270,16 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 
 const styles = {
     poemImageContainer: {
-        width: "168px",
-        height: "268px",
+        width: "134px",
+        height: "234px",
         border: "1px solid #000",
         marginLeft: "20px",
         alignSelf: "center"
     },
 
     poemImage: {
-        width: "168px",
-        maxWidth: "168px",
+        width: "134px",
+        maxWidth: "134px",
         height: "100%",
         objectFit: "cover", // This will prevent stretching
         objectPosition: "center" // Center the image
@@ -304,8 +290,8 @@ const styles = {
     },
 
     avatar: {
-        width: "52px",
-        height: "52px",
+        width: "40px",
+        height: "40px",
         borderRadius: "50%",
         objectFit: "cover",
         border: "2px solid #eee",
@@ -342,24 +328,25 @@ const styles = {
     author: {
         fontWeight: "600",
         color: "#2a7fbf",
-        cursor: "pointer"
+        cursor: "pointer",
+        fontSize: "0.8rem",
     },
 
     poemTitle: {
         color: "#222",
         margin: "0",
-        fontSize: "1.2rem",
+        fontSize: "1rem",
     },
 
     poemType: {
         color: "#444",
         margin: "1px 0 0",
-        fontSize: "0.85rem",
+        fontSize: "0.8rem",
     },
 
     poemDescription: {
         color: "#444",
-        fontSize: "0.85rem",
+        fontSize: "0.8rem",
         marginTop: "1px",
         lineHeight: "1.4",
         marginBottom: "5px"
@@ -368,7 +355,8 @@ const styles = {
     poemCollection: {
         color: "#444",
         fontSize: "0.8rem",
-        marginBottom: 0
+        marginBottom: 0,
+        marginTop: 0
     },
 
     poemContent: {
@@ -404,11 +392,10 @@ const styles = {
         whiteSpace: 'pre-wrap',
         margin: "0 0 0 0",
         lineHeight: "1.6",
-        fontSize: "1rem",
-        textIndent: '0.8rem',
+        fontSize: "0.8rem",
+        textIndent: '0.7rem',
     },
     ellipsis: {
-
         background: 'white',
         paddingLeft: '4px',
     },
@@ -416,7 +403,7 @@ const styles = {
     statItem: {
         display: "flex",
         alignItems: "center",
-        fontSize: "1.4em"
+        fontSize: "1rem"
     },
 
     viewButton: {
@@ -437,7 +424,7 @@ const styles = {
 
     postDate: {
         color: "#888",
-        fontSize: "0.85rem",
+        fontSize: "0.8rem",
         textAlign: "right",
     },
 

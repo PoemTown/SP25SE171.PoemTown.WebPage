@@ -23,10 +23,8 @@ const Headerdefault = () => {
         <a href="/about-poemtown" style={styles.navLink}>
           Về PoemTown
         </a>
-        <a href="#about-us" style={styles.navLink}>
-          Về chúng tôi
-        </a>
-        <a href="#knowledge" style={styles.navLink} onClick={() => navigate("/knowledge")}>Kiến thức </a>
+        <a href="/knowledge" style={styles.navLink} onClick={() => navigate("/knowledge")}>Kiến thức </a>
+        <a href="/poetsamples" style={styles.navLink}>Nhà thơ nổi tiếng</a>
       </nav>
       <div style={styles.buttons}>
         <button style={styles.loginButton} onClick={handleLogin}>
@@ -42,10 +40,11 @@ const Headerdefault = () => {
 
 const styles = {
   header: {
+    height: "80px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "10px 20px",
+    padding: "0px 20px",
     backgroundColor: "#fff",
     borderBottom: "1px solid #ddd",
     boxShadow: "0px 3px 6px 0px #0000004D",
@@ -56,20 +55,21 @@ const styles = {
     flex: "1",
     display: "flex",
     justifyContent: "flex-start",
+    cursor: "pointer"
   },
   logoImage: {
-    height: "60px",
+    height: "50px",
   },
   nav: {
     flex: "2",
     display: "flex",
     justifyContent: "center",
-    gap: "20px",
+    gap: "10px",
     flexWrap: "wrap",
   },
   navLink: {
     textDecoration: "none",
-    fontSize: "16px",
+    fontSize: "0.9rem",
     color: "#333",
     fontWeight: "bold",
     padding: "5px 10px",

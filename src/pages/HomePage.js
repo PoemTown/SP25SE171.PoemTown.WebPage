@@ -147,7 +147,7 @@ const navTabs = [
   { key: "collections", label: "Bộ sưu tập", href: "#collections" },
   { key: "bookmark", label: "Bookmark", href: "#bookmark" },
   { key: "audioread", label: "AudioRead", href: "#audioread" },
-  { key: "community", label: "Tuyển tập cộng đồng", href: "#community" },
+  // { key: "community", label: "Tuyển tập cộng đồng", href: "#community" },
   { key: "yourpage", label: "Trang của bạn", href: "#yourpage" },
 ];
 
@@ -270,7 +270,7 @@ const styles = {
     fontWeight: "bolder",
   },
   content: {
-    margin: "0px 129px"
+   
   }
 };
 

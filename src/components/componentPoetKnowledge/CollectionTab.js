@@ -117,10 +117,7 @@ const CollectionTab = ({ poet }) => {
         try {
             const response = await fetch(endpoint, {
                 method: currentState ? "DELETE" : "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`
-                }
+                headers: requestHeaders
             });
 
             if (response.ok) {

@@ -54,19 +54,19 @@ const getStatusColor = (status) => {
     }
 };
 
-const poemType = {
-    1: "Thơ tự do",
-    2: "Thơ Lục bát",
-    3: "Thơ Song thất lục bát",
-    4: "Thơ Thất ngôn tứ tuyệt",
-    5: "Thơ Ngũ ngôn tứ tuyệt",
-    6: "Thơ Thất ngôn bát cú",
-    7: "Thơ bốn chữ",
-    8: "Thơ năm chữ",
-    9: "Thơ sáu chữ",
-    10: "Thơ bảy chữ",
-    11: "Thơ tám chữ",
-}
+// const poemType = {
+//     1: "Thơ tự do",
+//     2: "Thơ Lục bát",
+//     3: "Thơ Song thất lục bát",
+//     4: "Thơ Thất ngôn tứ tuyệt",
+//     5: "Thơ Ngũ ngôn tứ tuyệt",
+//     6: "Thơ Thất ngôn bát cú",
+//     7: "Thơ bốn chữ",
+//     8: "Thơ năm chữ",
+//     9: "Thơ sáu chữ",
+//     10: "Thơ bảy chữ",
+//     11: "Thơ tám chữ",
+// }
 
 const pageSizeOptions = [
     { value: 10, label: '10 bản ghi' },
@@ -263,6 +263,7 @@ const ReportFromUser = () => {
                                 <TableCell><strong>#</strong></TableCell>
                                 <TableCell><strong>Loại báo cáo</strong></TableCell>
                                 <TableCell><strong>Lý do</strong></TableCell>
+                                <TableCell><strong>Mô tả</strong></TableCell>
                                 <TableCell><strong>Trạng thái</strong></TableCell>
                                 <TableCell><strong>Người báo cáo</strong></TableCell>
                                 <TableCell><strong>Bài thơ được báo cáo</strong></TableCell>
@@ -279,7 +280,8 @@ const ReportFromUser = () => {
                                 >
                                     <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                     <TableCell>{getReportType(report.type)}</TableCell>
-                                    <TableCell>{report.reportReason || "Không có lý do"}</TableCell>
+                                    <TableCell>{report?.reportMessage?.description || "Không có lý do"}</TableCell>
+                                    <TableCell>{report?.reportReason || "Không có mô tảtả"}</TableCell>
                                     <TableCell>
                                         <Chip
                                             label={getReportStatus(report.status)}
@@ -387,10 +389,10 @@ const ReportFromUser = () => {
                                     </div>
                                     <div style={{ display: "flex", flexDirection: "row" }}>
                                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                                            <p style={{ margin: 0 }}>Thể loại: {poemType[poemDetect.type]}</p>
+                                            <p style={{ margin: 0 }}>Thể loại: {poemDetect?.type?.name}</p>
                                         </div>
                                         <div style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                                            <p style={{ margin: 0 }}>Thể loại: {poemType[plagiarismFromPoems[selectedPlagiarismIndex].type]}</p>
+                                            <p style={{ margin: 0 }}>Thể loại: {plagiarismFromPoems[selectedPlagiarismIndex]?.type?.name}</p>
                                         </div>
                                     </div>
 
