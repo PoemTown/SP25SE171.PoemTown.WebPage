@@ -142,8 +142,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
       switch (selectedType) {
         case '1': // Thơ tự do - không có ràng buộc về số chữ
-        return true;
-        case '2': 
+          return true;
+        case '2':
           const lastLineWords = lines[lines.length - 1].trim().split(/\s+/).length;
           if (lastLineWords !== 8) {
             message.error("Lục bát phải kết thúc bằng câu 8 chữ!");
@@ -253,7 +253,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       setIsLoading(false);
       return;
     }
-    
+
 
 
     // Get formatted content from textarea preview
@@ -310,14 +310,14 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const formatContent = (content, typeId) => {
     // Tìm thể loại thơ tương ứng trong danh sách từ API
     const poemType = poemTypes.find(type => type.id === typeId);
-    
+
     // Nếu không tìm thấy hoặc là thơ tự do (type = 1)
     if (!poemType || typeId === '1') {
       // Xử lý thơ tự do (giữ nguyên format)
       const parser = new DOMParser();
       const doc = parser.parseFromString(content, 'text/html');
       const lines = [];
-      
+
       doc.body.childNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
           let lineContent = '';
@@ -333,7 +333,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
           });
         }
       });
-      
+
       return lines
         .map((line) => {
           const leadingWhitespace = line.match(/^\s*/)[0];
@@ -342,11 +342,11 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         })
         .join('\n');
     }
-  
+
     // Chuyển đổi content HTML sang plain text
     const plainText = content.replace(/<[^>]+>/g, '\n').replace(/\n+/g, '\n');
     const allWords = plainText.split(/\s+/).filter(word => word.trim() !== '');
-  
+
     // Hàm phụ trợ định dạng thơ có số chữ cố định mỗi dòng
     const formatFixedWordPoem = (words, wordsPerLine) => {
       const lines = [];
@@ -356,14 +356,14 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       }
       return lines.join('\n');
     };
-  
+
     // Xác định cách định dạng dựa trên tên thể loại thơ
     switch (poemType.name) {
       case 'Thơ Lục Bát':
         let lucBatLines = [];
         let currentLine = [];
         let currentLineType = 6; // Bắt đầu với câu lục (6 chữ)
-  
+
         allWords.forEach((word) => {
           currentLine.push(word);
           if (currentLine.length === currentLineType) {
@@ -376,7 +376,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             currentLineType = isBatLine ? 6 : 8; // Luân phiên 6-8
           }
         });
-  
+
         // Thêm dòng cuối nếu còn
         if (currentLine.length > 0) {
           lucBatLines.push({
@@ -384,23 +384,23 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             type: currentLineType === 8 ? 'bat' : 'luc'
           });
         }
-  
+
         // Định dạng với thụt đầu dòng
         return lucBatLines.map((line, index) => {
           const indent = line.type === 'luc' ? '       ' : '';
           return indent + line.text;
         }).join('\n');
-  
+
       case 'Thơ Song Thất Lục Bát':
         const songThatLines = [];
         const linePattern = [7, 7, 6, 8]; // 2 câu 7, 1 câu 6, 1 câu 8
         let patternIndex = 0;
         let currentLine2 = [];
-  
+
         allWords.forEach(word => {
           currentLine2.push(word);
           const targetLength = linePattern[patternIndex];
-  
+
           if (currentLine2.length === targetLength) {
             songThatLines.push({
               text: currentLine2.join(' '),
@@ -410,7 +410,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             patternIndex = (patternIndex + 1) % 4; // Lặp lại pattern
           }
         });
-  
+
         // Thêm dòng cuối nếu còn
         if (currentLine2.length > 0) {
           songThatLines.push({
@@ -418,33 +418,33 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             type: linePattern[patternIndex]
           });
         }
-  
+
         return songThatLines.map(line => line.text).join('\n');
-  
+
       case 'Thơ Thất Ngôn Tứ Tuyệt':
         return formatFixedWordPoem(allWords, 7).split('\n').slice(0, 4).join('\n');
-  
+
       case 'Thơ Ngũ Ngôn Tứ Tuyệt':
         return formatFixedWordPoem(allWords, 5).split('\n').slice(0, 4).join('\n');
-  
+
       case 'Thơ Thất Ngôn Bát Cú':
         return formatFixedWordPoem(allWords, 7).split('\n').slice(0, 8).join('\n');
-  
+
       case 'Thơ 4 Chữ':
         return formatFixedWordPoem(allWords, 4);
-  
+
       case 'Thơ 5 Chữ':
         return formatFixedWordPoem(allWords, 5);
-  
+
       case 'Thơ 6 Chữ':
         return formatFixedWordPoem(allWords, 6);
-  
+
       case 'Thơ 7 Chữ':
         return formatFixedWordPoem(allWords, 7);
-  
+
       case 'Thơ 8 Chữ':
         return formatFixedWordPoem(allWords, 8);
-  
+
       default:
         // Mặc định trả về nội dung gốc nếu không xác định được thể loại
         return allWords.join(' ');
@@ -1159,20 +1159,26 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             </div> */}
           </div>
           <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "5px", height: "100%" }}>
+            <div style={{ marginBottom: "8px" }}>
+              <label style={{ fontWeight: "bold", fontSize: "16px" }}>Thể loại thơ</label>
+            </div>
             <Select
               value={selectedType}
               onChange={(value) => setSelectedType(value)}
-              style={{padding: "5px",
-              fontSize: "16px",
-              borderRadius: "5px",
-              border: "1px solid #ccc",}}
+              style={{
+                padding: "5px",
+                fontSize: "16px",
+                borderRadius: "5px",
+                border: "1px solid #ccc",
+              }}
             >
-              {poemTypes.map(type => (
+              {poemTypes.map((type) => (
                 <Option key={type.id} value={type.id}>
                   {type.name}
                 </Option>
               ))}
             </Select>
+
             <div style={{ width: "100%", flexGrow: 1, display: "flex", flexDirection: "column" }}>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "bold" }}>
                 Cách thơ bạn hiển thị
