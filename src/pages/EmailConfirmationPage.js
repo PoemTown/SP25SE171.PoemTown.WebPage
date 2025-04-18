@@ -1,9 +1,9 @@
 import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom"; // Import useNavigate
+import { useLocation, useNavigate } from "react-router-dom";
 
 const EmailConfirmationPage = () => {
   const location = useLocation();
-  const navigate = useNavigate(); // Sử dụng useNavigate để chuyển hướng
+  const navigate = useNavigate(); 
   const email = location.state?.email || "Email không được cung cấp";
 
   const [otp, setOtp] = useState(new Array(6).fill(""));

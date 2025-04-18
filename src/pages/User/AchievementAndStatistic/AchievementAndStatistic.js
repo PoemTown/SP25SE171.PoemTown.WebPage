@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
 import { Spin } from "antd";
-import { FaMedal } from "react-icons/fa6";
+import { useState } from "react";
+import { FaMedal, FaPenAlt, FaBook, FaHeadphones, FaHeart, FaUserFriends, FaBookmark } from "react-icons/fa";
 
 const AchievementAndStatistic = ({
   totalFollowers,
@@ -20,59 +20,53 @@ const AchievementAndStatistic = ({
 }) => {
   const [statistic, setStatistic] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  // const accessToken = localStorage.getItem("accessToken");
-  // const requestHeaders = {
-  //   "Content-Type": "application/json",
-  //   ...(accessToken && { Authorization: `Bearer ${accessToken}` })
-  // };
-
-  // useEffect(() => {
-  //   const fetchStatistic = async () => {
-  //     try {
-  //       const response = await fetch(
-  //         "process.env.REACT_APP_API_BASE_URL/statistics/v1",
-  //         {
-  //           headers: requestHeaders,
-  //         }
-  //       );
-  //       const statisticData = await response.json();
-  //       if (statisticData.statusCode === 200) {
-  //         setStatistic(statisticData.data);
-  //       }
-  //     } catch (error) {
-  //       console.error("Error fetching statistic:", error);
-  //     } finally {
-  //       setIsLoading(false);
-  //     }
-  //   };
-
-  //   fetchStatistic();
-  // }, [accessToken]);
-
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "30px", width: "100%" }}>
+    <div style={{
+      display: "flex",
+      flexDirection: "column",
+      gap: "24px",
+      width: "100%",
+      fontFamily: "'Noto Serif', serif"
+    }}>
       {/* Thành tựu cá nhân */}
       <div
         style={{
-          borderRadius: "10px",
+          borderRadius: "12px",
           border: `2px solid ${achievementBorder}`,
-          boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
+          background: achievementBackground || "linear-gradient(to right, #fff5e6, #ffe9cc)",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          position: "relative",
+          overflow: "hidden",
+          "::before": {
+            content: '""',
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            height: "4px",
+            background: "repeating-linear-gradient(90deg, transparent, transparent 15px, #ffd8a8 15px, #ffd8a8 30px)"
+          }
         }}
       >
         <div
           style={{
             backgroundImage: achievementTitleBackground ? `url("${achievementTitleBackground}")` : "none",
-            height: 53,
-            borderRadius: "10px 10px 0 0",
+            padding: "16px",
             display: "flex",
             alignItems: "center",
-            justifyContent: "center",
-            borderBottom: `2px solid ${achievementBorder}`,
-            marginBottom: 0,
+            gap: "12px",
+            borderBottom: `2px solid ${achievementBorder}`
           }}
         >
-          <h3 style={{ fontWeight: "bold", margin: 0, textAlign: "center", color: achievementTitleColorCode }}>
-            Thành tựu cá nhân
+          <FaMedal style={{ color: achievementTitleColorCode, fontSize: "24px" }} />
+          <h3 style={{
+            margin: 0,
+            color: achievementTitleColorCode,
+            fontSize: "18px",
+            fontWeight: 600,
+            letterSpacing: "0.5px"
+          }}>
+            Thành Tựu Thi Nhân
           </h3>
         </div>
         <div
@@ -82,55 +76,96 @@ const AchievementAndStatistic = ({
             borderRadius: "0 0 10px 10px",
           }}
         >
-          <ul
-            style={{
-              fontSize: "14px",
-              color: achievementBackgroundColorCode,
-              listStyle: "none",
-              padding: 0,
-              margin: 0,
-            }}
-          >
+          <div style={{
+            display: "grid",
+            gap: "12px",
+            position: "relative",
+            "::before": {
+              content: '""',
+              position: "absolute",
+              left: "8px",
+              top: 0,
+              bottom: 0,
+              width: "2px",
+              background: "#ffe9cc"
+            }
+          }}>
             {achievements && achievements.length > 0 ? (
               achievements.slice(0, 4).map((item) => (
-                <li key={item.id} style={{ marginBottom: "4px" }}>
-                  <span
-                    style={{
-                      marginRight: "8px",
-                      backgroundColor: "#fff",
-                      borderRadius: "30px",
-                      padding: "1px",
-                    }}
-                  >
-                    {item.rank === 1 ? (
-                      <>🥇</>
-                    ) : item.rank === 2 ? (
-                      <>🥈</>
-                    ) : item.rank === 3 ? (
-                      <>🥉</>
-                    ) : (
-                      <>🎓</>
-                    )}
+                <div
+                  key={item.id}
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                    paddingLeft: "24px",
+                    position: "relative"
+                  }}
+                >
+                  <div style={{
+                    position: "absolute",
+                    left: 0,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: "20px",
+                    height: "20px",
+                    borderRadius: "50%",
+                    background: "#fff",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    boxShadow: "0 2px 4px rgba(0,0,0,0.1)"
+                  }}>
+                    {item.rank === 1 ? "🥇" :
+                      item.rank === 2 ? "🥈" :
+                        item.rank === 3 ? "🥉" : "🎓"}
+                  </div>
+                  <span style={{
+                    color: achievementBackgroundColorCode,
+                    fontSize: "15px",
+                    lineHeight: 1.4
+                  }}>
+                    {item.name}
                   </span>
-                  {item.name}
-                </li>
+                </div>
               ))
             ) : (
-              <li style={{ textAlign: "center" }}>Hiện chưa có thành tựu</li>
+              <div style={{
+                textAlign: "center",
+                color: achievementBackgroundColorCode,
+                padding: "16px",
+                fontStyle: "italic"
+              }}>
+                Hành trình thơ đang chờ đón...
+              </div>
             )}
-          </ul>
+          </div>
+
           {achievements && achievements.length > 0 && (
-            <a
-              href="#"
-              style={{
-                color: "#007bff",
-                fontSize: "12px",
-                display: "block",
-                marginTop: "10px",
-              }}
-            >
-              Xem thêm &gt;
-            </a>
+            <div style={{
+              textAlign: "right",
+              marginTop: "16px",
+              borderTop: `1px dashed ${achievementBorder}`,
+              paddingTop: "12px"
+            }}>
+              <a
+                href="#"
+                style={{
+                  color: achievementTitleColorCode,
+                  fontSize: "14px",
+                  textDecoration: "none",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  gap: "8px",
+                  transition: "all 0.3s",
+                  ":hover": {
+                    transform: "translateX(4px)"
+                  }
+                }}
+              >
+                Xem thêm thành tựu <span style={{ fontSize: "18px" }}>→</span>
+              </a>
+            </div>
           )}
         </div>
 
@@ -139,28 +174,35 @@ const AchievementAndStatistic = ({
       {/* Thống kê người dùng */}
       <div
         style={{
-          borderRadius: "10px",
+          borderRadius: "12px",
           border: `2px solid ${statisticBorder}`,
-          boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
+          background: statisticBackground || "#f8f5ff",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+          position: "relative"
         }}
       >
         <div style={{
           backgroundImage: statisticTitleBackground ? `url("${statisticTitleBackground}")` : "none",
-          height: 53,
-          borderRadius: "10px 10px 0 0",
+          padding: "16px",
           display: "flex",
           alignItems: "center",
-          justifyContent: "center",
-          borderBottom: `2px solid ${statisticBorder}`,
+          gap: "12px",
+          borderTopLeftRadius: "9px",
+          borderTopRightRadius: "9px",
+          borderBottom: `2px solid ${statisticBorder}`
         }}>
-          <h3
-            style={{
-              fontWeight: "bold", color: statisticTitleColorCode, margin: 0, textAlign: "center"
-            }}
-          >
-            Thống kê người dùng
+          <FaPenAlt style={{ color: statisticTitleColorCode, fontSize: "22px" }} />
+          <h3 style={{ 
+            margin: 0, 
+            color: statisticTitleColorCode,
+            fontSize: "18px",
+            fontWeight: 600,
+            letterSpacing: "0.5px"
+          }}>
+            Thống Kê Thi Phẩm
           </h3>
         </div>
+
         <div
           style={{
             backgroundImage: statisticBackground ? `url("${statisticBackground}")` : "none",
@@ -168,23 +210,81 @@ const AchievementAndStatistic = ({
             borderRadius: "0 0 10px 10px",
           }}
         >
-          <ul style={{ fontSize: "14px", color: statisticBackgroundColorCode, listStyle: "none", padding: 0, margin: 0 }}>
-            <li>Tổng bài viết: {isLoading ? <Spin size="small" /> : userStatistic?.totalPoems || 0}</li>
-            <li>Tổng bộ sưu tập: {isLoading ? <Spin size="small" /> : userStatistic?.totalCollections || 0}</li>
-            <li>Tổng audio cá nhân: {isLoading ? <Spin size="small" /> : userStatistic?.totalPersonalAudios || 0}</li>
-            <li>Tổng lượt thích: {isLoading ? <Spin size="small" /> : userStatistic?.totalLikes || 0}</li>
-            <li>Đang theo dõi: {isLoading ? <Spin size="small" /> : totalFollowings || 0}</li>
-            <li>Người theo dõi: {isLoading ? <Spin size="small" /> : totalFollowers || 0}</li>
-            <li>Bookmark bài viết: {isLoading ? <Spin size="small" /> : userStatistic?.poemBookmarks || 0}</li>
-            <li>Bookmark bộ sưu tập: {isLoading ? <Spin size="small" /> : userStatistic?.collectionBookmarks || 0}</li>
-          </ul>
-          <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
+          <div style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(160px, 1fr))",
+            gap: "20px",
+            color: statisticBackgroundColorCode
+          }}>
+            <StatItem 
+              icon={<FaBook style={{ fontSize: "18px" }}/>} 
+              label="Bài thơ" 
+              value={userStatistic?.totalPoems || 0}
+            />
+            <StatItem 
+              icon={<FaBookmark style={{ fontSize: "18px" }}/>}
+              label="Bộ sưu tập" 
+              value={userStatistic?.totalCollections || 0}
+            />
+            <StatItem 
+              icon={<FaHeadphones style={{ fontSize: "18px" }}/>}
+              label="Bản ghi âm" 
+              value={userStatistic?.totalPersonalAudios || 0}
+            />
+            <StatItem 
+              icon={<FaHeart style={{ fontSize: "18px" }}/>}
+              label="Lượt thích" 
+              value={userStatistic?.totalLikes || 0}
+            />
+            <StatItem 
+              icon={<FaUserFriends style={{ fontSize: "18px" }}/>}
+              label="Đang theo dõi" 
+              value={totalFollowings || 0}
+            />
+            <StatItem 
+              icon={<FaUserFriends style={{ transform: "scaleX(-1)", fontSize: "18px" }}/>}
+              label="Người theo dõi" 
+              value={totalFollowers || 0}
+            />
+          </div>
+          {/* <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
             Xem thêm &gt;
-          </a>
+          </a> */}
         </div>
       </div>
     </div>
   );
 };
-
+const StatItem = ({ icon, label, value }) => (
+  <div style={{
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    padding: "12px",
+    background: "rgba(255,255,255,0.9)",
+    borderRadius: "8px",
+    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+    transition: "all 0.3s",
+    ":hover": {
+      transform: "translateY(-2px)"
+    }
+  }}>
+    <div style={{ 
+      display: "flex",
+      alignItems: "center",
+      gap: "8px",
+      marginBottom: "8px"
+    }}>
+      {icon}
+      <span style={{ fontSize: "14px", fontWeight: 500 }}>{label}</span>
+    </div>
+    <span style={{ 
+      fontSize: "18px",
+      fontWeight: 600,
+      color: "#7e57c2"
+    }}>
+      {value}
+    </span>
+  </div>
+);
 export default AchievementAndStatistic;

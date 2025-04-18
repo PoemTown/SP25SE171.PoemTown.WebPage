@@ -231,7 +231,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
-                <p style={styles.poemType}>Thể loại: {poemType[item.type]}</p>
+                <p style={styles.poemType}>Thể loại: {item?.type?.name ?? ""}</p>
                 <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>

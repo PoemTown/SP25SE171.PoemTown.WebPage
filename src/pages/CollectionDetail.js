@@ -556,19 +556,19 @@ const CollectionDetail = () => {
                         }
                       }}>
                         <li>
-                          <span style={{ fontWeight: "500" }}>Tổng số bài thơ:</span> 
+                          <span style={{ fontWeight: "500" }}>Tổng số bài thơ: </span> 
                           <span style={{ color: "#5d4037" }}>{collectionDetails.totalChapter}</span>
                         </li>
                         <li>
-                          <span style={{ fontWeight: "500" }}>Tổng số audio:</span> 
+                          <span style={{ fontWeight: "500" }}>Tổng số audio: </span> 
                           <span style={{ color: "#5d4037" }}>{collectionDetails.totalRecord}</span>
                         </li>
                         <li>
-                          <span style={{ fontWeight: "500" }}>Ngày phát hành:</span> 
+                          <span style={{ fontWeight: "500" }}>Ngày phát hành: </span> 
                           <span style={{ color: "#5d4037" }}>{formatDate(collectionDetails.createdTime)}</span>
                         </li>
                         <li>
-                          <span style={{ fontWeight: "500" }}>Cập nhật gần nhất:</span> 
+                          <span style={{ fontWeight: "500" }}>Cập nhật gần nhất: </span> 
                           <span style={{ color: "#5d4037" }}>{formatDate(collectionDetails.lastUpdatedTime)}</span>
                         </li>
                       </ul>

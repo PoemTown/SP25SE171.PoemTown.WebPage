@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Button, Spin, Select, Input, message, Card, Upload } from "antd";
 import { UploadOutlined, ArrowLeftOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
 import ReactQuill from 'react-quill';
@@ -9,31 +9,23 @@ import axios from 'axios';
 const { Option } = Select;
 const { TextArea } = Input;
 
-const poemTypes = [
-    {
-        value: 1,
-        label: "Thơ tự do",
-        description: "Không theo quy tắc nào, tự do sáng tác",
+
+const poemTypeHandlers = {
+    "Thơ Tự Do": {
         validate: (lines) => ({ isValid: true, message: "" }),
         format: (content) => content
     },
-    {
-        value: 2,
-        label: "Thơ Lục bát",
-        description: "Câu 6 chữ (lục) và câu 8 chữ (bát) luân phiên",
+    "Thơ Lục Bát": {
         validate: (lines) => {
             if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
-
             const lastLineWords = lines[lines.length - 1].trim().split(/\s+/).length;
             if (lastLineWords !== 8) {
                 return { isValid: false, message: "Câu cuối phải có 8 chữ" };
             }
-
             const isValid = lines.every((line, index) => {
                 const wordCount = line.trim().split(/\s+/).length;
                 return index % 2 === 0 ? wordCount === 6 : wordCount === 8;
             });
-
             return {
                 isValid,
                 message: isValid ? "" : "Thơ Lục bát phải theo luật: 6-8 luân phiên"
@@ -54,21 +46,16 @@ const poemTypes = [
             return result.join('\n');
         }
     },
-    {
-        value: 3,
-        label: "Thơ Song thất lục bát",
-        description: "2 câu 7 chữ + 1 câu 6 chữ + 1 câu 8 chữ",
+    "Thơ Song Thất Lục Bát": {
         validate: (lines) => {
             if (lines.length % 4 !== 0) {
                 return { isValid: false, message: "Phải có số câu chia hết cho 4 (7-7-6-8)" };
             }
-
             const pattern = [7, 7, 6, 8];
             const isValid = lines.every((line, index) => {
                 const stanzaIndex = index % 4;
                 return line.trim().split(/\s+/).length === pattern[stanzaIndex];
             });
-
             return {
                 isValid,
                 message: isValid ? "" : "Phải theo đúng luật: 7-7-6-8 cho mỗi khổ"
@@ -91,15 +78,11 @@ const poemTypes = [
             return result.join('\n');
         }
     },
-    {
-        value: 4,
-        label: "Thơ Thất ngôn tứ tuyệt",
-        description: "4 câu, mỗi câu 7 chữ",
+    "Thơ Thất Ngôn Tứ Tuyệt": {
         validate: (lines) => {
             if (lines.length !== 4) {
                 return { isValid: false, message: "Phải có đúng 4 câu" };
             }
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 7);
             return {
                 isValid,
@@ -114,7 +97,6 @@ const poemTypes = [
                 result.push(words.slice(i, i + 7).join(' '));
             }
 
-            // Đảm bảo đủ 4 câu
             while (result.length < 4) {
                 result.push("");
             }
@@ -122,15 +104,11 @@ const poemTypes = [
             return result.slice(0, 4).join('\n');
         }
     },
-    {
-        value: 5,
-        label: "Thơ Ngũ ngôn tứ tuyệt",
-        description: "4 câu, mỗi câu 5 chữ",
+    "Thơ Ngũ Ngôn Tứ Tuyệt": {
         validate: (lines) => {
             if (lines.length !== 4) {
                 return { isValid: false, message: "Phải có đúng 4 câu" };
             }
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 5);
             return {
                 isValid,
@@ -145,7 +123,6 @@ const poemTypes = [
                 result.push(words.slice(i, i + 5).join(' '));
             }
 
-            // Đảm bảo đủ 4 câu
             while (result.length < 4) {
                 result.push("");
             }
@@ -153,15 +130,11 @@ const poemTypes = [
             return result.slice(0, 4).join('\n');
         }
     },
-    {
-        value: 6,
-        label: "Thơ Thất ngôn bát cú",
-        description: "8 câu, mỗi câu 7 chữ",
+    "Thơ Thất Ngôn Bát Cú": {
         validate: (lines) => {
             if (lines.length !== 8) {
                 return { isValid: false, message: "Phải có đúng 8 câu" };
             }
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 7);
             return {
                 isValid,
@@ -176,7 +149,6 @@ const poemTypes = [
                 result.push(words.slice(i, i + 7).join(' '));
             }
 
-            // Đảm bảo đủ 8 câu
             while (result.length < 8) {
                 result.push("");
             }
@@ -184,13 +156,9 @@ const poemTypes = [
             return result.slice(0, 8).join('\n');
         }
     },
-    {
-        value: 7,
-        label: "Thơ bốn chữ",
-        description: "Mỗi câu 4 chữ, không giới hạn số câu",
+    "Thơ 4 Chữ": {
         validate: (lines) => {
             if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 4);
             return {
                 isValid,
@@ -209,13 +177,9 @@ const poemTypes = [
             return result.join('\n');
         }
     },
-    {
-        value: 8,
-        label: "Thơ năm chữ",
-        description: "Mỗi câu 5 chữ, không giới hạn số câu",
+    "Thơ 5 Chữ": {
         validate: (lines) => {
             if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 5);
             return {
                 isValid,
@@ -234,13 +198,9 @@ const poemTypes = [
             return result.join('\n');
         }
     },
-    {
-        value: 9,
-        label: "Thơ sáu chữ",
-        description: "Mỗi câu 6 chữ, không giới hạn số câu",
+    "Thơ 6 Chữ": {
         validate: (lines) => {
             if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 6);
             return {
                 isValid,
@@ -259,13 +219,9 @@ const poemTypes = [
             return result.join('\n');
         }
     },
-    {
-        value: 10,
-        label: "Thơ bảy chữ",
-        description: "Mỗi câu 7 chữ, không giới hạn số câu",
+    "Thơ 7 Chữ": {
         validate: (lines) => {
             if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 7);
             return {
                 isValid,
@@ -284,13 +240,9 @@ const poemTypes = [
             return result.join('\n');
         }
     },
-    {
-        value: 11,
-        label: "Thơ tám chữ",
-        description: "Mỗi câu 8 chữ, không giới hạn số câu",
+    "Thơ 8 Chữ": {
         validate: (lines) => {
             if (lines.length === 0) return { isValid: false, message: "Chưa có nội dung" };
-
             const isValid = lines.every(line => line.trim().split(/\s+/).length === 8);
             return {
                 isValid,
@@ -309,7 +261,7 @@ const poemTypes = [
             return result.join('\n');
         }
     }
-];
+};
 
 const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreated }) => {
     const navigate = useNavigate();
@@ -319,14 +271,16 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         description: "",
         status: 0,
         poemImage: "",
-        type: 1,
+        type: "",
         collectionId: collections.length > 0 ? collections[0].id : ""
     });
 
     const [loading, setLoading] = useState(false);
     const [imageLoading, setImageLoading] = useState(false);
     const [validationError, setValidationError] = useState("");
-    const [currentPoemType, setCurrentPoemType] = useState(poemTypes[0]);
+    const [poemTypes, setPoemTypes] = useState([]);
+    const [currentPoemType, setCurrentPoemType] = useState(null);
+    const [fetchingTypes, setFetchingTypes] = useState(true);
 
     // Styles
     const containerStyle = {
@@ -406,58 +360,85 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         borderTop: '1px solid #f0f0f0'
     };
 
+    // Fetch poem types from API
+    useEffect(() => {
+        const fetchPoemTypes = async () => {
+            try {
+                const response = await axios.get('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1');
+                if (response.data && response.data.data) {
+                    const apiTypes = response.data.data.map(type => ({
+                        id: type.id,
+                        value: type.id,
+                        label: type.name,
+                        description: type.description,
+                        color: type.color,
+                        ...(poemTypeHandlers[type.name] || {
+                            validate: (lines) => ({ isValid: true, message: "" }),
+                            format: (content) => content
+                        })
+                    }));
+                    setPoemTypes(apiTypes);
+                    
+                    if (apiTypes.length > 0) {
+                        setCurrentPoemType(apiTypes[0]);
+                        setFormData(prev => ({ 
+                            ...prev, 
+                            type: initialData?.type || apiTypes[0].value 
+                        }));
+                    }
+                }
+            } catch (error) {
+                console.error("Error fetching poem types:", error);
+                message.error("Không thể tải danh sách thể loại thơ");
+            } finally {
+                setFetchingTypes(false);
+            }
+        };
+
+        fetchPoemTypes();
+    }, []);
+
     // Initialize form with initialData if provided
     useEffect(() => {
-        if (initialData) {
+        if (initialData && poemTypes.length > 0) {
+            const type = poemTypes.find(t => t.value === initialData.type) || poemTypes[0];
             setFormData({
                 title: initialData.title || "",
                 content: initialData.content || "",
                 description: initialData.description || "",
                 status: initialData.status || 0,
                 poemImage: initialData.poemImage || "",
-                type: initialData.type || 1,
+                type: initialData.type || poemTypes[0].value,
                 collectionId: initialData.collection?.id || (collections.length > 0 ? collections[0].id : "")
             });
-
-            // Set current poem type
-            const type = poemTypes.find(t => t.value === (initialData.type || 1));
-            if (type) setCurrentPoemType(type);
+            setCurrentPoemType(type);
         }
-    }, [initialData, collections]);
+    }, [initialData, collections, poemTypes]);
 
-    /**
-     * @param {File} file 
-     * @returns {Promise<string>} 
-     */
     const uploadPoemImage = async (file) => {
         try {
             setImageLoading(true);
 
-            // Kiểm tra file
             if (!file) {
                 message.error('Vui lòng chọn file ảnh');
                 return null;
             }
 
-            // Kiểm tra loại file
             const isImage = file.type.startsWith('image/');
             if (!isImage) {
                 message.error('Chỉ được upload file ảnh (JPEG, PNG, etc.)');
                 return null;
             }
 
-            // Kiểm tra kích thước file (tối đa 5MB)
             const isLt5M = file.size / 1024 / 1024 < 5;
             if (!isLt5M) {
                 message.error('Ảnh phải nhỏ hơn 5MB');
                 return null;
             }
 
-            // Tạo FormData và thêm file vào
             const formData = new FormData();
             formData.append('file', file);
 
-            // Gọi API upload
             const response = await axios.post(
                 'https://api-poemtown-staging.nodfeather.win/api/poems/v1/image',
                 formData,
@@ -471,7 +452,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
 
             if (response.data && response.data.data) {
                 message.success('Upload ảnh thành công');
-                return response.data.data; // Trả về URL ảnh
+                return response.data.data;
             } else {
                 message.error('Upload ảnh thất bại');
                 return null;
@@ -485,13 +466,11 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         }
     };
 
-    // Props cho component Upload
     const uploadProps = {
         accept: 'image/*',
         multiple: false,
         showUploadList: false,
         beforeUpload: (file) => {
-            // Gọi hàm upload và xử lý kết quả
             uploadPoemImage(file).then(imageUrl => {
                 if (imageUrl) {
                     setFormData(prev => ({
@@ -500,7 +479,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                     }));
                 }
             });
-            return false; // Ngăn chặn upload mặc định của antd
+            return false;
         },
         onChange: (info) => {
             if (info.file.status === 'error') {
@@ -512,27 +491,23 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
     const handleChange = (name, value) => {
         setFormData(prev => ({ ...prev, [name]: value }));
 
-        // Khi thay đổi thể loại thơ
         if (name === 'type') {
             const type = poemTypes.find(t => t.value === value);
             if (type) setCurrentPoemType(type);
             validatePoemContent(formData.content, value);
         }
 
-        // Khi thay đổi nội dung
         if (name === 'content') {
             validatePoemContent(value, formData.type);
         }
     };
 
-    // Hàm validate nội dung thơ theo thể loại
     const validatePoemContent = (content, type) => {
         const currentType = poemTypes.find(t => t.value === type) || currentPoemType;
         if (!currentType) return true;
 
-        // Chuyển nội dung thành các dòng
         const lines = content
-            .replace(/<[^>]+>/g, '\n') // Loại bỏ HTML tags
+            .replace(/<[^>]+>/g, '\n')
             .split('\n')
             .map(line => line.trim())
             .filter(line => line);
@@ -542,16 +517,12 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         return validation.isValid;
     };
 
-    // Hàm format nội dung theo thể loại thơ
     const formatPoemContent = () => {
         if (!currentPoemType?.format) return formData.content;
-
         return currentPoemType.format(formData.content);
     };
 
-    // Xử lý submit form
     const handleSubmit = async (status) => {
-        // Validate các trường bắt buộc
         if (!formData.title.trim()) {
             message.warning("Vui lòng nhập tiêu đề bài thơ");
             return;
@@ -567,7 +538,6 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
             return;
         }
 
-        // Validate nội dung theo thể loại
         if (!validatePoemContent(formData.content, formData.type)) {
             message.error("Nội dung thơ không đúng luật: " + validationError);
             return;
@@ -596,23 +566,15 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                 }
             });
 
-            // Kiểm tra status code
             if (response.status === 200) {
                 message.success(
                     status === 1
                         ? "Bài thơ đã được đăng thành công!"
                         : "Bài thơ đã được lưu nháp!"
                 );
-                // Đóng modal bằng cách gọi hàm onClose từ props
-                if (onPoemCreated) {
-                    onPoemCreated();
-                }
-                if (onBack) {
-                    onBack();
-                } else {
-                    // Hoặc navigate nếu không có hàm đóng modal
-                    navigate(-1);
-                }
+                if (onPoemCreated) onPoemCreated();
+                if (onBack) onBack();
+                else navigate(-1);
             } else {
                 message.error(response.data?.message || "Có lỗi xảy ra khi gửi bài thơ");
             }
@@ -624,7 +586,6 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         }
     };
 
-    // Thêm hiển thị validation error
     const renderValidationError = () => {
         if (!validationError) return null;
 
@@ -642,8 +603,9 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         );
     };
 
-    // Thêm hiển thị mô tả thể loại thơ
     const renderPoemTypeDescription = () => {
+        if (!currentPoemType) return null;
+
         return (
             <div style={{
                 margin: '10px 0',
@@ -660,7 +622,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
 
     return (
         <div style={containerStyle}>
-            <Spin spinning={loading} tip="Đang xử lý..." size="large">
+            <Spin spinning={loading || fetchingTypes} tip={fetchingTypes ? "Đang tải thể loại thơ..." : "Đang xử lý..."} size="large">
                 <div style={headerStyle}>
                     <Button
                         type="text"
@@ -724,6 +686,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                                         value={formData.type}
                                         onChange={(value) => handleChange('type', value)}
                                         style={inputStyle}
+                                        loading={fetchingTypes}
                                     >
                                         {poemTypes.map(type => (
                                             <Option key={type.value} value={type.value}>
@@ -735,7 +698,6 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                             </div>
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-                                {/* Phần Upload button */}
                                 <div>
                                     <label style={formLabelStyle}>Ảnh minh họa</label>
                                     <Upload {...uploadProps}>
@@ -750,7 +712,6 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                                     </Upload>
                                 </div>
 
-                                {/* Phần hiển thị ảnh preview */}
                                 {formData.poemImage && (
                                     <div style={{
                                         textAlign: 'center',
@@ -806,7 +767,6 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
 
                         {renderValidationError()}
 
-                        {/* Xem trước nội dung đã được format */}
                         <div style={{ marginTop: '50px' }}>
                             <h4>Xem trước:</h4>
                             <pre style={{
