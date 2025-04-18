@@ -10,7 +10,7 @@ import { UploadOutlined, ArrowLeftOutlined, SaveOutlined, SendOutlined } from '@
 const { TextArea } = Input;
 const { Option } = Select;
 
-const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
+const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
   const [poemData, setPoemData] = useState({
     title: "",
     description: "",
@@ -22,24 +22,11 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     recordFiles: [],
     status: 0,
     sourceCopyRightId: null,
-    type: 1
+    poemTypeId: "1"
   });
-  const poemTypeDescriptions = {
-    '1': { label: 'Thơ tự do', description: 'Không có quy tắc về số chữ, số câu, vần hay nhịp điệu.' },
-    '2': { label: 'Thơ lục bát', description: 'Mỗi cặp câu gồm một câu 6 chữ và một câu 8 chữ, thường có vần ở chữ thứ 6 của câu lục với chữ thứ 6 của câu bát.' },
-    '3': { label: 'Thơ song thất lục bát', description: 'Kết hợp giữa thể song thất (hai câu 7 chữ) và lục bát (một câu 6 chữ và một câu 8 chữ).' },
-    '4': { label: 'Thơ thất ngôn tứ tuyệt', description: 'Bài thơ gồm 4 câu, mỗi câu 7 chữ, có quy tắc về niêm luật chặt chẽ.' },
-    '5': { label: 'Thơ ngũ ngôn tứ tuyệt', description: 'Bài thơ gồm 4 câu, mỗi câu 5 chữ, có quy tắc về niêm luật.' },
-    '6': { label: 'Thơ thất ngôn bát cú', description: 'Bài thơ gồm 8 câu, mỗi câu 7 chữ, có quy tắc nghiêm ngặt về niêm luật.' },
-    '7': { label: 'Thơ 4 chữ', description: 'Mỗi câu thơ gồm 4 chữ, thường có vần và nhịp điệu đơn giản.' },
-    '8': { label: 'Thơ 5 chữ', description: 'Mỗi câu thơ gồm 5 chữ, có thể có vần hoặc không.' },
-    '9': { label: 'Thơ 6 chữ', description: 'Mỗi câu thơ gồm 6 chữ, có thể có vần hoặc không.' },
-    '10': { label: 'Thơ 7 chữ', description: 'Mỗi câu thơ gồm 7 chữ, có thể có vần hoặc không.' },
-    '11': { label: 'Thơ 8 chữ', description: 'Mỗi câu thơ gồm 8 chữ, thường có vần và nhịp điệu linh hoạt.' }
-  };
   const [imageLoading, setImageLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedType, setSelectedType] = useState(null);
+  const [selectedType, setSelectedType] = useState(" ");
   const [collections, setCollections] = useState([]);
   const [poemFile, setPoemFile] = useState(null);
   const [suggestion, setSuggestion] = useState(null);
@@ -191,28 +178,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   }, []);
 
   useEffect(() => {
-    if (initialData) {
-      const htmlContent = initialData.content.replace(/\n/g, "<br>");
-      setPoemData({
-        id: initialData.id || "",
-        title: initialData.title || "",
-        description: initialData.description || "",
-        poemImage: initialData.poemImage || "",
-        chapterNumber: initialData.chapterNumber || 0,
-        chapterName: initialData.chapterName || "",
-        status: initialData.status || 0,
-        collectionId: initialData.collection ? initialData.collection.id : "",
-        sourceCopyRightId: initialData.sourceCopyRightId || null,
-        content: htmlContent,
-        type: initialData.type || "1",
-        recordFiles: initialData.recordFiles,
-      });
-      setSelectedType(initialData.type ? initialData.type.toString() : "1");
-    }
-  }, [initialData]);
-
-  // Thêm vào các hook khác trong component
-  useEffect(() => {
     const fetchCollections = async () => {
       try {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/collections/v1`, {
@@ -235,6 +200,27 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   }, [accessToken]);
 
   useEffect(() => {
+    if (initialData) {
+      const htmlContent = initialData.content.replace(/\n/g, "<br>");
+      setPoemData({
+        id: initialData.id || "",
+        title: initialData.title || "",
+        description: initialData.description || "",
+        poemImage: initialData.poemImage || "",
+        chapterNumber: initialData.chapterNumber || 0,
+        chapterName: initialData.chapterName || "",
+        status: initialData.status || 0,
+        collectionId: initialData.collection ? initialData.collection.id : "",
+        sourceCopyRightId: initialData.sourceCopyRightId || null,
+        content: htmlContent,
+        poemTypeId: initialData.poemTypeId ? initialData.poemTypeId.toString() : "1",
+        recordFiles: initialData.recordFiles || [],
+      });
+      setSelectedType(initialData.poemTypeId ? initialData.poemTypeId.toString() : "1");
+    }
+  }, [initialData]);
+
+  useEffect(() => {
     if (quillRef.current) {
       const quill = quillRef.current.getEditor();
       const Delta = Quill.import("delta");
@@ -253,7 +239,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     }
   }, []);
 
-  // Handler functions
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPoemData((prev) => ({ ...prev, [name]: value }));
@@ -354,31 +339,38 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       sourceCopyRightId: null,
       poemImage: poemData.poemImage || null,
       recordFiles: [],
-      type: parseInt(selectedType),
+      poemTypeId: selectedType,
       isPublic: true,
     };
 
     try {
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
-        requestData,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const method = poemData.id ? 'PUT' : 'POST';
+      const url = `${process.env.REACT_APP_API_BASE_URL}/poems/v1`;
+
+      const response = await axios({
+        method,
+        url,
+        data: requestData,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.status === 200) {
         message.success(status === 1
           ? "Bài thơ đã được đăng thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn!"
           : "Bài thơ đã được lưu nháp!");
-        window.location.reload();
+        if (status === 1 && onBack) {
+          onBack();
+          await fetchPoems();
+        } else if (!poemData.id) {
+          setPoemData(prev => ({ ...prev, id: response.data.id }));
+        }
       }
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
-      message.error("Không thể đăng bài. Vui lòng kiểm tra kết nối mạng hoặc thử lại sau.");
+      message.error(error.response?.data?.message || "Không thể đăng bài. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -554,7 +546,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
     }
 
-
     const requestBody = {
       poemTypeId: poemType.id,
       poemContent: content,
@@ -583,6 +574,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       setIsLoading(false);
     }
   };
+
   const handleAICheckPlagiarism = async () => {
     const content = formatContent(poemData.content, selectedType);
     const requestBody = { poemContent: content };
@@ -688,32 +680,37 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       chapterNumber: isNaN(poemData.chapterNumber) ? 0 : Number(poemData.chapterNumber),
       chapterName: poemData.chapterName || null,
       status: 0,
-      collectionId: poemData.collectionId,
-      sourceCopyRightId: poemData.sourceCopyRightId,
+      collectionId: poemData.collectionId || null,
+      sourceCopyRightId: poemData.sourceCopyRightId || null,
       poemImage: poemData.poemImage || null,
-      recordFiles: poemData.recordFiles,
-      type: parseInt(selectedType),
+      recordFiles: poemData.recordFiles || [],
+      poemTypeId: selectedType
     };
 
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const method = poemData.id ? 'PUT' : 'POST';
+      const response = await axios({
+        method,
+        url: `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
+        data: payload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.status === 200) {
         message.success("Bài thơ nháp đã được lưu thành công!");
-        window.location.reload();
+        if (!poemData.id) {
+          setPoemData(prev => ({ ...prev, id: response.data.id }));
+        }
+        if (setDrafting) {
+          setDrafting(false);
+        }
       }
     } catch (error) {
       console.error("Lỗi khi lưu nháp:", error);
-      message.error("Không thể lưu nháp. Vui lòng thử lại sau.");
+      message.error(error.response?.data?.message || "Không thể lưu nháp. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
@@ -727,6 +724,18 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       return;
     }
 
+    // Validation checks
+    if (!poemData.title.trim()) {
+      message.error("Vui lòng nhập tiêu đề");
+      setIsLoading(false);
+      return;
+    }
+    if (!poemData.description.trim()) {
+      message.error("Vui lòng nhập mô tả");
+      setIsLoading(false);
+      return;
+    }
+
     const payload = {
       id: poemData.id,
       title: poemData.title,
@@ -735,37 +744,38 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       chapterNumber: isNaN(poemData.chapterNumber) ? 0 : Number(poemData.chapterNumber),
       chapterName: poemData.chapterName || null,
       status: 1,
-      collectionId: poemData.collectionId,
-      sourceCopyRightId: poemData.sourceCopyRightId,
+      collectionId: poemData.collectionId || null,
+      sourceCopyRightId: poemData.sourceCopyRightId || null,
       poemImage: poemData.poemImage || null,
-      recordFiles: poemData.recordFiles,
-      type: parseInt(selectedType),
+      recordFiles: poemData.recordFiles || [],
+      poemTypeId: selectedType
     };
 
     try {
-      const response = await axios.put(
-        `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
-        payload,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+      const method = poemData.id ? 'PUT' : 'POST';
+      const response = await axios({
+        method,
+        url: `${process.env.REACT_APP_API_BASE_URL}/poems/v1`,
+        data: payload,
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
 
       if (response.status === 200) {
-        message.success("Bài thơ nháp đã được đăng tải thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn!");
-        window.location.reload();
+        message.success("Bài thơ đã được đăng tải thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn!");
+        if (onBack) {
+          onBack();
+        }
       }
     } catch (error) {
       console.error("Lỗi khi đăng bài:", error);
-      message.error("Không thể đăng bài. Vui lòng thử lại sau.");
+      message.error(error.response?.data?.message || "Không thể đăng bài. Vui lòng thử lại sau.");
     } finally {
       setIsLoading(false);
     }
   };
-  
 
   // Modal handlers
   const showModal = () => setIsModalOpen(true);
@@ -821,10 +831,11 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
   const handleOptionChange = (value) => setImageType(value);
   const handleImagePromptChange = (e) => setImagePrompt(e.target.value);
+
   const renderPoemTypeDescription = () => {
     if (!selectedType) return null;
     
-    const poemType = poemTypes.find(type => type.id === selectedType);
+    const poemType = poemTypes.find(type => type.id.toString() === selectedType);
     if (!poemType) return null;
   
     return (
@@ -856,29 +867,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       </div>
     );
   };
-  useEffect(() => {
-    const fetchPoemTypes = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
-        if (response.data && response.data.data) {
-          // Transform the data to match your expected structure
-          const transformedData = response.data.data.map(type => ({
-            id: type.id,
-            name: type.name,
-            description: type.description,
-            color: type.color,
-            poem: type.poem
-          }));
-          setPoemTypes(transformedData);
-        }
-      } catch (error) {
-        console.error("Error fetching poem types:", error);
-        message.error("Không thể tải danh sách thể loại thơ");
-      }
-    };
-  
-    fetchPoemTypes();
-  }, []);
+
   return (
     <div style={containerStyle}>
       {isLoading && (
@@ -1023,21 +1012,21 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         >
           <div style={{ display: 'flex', gap: '24px', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
             <div style={{ flex: 2 }}>
-            <div style={{ marginBottom: '16px' }}>
-  <label style={formLabelStyle}>Thể loại thơ</label>
-  <Select
-    value={selectedType}
-    onChange={(value) => setSelectedType(value)}
-    style={inputStyle}
-  >
-    {poemTypes.map((type) => (
-      <Select.Option key={type.id} value={type.id}>
-        {type.name}
-      </Select.Option>
-    ))}
-  </Select>
-  {renderPoemTypeDescription()}
-</div>
+              <div style={{ marginBottom: '16px' }}>
+                <label style={formLabelStyle}>Thể loại thơ</label>
+                <Select
+                  value={selectedType}
+                  onChange={(value) => setSelectedType(value)}
+                  style={inputStyle}
+                >
+                  {poemTypes.map((type) => (
+                    <Select.Option key={type.id} value={type.id}>
+                      {type.name}
+                    </Select.Option>
+                  ))}
+                </Select>
+                {renderPoemTypeDescription()}
+              </div>
 
               <ReactQuill
                 ref={quillRef}
