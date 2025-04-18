@@ -21,7 +21,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     type: 1
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedType, setSelectedType] = useState("1");
+  const [selectedType, setSelectedType] = useState(null);
   const [collections, setCollections] = useState([]);
   const [poemFile, setPoemFile] = useState(null);
   const [suggestion, setSuggestion] = useState(null);
@@ -51,42 +51,21 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     setImagePrompt(e.target.value);
   };
 
-  const poemType = {
-    1: "Thơ tự do",
-    2: "Thơ Lục bát",
-    3: "Thơ Song thất lục bát",
-    4: "Thơ Thất ngôn tứ tuyệt",
-    5: "Thơ Ngũ ngôn tứ tuyệt",
-    6: "Thơ Thất ngôn bát cú",
-    7: "Thơ bốn chữ",
-    8: "Thơ năm chữ",
-    9: "Thơ sáu chữ",
-    10: "Thơ bảy chữ",
-    11: "Thơ tám chữ",
-  }
-
+  const [poemTypes, setPoemTypes] = useState([]);
   useEffect(() => {
-    const fetchCollections = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) return;
-
+    const fetchPoemTypes = async () => {
       try {
-        const response = await axios.get(
-          `${process.env.REACT_APP_API_BASE_URL}/collections/v1`,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-            },
-          }
-        );
-        setCollections(response.data.data);
-        setPoemData((prev) => ({ ...prev, collectionId: response.data.data[0]?.id }))
+        const response = await axios.get('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1');
+        if (response.data && response.data.data) {
+          setPoemTypes(response.data.data);
+        }
       } catch (error) {
-        console.error("Error fetching collections:", error);
+        console.error("Error fetching poem types:", error);
+        message.error("Không thể tải danh sách thể loại thơ");
       }
     };
 
-    fetchCollections();
+    fetchPoemTypes();
   }, []);
 
   useEffect(() => {
@@ -162,15 +141,15 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       };
 
       switch (selectedType) {
-        case '2': // Lục bát
-          // Must end with 8-word line
+        case '1': // Thơ tự do - không có ràng buộc về số chữ
+        return true;
+        case '2': 
           const lastLineWords = lines[lines.length - 1].trim().split(/\s+/).length;
           if (lastLineWords !== 8) {
             message.error("Lục bát phải kết thúc bằng câu 8 chữ!");
             return false;
           }
 
-          // Check alternating 6-8 pattern
           const isValid = lines.every((line, index) => {
             const wordCount = line.trim().split(/\s+/).length;
             return index % 2 === 0 ? wordCount === 6 : wordCount === 8;
@@ -266,14 +245,15 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     };
 
     if (!validatePoemStructure()) {
-      // Add specific error messages for fixed-word types
       if (selectedType >= 7 && selectedType <= 11) {
         const requiredWords = [4, 5, 6, 7, 8][selectedType - 7];
-        message.error(`${poemType[selectedType]} yêu cầu mỗi câu đủ ${requiredWords} chữ!`);
+        const poemTypeName = poemTypes.find(pt => pt.id.toString() === selectedType)?.name || "Thể thơ này";
+        message.error(`${poemTypeName} yêu cầu mỗi câu đủ ${requiredWords} chữ!`);
       }
       setIsLoading(false);
       return;
     }
+    
 
 
     // Get formatted content from textarea preview
@@ -327,19 +307,20 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     }));
   };
 
-  const formatContent = (content, type) => {
-
-    if (type === '1') {
-      // Parse content while preserving structure
+  const formatContent = (content, typeId) => {
+    // Tìm thể loại thơ tương ứng trong danh sách từ API
+    const poemType = poemTypes.find(type => type.id === typeId);
+    
+    // Nếu không tìm thấy hoặc là thơ tự do (type = 1)
+    if (!poemType || typeId === '1') {
+      // Xử lý thơ tự do (giữ nguyên format)
       const parser = new DOMParser();
       const doc = parser.parseFromString(content, 'text/html');
       const lines = [];
-
-      // Process each node in the content
+      
       doc.body.childNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
           let lineContent = '';
-
           node.childNodes.forEach((child) => {
             if (child.nodeType === Node.TEXT_NODE) {
               lineContent += child.textContent;
@@ -347,14 +328,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               lineContent += '\n';
             }
           });
-
           lineContent.split('\n').forEach((subLine) => {
             lines.push(subLine);
           });
         }
       });
-
-      // Process lines with preserved formatting
+      
       return lines
         .map((line) => {
           const leadingWhitespace = line.match(/^\s*/)[0];
@@ -363,10 +342,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         })
         .join('\n');
     }
-    // Convert HTML to plain text
+  
+    // Chuyển đổi content HTML sang plain text
     const plainText = content.replace(/<[^>]+>/g, '\n').replace(/\n+/g, '\n');
     const allWords = plainText.split(/\s+/).filter(word => word.trim() !== '');
-
+  
+    // Hàm phụ trợ định dạng thơ có số chữ cố định mỗi dòng
     const formatFixedWordPoem = (words, wordsPerLine) => {
       const lines = [];
       for (let i = 0; i < words.length; i += wordsPerLine) {
@@ -375,142 +356,97 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       }
       return lines.join('\n');
     };
-
-    switch (type) {
-      case '2':
+  
+    // Xác định cách định dạng dựa trên tên thể loại thơ
+    switch (poemType.name) {
+      case 'Thơ Lục Bát':
         let lucBatLines = [];
         let currentLine = [];
-        let currentLineType = 6; // Start with 6-word line (Lục)
-
-        allWords.forEach((word, index) => {
+        let currentLineType = 6; // Bắt đầu với câu lục (6 chữ)
+  
+        allWords.forEach((word) => {
           currentLine.push(word);
-
-          // Check if reached word limit for current line type
           if (currentLine.length === currentLineType) {
             const isBatLine = currentLineType === 8;
             lucBatLines.push({
               text: currentLine.join(' '),
               type: isBatLine ? 'bat' : 'luc'
             });
-
-            // Switch line type for next line
             currentLine = [];
-            currentLineType = isBatLine ? 6 : 8;
+            currentLineType = isBatLine ? 6 : 8; // Luân phiên 6-8
           }
         });
-
-        // Add remaining words
+  
+        // Thêm dòng cuối nếu còn
         if (currentLine.length > 0) {
           lucBatLines.push({
             text: currentLine.join(' '),
             type: currentLineType === 8 ? 'bat' : 'luc'
           });
         }
-
-        // Format with indentation
+  
+        // Định dạng với thụt đầu dòng
         return lucBatLines.map((line, index) => {
           const indent = line.type === 'luc' ? '       ' : '';
-          // Add line break after every 2 lines (1 couplet)
           return indent + line.text;
         }).join('\n');
-
-      case '3':
+  
+      case 'Thơ Song Thất Lục Bát':
         const songThatLines = [];
-        const linePattern = [7, 7, 6, 8];
+        const linePattern = [7, 7, 6, 8]; // 2 câu 7, 1 câu 6, 1 câu 8
         let patternIndex = 0;
         let currentLine2 = [];
-
+  
         allWords.forEach(word => {
           currentLine2.push(word);
           const targetLength = linePattern[patternIndex];
-
+  
           if (currentLine2.length === targetLength) {
             songThatLines.push({
               text: currentLine2.join(' '),
               type: targetLength
             });
             currentLine2 = [];
-            patternIndex = (patternIndex + 1) % 4; // Cycle through 7-7-6-8
+            patternIndex = (patternIndex + 1) % 4; // Lặp lại pattern
           }
         });
-
-        // Add remaining words
+  
+        // Thêm dòng cuối nếu còn
         if (currentLine2.length > 0) {
           songThatLines.push({
             text: currentLine2.join(' '),
             type: linePattern[patternIndex]
           });
         }
-
-        // Format with indentation for 6 and 8-word lines
-        return songThatLines.map(line => {
-          const indent = [6, 8].includes(line.type) ? '' : '';
-          return indent + line.text;
-        }).join('\n');
-
-      case '4': // Thất ngôn tứ tuyệt
-        const maxLines = 4;
-        const wordsPerLine = 7;
-        const limitedWords = allWords.slice(0, maxLines * wordsPerLine);
-
-        const thatNgonLines = [];
-        for (let i = 0; i < limitedWords.length; i += wordsPerLine) {
-          const line = limitedWords.slice(i, i + wordsPerLine).join(' ');
-          thatNgonLines.push(line);
-        }
-
-        // Fill remaining lines if needed
-        while (thatNgonLines.length < maxLines) {
-          thatNgonLines.push('');
-        }
-
-        return thatNgonLines.slice(0, maxLines).join('\n');
-
-      case '5': // Ngũ ngôn tứ tuyệt (5 words per line, 4 lines)
-        const ngonTuTuyetLines = 4;
-        const ngonWordsPerLine = 5;
-        const ngonWords = allWords.slice(0, ngonTuTuyetLines * ngonWordsPerLine);
-
-        const ngonLines = [];
-        for (let i = 0; i < ngonWords.length; i += ngonWordsPerLine) {
-          const line = ngonWords.slice(i, i + ngonWordsPerLine).join(' ');
-          ngonLines.push(line);
-        }
-        while (ngonLines.length < ngonTuTuyetLines) {
-          ngonLines.push('');
-        }
-        return ngonLines.slice(0, ngonTuTuyetLines).join('\n');
-
-      case '6': // Thất ngôn bát cú (7 words per line, 8 lines)
-        const batCuLines = 8;
-        const batCuWordsPerLine = 7;
-        const batCuWords = allWords.slice(0, batCuLines * batCuWordsPerLine);
-
-        const batCuResults = [];
-        for (let i = 0; i < batCuWords.length; i += batCuWordsPerLine) {
-          const line = batCuWords.slice(i, i + batCuWordsPerLine).join(' ');
-          batCuResults.push(line);
-        }
-        while (batCuResults.length < batCuLines) {
-          batCuResults.push('');
-        }
-        return batCuResults.slice(0, batCuLines).join('\n');
-
-      case '7': // Thơ bốn chữ (4 words per line)
+  
+        return songThatLines.map(line => line.text).join('\n');
+  
+      case 'Thơ Thất Ngôn Tứ Tuyệt':
+        return formatFixedWordPoem(allWords, 7).split('\n').slice(0, 4).join('\n');
+  
+      case 'Thơ Ngũ Ngôn Tứ Tuyệt':
+        return formatFixedWordPoem(allWords, 5).split('\n').slice(0, 4).join('\n');
+  
+      case 'Thơ Thất Ngôn Bát Cú':
+        return formatFixedWordPoem(allWords, 7).split('\n').slice(0, 8).join('\n');
+  
+      case 'Thơ 4 Chữ':
         return formatFixedWordPoem(allWords, 4);
-
-      case '8': // Thơ năm chữ (5 words per line)
+  
+      case 'Thơ 5 Chữ':
         return formatFixedWordPoem(allWords, 5);
-
-      case '9': // Thơ sáu chữ (6 words per line)
+  
+      case 'Thơ 6 Chữ':
         return formatFixedWordPoem(allWords, 6);
-
-      case '10': // Thơ bảy chữ (7 words per line)
+  
+      case 'Thơ 7 Chữ':
         return formatFixedWordPoem(allWords, 7);
-
-      case '11': // Thơ tám chữ (8 words per line)
+  
+      case 'Thơ 8 Chữ':
         return formatFixedWordPoem(allWords, 8);
+  
       default:
+        // Mặc định trả về nội dung gốc nếu không xác định được thể loại
         return allWords.join(' ');
     }
   };
@@ -1223,20 +1159,20 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             </div> */}
           </div>
           <div style={{ flex: 3, display: "flex", flexDirection: "column", gap: "5px", height: "100%" }}>
-            <select
+            <Select
               value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-              style={{
-                padding: "5px",
-                fontSize: "16px",
-                borderRadius: "5px",
-                border: "1px solid #ccc",
-              }}
+              onChange={(value) => setSelectedType(value)}
+              style={{padding: "5px",
+              fontSize: "16px",
+              borderRadius: "5px",
+              border: "1px solid #ccc",}}
             >
-              {Object.entries(poemType).map(([key, value]) => (
-                <option key={key} value={key}>{value}</option>
+              {poemTypes.map(type => (
+                <Option key={type.id} value={type.id}>
+                  {type.name}
+                </Option>
               ))}
-            </select>
+            </Select>
             <div style={{ width: "100%", flexGrow: 1, display: "flex", flexDirection: "column" }}>
               <label style={{ display: "block", fontSize: "12px", fontWeight: "bold" }}>
                 Cách thơ bạn hiển thị
