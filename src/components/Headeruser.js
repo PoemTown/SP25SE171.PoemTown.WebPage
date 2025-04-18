@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { ShopOutlined, BellOutlined, UserOutlined } from "@ant-design/icons";
+import { ShopOutlined, BellOutlined, UserOutlined, ShopTwoTone } from "@ant-design/icons";
 import { Dropdown, Menu, Badge, List, message, Avatar } from "antd";
 import { useSignalR } from "../SignalR/SignalRContext";
 import { jwtDecode } from 'jwt-decode';
 import ChatDropdown from "../pages/User/Chat/ChatDropdown";
+import { FcShop } from "react-icons/fc";
 
 const Headeruser = ({ userData }) => {
   const navigate = useNavigate();
@@ -134,13 +135,13 @@ const Headeruser = ({ userData }) => {
     >
       <Menu.Item disabled style={{ padding: "10px 12px", cursor: "default", borderBottom: "1px solid #eee" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <Avatar 
-            src={avatarUrl} 
+          <Avatar
+            src={avatarUrl}
             icon={!avatarUrl && <UserOutlined />}
             style={{ backgroundColor: !avatarUrl ? "#000" : "transparent" }}
           />
           <div>
-            <div style={{ fontWeight: "bold", fontSize: "15px", color:"black"}}>Xin chào {username}</div>
+            <div style={{ fontWeight: "bold", fontSize: "15px", color: "black" }}>Xin chào {username}</div>
           </div>
         </div>
       </Menu.Item>
@@ -182,29 +183,28 @@ const Headeruser = ({ userData }) => {
       <nav style={styles.nav}>
         <a href="/latest" style={styles.navLink}>Trang chủ</a>
         <a href="/about-poemtown" style={styles.navLink}>Về PoemTown</a>
-        <a href="#about-us" style={styles.navLink}>Về chúng tôi</a>
         <a href="/knowledge" style={styles.navLink}>Kiến thức</a>
         <a href="/poetsamples" style={styles.navLink}>Nhà thơ nổi tiếng</a>
         {roles.includes("ADMIN") && <a style={styles.navLink} onClick={() => navigate("/admin")}>Dành cho quản trị viên</a>}
         {roles.includes("MODERATOR") && <a style={styles.navLink} onClick={() => navigate("/mod")}>Dành cho kiểm duyệt viên</a>}
       </nav>
       <div style={styles.icons}>
+        <FcShop style={{ ...styles.icon, color: "#000" }} onClick={() => navigate("/shop")} />
         <ChatDropdown userData={userData} refreshKey={refreshKey} setRefreshKey={setRefreshKey} />
-        <ShopOutlined style={{...styles.icon, color: "#000"}} onClick={() => navigate("/shop")} />
         <Dropdown overlay={notificationMenu} trigger={["click"]} placement="bottomRight">
           <Badge count={announcements?.filter(notif => !notif.isRead).length || 0} overflowCount={9}>
-            <BellOutlined style={{...styles.icon, color: "#000"}} />
+            <BellOutlined style={{ ...styles.icon, color: "#000", fontSize: "21px" }} />
           </Badge>
         </Dropdown>
         <Dropdown overlay={menu} trigger={["click"]}>
-          <Avatar 
-            src={avatarUrl} 
+          <Avatar
+            src={avatarUrl}
             icon={!avatarUrl && <UserOutlined />}
-            style={{ 
+            style={{
               cursor: "pointer",
               backgroundColor: !avatarUrl ? "#000" : "transparent",
               color: "#fff" // Thêm màu chữ trắng cho icon UserOutlined
-            }} 
+            }}
           />
         </Dropdown>
       </div>
@@ -233,18 +233,18 @@ const styles = {
     cursor: "pointer"
   },
   logoImage: {
-    height: "60px"
+    height: "50px"
   },
   nav: {
     flex: "2",
     display: "flex",
     justifyContent: "center",
-    gap: "20px",
+    gap: "10px",
     flexWrap: "wrap"
   },
   navLink: {
     textDecoration: "none",
-    fontSize: "16px",
+    fontSize: "0.9rem",
     color: "#333",
     fontWeight: "bold",
     padding: "5px 10px"
@@ -258,7 +258,7 @@ const styles = {
   },
   icon: {
     fontSize: "24px",
-    color: "#000", 
+    color: "#000",
     cursor: "pointer"
   },
 };

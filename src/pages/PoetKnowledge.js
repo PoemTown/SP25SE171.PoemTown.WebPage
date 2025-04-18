@@ -21,6 +21,13 @@ const PoetKnowledge = () => {
         `Tập thơ của ${poet?.name}`,
     ];
 
+    const accessToken = localStorage.getItem("accessToken");
+
+    const requestHeaders = {
+        "Content-Type": "application/json",
+        ...(accessToken && { Authorization: `Bearer ${accessToken}` })
+    };
+
     useEffect(() => {
         const fetchPoetSample = async () => {
             try {
@@ -46,10 +53,7 @@ const PoetKnowledge = () => {
                 const response = await fetch(
                     `https://api-poemtown-staging.nodfeather.win/api/collections/v1/poet-sample/${id}`,
                     {
-                        headers: {
-                            "Content-Type": "application/json",
-                            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-                        }
+                        headers: requestHeaders
                     }
                 );
                 if (!response.ok) {
