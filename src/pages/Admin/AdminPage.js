@@ -19,6 +19,7 @@ import ReportFromUser from "./Tabs/ReportFromUser";
 import PoetSamplesManagement from "./Tabs/PoetSamplesManagement";
 import CommunityCollectionManagement from "./Tabs/CommunityCollectionManagement";
 import RequestFromUser from "./Tabs/RequestFromUser";
+import PoemTypeManagement from "./Tabs/PoemTypeManagement";
 const drawerWidth = 280;
 
 const AdminPage = () => {
@@ -58,6 +59,7 @@ const AdminPage = () => {
                         { key: "orders", icon: <ShoppingCart />, text: "Order Management" },
                         { key: "accounts", icon: <ManageAccounts />, text: "Account User Management" },
                         { key: "poems", icon: <LibraryBooks />, text: "Poems Management" },
+                        { key: "poemtypes", icon: <LibraryBooks />, text: "Poem Type Management" },
                         { key: "poetsamples", icon: <Collections />, text: "PoetSamples Management" },
                         { key: "community-collections", icon: <Collections />, text: "Community Collections Management" },
                         { key: "reports", icon: <Report />, text: "Reports from Users" },
@@ -117,6 +119,7 @@ const AdminPage = () => {
                 {currentPage === "requests" && <RequestFromUser />}
                 {currentPage === "community-collections" && <CommunityCollectionManagement />}
                 {currentPage === "poetsamples" && <PoetSamplesManagement />}
+                {currentPage === "poemtypes" && <PoemTypeManagement />}
             </Box>
         </Box>
     );

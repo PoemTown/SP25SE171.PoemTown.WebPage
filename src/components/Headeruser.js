@@ -11,6 +11,7 @@ const Headeruser = ({ userData }) => {
   const roles = JSON.parse(localStorage.getItem("role")) || [];
   const access_token = localStorage.getItem("accessToken");
   const username = localStorage.getItem("username");
+  const avatarUrl = JSON.parse(localStorage.getItem("avatar"));
   const { announcements, setAnnouncements, createAnnouncementConnection, announcementConnection } = useSignalR();
 
   const [refreshKey, setRefreshKey] = useState(0);
@@ -103,7 +104,7 @@ const Headeruser = ({ userData }) => {
                 onMouseLeave={(e) => e.currentTarget.style.backgroundColor = notif.isRead ? "#fff" : "#FFE5E5"}
               >
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <BellOutlined style={{ fontSize: "18px", color: "#4A90E2" }} />
+                  <BellOutlined style={{ fontSize: "18px", color: "#000" }} />
                   <div>
                     <strong style={{ color: "#333", fontSize: "16px" }}>{notif.title}</strong>
                     <p style={{ margin: "5px 0 0", fontSize: "14px", color: "#555" }}>{notif.content}</p>
@@ -133,7 +134,11 @@ const Headeruser = ({ userData }) => {
     >
       <Menu.Item disabled style={{ padding: "10px 12px", cursor: "default", borderBottom: "1px solid #eee" }}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <Avatar style={{ backgroundColor: "#4A90E2" }} icon={<UserOutlined />} />
+          <Avatar 
+            src={avatarUrl} 
+            icon={!avatarUrl && <UserOutlined />}
+            style={{ backgroundColor: !avatarUrl ? "#000" : "transparent" }}
+          />
           <div>
             <div style={{ fontWeight: "bold", fontSize: "15px", color:"black"}}>Xin chào {username}</div>
           </div>
@@ -185,14 +190,22 @@ const Headeruser = ({ userData }) => {
       </nav>
       <div style={styles.icons}>
         <ChatDropdown userData={userData} refreshKey={refreshKey} setRefreshKey={setRefreshKey} />
-        <ShopOutlined style={styles.icon} onClick={() => navigate("/shop")} />
+        <ShopOutlined style={{...styles.icon, color: "#000"}} onClick={() => navigate("/shop")} />
         <Dropdown overlay={notificationMenu} trigger={["click"]} placement="bottomRight">
           <Badge count={announcements?.filter(notif => !notif.isRead).length || 0} overflowCount={9}>
-            <BellOutlined style={styles.icon} />
+            <BellOutlined style={{...styles.icon, color: "#000"}} />
           </Badge>
         </Dropdown>
         <Dropdown overlay={menu} trigger={["click"]}>
-          <Avatar style={{ backgroundColor: "#4A90E2", cursor: "pointer" }} icon={<UserOutlined />} />
+          <Avatar 
+            src={avatarUrl} 
+            icon={!avatarUrl && <UserOutlined />}
+            style={{ 
+              cursor: "pointer",
+              backgroundColor: !avatarUrl ? "#000" : "transparent",
+              color: "#fff" // Thêm màu chữ trắng cho icon UserOutlined
+            }} 
+          />
         </Dropdown>
       </div>
     </header>
@@ -245,7 +258,7 @@ const styles = {
   },
   icon: {
     fontSize: "24px",
-    color: "#4A90E2",
+    color: "#000", 
     cursor: "pointer"
   },
 };

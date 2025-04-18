@@ -34,7 +34,7 @@ const ChatDropdown = ({ userData, refreshKey, setRefreshKey }) => {
       
     >
       <Badge>
-        <RiMessengerLine style={{ fontSize: "24px", color: "#4A90E2" }} />
+        <RiMessengerLine style={{ fontSize: "24px", color: "#000" }} />
       </Badge>
     </Dropdown>
   );
