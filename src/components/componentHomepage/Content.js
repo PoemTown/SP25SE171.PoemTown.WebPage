@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Button, List, message, Modal } from "antd";
+import { Avatar, Button, Card, Carousel, List, message, Modal, Spin, Typography } from "antd";
 import { useNavigate } from "react-router-dom";
 import CollectionCard from "./CollectionCard";
 import PoemCard from "./PoemCard";
@@ -7,6 +7,9 @@ import RecordCard from "./RecordCard";
 import { BiCommentDetail, BiLike } from "react-icons/bi";
 import { HiUsers } from "react-icons/hi2";
 import RecordListGroupedByPoem from "./RecordListGroupedByPoem";
+import Title from "antd/es/typography/Title";
+import { RightOutlined } from "@ant-design/icons";
+import { display } from "@mui/system";
 
 const Content = ({ activeTab }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -37,6 +40,48 @@ const Content = ({ activeTab }) => {
   const [hoveredUserLdb, setHoveredUserLdb] = useState(null);
 
   const navigate = useNavigate();
+
+
+  // ── Famous poets ─────────────────────────────────────────────────
+  const [famousPoets, setFamousPoets] = useState([]);
+  const [isLoadingFamousPoets, setLoadingFP] = useState(false);
+  const [errorFamousPoets, setErrorFP] = useState(null);
+
+  const poetChunks = [];
+  for (let i = 0; i < famousPoets.length; i += 3) {
+    poetChunks.push(famousPoets.slice(i, i + 3));
+  }
+
+  // 2️⃣ Keep track of which chunk we’re on
+  const [currentChunkIdx, setCurrentChunkIdx] = useState(0);
+  useEffect(() => {
+    if (poetChunks.length < 2) return;
+    const timer = setInterval(() => {
+      setCurrentChunkIdx(i => (i + 1) % poetChunks.length);
+    }, 5000);
+    return () => clearInterval(timer);
+  }, [poetChunks]);
+
+  useEffect(() => {
+    const fetchFamous = async () => {
+      setLoadingFP(true);
+      setErrorFP(null);
+      try {
+        const res = await fetch(
+          `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1`,
+        );
+        if (!res.ok) throw new Error('Không lấy được danh sách');
+        const json = await res.json();
+        setFamousPoets(json.data || []);
+      } catch (err) {
+        setErrorFP(err.message);
+      } finally {
+        setLoadingFP(false);
+      }
+    };
+    fetchFamous();
+  }, []);
+
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -107,8 +152,8 @@ const Content = ({ activeTab }) => {
     }
 
     const endpoint = isCollection
-  ? `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`
-  : `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
+      ? `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection/${id}`
+      : `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
 
     const currentState = isCollection
       ? bookmarkedCollections[id]
@@ -199,10 +244,11 @@ const Content = ({ activeTab }) => {
 
       if (!response.ok) {
         message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
-        
+
       }
 
       const data = await response.json();
+      console.log(data.data);
       if (!abortController.signal.aborted) {
         if (data.totalPages) {
           setTotalPages(data.totalPages);
@@ -278,12 +324,12 @@ const Content = ({ activeTab }) => {
         setTitle("");
         setIsCommunity(false);
         break;
-      case "community":
-        apiUrl = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/community?pageNumber=${currentPage}&pageSize=${pageSize}`;
-        setIsBookmarkTab(false);
-        setTitle("Hãy cùng nhau chung tay đóng góp cho cộng đồng Thị trấn thơ 🏡")
-        setIsCommunity(true);
-        break;
+      // case "community":
+      //   apiUrl = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/community?pageNumber=${currentPage}&pageSize=${pageSize}`;
+      //   setIsBookmarkTab(false);
+      //   setTitle("Hãy cùng nhau chung tay đóng góp cho cộng đồng Thị trấn thơ 🏡")
+      //   setIsCommunity(true);
+      //   break;
       case "audioread":
         apiUrl = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/all?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
@@ -343,16 +389,49 @@ const Content = ({ activeTab }) => {
       }
 
       const data = await response.json();
-     
       setUserLeaderBoard(data.data); // set the entire object
     };
 
     fetchUserLeaderBoard();
   }, []);
 
+  const formatMonthYear = isoString => {
+    const d = new Date(isoString);
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${mm}/${yyyy}`;        // e.g. "04/2025"
+  };
+
+  const formatDate = isoString => {
+    const d = new Date(isoString);
+    const dd = String(d.getDate()).padStart(2, "0");
+    const mm = String(d.getMonth() + 1).padStart(2, "0");
+    const yyyy = d.getFullYear();
+    return `${dd}/${mm}/${yyyy}`;  // e.g. "30/04/2025"
+  };
 
   return (
-    <div>
+    <div style={{
+      backgroundImage: `url("${process.env.PUBLIC_URL}/homepage_bg.png")`,
+      backgroundRepeat: "no-repeat",
+      backgroundSize: "cover",
+      display: "flex",
+      flexDirection: "column",
+      alignItems: "center"
+    }}>
+      {!isBookmarkTab && (
+        <div style={styles.idea}>
+          <p style={{ fontWeight: "bold", marginTop: "5px", marginLeft: "10px" }}>Thông điệp của ngày: </p>
+          <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Nổ lực hết mình để đạt được thành quả tốt nhất!!!</p>
+        </div>
+      )}
+      <div style={{display: "flex", flexDirection: "row"}}>
+        
+        <div>
+          <h2 style={styles.contentTitle}>{title}</h2>
+        </div>
+        
+      </div>
       <div style={styles.contentContainer}>
         <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
           <>
@@ -369,15 +448,69 @@ const Content = ({ activeTab }) => {
           <h2 style={{ textAlign: "center", color: "red", fontSize: "1.8rem" }}>Vui lòng đăng nhập để sử dụng</h2>
           <img alt="Access Denied" style={{ margin: "0 15%", width: "70%" }} src="./access_denied_nofitication.png" />
         </Modal>
-        <div style={styles.leftColumn}>
-          <div style={styles.poemsList}>
-            <h2 style={styles.contentTitle}>{title}</h2>
-            {!isBookmarkTab && (
-              <div style={styles.idea}>
-                <p style={{ fontWeight: "bold", marginTop: "5px", marginLeft: "10px" }}>Thông điệp của ngày: </p>
-                <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Nổ lực hết mình để đạt được thành quả tốt nhất!!!</p>
+
+
+
+        <div style={styles.FamousPoetColumn}>
+          {errorFamousPoets && (
+            <div style={styles.error}>Lỗi: {errorFamousPoets}</div>
+          )
+          }
+          <Card
+            title={<Title level={2} style={{ fontWeight: 'bold', fontSize: '1rem' }}>Các nhà thơ nổi tiếng 🎓</Title>}
+            bordered={false}
+            style={styles.famousContainerCard}
+          >
+            {isLoadingFamousPoets ? (
+              <div style={{ textAlign: 'center', padding: 24 }}><Spin /></div>
+            ) : errorFamousPoets ? (
+              <div style={styles.error}>Lỗi: {errorFamousPoets}</div>
+            ) : famousPoets.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: 24 }}>Không có dữ liệu</div>
+            ) : (
+              <div style={styles.carouselContainer}>
+                {poetChunks.map((chunk, idx) => (
+                  <div
+                    key={idx}
+                    style={{
+                      ...styles.slideChunk,
+                      opacity: idx === currentChunkIdx ? 1 : 0,
+                      zIndex: idx === currentChunkIdx ? 2 : 1,
+                      pointerEvents: idx === currentChunkIdx ? 'auto' : 'none',
+                      transition: 'opacity 0.8s ease-in-out'
+                    }}
+                  >
+                    {chunk.map(poet => (
+                      <div
+                        key={poet.id}
+                        style={styles.slideItem}
+                        onClick={() => navigate(`/knowledge/poet/${poet.id}`)}
+                      >
+                        <Avatar size={64} src={poet.avatar} />
+                        <Typography.Title level={5} style={styles.slideName}>
+                          {poet.name}
+                        </Typography.Title>
+                        <Typography.Text style={styles.slideMeta}>
+                          {new Date(poet.dateOfBirth).toLocaleDateString()} &bull; {poet.gender === 'Male' ? 'Nam' : 'Nữ'}
+                        </Typography.Text>
+                        <Typography.Paragraph
+                          ellipsis={{ rows: 3 }}
+                          style={styles.slideBio}
+                        >
+                          {poet.bio}
+                        </Typography.Paragraph>
+                      </div>
+                    ))}
+                  </div>
+                ))}
               </div>
             )}
+          </Card>
+        </div>
+
+
+        <div style={styles.leftColumn}>
+          <div style={styles.poemsList}>
             {isLoading && (
               <div style={styles.loading}>
                 Loading...
@@ -434,8 +567,8 @@ const Content = ({ activeTab }) => {
                   />
                 ))} */}
                 <RecordListGroupedByPoem
-                    records={records}
-                  />
+                  records={records}
+                />
               </div>
             )}
             {totalPages > 1 && (
@@ -462,17 +595,21 @@ const Content = ({ activeTab }) => {
           </div>
         </div>
         <div style={styles.rightColumn}>
-          {/* Top tác giả */}
           <div style={styles.topSection}>
             <div style={styles.topTitle}>
-              Top các tác giả được yêu thích 👑
+              BXH tác giả được yêu thích {formatMonthYear(userLeaderBoard.startDate)} 👑
             </div>
+            <div style={{ color: "#666", fontSize: "0.8rem", textAlign: "center" }}>
+              (Ngày tổng kết: {formatDate(userLeaderBoard.endDate)})
+            </div>
+            <hr style={{ border: "1px solid #fdf511", width: "100%" }} />
             <ul style={styles.topList}>
               {userLeaderBoard && userLeaderBoard.topUsers?.slice(0, 3).map((user) => (
                 <div
                   key={user.id}
                   style={{
-                    marginBottom: "20px",
+                    marginTop: "20px",
+                    marginBottom: "10px",
                     opacity: hoveredUserLdb === user.id ? 0.8 : 1,
                     cursor: "pointer",
                     transition: "opacity 0.3s",
@@ -503,11 +640,17 @@ const Content = ({ activeTab }) => {
                 </div>
               ))}
             </ul>
-            <a onClick={openLeaderboardUserModal} style={styles.seeMore}>
-              Xem thêm &gt;
-            </a>
+            <Button
+              type="link"
+              icon={<RightOutlined />}
+              iconPosition="end"
+              style={{ padding: 0, fontSize: "0.9rem", alignSelf: "flex-end" }}
+              onClick={openLeaderboardUserModal}
+            >
+              Xem thêm
+            </Button>
             <Modal
-              title="Top các tác giả được yêu thích 👑"
+              title="BXH tác giả được yêu thích 👑"
               visible={isLeaderboardUserModalVisible}
               onCancel={closeLeaderboardUserModal}
               footer={[
@@ -536,7 +679,7 @@ const Content = ({ activeTab }) => {
                           alignItems: "center",
                           gap: "6px",
                         }}>
-                          <HiUsers /> <span style={{ fontSize: "0.9rem" }}>{user.user.totalFollower}</span>
+                          <HiUsers size={15} /> <span style={{ fontSize: "0.8rem" }}>{user.user.totalFollower}</span>
                         </div>
                       </div>
                     </li>
@@ -546,14 +689,17 @@ const Content = ({ activeTab }) => {
             </Modal>
           </div>
 
-          {/* Top bài thơ */}
           <div style={styles.topSection}>
             <div style={styles.topTitle}>
-              Top các bài thơ được yêu thích 📖
+              BXH bài thơ được yêu thích {formatMonthYear(poemLeaderBoard.startDate)} 📖
             </div>
+            <div style={{ color: "#666", fontSize: "0.8rem", textAlign: "center" }}>
+              (Ngày tổng kết: {formatDate(poemLeaderBoard.endDate)})
+            </div>
+            <hr style={{ border: "1px solid #f0f", width: "100%" }} />
             <ul style={styles.topList}>
               {poemLeaderBoard && poemLeaderBoard.topPoems?.slice(0, 3).map((poem) => (
-                <div style={{ marginBottom: "20px", cursor: "pointer"}}  onClick={() => navigate(`/poem/${poem.poem.id}`)}>
+                <div style={{ marginTop: "20px", marginBottom: "10px", cursor: "pointer" }} onClick={() => navigate(`/poem/${poem.poem.id}`)}>
                   <li key={poem.id} style={styles.topItem}>
                     <span style={{ ...styles.topItemRank, color: getRankColor(poem.rank) }}>
                       #{poem.rank}
@@ -561,9 +707,9 @@ const Content = ({ activeTab }) => {
                     <div style={{ display: "flex", flexDirection: "column", gap: "5px", justifyContent: "center", width: "100%" }}>
                       <span style={styles.topItemName}>{poem.poem.title}</span>
                       <div>
-                        <small style={{ margin: 0 }}>
+                        <small style={{ margin: 0, fontSize: "0.8rem" }}>
                           Mô tả:{" "}
-                          <span style={{ color: "#222" }}>
+                          <span style={{ color: "#222", fontSize: "0.8rem" }}>
                             {poem.poem.description.length > 50
                               ? `${poem.poem.description.substring(0, 50)}...`
                               : poem.poem.description}
@@ -575,25 +721,31 @@ const Content = ({ activeTab }) => {
                           display: "flex",
                           alignItems: "center",
                           gap: "6px",
-                        }}><BiLike /> {poem.poem.likeCount}</div>
+                        }}><BiLike size={15} /> <span style={{ fontSize: "0.8rem" }} > {poem.poem.likeCount}</span></div>
                         <div style={{
                           display: "flex",
                           alignItems: "center",
                           gap: "6px",
-                        }}><BiCommentDetail /> {poem.poem.commentCount}</div>
+                        }}><BiCommentDetail size={15} /> <span style={{ fontSize: "0.8rem" }} >{poem.poem.commentCount}</span></div>
                       </div>
-                      <small style={{ color: "#555", alignSelf: 'flex-end' }}>{poem.poem.user.displayName || "annoymous"}</small>
+                      <small style={{ color: "#007bff", alignSelf: 'flex-end' }}>{poem.poem.user.displayName || "annoymous"}</small>
                     </div>
                   </li>
                   <div style={styles.topItemLine} />
                 </div>
               ))}
             </ul>
-            <a onClick={openLeaderboardPoemModal} style={styles.seeMore}>
-              Xem thêm &gt;
-            </a>
+            <Button
+              type="link"
+              icon={<RightOutlined />}
+              iconPosition="end"
+              style={{ padding: 0, fontSize: "0.9rem", alignSelf: "flex-end" }}
+              onClick={openLeaderboardPoemModal}
+            >
+              Xem thêm
+            </Button>
             <Modal
-              title="Top các bài thơ được yêu thích 📖"
+              title="BXH bài thơ được yêu thích 📖"
               visible={isLeaderboardPoemModalVisible}
               onCancel={closeLeaderboardPoemModal}
               footer={[
@@ -614,7 +766,7 @@ const Content = ({ activeTab }) => {
                       <span style={{ ...styles.topItemRank, color: getRankColor(poem.rank) }}>
                         #{poem.rank}
                       </span>
-                      <div style={{display: "flex", flexDirection: "row", gap: "20px", width: "100%"}}>
+                      <div style={{ display: "flex", flexDirection: "row", gap: "20px", width: "100%" }}>
                         <div style={styles.poemImageContainer}>
                           <img
                             src={poem.poem.poemImage || "/anhminhhoa.png"}
@@ -667,6 +819,53 @@ const Content = ({ activeTab }) => {
 };
 
 const styles = {
+  FamousPoetColumn: {
+    display: "flex",
+    flexDirection: "column",
+    flex: "3",
+  },
+
+  famousContainerCard: {
+    background: '#fff',
+    borderRadius: 8,
+    boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
+    border: "1px solid #ddd",
+    position: "relative",
+    padding: 16
+  },
+
+  // outer box that holds all chunks stacked
+  carouselContainer: {
+    position: 'relative',
+    height: "700px",
+    width: '100%',
+  },
+
+  // each chunk (group of 3) is absolute, covering the container
+  slideChunk: {
+    display: "flex",
+    flexDirection: "column",
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    justifyContent: 'space-between'
+  },
+
+  slideItem: {
+    flex: '0 0 32%',
+    cursor: 'pointer',
+    textAlign: 'center',
+    padding: 12,
+    borderRadius: 8,
+    background: '#fafafa',
+    boxShadow: '0 2px 6px rgba(0,0,0,0.04)'
+  },
+
+  slideName: { margin: '12px 0 4px', fontWeight: 600, color: '#333' },
+  slideMeta: { display: 'block', fontSize: '0.8rem', color: '#888', marginBottom: 8 },
+  slideBio: { fontSize: '0.85rem', color: '#666' },
+
   poemImageContainer: {
     width: "84px",
     height: "134px",
@@ -683,10 +882,12 @@ const styles = {
   },
 
   idea: {
+    marginTop: "50px",
+    maxWidth: "800px",
     display: "flex",
     width: "100%",
     height: "60px",
-    backgroundImage: `url('./background_idea.png')`,
+    backgroundImage: `url('./poet_knowledge_cover.png')`,
     backgroundRepeat: "no-repeat",
     backgroundSize: "cover",
     backgroundPosition: "center",
@@ -727,11 +928,10 @@ const styles = {
   },
 
   contentContainer: {
-    maxWidth: "100%",
+    maxWidth: "1200px",
     display: "flex",
     gap: "40px",
     justifyContent: "center",
-    maxWidth: "1600px",
     margin: "0 auto"
   },
 
@@ -756,22 +956,24 @@ const styles = {
     flex: "3"
   },
   topSection: {
+    display: "flex",
+    flexDirection: "column",
     border: "1px solid #ddd",
     borderRadius: "10px",
     padding: "15px",
-    marginTop: "20px",
+    marginBottom: "20px",
     background: "#fff",
     boxShadow: "0px 4px 6px rgba(0, 0, 0, 0.1)",
   },
   topTitle: {
     fontWeight: "bold",
     textAlign: "center",
-    fontSize: "1.1rem",
+    fontSize: "1rem",
     margin: "0 auto 20px"
   },
   topList: {
     listStyle: "none",
-    padding: "0px 30px",
+    padding: "0px 10px",
     margin: "0",
   },
   topItem: {
@@ -792,7 +994,7 @@ const styles = {
     marginRight: "10px",
   },
   topItemName: {
-    fontSize: "0.9rem",
+    fontSize: "0.8rem",
     fontWeight: "bold"
   },
   topItemLine: {

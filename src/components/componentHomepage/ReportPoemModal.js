@@ -1,62 +1,77 @@
-import React, { useState } from "react";
-import { Modal, Radio, Input, Button, message } from "antd";
+import React, { useEffect, useState } from "react";
+import { Modal, Radio, Input, Button, message, Spin, Alert } from "antd";
 import axios from "axios";
 
-const REPORT_REASONS = [
-  { label: "Nội dung không phù hợp", value: "Nội dung không phù hợp" },
-  { label: "Spam", value: "Spam" },
-  { label: "Ngôn từ xúc phạm", value: "Ngôn từ xúc phạm" },
-  { label: "Hình ảnh không phù hợp", value: "Hình ảnh không phù hợp" },
-  { label: "Khác", value: "Khác" }
-];
-
 const ReportPoemModal = ({ visible, onClose, poemId, accessToken }) => {
-  const [selectedReason, setSelectedReason] = useState(null);
-  const [customReason, setCustomReason] = useState("");
+  const [options, setOptions] = useState([]);
+  const [loadingOptions, setLoadingOptions] = useState(false);
+  const [errorOptions, setErrorOptions] = useState(null);
+
+  const [selectedMessageId, setSelectedMessageId] = useState(null);
+  const [note, setNote] = useState("");
+
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmitReport = async () => {
-    // Determine the final reason:
-    let reportReason = selectedReason;
-    if (selectedReason === "Khác") {
-      if (!customReason.trim()) {
-        message.error("Vui lòng nhập lý do khi chọn 'Khác'.");
-        return;
-      }
-      reportReason = customReason.trim();
-    }
-    if (!selectedReason) {
-      message.error("Vui lòng chọn lý do báo cáo bài thơ.");
-      return;
+  // Fetch reasons when modal opens
+  useEffect(() => {
+    if (!visible) return;
+    setLoadingOptions(true);
+    setErrorOptions(null);
+
+    axios
+      .get(`${process.env.REACT_APP_API_BASE_URL}/reports/v1/messages`, {
+        params: { type: 1 },
+        headers: { Authorization: `Bearer ${accessToken}` },
+      })
+      .then(({ data }) => setOptions(data.data || []))
+      .catch((err) => {
+        console.error(err);
+        setErrorOptions("Không tải được danh sách lý do.");
+      })
+      .finally(() => setLoadingOptions(false));
+  }, [visible, accessToken]);
+
+  const handleSubmit = async () => {
+    if (!selectedMessageId) {
+      return message.error("Vui lòng chọn lý do báo cáo.");
     }
 
+    const selected = options.find(o => o.id === selectedMessageId);
+    if (!selected) {
+      return message.error("Lý do không hợp lệ.");
+    }
+
+    // If "Khác", note is required
+    if (selected.description === "Khác" && !note.trim()) {
+      return message.error("Vui lòng nhập lý do cụ thể khi chọn 'Khác'.");
+    }
+
+    const reportReason = note.trim() || selected.description;
+
+    setSubmitting(true);
     try {
-      setSubmitting(true);
-      const requestBody = {
-        poemId,
-        reportReason
-      };
-
-      const response = await axios.post(
+      const body = { poemId, reportMessageId: selectedMessageId, reportReason };
+      const resp = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/reports/v1/poem`,
-        requestBody,
+        body,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json"
-          }
+            "Content-Type": "application/json",
+          },
         }
       );
-
-      if (response.status === 200 || response.data.success) {
-        message.success("Báo cáo bài thơ thành công!");
+      if (resp.status === 200) {
+        message.success("Báo cáo thành công!");
+        setSelectedMessageId(null);
+        setNote("");
         onClose();
       } else {
-        message.error(response.data.errorMessage);
+        message.error(resp.data.message || "Báo cáo thất bại.");
       }
-    } catch (error) {
-      console.error("Error reporting poem:", error);
-      message.error(error?.response?.data?.errorMessage);
+    } catch (err) {
+      console.error(err);
+      message.error(err.response?.data?.errorMessage || "Đã có lỗi, thử lại sau.");
     } finally {
       setSubmitting(false);
     }
@@ -71,30 +86,52 @@ const ReportPoemModal = ({ visible, onClose, poemId, accessToken }) => {
         <Button key="cancel" onClick={onClose} disabled={submitting}>
           Hủy
         </Button>,
-        <Button key="submit" type="primary" onClick={handleSubmitReport} loading={submitting}>
+        <Button
+          key="submit"
+          type="primary"
+          onClick={handleSubmit}
+          loading={submitting}
+        >
           Gửi báo cáo
-        </Button>
+        </Button>,
       ]}
     >
-      <Radio.Group
-        onChange={(e) => setSelectedReason(e.target.value)}
-        value={selectedReason}
-        style={{ display: "flex", flexDirection: "column", gap: "8px" }}
-      >
-        {REPORT_REASONS.map((reason) => (
-          <Radio key={reason.value} value={reason.value}>
-            {reason.label}
-          </Radio>
-        ))}
-      </Radio.Group>
-      {selectedReason === "Khác" && (
-        <Input.TextArea
-          placeholder="Vui lòng nhập lý do khác..."
-          value={customReason}
-          onChange={(e) => setCustomReason(e.target.value)}
-          style={{ marginTop: 12 }}
-          rows={3}
+      {loadingOptions ? (
+        <div style={{ textAlign: "center", padding: 24 }}>
+          <Spin />
+        </div>
+      ) : errorOptions ? (
+        <Alert
+          message={errorOptions}
+          type="error"
+          showIcon
+          style={{ marginBottom: 16 }}
         />
+      ) : (
+        <>
+          <Radio.Group
+            onChange={e => {
+              setSelectedMessageId(e.target.value);
+            }}
+            value={selectedMessageId}
+            style={{ display: "flex", flexDirection: "column", gap: 8 }}
+          >
+            {options.map(opt => (
+              <Radio key={opt.id} value={opt.id}>
+                {opt.description}
+              </Radio>
+            ))}
+          </Radio.Group>
+
+          {/* always show note textarea */}
+          <Input.TextArea
+            placeholder="Ghi chú hoặc mô tả (bắt buộc nếu chọn 'Khác')"
+            value={note}
+            onChange={e => setNote(e.target.value)}
+            rows={3}
+            style={{ marginTop: 12 }}
+          />
+        </>
       )}
     </Modal>
   );
