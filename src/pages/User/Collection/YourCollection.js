@@ -255,18 +255,32 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
       maxWidth: "1200px", 
       margin: "0 auto",
       padding: "20px",
-      fontFamily: "'Merriweather', serif" // Sử dụng font phù hợp với thơ ca
+      fontFamily: "'Merriweather', serif",
+      '@media (max-width: 1440px)': {
+        padding: "15px"
+      },
+      '@media (max-width: 768px)': {
+        padding: "10px"
+      }
     }}>
       {isLoading ? (
         <div style={{ 
           textAlign: "center", 
-          padding: "100px 0",
-          background: "linear-gradient(45deg, #f8f9fa, #f1f3f5)"
+          padding: "60px 0",
+          background: "linear-gradient(45deg, #f8f9fa, #f1f3f5)",
+          '@media (max-width: 768px)': {
+            padding: "40px 0"
+          }
         }}>
           <Spin 
             size="large" 
             tip="Đang tải dữ liệu..." 
-            indicator={<LoadingOutlined style={{ fontSize: 48, color: "#2c3e50" }} spin />}
+            indicator={<LoadingOutlined style={{ 
+              fontSize: "48px",
+              '@media (max-width: 768px)': {
+                fontSize: "36px"
+              }
+            }} spin />}
           />
         </div>
       ) : (
@@ -295,18 +309,23 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                   style={{
                     backgroundColor: "#2c3e50",
                     color: "#ecf0f1",
-                    padding: "15px 30px",
+                    padding: "12px 24px",
                     borderRadius: "30px",
                     border: "none",
                     fontWeight: "600",
                     cursor: "pointer",
-                    marginBottom: "30px",
+                    marginBottom: "25px",
                     boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
                     transition: "all 0.3s ease",
                     display: "flex",
                     alignItems: "center",
-                    gap: "10px",
-                    fontSize: "0.8em",
+                    gap: "8px",
+                    fontSize: "0.9em",
+                    '@media (max-width: 768px)': {
+                      padding: "10px 20px",
+                      fontSize: "0.8em",
+                      marginBottom: "20px"
+                    },
                     ':hover': {
                       transform: "translateY(-2px)",
                       boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
@@ -321,41 +340,51 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
   
               <div style={{ 
                 display: "grid",
-                gridTemplateColumns: "repeat(auto-fill, minmax(350px, 1fr))",
-                gap: "30px",
-                position: "relative",
-                padding: "20px 0"
+                gridTemplateColumns: "repeat(auto-fill, minmax(300px, 1fr))",
+                gap: "25px",
+                padding: "15px 0",
+                '@media (max-width: 1024px)': {
+                  gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                  gap: "20px"
+                },
+                '@media (max-width: 768px)': {
+                  gridTemplateColumns: "1fr",
+                  gap: "15px"
+                }
               }}>
                 {collections.map((collection) => (
                   <div
                     key={collection.id}
                     style={{
-                      borderRadius: "15px",
+                      borderRadius: "12px",
                       border: "1px solid #e0e0e0",
-                      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+                      boxShadow: "0 8px 20px rgba(0, 0, 0, 0.06)",
                       backgroundColor: "#ffffff",
-                      transition: "all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+                      transition: "all 0.3s ease",
                       overflow: "hidden",
                       position: "relative",
+                      '@media (max-width: 768px)': {
+                        borderRadius: "10px"
+                      },
                       ':hover': {
-                        transform: "translateY(-5px)",
-                        boxShadow: "0 15px 35px rgba(0, 0, 0, 0.12)"
+                        transform: "translateY(-3px)",
+                        boxShadow: "0 12px 25px rgba(0, 0, 0, 0.1)"
                       }
                     }}
                   >
                     <div style={{ 
                       position: "relative",
-                      height: "200px",
+                      height: "180px",
                       overflow: "hidden",
-                      borderTopLeftRadius: "15px",
-                      borderTopRightRadius: "15px"
+                      '@media (max-width: 768px)': {
+                        height: "160px"
+                      }
                     }}>
                       <img
                         style={{
                           width: "100%",
                           height: "100%",
                           objectFit: "cover",
-                          filter: "brightness(0.95)",
                           transition: "transform 0.3s ease"
                         }}
                         src={collection.image || "/poetry-placeholder.jpg"}
@@ -363,87 +392,99 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                       />
                       <div style={{
                         position: "absolute",
-                        top: "15px",
-                        right: "15px",
+                        top: "12px",
+                        right: "12px",
                         display: "flex",
-                        gap: "10px",
-                        alignItems: "center"
+                        gap: "8px",
+                        '@media (max-width: 768px)': {
+                          top: "10px",
+                          right: "10px"
+                        }
                       }}>
                         <button
                           style={{
                             background: "rgba(255, 255, 255, 0.9)",
                             borderRadius: "50%",
-                            width: "36px",
-                            height: "36px",
+                            width: "32px",
+                            height: "32px",
                             display: "flex",
                             alignItems: "center",
                             justifyContent: "center",
                             border: "none",
-                            boxShadow: "0 2px 5px rgba(0, 0, 0, 0.1)",
+                            boxShadow: "0 2px 4px rgba(0, 0, 0, 0.1)",
                             cursor: "pointer",
-                            transition: "all 0.2s ease"
+                            transition: "all 0.2s ease",
+                            '@media (max-width: 768px)': {
+                              width: "30px",
+                              height: "30px"
+                            }
                           }}
                           onClick={() => handleBookmark(collection.id)}
                         >
                           {bookmarkedCollections.has(collection.id) ? (
-                            <IoBookmark color="#f1c40f" size={20} />
+                            <IoBookmark color="#f1c40f" size={18} />
                           ) : (
-                            <CiBookmark size={20} color="#2c3e50" />
+                            <CiBookmark size={18} color="#2c3e50" />
                           )}
                         </button>
                       </div>
                     </div>
   
                     <div style={{ 
-                      padding: "20px",
-                      background: "linear-gradient(180deg, #ffffff 0%, #f8f9fa 100%)"
+                      padding: "16px",
+                      '@media (max-width: 768px)': {
+                        padding: "14px"
+                      }
                     }}>
                       <div style={{
                         display: "flex",
                         justifyContent: "space-between",
                         alignItems: "flex-start",
-                        marginBottom: "15px"
+                        marginBottom: "12px"
                       }}>
                         <h3 style={{
                           margin: 0,
                           color: "#2c3e50",
-                          fontSize: "1.4em",
+                          fontSize: "1.2em",
                           fontWeight: "700",
-                          fontFamily: "'Playfair Display', serif"
+                          fontFamily: "'Playfair Display', serif",
+                          '@media (max-width: 768px)': {
+                            fontSize: "1.1em"
+                          }
                         }}>
                           {collection.name}
                         </h3>
                         <Dropdown
                           overlay={
                             <Menu style={{
-                              borderRadius: "8px",
-                              boxShadow: "0 5px 15px rgba(0, 0, 0, 0.1)"
+                              borderRadius: "6px",
+                              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
                             }}>
                               <Menu.Item 
                                 key="copylink" 
                                 style={{
-                                  padding: "12px 20px",
+                                  padding: "10px 16px",
                                   display: "flex",
-                                  gap: "10px",
+                                  gap: "8px",
                                   alignItems: "center",
-                                  fontSize: "0.95em"
+                                  fontSize: "0.9em"
                                 }}
                                 onClick={() => handleCopyLink(collection.id)}
                               >
-                                <IoIosLink color="#7f8c8d" />
+                                <IoIosLink color="#7f8c8d" size={16} />
                                 Sao chép liên kết
                               </Menu.Item>
                               {isMine && (
                                 <Menu.Item 
                                   key="delete"
                                   style={{
-                                    padding: "12px 20px",
+                                    padding: "10px 16px",
                                     color: "#e74c3c",
-                                    fontSize: "0.95em"
+                                    fontSize: "0.9em"
                                   }}
                                   onClick={() => showDeleteConfirm(collection.id, collection.rowVersion)}
                                 >
-                                  <DeleteOutlined /> Xóa bộ sưu tập
+                                  <DeleteOutlined /> Xóa
                                 </Menu.Item>
                               )}
                             </Menu>
@@ -451,10 +492,10 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                         >
                           <MoreOutlined 
                             style={{ 
-                              fontSize: "20px",
+                              fontSize: "18px",
                               color: "#7f8c8d",
                               cursor: "pointer",
-                              padding: "5px",
+                              padding: "4px",
                               borderRadius: "50%",
                               transition: "all 0.2s ease",
                               ':hover': {
@@ -466,11 +507,14 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                       </div>
   
                       <div style={{
-                        marginBottom: "15px",
+                        marginBottom: "12px",
                         color: "#34495e",
-                        fontSize: "0.95em",
-                        lineHeight: "1.6",
-                        minHeight: "60px"
+                        fontSize: "0.9em",
+                        lineHeight: "1.5",
+                        minHeight: "54px",
+                        '@media (max-width: 768px)': {
+                          fontSize: "0.85em"
+                        }
                       }}>
                         {collection.description || "Không có mô tả"}
                       </div>
@@ -480,15 +524,34 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                         justifyContent: "space-between",
                         alignItems: "center",
                         borderTop: "1px solid #eee",
-                        paddingTop: "15px"
+                        paddingTop: "12px",
+                        '@media (max-width: 768px)': {
+                          paddingTop: "10px"
+                        }
                       }}>
-                        <div style={{ display: "flex", gap: "15px" }}>
-                          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                            <LuBook color="#3498db" />
+                        <div style={{ 
+                          display: "flex", 
+                          gap: "12px",
+                          '@media (max-width: 768px)': {
+                            gap: "10px"
+                          }
+                        }}>
+                          <div style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: "4px",
+                            fontSize: "0.9em"
+                          }}>
+                            <LuBook color="#3498db" size={16} />
                             <span style={{ color: "#7f8c8d" }}>{collection.totalPoem}</span>
                           </div>
-                          <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                            <MdOutlineKeyboardVoice color="#e74c3c" />
+                          <div style={{ 
+                            display: "flex", 
+                            alignItems: "center", 
+                            gap: "4px",
+                            fontSize: "0.9em"
+                          }}>
+                            <MdOutlineKeyboardVoice color="#e74c3c" size={16} />
                             <span style={{ color: "#7f8c8d" }}>{collection.totalRecord}</span>
                           </div>
                         </div>
@@ -501,14 +564,19 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                             cursor: "pointer",
                             display: "flex",
                             alignItems: "center",
-                            gap: "8px",
+                            gap: "6px",
                             fontWeight: "600",
                             transition: "all 0.2s ease",
-                            padding: "8px 15px",
-                            borderRadius: "20px",
+                            padding: "6px 12px",
+                            borderRadius: "18px",
+                            fontSize: "0.9em",
                             backgroundColor: "rgba(52, 152, 219, 0.1)",
                             ':hover': {
                               backgroundColor: "rgba(52, 152, 219, 0.2)"
+                            },
+                            '@media (max-width: 768px)': {
+                              padding: "5px 10px",
+                              fontSize: "0.85em"
                             }
                           }}
                         >
@@ -522,10 +590,14 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
               </div>
   
               <div style={{ 
-                marginTop: "40px",
+                marginTop: "30px",
                 display: "flex",
                 justifyContent: "center",
-                padding: "20px 0"
+                padding: "15px 0",
+                '@media (max-width: 768px)': {
+                  marginTop: "25px",
+                  padding: "10px 0"
+                }
               }}>
                 <Pagination
                   current={currentPage}
@@ -533,11 +605,15 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                   total={totalRecords}
                   onChange={handlePageChange}
                   showSizeChanger
-                  pageSizeOptions={["8", "12", "16"]}
+                  pageSizeOptions={["6", "9", "12"]}
                   itemRender={(current, type, originalElement) => (
                     <div style={{
                       color: type === 'page' ? '#2c3e50' : '#3498db',
-                      fontWeight: type === 'page' ? 'normal' : 'bold'
+                      fontWeight: type === 'page' ? 'normal' : 'bold',
+                      fontSize: "0.95em",
+                      '@media (max-width: 768px)': {
+                        fontSize: "0.85em"
+                      }
                     }}>
                       {originalElement}
                     </div>
