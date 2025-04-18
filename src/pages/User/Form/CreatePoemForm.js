@@ -24,6 +24,19 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     sourceCopyRightId: null,
     type: 1
   });
+  const poemTypeDescriptions = {
+    '1': { label: 'Thơ tự do', description: 'Không có quy tắc về số chữ, số câu, vần hay nhịp điệu.' },
+    '2': { label: 'Thơ lục bát', description: 'Mỗi cặp câu gồm một câu 6 chữ và một câu 8 chữ, thường có vần ở chữ thứ 6 của câu lục với chữ thứ 6 của câu bát.' },
+    '3': { label: 'Thơ song thất lục bát', description: 'Kết hợp giữa thể song thất (hai câu 7 chữ) và lục bát (một câu 6 chữ và một câu 8 chữ).' },
+    '4': { label: 'Thơ thất ngôn tứ tuyệt', description: 'Bài thơ gồm 4 câu, mỗi câu 7 chữ, có quy tắc về niêm luật chặt chẽ.' },
+    '5': { label: 'Thơ ngũ ngôn tứ tuyệt', description: 'Bài thơ gồm 4 câu, mỗi câu 5 chữ, có quy tắc về niêm luật.' },
+    '6': { label: 'Thơ thất ngôn bát cú', description: 'Bài thơ gồm 8 câu, mỗi câu 7 chữ, có quy tắc nghiêm ngặt về niêm luật.' },
+    '7': { label: 'Thơ 4 chữ', description: 'Mỗi câu thơ gồm 4 chữ, thường có vần và nhịp điệu đơn giản.' },
+    '8': { label: 'Thơ 5 chữ', description: 'Mỗi câu thơ gồm 5 chữ, có thể có vần hoặc không.' },
+    '9': { label: 'Thơ 6 chữ', description: 'Mỗi câu thơ gồm 6 chữ, có thể có vần hoặc không.' },
+    '10': { label: 'Thơ 7 chữ', description: 'Mỗi câu thơ gồm 7 chữ, có thể có vần hoặc không.' },
+    '11': { label: 'Thơ 8 chữ', description: 'Mỗi câu thơ gồm 8 chữ, thường có vần và nhịp điệu linh hoạt.' }
+  };
   const [imageLoading, setImageLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [selectedType, setSelectedType] = useState(null);
@@ -198,6 +211,29 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
     }
   }, [initialData]);
 
+  // Thêm vào các hook khác trong component
+  useEffect(() => {
+    const fetchCollections = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/collections/v1`, {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        if (response.data && response.data.data) {
+          setCollections(response.data.data);
+        }
+      } catch (error) {
+        console.error("Error fetching collections:", error);
+        message.error("Không thể tải danh sách tập thơ");
+      }
+    };
+
+    if (accessToken) {
+      fetchCollections();
+    }
+  }, [accessToken]);
+
   useEffect(() => {
     if (quillRef.current) {
       const quill = quillRef.current.getEditor();
@@ -305,7 +341,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       setIsLoading(false);
       return;
     }
-
+    
     const formattedContent = formatContent(poemData.content, selectedType);
     const requestData = {
       title: poemData.title,
@@ -335,8 +371,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       );
 
       if (response.status === 200) {
-        message.success(status === 1 
-          ? "Bài thơ đã được đăng thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn!" 
+        message.success(status === 1
+          ? "Bài thơ đã được đăng thành công. Vui lòng chờ kết quả kiểm duyệt đạo văn!"
           : "Bài thơ đã được lưu nháp!");
         window.location.reload();
       }
@@ -498,33 +534,34 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
   const handleAISuggest = async () => {
     const content = formatContent(poemData.content, selectedType);
     const poemType = poemTypes.find(type => type.id.toString() === selectedType);
-    
+
     if (!poemType) {
       message.error("Vui lòng chọn thể loại thơ trước khi yêu cầu gợi ý");
       return;
     }
-  
+
     let question = '';
-    switch(poemType.id) {
-      case 4: // Thất ngôn tứ tuyệt
-      case 5: // Ngũ ngôn tứ tuyệt
-      case 6: // Thất ngôn bát cú
+    switch (poemType.name) {
+      case "Thất ngôn tứ tuyệt":
+      case "Ngũ ngôn tứ tuyệt":
+      case "Thất ngôn bát cú":
         question = "Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
         break;
-      case 3: // Song thất lục bát
+      case "Song thất lục bát":
         question = "Hãy sáng tác tiếp đoạn thơ trên hoàn chỉnh cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
         break;
       default:
         question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
     }
-  
+
+
     const requestBody = {
-      poemTypeId: poemType.id, 
+      poemTypeId: poemType.id,
       poemContent: content,
       chatContent: question,
       maxToken: 1000
     };
-  
+
     setIsLoading(true);
     try {
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/ai-chat-completion`, {
@@ -728,6 +765,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       setIsLoading(false);
     }
   };
+  
 
   // Modal handlers
   const showModal = () => setIsModalOpen(true);
@@ -783,7 +821,64 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
 
   const handleOptionChange = (value) => setImageType(value);
   const handleImagePromptChange = (e) => setImagePrompt(e.target.value);
-
+  const renderPoemTypeDescription = () => {
+    if (!selectedType) return null;
+    
+    const poemType = poemTypes.find(type => type.id === selectedType);
+    if (!poemType) return null;
+  
+    return (
+      <div style={{
+        margin: '10px 0',
+        padding: '10px',
+        backgroundColor: '#f6ffed',
+        borderRadius: '4px',
+        border: `1px solid ${poemType.color || '#b7eb8f'}`,
+        color: poemType.color || 'inherit'
+      }}>
+        <strong>Thể loại: {poemType.name}</strong>
+        <p>{poemType.description}</p>
+        {poemType.poem && (
+          <div style={{ marginTop: '10px', padding: '10px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
+            <strong>Ví dụ:</strong>
+            <pre style={{ 
+              whiteSpace: 'pre-wrap',
+              fontFamily: 'inherit',
+              margin: '8px 0 0 0',
+              padding: '8px',
+              backgroundColor: 'rgba(0,0,0,0.02)',
+              borderRadius: '4px'
+            }}>
+              {poemType.poem.content}
+            </pre>
+          </div>
+        )}
+      </div>
+    );
+  };
+  useEffect(() => {
+    const fetchPoemTypes = async () => {
+      try {
+        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
+        if (response.data && response.data.data) {
+          // Transform the data to match your expected structure
+          const transformedData = response.data.data.map(type => ({
+            id: type.id,
+            name: type.name,
+            description: type.description,
+            color: type.color,
+            poem: type.poem
+          }));
+          setPoemTypes(transformedData);
+        }
+      } catch (error) {
+        console.error("Error fetching poem types:", error);
+        message.error("Không thể tải danh sách thể loại thơ");
+      }
+    };
+  
+    fetchPoemTypes();
+  }, []);
   return (
     <div style={containerStyle}>
       {isLoading && (
@@ -856,11 +951,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                   onChange={(value) => handleInputChange({ target: { name: 'collectionId', value } })}
                   style={inputStyle}
                   placeholder="Chọn tập thơ"
+                  loading={collections.length === 0}
                 >
                   {collections.map((collection) => (
-                    <Select.Option key={collection?.id} value={collection?.id}>
+                    <Option key={collection.id} value={collection.id}>
                       {collection.collectionName}
-                    </Select.Option>
+                    </Option>
                   ))}
                 </Select>
               </div>
@@ -886,24 +982,35 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                       Tải ảnh lên
                     </Button>
                   </Upload>
-                  <Button 
-                    onClick={showModalContentComplete} 
+                  <Button
+                    onClick={showModalContentComplete}
                     style={{ marginTop: '16px' }}
                     block
                   >
                     AI tạo hình 🏞
                   </Button>
                 </div>
-                
-                {(poemFile || poemData.poemImage) && (
-                  <div style={{ flex: 1 }}>
-                    <img
-                      src={poemFile || poemData.poemImage}
-                      alt="Ảnh minh họa bài thơ"
-                      style={imagePreviewStyle}
-                    />
-                  </div>
-                )}
+
+                <div style={{ flex: 1 }}>
+                  <img
+                    src={poemFile || poemData.poemImage || '/check.png'}
+                    alt="Ảnh minh họa bài thơ"
+                    style={{
+                      ...imagePreviewStyle,
+                      border: !poemFile && !poemData.poemImage ? '1px dashed #d9d9d9' : 'none'
+                    }}
+                  />
+                  {!poemFile && !poemData.poemImage && (
+                    <div style={{
+                      textAlign: 'center',
+                      color: '#999',
+                      marginTop: '8px',
+                      fontSize: '12px'
+                    }}>
+                      Ảnh mặc định
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
           </div>
@@ -916,20 +1023,21 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         >
           <div style={{ display: 'flex', gap: '24px', flexDirection: window.innerWidth < 768 ? 'column' : 'row' }}>
             <div style={{ flex: 2 }}>
-              <div style={{ marginBottom: '16px' }}>
-                <label style={formLabelStyle}>Thể loại thơ</label>
-                <Select
-                  value={selectedType}
-                  onChange={(value) => setSelectedType(value)}
-                  style={inputStyle}
-                >
-                  {poemTypes.map((type) => (
-                    <Select.Option key={type.id} value={type.id}>
-                      {type.name}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </div>
+            <div style={{ marginBottom: '16px' }}>
+  <label style={formLabelStyle}>Thể loại thơ</label>
+  <Select
+    value={selectedType}
+    onChange={(value) => setSelectedType(value)}
+    style={inputStyle}
+  >
+    {poemTypes.map((type) => (
+      <Select.Option key={type.id} value={type.id}>
+        {type.name}
+      </Select.Option>
+    ))}
+  </Select>
+  {renderPoemTypeDescription()}
+</div>
 
               <ReactQuill
                 ref={quillRef}
@@ -948,14 +1056,14 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               />
 
               <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '16px', marginTop: '16px' }}>
-                <Button 
-                  onClick={handleAICheckPlagiarism} 
+                <Button
+                  onClick={handleAICheckPlagiarism}
                   icon={<FaSpellCheck />}
                 >
                   Kiểm tra đạo văn
                 </Button>
-                <Button 
-                  onClick={handleAISuggest} 
+                <Button
+                  onClick={handleAISuggest}
                   icon={<FcIdea />}
                 >
                   Gợi ý từ AI
@@ -973,7 +1081,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
                         <p style={{ fontWeight: 'bold' }}>Những bài thơ tương tự:</p>
                         <ul style={plagiarismListStyle}>
                           {plagiarismPoems?.map((item, index) => (
-                            <li 
+                            <li
                               key={index}
                               onClick={() => handlePopupContentPlagiarism(item.content)}
                               style={plagiarismItemStyle}
@@ -996,7 +1104,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
             <div style={{ flex: 1 }}>
               <label style={formLabelStyle}>Xem trước</label>
               <Input.TextArea
-                style={{ 
+                style={{
                   height: '300px',
                   fontFamily: 'Arial, sans-serif',
                   lineHeight: 1.5
@@ -1029,9 +1137,9 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
       </div>
 
       {/* Modal gợi ý từ AI */}
-      <Modal 
+      <Modal
         title="Gợi ý nội dung từ AI"
-        open={isModalOpen} 
+        open={isModalOpen}
         onCancel={handleCancel}
         footer={[
           <Button key="cancel" onClick={handleCancel}>Đóng</Button>,
@@ -1062,8 +1170,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
         <div style={{ marginBottom: '16px' }}>
           <div style={{ marginBottom: '16px' }}>
             <label style={formLabelStyle}>Loại hình ảnh</label>
-            <Select 
-              value={imageType} 
+            <Select
+              value={imageType}
               onChange={handleOptionChange}
               style={inputStyle}
             >
@@ -1071,7 +1179,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               <Option value="nâng cao">Nâng cao</Option>
             </Select>
           </div>
-          
+
           <div style={{ marginBottom: '16px' }}>
             <label style={formLabelStyle}>Yêu cầu của bạn</label>
             <Input
@@ -1083,7 +1191,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting }) => {
               Nếu không nhập, hệ thống sẽ tạo dựa trên nội dung bài thơ
             </div>
           </div>
-          
+
           <div>
             <label style={formLabelStyle}>Nội dung tham khảo</label>
             <TextArea

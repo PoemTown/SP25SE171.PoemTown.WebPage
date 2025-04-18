@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { Collapse, Typography, Layout, Card, theme, Spin } from 'antd';
+import { Collapse, Typography, Layout, Card, theme, Spin, Divider, Image } from 'antd';
 import { BookOutlined } from '@ant-design/icons';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import Headeruser from '../components/Headeruser';
 import Headerdefault from '../components/Headerdefault';
 
@@ -39,21 +40,41 @@ const PoetryTypeHeader = styled.div`
   }
 `;
 
+const PoemExampleCard = styled(Card)`
+  margin-top: 16px;
+  border-left: 3px solid ${props => props.color};
+  background: ${props => props.theme.colorFillAlter};
+`;
+
+const PoetInfoWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: background-color 0.3s;
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.04);
+  }
+`;
+
 const KnowledgePage = () => {
     const {
-        token: { colorBgContainer, borderRadiusLG },
+        token: { colorBgContainer, borderRadiusLG, colorFillAlter },
     } = theme.useToken();
 
     const [poetryTypes, setPoetryTypes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     const isLoggedIn = !!localStorage.getItem('accessToken');
 
     useEffect(() => {
         const fetchPoetryTypes = async () => {
             try {
-                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
+                const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/poem-samples`);
                 if (!response.ok) {
                     throw new Error('Failed to fetch poetry types');
                 }
@@ -68,6 +89,10 @@ const KnowledgePage = () => {
 
         fetchPoetryTypes();
     }, []);
+
+    const handlePoetClick = (poetId) => {
+        navigate(`/knowledge/poet/${poetId}`);
+    };
 
     if (loading) {
         return (
@@ -84,6 +109,14 @@ const KnowledgePage = () => {
             </div>
         );
     }
+
+    const formatPoemContent = (content) => {
+        return content.split('\n').map((line, i) => (
+            <div key={i} style={{ marginBottom: i % 2 === 0 ? 0 : '1em' }}>
+                {line}
+            </div>
+        ));
+    };
 
     return (
         <div style={{ background: '#f5f7fa' }}>
@@ -144,6 +177,51 @@ const KnowledgePage = () => {
                                 <Paragraph style={{ margin: 0, paddingLeft: 20 }}>
                                     {type.description}
                                 </Paragraph>
+
+                                {type.poem && (
+                                    <>
+                                        <Divider orientation="left" style={{ margin: '16px 0' }}>
+                                            Ví dụ
+                                        </Divider>
+                                        <PoemExampleCard color={type.color}>
+                                            <Title level={5} style={{ color: type.color }}>
+                                                {type.poem.title}
+                                            </Title>
+                                            {type.poem.poemImage && (
+                                                <Image
+                                                    src={type.poem.poemImage}
+                                                    alt={type.poem.title}
+                                                    style={{ marginBottom: 16, maxHeight: 200, objectFit: 'cover' }}
+                                                    preview={false}
+                                                />
+                                            )}
+                                            <div style={{ whiteSpace: 'pre-line', fontStyle: 'italic' }}>
+                                                {formatPoemContent(type.poem.content)}
+                                            </div>
+                                            <Divider style={{ margin: '12px 0' }} />
+                                            <PoetInfoWrapper 
+                                                onClick={() => handlePoetClick(type.poem.poetSample.id)}
+                                            >
+                                                {type.poem.poetSample.avatar && (
+                                                    <Image
+                                                        src={type.poem.poetSample.avatar}
+                                                        alt={type.poem.poetSample.name}
+                                                        width={48}
+                                                        height={48}
+                                                        style={{ borderRadius: '50%', marginRight: 12 }}
+                                                        preview={false}
+                                                    />
+                                                )}
+                                                <div>
+                                                    <Text strong>{type.poem.poetSample.name}</Text>
+                                                    <Paragraph type="secondary" style={{ margin: 0 }}>
+                                                        {type.poem.collection.collectionName}
+                                                    </Paragraph>
+                                                </div>
+                                            </PoetInfoWrapper>
+                                        </PoemExampleCard>
+                                    </>
+                                )}
                             </Panel>
                         ))}
                     </Collapse>
