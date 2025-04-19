@@ -10,7 +10,7 @@ import { UploadOutlined, ArrowLeftOutlined, SaveOutlined, SendOutlined } from '@
 const { TextArea } = Input;
 const { Option } = Select;
 
-const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
+const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
   const [poemData, setPoemData] = useState({
     title: "",
     description: "",
@@ -167,6 +167,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
         if (response.data && response.data.data) {
           setPoemTypes(response.data.data);
+          setSelectedType(response.data.data[0]?.id)
         }
       } catch (error) {
         console.error("Error fetching poem types:", error);
@@ -187,6 +188,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
         });
         if (response.data && response.data.data) {
           setCollections(response.data.data);
+          setPoemData(prev => ({ ...prev, collectionId: response.data.data[0].id }))
         }
       } catch (error) {
         console.error("Error fetching collections:", error);
@@ -326,7 +328,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
       setIsLoading(false);
       return;
     }
-    
+
     const formattedContent = formatContent(poemData.content, selectedType);
     const requestData = {
       title: poemData.title,
@@ -533,19 +535,46 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
     }
 
     let question = '';
+    console.log(poemType)
     switch (poemType.name) {
-      case "Thất ngôn tứ tuyệt":
-      case "Ngũ ngôn tứ tuyệt":
-      case "Thất ngôn bát cú":
-        question = "Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
+      case "Thơ Tự Do":
+        question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ Tự Do. Chỉ trả về cả bài thơ hoàn chỉnh"
         break;
-      case "Song thất lục bát":
-        question = "Hãy sáng tác tiếp đoạn thơ trên hoàn chỉnh cho tôi theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
+      case "Thơ Lục Bát":
+        question = `Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ Lục Bát, ${poemType.description}. Chỉ trả về cả bài thơ hoàn chỉnh`;
+        break;
+      case "Thơ Thất Ngôn Tứ Tuyệt":
+        question = `Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ Thất Ngôn Tứ Tuyệt, ${poemType.description}. Chỉ trả về cả bài thơ hoàn chỉnh`;
+        break;
+      case "Thơ Ngũ Ngôn Tứ Tuyệt":
+        question = `Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ Ngũ Ngôn Tứ Tuyệt, ${poemType.description}. Chỉ trả về cả bài thơ hoàn chỉnh`;
+        break;
+      case "Thơ Thất Ngôn Bát Cú":
+        question = `Hãy hoàn thiện đoạn thơ trên cho tôi theo đúng thể thơ Thất Ngôn Bát Cú, ${poemType.description}. Chỉ trả về cả bài thơ hoàn chỉnh`;
+        break;
+      case "Thơ Song Thất Lục Bát":
+        question = `Hãy sáng tác tiếp đoạn thơ trên hoàn chỉnh cho tôi theo đúng thể thơ Song Thất Lục Bát, ${poemType.description}. Chỉ trả về cả bài thơ hoàn chỉnh`;
+        break;
+      case "Thơ 4 Chữ":
+        question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ 4 chữ, mỗi câu có 4 chữ. Chỉ trả về cả bài thơ hoàn chỉnh"
+        break;
+      case "Thơ 5 Chữ":
+        question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ 5 chữ, mỗi câu có 5 chữ. Chỉ trả về cả bài thơ hoàn chỉnh"
+        break;
+      case "Thơ 6 Chữ":
+        question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ 6 chữ, mỗi câu có 6 chữ. Chỉ trả về cả bài thơ hoàn chỉnh"
+        break;
+      case "Thơ 7 Chữ":
+        question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ 7 chữ, mỗi câu có 7 chữ. Chỉ trả về cả bài thơ hoàn chỉnh"
+        break;
+      case "Thơ 8 Chữ":
+        question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ 8 chữ, mỗi câu có 8 chữ. Chỉ trả về cả bài thơ hoàn chỉnh"
         break;
       default:
         question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
     }
 
+    console.log(question);
     const requestBody = {
       poemTypeId: poemType.id,
       poemContent: content,
@@ -834,10 +863,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
 
   const renderPoemTypeDescription = () => {
     if (!selectedType) return null;
-    
+
     const poemType = poemTypes.find(type => type.id.toString() === selectedType);
     if (!poemType) return null;
-  
+
     return (
       <div style={{
         margin: '10px 0',
@@ -852,7 +881,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
         {poemType.poem && (
           <div style={{ marginTop: '10px', padding: '10px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
             <strong>Ví dụ:</strong>
-            <pre style={{ 
+            <pre style={{
               whiteSpace: 'pre-wrap',
               fontFamily: 'inherit',
               margin: '8px 0 0 0',
@@ -1090,13 +1119,13 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting,fetchPoems }) => {
               )}
             </div>
 
-            <div style={{ flex: 1 }}>
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", }}>
               <label style={formLabelStyle}>Xem trước</label>
               <Input.TextArea
                 style={{
-                  height: '300px',
+                  flex: 1,
                   fontFamily: 'Arial, sans-serif',
-                  lineHeight: 1.5
+                  lineHeight: 1.5,
                 }}
                 value={formatContent(poemData.content, selectedType)}
                 readOnly
