@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Dropdown, Menu, Badge } from "antd";
 import MessengerPage from "./Chat";
 import { RiMessengerLine } from "react-icons/ri";
+import { TbMessage } from "react-icons/tb";
 
 const ChatDropdown = ({ userData, refreshKey, setRefreshKey }) => {
   const [visible, setVisible] = useState(false);
@@ -34,7 +35,7 @@ const ChatDropdown = ({ userData, refreshKey, setRefreshKey }) => {
       
     >
       <Badge>
-        <RiMessengerLine style={{ fontSize: "24px", color: "#000" }} />
+        <TbMessage style={{ fontSize: "24px", color: "#000" }} />
       </Badge>
     </Dropdown>
   );

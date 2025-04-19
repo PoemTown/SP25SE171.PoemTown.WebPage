@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button, message } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined } from "@ant-design/icons";
@@ -52,90 +52,55 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     setIsDeleteModalVisible(true);
   };
 
-  useEffect(() => {
-    const fetchPoems = async () => {
-      const accessToken = localStorage.getItem("accessToken");
-      if (isMine !== null) {
-        try {
-          if (isMine === true) {
-            const response = await fetch(
-              `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=1`,
-              {
-                headers: { Authorization: `Bearer ${accessToken}` },
-              }
-            );
-            const data = await response.json();
-            if (data.statusCode === 200) {
-              const likedPoemIds = new Set();
-              const bookmarkedPoemIds = new Set();
-              const poemsWithId = data.data.map((poem) => {
-                if (poem.like) {
-                  likedPoemIds.add(poem.id);
-                }
-                if (poem.targetMark) {
-                  bookmarkedPoemIds.add(poem.id);
-                }
-                return {
-                  id: poem.id,
-                  title: poem.title,
-                  description: poem.description,
-                  content: poem.content,
-                  poemImage: poem.poemImage,
-                  type: poem.type,
-                  likeCount: poem.likeCount,
-                  commentCount: poem.commentCount,
-                  createdTime: poem.createdTime,
-                  collection: poem.collection,
-                };
-              });
-              setPoems(poemsWithId);
-              setLikedPoems(likedPoemIds);
-              setBookmarkedPoems(bookmarkedPoemIds);
-            }
-          } else {
-            const response = await fetch(
-              `${process.env.REACT_APP_API_BASE_URL}/poems/v1/user/${username}`,
-              {
-                headers: requestHeaders,
-              }
-            );
-            const data = await response.json();
-            if (data.statusCode === 200) {
-              const likedPoemIds = new Set();
-              const bookmarkedPoemIds = new Set();
-              const poemsWithId = data.data.map((poem) => {
-                if (poem.like) {
-                  likedPoemIds.add(poem.id);
-                }
-                if (poem.targetMark) {
-                  bookmarkedPoemIds.add(poem.id);
-                }
-                return {
-                  id: poem.id,
-                  title: poem.title,
-                  description: poem.description,
-                  content: poem.content,
-                  poemImage: poem.poemImage,
-                  likeCount: poem.likeCount,
-                  type: poem.type,
-                  commentCount: poem.commentCount,
-                  createdTime: poem.createdTime,
-                  collection: poem.collection,
-                };
-              });
-              setPoems(poemsWithId);
-              setLikedPoems(likedPoemIds);
-              setBookmarkedPoems(bookmarkedPoemIds);
-            }
-          }
-        } catch (error) {
-          console.error("Error fetching poems:", error);
-        }
-      }
-    };
+  const fetchPoems = useCallback(async () => {
+    const accessToken = localStorage.getItem("accessToken");
+    if (isMine !== null) {
+      try {
+        const url = isMine 
+          ? `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=1`
+          : `${process.env.REACT_APP_API_BASE_URL}/poems/v1/user/${username}`;
+        
+        const headers = isMine 
+          ? { Authorization: `Bearer ${accessToken}` } 
+          : requestHeaders;
 
+        const response = await fetch(url, { headers });
+        const data = await response.json();
+        
+        if (data.statusCode === 200) {
+          const likedPoemIds = new Set();
+          const bookmarkedPoemIds = new Set();
+          const poemsWithId = data.data.map((poem) => {
+            if (poem.like) likedPoemIds.add(poem.id);
+            if (poem.targetMark) bookmarkedPoemIds.add(poem.id);
+            return {
+              id: poem.id,
+              title: poem.title,
+              description: poem.description,
+              content: poem.content,
+              poemImage: poem.poemImage,
+              type: poem.type,
+              likeCount: poem.likeCount,
+              commentCount: poem.commentCount,
+              createdTime: poem.createdTime,
+              collection: poem.collection,
+            };
+          });
+          
+          setPoems(poemsWithId);
+          setLikedPoems(likedPoemIds);
+          setBookmarkedPoems(bookmarkedPoemIds);
+        }
+      } catch (error) {
+        console.error("Error fetching poems:", error);
+        message.error("Không thể tải danh sách bài thơ");
+      }
+    }
+  }, [isMine, username, requestHeaders]);
+
+  useEffect(() => {
     fetchPoems();
-  }, [isMine]);
+  }, [fetchPoems]);
 
   const handleCopyLink = (id) => {
     const url = `${window.location.origin}/poem/${id}`;
@@ -156,7 +121,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
   const handleBookmark = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
+    if (!accessToken) { 
+      message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); 
+      return; 
+    };
 
     const isBookmarked = bookmarkedPoems.has(id);
     const method = isBookmarked ? "DELETE" : "POST";
@@ -184,9 +152,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       });
     } catch (error) {
       console.error("Error updating bookmark:", error);
+      message.error("Có lỗi xảy ra khi lưu bài thơ");
     }
   };
-
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -201,24 +169,22 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
         `${process.env.REACT_APP_API_BASE_URL}/poems/v1/${poemToDelete}`,
         {
           method: "DELETE",
-          headers: {
-            ...requestHeaders, // includes Content-Type and Authorization if available
-          },
+          headers: requestHeaders,
         }
       );
 
       if (!response.ok) {
-        message.error(response?.data?.errorMessage || "Đã xảy ra lỗi!");
-      } else {
-        setPoems((prevPoems) => prevPoems.filter((poem) => poem.id !== poemToDelete));
-        setIsDeleteModalVisible(false);
-        setPoemToDelete(null);
-        message.success("Bài thơ đã được xóa thành công.");
+        throw new Error("Failed to delete poem");
       }
-
+      
+      setPoems((prevPoems) => prevPoems.filter((poem) => poem.id !== poemToDelete));
+      message.success("Bài thơ đã được xóa thành công.");
     } catch (error) {
       console.error("Error deleting poem:", error);
-      message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
+      message.error("Có lỗi xảy ra khi xóa bài thơ.");
+    } finally {
+      setIsDeleteModalVisible(false);
+      setPoemToDelete(null);
     }
   };
 
@@ -231,9 +197,13 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     setIsCommentModalVisible(false);
     setSelectedPoemForComment(null);
   };
+
   const handleLikePoem = async (id) => {
     const accessToken = localStorage.getItem("accessToken");
-    if (!accessToken) { message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); return; };
+    if (!accessToken) { 
+      message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); 
+      return; 
+    };
 
     const isLiked = likedPoems.has(id);
     const method = isLiked ? "DELETE" : "POST";
@@ -260,12 +230,16 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       setPoems((prevPoems) =>
         prevPoems.map((poem) =>
           poem.id === id
-            ? { ...poem, likeCount: isLiked ? poem.likeCount - 1 : poem.likeCount + 1 }
+            ? { 
+                ...poem, 
+                likeCount: isLiked ? poem.likeCount - 1 : poem.likeCount + 1 
+              }
             : poem
         )
       );
     } catch (error) {
       console.error("Error liking/unliking poem:", error);
+      message.error("Có lỗi xảy ra khi thao tác với bài thơ");
     }
   };
 
@@ -273,7 +247,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     <div style={{ width: "100%", maxWidth: "1200px" }}>
       {!isCreatingPoem ? (
         <>
-          {isMine ?
+          {isMine && (
             <button
               onClick={() => setIsCreatingPoem(true)}
               style={{
@@ -286,11 +260,15 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                 cursor: "pointer",
                 display: "block",
                 marginBottom: "20px",
+                transition: "background-color 0.3s",
+                ":hover": {
+                  backgroundColor: "#0056b3",
+                }
               }}
             >
               SÁNG TÁC THƠ
             </button>
-            : <></>}
+          )}
           <div style={{ display: "flex", gap: "40px" }}>
             <div style={{ width: "100%" }}>
               {poems.map((poem) => {
@@ -300,6 +278,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                 const truncatedDescription = poem.description?.length > 80
                   ? `${poem.description.substring(0, 80)}...`
                   : poem.description;
+                
                 return (
                   <div
                     key={poem.id}
@@ -323,17 +302,17 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                       height: "268px",
                       border: "1px solid #000",
                       marginLeft: "20px",
-                      alignSelf: "center"
+                      alignSelf: "center",
+                      flexShrink: 0
                     }}>
                       <img
                         src={poem.poemImage || "/anhminhhoa.png"}
                         alt="anh minh hoa"
                         style={{
-                          width: "168px",
-                          maxWidth: "168px",
+                          width: "100%",
                           height: "100%",
-                          objectFit: "cover", // This will prevent stretching
-                          objectPosition: "center" // Center the image
+                          objectFit: "cover",
+                          objectPosition: "center"
                         }}
                         onError={(e) => {
                           e.target.onerror = null;
@@ -341,139 +320,128 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                         }}
                       />
                     </div>
-                    <div style={{ flexGrow: "1", }}>
-                      <img
-                        src={avatar || "./default-avatar.png"}
-                        alt="avatar"
-                        style={{
-                          width: "52px",
-                          height: "52px",
-                          borderRadius: "50%",
-                          objectFit: "cover",
-                          border: "2px solid #eee",
-                          marginTop: "4px",
-                        }}
-                      />
-                    </div>
-                    <div style={{
-                      flexBasis: "100%",
-                      display: "flex",
-                      flexDirection: "column"
-                    }}>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          fontSize: "0.9rem",
-                          color: "#666",
-                        }}
-                      >
-                        <div style={{
-                          display: "flex",
-                          alignItems: "flex-start",
-                          gap: "8px",
-                          flexDirection: "row",
-                        }}>
-                          <span style={{ fontWeight: "bold", color: "#2a7fbf", }}>{displayName}</span>
-                          <span style={{ color: "#888", fontSize: "0.85rem", textAlign: "right", }}>– 🕒{formatDate(poem.createdTime)}</span>
-                        </div>
-                        <div style={{
-                          display: "flex",
-                          gap: "12px",
-                          alignItems: "center",
-                        }}>
-                          <button style={{
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px",
-                            fontSize: "1.2rem",
-                            color: "#666",
-                            display: "flex",
-                            alignItems: "center",
-                          }} onClick={() => handleBookmark(poem.id)}>
-                            {bookmarkedPoems.has(poem.id) ? (<IoBookmark color="#FFCE1B" />) : (<CiBookmark />)}
-                          </button>
-                          {isMine ? <Dropdown
-                            overlay={
-                              <Menu>
-                                <Menu.Item key="delete" onClick={() => showDeleteModal(poem.id)}
+                    <div style={{ flexGrow: "1", display: "flex", flexDirection: "column" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "10px" }}>
+                        <img
+                          src={avatar || "./default-avatar.png"}
+                          alt="avatar"
+                          style={{
+                            width: "52px",
+                            height: "52px",
+                            borderRadius: "50%",
+                            objectFit: "cover",
+                            border: "2px solid #eee",
+                          }}
+                        />
+                        <div style={{ flex: 1 }}>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontWeight: "bold", color: "#2a7fbf" }}>{displayName}</span>
+                            <span style={{ color: "#888", fontSize: "0.85rem" }}>
+                              🕒 {formatDate(poem.createdTime)}
+                            </span>
+                          </div>
+                          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <h3 style={{ color: "#222", margin: "5px 0 0", fontSize: "1.2rem" }}>
+                              {poem.title}
+                            </h3>
+                            <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
+                              <button 
+                                onClick={() => handleBookmark(poem.id)}
+                                style={{
+                                  background: "none",
+                                  border: "none",
+                                  cursor: "pointer",
+                                  padding: "4px",
+                                  fontSize: "1.2rem",
+                                  color: "#666",
+                                  display: "flex",
+                                  alignItems: "center",
+                                }}
+                              >
+                                {bookmarkedPoems.has(poem.id) ? (
+                                  <IoBookmark color="#FFCE1B" />
+                                ) : (
+                                  <CiBookmark />
+                                )}
+                              </button>
+                              {isMine ? (
+                                <Dropdown
+                                  overlay={
+                                    <Menu>
+                                      <Menu.Item 
+                                        key="delete" 
+                                        onClick={() => showDeleteModal(poem.id)}
+                                        style={{ color: "red" }}
+                                      >
+                                        ❌ Xóa
+                                      </Menu.Item>
+                                    </Menu>
+                                  }
+                                  trigger={["click"]}
                                 >
-                                  ❌ Xóa
-                                </Menu.Item>
-                              </Menu>
-                            }
-                            trigger={["click"]}
-                          >
-                            <MoreOutlined
-                              style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
-                              onClick={(e) => e.preventDefault()}
-                            />
-                          </Dropdown> :
-                            <Dropdown
-                              overlay={
-                                <Menu>
-                                  <Menu.Item key="report" onClick={() => handleReportPoem(poem.id)}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                      <MdReport color="red" size={"16"} /><div> Báo cáo </div>
-                                    </div>
-                                  </Menu.Item>
-                                  <Menu.Item key="copylink" onClick={() => handleCopyLink(poem.id)}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-                                      <IoIosLink color="#666" size={"16"} /><div> Sao chép liên kết </div>
-                                    </div>
-                                  </Menu.Item>
-                                </Menu>
-                              }
-                              trigger={["click"]}
-                            >
-                              <MoreOutlined
-                                style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
-                                onClick={(e) => e.preventDefault()}
-                              />
-                            </Dropdown>
-                          }
-
-
+                                  <MoreOutlined
+                                    style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
+                                    onClick={(e) => e.preventDefault()}
+                                  />
+                                </Dropdown>
+                              ) : (
+                                <Dropdown
+                                  overlay={
+                                    <Menu>
+                                      <Menu.Item 
+                                        key="report" 
+                                        onClick={() => handleReportPoem(poem.id)}
+                                      >
+                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                          <MdReport color="red" size={16} />
+                                          <div>Báo cáo</div>
+                                        </div>
+                                      </Menu.Item>
+                                      <Menu.Item 
+                                        key="copylink" 
+                                        onClick={() => handleCopyLink(poem.id)}
+                                      >
+                                        <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                                          <IoIosLink color="#666" size={16} />
+                                          <div>Sao chép liên kết</div>
+                                        </div>
+                                      </Menu.Item>
+                                    </Menu>
+                                  }
+                                  trigger={["click"]}
+                                >
+                                  <MoreOutlined
+                                    style={{ fontSize: "20px", cursor: "pointer", color: "#555" }}
+                                    onClick={(e) => e.preventDefault()}
+                                  />
+                                </Dropdown>
+                              )}
+                            </div>
+                          </div>
                         </div>
                       </div>
-                      <h3 style={{
-                        color: "#222",
-                        margin: "0",
-                        fontSize: "1.2rem",
-                      }}>{poem.title}</h3>
-                      <p style={{
-                        color: "#444",
-                        margin: "1px 0 0",
-                        fontSize: "0.85rem",
-                      }}>
+
+                      <p style={{ color: "#444", margin: "5px 0", fontSize: "0.85rem" }}>
                         Thể loại: {poemType[poem.type]}
                       </p>
-                      <p style={{
-                        color: "#444",
-                        fontSize: "0.85rem",
-                        marginTop: "1px",
-                        lineHeight: "1.4",
-                        marginBottom: "5px"
-                      }}>
+                      <p style={{ color: "#444", fontSize: "0.85rem", margin: "5px 0", lineHeight: "1.4" }}>
                         Mô tả: {truncatedDescription}
                       </p>
+
                       <div style={{
                         color: "#333",
                         fontStyle: "italic",
                         borderLeft: "3px solid #eee",
                         paddingLeft: "15px",
-                        marginBottom: "auto",
-                        position: 'relative',
+                        margin: "10px 0",
+                        flexGrow: 1
                       }}>
                         <div style={{
-                          display: '-webkit-box',
+                          display: "-webkit-box",
                           WebkitLineClamp: 5,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
                           position: 'relative',
-                          paddingRight: '20px',
                         }}>
                           <span style={{
                             position: 'absolute',
@@ -482,13 +450,18 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             color: '#666',
                           }}>“</span>
                           {displayedLines.map((line, index) => (
-                            <p key={index} style={{
-                              whiteSpace: 'pre-wrap',
-                              margin: "0 0 0 0",
-                              lineHeight: "1.6",
-                              fontSize: "1rem",
-                              textIndent: '0.8rem',
-                            }}>{line}</p>
+                            <p 
+                              key={index} 
+                              style={{
+                                whiteSpace: 'pre-wrap',
+                                margin: "0 0 0 0",
+                                lineHeight: "1.6",
+                                fontSize: "1rem",
+                                textIndent: '0.8rem',
+                              }}
+                            >
+                              {line}
+                            </p>
                           ))}
                           <p style={{
                             margin: "0 0 0 0",
@@ -496,10 +469,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             fontSize: "1rem",
                             textIndent: '0.8rem',
                           }}>
-                            {hasMoreLines && <span style={{
-                              background: 'white',
-                              paddingLeft: '4px',
-                            }}>...</span>}
+                            {hasMoreLines && (
+                              <span style={{ background: 'white', paddingLeft: '4px' }}>...</span>
+                            )}
                             <span style={{
                               fontSize: '1.7rem',
                               lineHeight: 1,
@@ -508,25 +480,28 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                           </p>
                         </div>
                       </div>
-                      <p style={{
-                        color: "#444",
-                        fontSize: "0.8rem",
-                        marginBottom: 0
-                      }}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${poem.collection.id}`)}>{poem.collection?.collectionName}</span></p>
-                      <div
-                        style={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          marginTop: "auto",
-                        }}
-                      >
-                        <div style={{
-                          display: "flex",
-                          gap: "20px",
-                          alignItems: "center",
-                        }}>
+
+                      {poem.collection && (
+                        <p style={{ color: "#444", fontSize: "0.8rem", margin: "5px 0" }}>
+                          Tập thơ:{" "}
+                          <span 
+                            style={{ fontWeight: "bold", cursor: "pointer" }} 
+                            onClick={() => navigate(`/collection/${poem.collection.id}`)}
+                          >
+                            {poem.collection.collectionName}
+                          </span>
+                        </p>
+                      )}
+
+                      <div style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        marginTop: "10px"
+                      }}>
+                        <div style={{ display: "flex", gap: "20px", alignItems: "center" }}>
                           <button
+                            onClick={() => handleLikePoem(poem.id)}
                             style={{
                               display: "flex",
                               alignItems: "center",
@@ -537,54 +512,73 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                               padding: "4px 8px",
                               borderRadius: "4px",
                               transition: "background 0.2s",
-
-                              "&:hover": {
+                              ":hover": {
                                 background: "#f0f0f0",
                               }
                             }}
-                            onClick={() => handleLikePoem(poem.id)}
                           >
-                            {likedPoems.has(poem.id) ? <BiSolidLike size={20} color="#2a7fbf" /> : <BiLike size={20} />}
-                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em" }}>{poem.likeCount || 0}</span>
+                            {likedPoems.has(poem.id) ? (
+                              <BiSolidLike size={20} color="#2a7fbf" />
+                            ) : (
+                              <BiLike size={20} />
+                            )}
+                            <span style={{ fontSize: "1.4em" }}>{poem.likeCount || 0}</span>
                           </button>
-                          <button style={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: "6px",
-                            background: "none",
-                            border: "none",
-                            cursor: "pointer",
-                            padding: "4px 8px",
-                            borderRadius: "4px",
-                            transition: "background 0.2s",
-
-                            "&:hover": {
-                              background: "#f0f0f0",
-                            }
-                          }} onClick={() => openCommentModal(poem.id)}>
+                          <button 
+                            onClick={() => openCommentModal(poem.id)}
+                            style={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: "6px",
+                              background: "none",
+                              border: "none",
+                              cursor: "pointer",
+                              padding: "4px 8px",
+                              borderRadius: "4px",
+                              transition: "background 0.2s",
+                              ":hover": {
+                                background: "#f0f0f0",
+                              }
+                            }}
+                          >
                             <BiCommentDetail size={20} />
-                            <span style={{ display: "flex", alignItems: "center", fontSize: "1.4em" }}>{poem.commentCount || 0}</span>
+                            <span style={{ fontSize: "1.4em" }}>{poem.commentCount || 0}</span>
                           </button>
                         </div>
                         <button
                           className="button-hover"
                           onClick={() => navigate(`/poem/${poem.id}`)}
+                          style={{
+                            padding: "8px 16px",
+                            borderRadius: "4px",
+                            border: "1px solid #2a7fbf",
+                            background: "white",
+                            color: "#2a7fbf",
+                            cursor: "pointer",
+                            transition: "all 0.3s",
+                            ":hover": {
+                              background: "#2a7fbf",
+                              color: "white"
+                            }
+                          }}
                         >
                           Xem bài thơ &gt;
                         </button>
                       </div>
                     </div>
-
                   </div>
-                )
+                );
               })}
             </div>
-            {/* Thành tựu và thống kê */}
-
           </div>
         </>
       ) : (
-        <CreatePoemForm setDrafting={false} onBack={() => setIsCreatingPoem(false)} />
+        <CreatePoemForm 
+          setDrafting={false} 
+          onBack={() => setIsCreatingPoem(false)} 
+          fetchPoems={fetchPoems}
+          initialData={null}
+        />
       )}
 
       {showReportModal && (
@@ -592,10 +586,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
           visible={showReportModal}
           onClose={() => setShowReportModal(false)}
           poemId={reportPoemId}
-          accessToken={localStorage.getItem("accessToken")}
+          accessToken={accessToken}
         />
       )}
-      {/* Modal Xác nhận Xóa */}
+
       <Modal
         title="Xóa bài thơ"
         open={isDeleteModalVisible}
@@ -604,25 +598,31 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
           <Button key="cancel" onClick={() => setIsDeleteModalVisible(false)}>
             Hủy
           </Button>,
-          <Button key="delete" type="primary" danger onClick={handleDeletePoem}>
+          <Button 
+            key="delete" 
+            type="primary" 
+            danger 
+            onClick={handleDeletePoem}
+            loading={isDeleteModalVisible}
+          >
             Xóa
           </Button>,
         ]}
       >
         <p>
           <ExclamationCircleOutlined style={{ color: "red", marginRight: "10px" }} />
-          Bạn muốn xóa bài thơ này?
+          Bạn có chắc chắn muốn xóa bài thơ này?
         </p>
       </Modal>
+
       <CommentModal
         visible={isCommentModalVisible}
         onClose={closeCommentModal}
         poemId={selectedPoemForComment}
+        fetchPoems={fetchPoems}
       />
-
-    </div >
+    </div>
   );
 };
 
 export default YourPoem;
-

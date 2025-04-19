@@ -364,7 +364,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
     useEffect(() => {
         const fetchPoemTypes = async () => {
             try {
-                const response = await axios.get('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1');
+                const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
                 if (response.data && response.data.data) {
                     const apiTypes = response.data.data.map(type => ({
                         id: type.id,
@@ -440,7 +440,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
             formData.append('file', file);
 
             const response = await axios.post(
-                'https://api-poemtown-staging.nodfeather.win/api/poems/v1/image',
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/image`,
                 formData,
                 {
                     headers: {
@@ -557,7 +557,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                 collectionId: formData.collectionId
             };
 
-            const url = `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${poetId}`;
+            const url = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/poet-sample/${poetId}`;
 
             const response = await axios.post(url, payload, {
                 headers: {
