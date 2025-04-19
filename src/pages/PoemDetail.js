@@ -856,7 +856,7 @@ const PoemDetail = () => {
                                             margin: 0,
                                             fontSize: '28px',
                                             fontWeight: 600,
-                                            color: '#3a2a5a',
+                                            color: '#5d4c3c',
                                             lineHeight: 1.3,
                                             fontFamily: "'Playfair Display', serif"
                                         }}>
@@ -1038,9 +1038,9 @@ const PoemDetail = () => {
                             <div style={{
                                 marginTop: '32px',
                                 padding: '24px',
-                                backgroundColor: 'rgba(249, 247, 255, 0.7)',
+                                backgroundColor: '#f8f5f0',
                                 borderRadius: '8px',
-                                borderLeft: '3px solid #8a63d2',
+                                borderLeft: '3px solid #7d6b58',
                                 fontFamily: "'Noto Serif', serif"
                             }}>
                                 <pre style={{
@@ -1048,7 +1048,7 @@ const PoemDetail = () => {
                                     fontFamily: "'Noto Serif', serif",
                                     fontSize: '18px',
                                     lineHeight: '2',
-                                    color: '#3a2a5a',
+                                    color: '#5d4c3c',
                                     margin: 0,
                                     textAlign: 'center'
                                 }}>
@@ -1093,7 +1093,7 @@ const PoemDetail = () => {
                                                 onClick={handleSubmitComment}
                                                 type="primary"
                                                 style={{
-                                                    background: 'linear-gradient(135deg, #8a63d2, #6a4baa)',
+                                                    background: '#b0a499',
                                                     border: 'none',
                                                     borderRadius: '8px',
                                                     padding: '8px 24px',
@@ -1201,7 +1201,7 @@ const PoemDetail = () => {
                                     onClick={handleFollow}
                                     block
                                     style={{
-                                        background: poem?.isFollowed ? '#f0f0f0' : 'linear-gradient(135deg, #8a63d2, #6a4baa)',
+                                        background: poem?.isFollowed ? '#f0f0f0' : '#b0a499',
                                         color: poem?.isFollowed ? '#5a4b7a' : '#fff',
                                         border: 'none',
                                         height: '40px',
