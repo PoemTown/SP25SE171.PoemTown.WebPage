@@ -208,15 +208,17 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       );
 
       if (!response.ok) {
-        message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
+        message.error(response?.data?.errorMessage || "Đã xảy ra lỗi!");
+      } else {
+        setPoems((prevPoems) => prevPoems.filter((poem) => poem.id !== poemToDelete));
+        setIsDeleteModalVisible(false);
+        setPoemToDelete(null);
+        message.success("Bài thơ đã được xóa thành công.");
       }
-      setPoems((prevPoems) => prevPoems.filter((poem) => poem.id !== poemToDelete));
-      setIsDeleteModalVisible(false);
-      setPoemToDelete(null);
-      message.success("Bài thơ đã được xóa thành công.");
+
     } catch (error) {
       console.error("Error deleting poem:", error);
-      message.error("Có lỗi xảy ra khi xóa bài thơ.");
+      message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
     }
   };
 

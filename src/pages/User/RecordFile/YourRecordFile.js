@@ -117,7 +117,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
         },
       });
 
-      message.info(response.data.message);
+      message.success(response.data.message);
       setReloadTrigger((prev) => !prev);
 
     } catch (error) {
