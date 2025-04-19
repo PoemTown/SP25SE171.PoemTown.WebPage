@@ -9,6 +9,8 @@ import { FaUserPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ReportPoemModal from "./ReportPoemModal";
+import { BookOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { Margin } from "@mui/icons-material";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -199,7 +201,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
                         <span style={styles.author} onClick={handleNavigate}> {item.user ? item.user?.displayName : item.poetSample?.name || 'Anonymous'}</span>
-                        <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
+                        <span style={styles.postDate}>– <ClockCircleOutlined style={{ fontSize: "0.9rem" }} />{formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
                         <button style={styles.iconButton} onClick={() => onBookmark(item.id)}>
@@ -217,7 +219,17 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
-                <p style={styles.poemType}>Thể loại: {item?.type?.name ?? ""}</p>
+                <div style={{
+                     display: "inline-flex", // dùng inline-flex để fit nội dung
+                     gap: "16px",
+                     padding: 0,
+                     marginBottom:"10px",
+                     marginTop:"10px"
+                }}>
+                    <p style={styles.poemType}>{item?.type?.name ?? ""}</p>
+                    <p style={styles.poemCollection}><BookOutlined style={{ marginRight: "6px", fontSize: "0.9rem" }} /> <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
+
+                </div>
                 <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
@@ -231,16 +243,15 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                         </p>
                     </div>
                 </div>
-                <p style={styles.poemCollection}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
                 <div style={styles.footerContainer}>
                     {item?.isFamousPoet ? <></> :
                         <div style={styles.statsContainer}>
                             <button style={styles.likeButton} onClick={() => onLike(item.id)}>
-                                {liked ? <BiSolidLike size={17} color="#2a7fbf" /> : <BiLike size={18} />}
+                                {liked ? <BiSolidLike size={17} color="#2a7fbf" /> : <BiLike size={20} />}
                                 <span style={styles.statItem}>{item.likeCount || 0}</span>
                             </button>
                             <button style={styles.likeButton}>
-                                <BiCommentDetail size={17} />
+                                <BiCommentDetail size={20} />
                                 <span style={styles.statItem}>{item.commentCount || 0}</span>
                             </button>
                         </div>
@@ -294,8 +305,8 @@ const styles = {
         height: "40px",
         borderRadius: "50%",
         objectFit: "cover",
-        border: "2px solid #eee",
-        marginTop: "4px",
+        border: "2px solid #f0e6e0",
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
     },
 
     contentRight: {
@@ -321,60 +332,75 @@ const styles = {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        fontSize: "0.9rem",
-        color: "#666",
+        marginBottom: "4px"
     },
 
     author: {
-        fontWeight: "600",
-        color: "#2a7fbf",
-        cursor: "pointer",
-        fontSize: "0.8rem",
+        fontWeight: 600,
+        color: "#5d4c3c",
+        fontSize: "1.05rem",
+        fontFamily: "'Playfair Display', serif"
     },
 
     poemTitle: {
-        color: "#222",
-        margin: "0",
-        fontSize: "1rem",
+        color: "#3a2e26",
+        margin: 0,
+        fontSize: "1.4rem",
+        fontFamily: "'Cormorant Garamond', serif",
+        fontWeight: 600
     },
 
     poemType: {
-        color: "#444",
-        margin: "1px 0 0",
-        fontSize: "0.8rem",
+        margin: 0,
+        background: "#f8f3ed",
+        borderRadius: "16px",
+        padding: "4px 12px",
+        color: "#7d6b58",
+        fontSize: "0.85rem",
+        display: "inline-flex",
+        alignItems: "center"
     },
 
     poemDescription: {
-        color: "#444",
-        fontSize: "0.8rem",
-        marginTop: "1px",
-        lineHeight: "1.4",
-        marginBottom: "5px"
+        color: "#7d6b58",
+        fontSize: "0.95rem",
+        margin: 0,
+        marginBottom:"4px",
+        lineHeight: 1.6
     },
 
     poemCollection: {
-        color: "#444",
-        fontSize: "0.8rem",
-        marginBottom: 0,
-        marginTop: 0
+        margin: 0,
+        background: "#f8f3ed",
+        borderRadius: "16px",
+        padding: "4px 12px",
+        color: "#7d6b58",
+        fontSize: "0.85rem",
+        display: "inline-flex",
+        alignItems: "center",
+        cursor: "pointer",
+        transition: "all 0.2s",
+        ":hover": {
+            background: "#f0e6e0"
+        }
     },
 
     poemContent: {
-        color: "#333",
+        color: "#5d4c3c",
         fontStyle: "italic",
-        borderLeft: "3px solid #eee",
-        paddingLeft: "15px",
-        marginBottom: "auto",
-        position: 'relative',
+        borderLeft: "3px solid #f0e6e0",
+        padding: "4px 0 4px 20px",
+        flexGrow: 1,
+        marginBottom: "8px",
+        position: "relative"
     },
 
     poemTextContainer: {
-        display: '-webkit-box',
+        display: "-webkit-box",
         WebkitLineClamp: 5,
         WebkitBoxOrient: 'vertical',
         overflow: 'hidden',
         position: 'relative',
-        paddingRight: '20px',
     },
     quote: {
         position: 'absolute',
@@ -383,21 +409,23 @@ const styles = {
         color: '#666',
     },
     quoteClose: {
-
         fontSize: '1.7rem',
         lineHeight: 1,
-        color: '#666',
+        color: '#666'
     },
     poemLine: {
-        whiteSpace: 'pre-wrap',
-        margin: "0 0 0 0",
-        lineHeight: "1.6",
-        fontSize: "0.8rem",
-        textIndent: '0.7rem',
+        margin: "0",
+        lineHeight: "1.8",
+        fontSize: "1.1rem",
+        fontFamily: "'Cormorant Garamond', serif",
+        textIndent: '1.5rem',
+        position: "relative"
     },
     ellipsis: {
         background: 'white',
         paddingLeft: '4px',
+        position: "relative",
+        zIndex: 1
     },
 
     statItem: {
@@ -408,8 +436,8 @@ const styles = {
 
     viewButton: {
         background: "none",
-        border: "1px solid #2a7fbf",
-        color: "#2a7fbf",
+        border: "1px solid #7d6b58",
+        color: "#7d6b58",
         cursor: "pointer",
         padding: "8px 16px",
         borderRadius: "20px",
@@ -418,26 +446,29 @@ const styles = {
     },
 
     viewButtonHover: {
-        background: "#2a7fbf",
+        background: "#5d4c3c",
         color: "white",
     },
 
     postDate: {
-        color: "#888",
-        fontSize: "0.8rem",
-        textAlign: "right",
+        color: "#a89b8c",
+        fontSize: "0.85rem",
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        marginLeft: "4px"
     },
 
     headerLeft: {
         display: "flex",
-        alignItems: "flex-start",
-        gap: "8px",
-        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "4px"
     },
     headerRight: {
         display: "flex",
         gap: "12px",
-        alignItems: "center",
+        alignItems: "center"
     },
 
     iconButton: {
@@ -455,14 +486,14 @@ const styles = {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginTop: "auto",
-        marginRight: "20px"
+        paddingTop: "10px",
+        borderTop: "1px solid #f0e6e0"
     },
 
     statsContainer: {
         display: "flex",
-        gap: "20px",
-        alignItems: "center",
+        gap: "24px",
+        alignItems: "center"
     },
 
     likeButton: {

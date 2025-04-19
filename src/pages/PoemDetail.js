@@ -1016,7 +1016,7 @@ const PoemDetail = () => {
                                                 }
                                             }}
                                             style={{
-                                                background: 'linear-gradient(135deg, #8a63d2, #6a4baa)',
+                                                background: '#7d6b58',
                                                 border: 'none',
                                                 fontWeight: 500,
                                                 height: '40px',
@@ -1060,7 +1060,7 @@ const PoemDetail = () => {
                             {!poem?.isFamousPoet && (
                                 <div style={{ marginTop: '40px' }}>
                                     <h3 style={{
-                                        color: '#3a2a5a',
+                                        color: '#5d4c3c',
                                         borderBottom: '1px solid #f0f0f0',
                                         paddingBottom: '12px',
                                         fontSize: '20px',

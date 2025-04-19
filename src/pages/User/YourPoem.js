@@ -429,12 +429,12 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                                 </Dropdown>
                               )}
                             </div>
-                          </div>
+                          </div> 
                         </div>
                       </div>
 
                       <p style={{ color: "#444", margin: "5px 0", fontSize: "0.85rem" }}>
-                        Thể loại: {poemType[poem.type]}
+                        Thể loại: {poem?.type?.name ?? ""}
                       </p>
                       <p style={{ color: "#444", fontSize: "0.85rem", margin: "5px 0", lineHeight: "1.4" }}>
                         Mô tả: {truncatedDescription}
