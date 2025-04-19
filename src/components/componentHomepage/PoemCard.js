@@ -177,25 +177,25 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 
     return (
         <div style={styles.poemCard}>
-            <div style={styles.poemImageContainer}>
-                <img
-                    src={item.poemImage || "/anhminhhoa.png"}
-                    alt="anh minh hoa"
-                    style={styles.poemImage}
-                    onError={(e) => {
-                        console.log("Image failed to load, switching to fallback");
-                        e.target.onerror = null;
-                        e.target.src = "/anhminhhoa.png";
-                    }}
-                />
-            </div>
-            <div style={styles.avatarContainer}>
-                <img
-                    src={item.user ? item.user?.avatar : item.poetSample?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
-                    alt="avatar"
-                    style={styles.avatar}
-                    onError={(e) => { e.target.src = "./default_avatar.png"; }}
-                />
+            <div style={styles.imageWrapper}>
+                <div style={styles.poemImageContainer}>
+                    <img
+                        src={item.poemImage || "/anhminhhoa.png"}
+                        alt="Thơ minh họa"
+                        style={styles.poemImage}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/anhminhhoa.png";
+                          }}
+                    />
+                    <div style={styles.avatarContainer}>
+                        <img
+                            src={item.user?.avatar || item.poetSample?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
+                            alt="Tác giả"
+                            style={styles.avatar}
+                        />
+                    </div>
+                </div>
             </div>
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
@@ -220,11 +220,11 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
                 <div style={{
-                     display: "inline-flex", // dùng inline-flex để fit nội dung
-                     gap: "16px",
-                     padding: 0,
-                     marginBottom:"10px",
-                     marginTop:"10px"
+                    display: "inline-flex", // dùng inline-flex để fit nội dung
+                    gap: "16px",
+                    padding: 0,
+                    marginBottom: "10px",
+                    marginTop: "10px"
                 }}>
                     <p style={styles.poemType}>{item?.type?.name ?? ""}</p>
                     <p style={styles.poemCollection}><BookOutlined style={{ marginRight: "6px", fontSize: "0.9rem" }} /> <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
@@ -280,53 +280,70 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 };
 
 const styles = {
+    poemCard: {
+        display: 'flex',
+        gap: '32px',
+        //background: 'linear-gradient(135deg, #f8f5ff 0%, #fff7fb 100%)',
+        background: 'linear-gradient(135deg,rgb(255, 255, 255) 0%,rgb(255, 255, 255) 100%)',
+        borderRadius: '24px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+        padding: '24px',
+        margin: '16px 0',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        ':hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)'
+        }
+    },
+    imageWrapper: {
+        position: 'relative',
+        flexShrink: 0,
+        width: '204px',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+    },
     poemImageContainer: {
-        width: "134px",
-        height: "234px",
-        border: "1px solid #000",
-        marginLeft: "20px",
-        alignSelf: "center"
+        width: '100%',
+        height: '320px',
+        position: 'relative',
+        background: '#f0eafa'
     },
-
     poemImage: {
-        width: "134px",
-        maxWidth: "134px",
-        height: "100%",
-        objectFit: "cover", // This will prevent stretching
-        objectPosition: "center" // Center the image
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        transition: 'transform 0.3s ease',
+        ':hover': {
+            transform: 'scale(1.05)'
+        }
     },
-
     avatarContainer: {
-        flexGrow: "1",
+        position: 'absolute',
+        bottom: '-24px',
+        left: '24px',
+        width: '64px',
+        height: '64px',
+        borderRadius: '50%',
+        border: '3px solid white',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        overflow: 'hidden',
+        transition: 'transform 0.3s ease',
+        ':hover': {
+            transform: 'scale(1.1)'
+        }
     },
-
     avatar: {
-        width: "40px",
-        height: "40px",
-        borderRadius: "50%",
-        objectFit: "cover",
-        border: "2px solid #f0e6e0",
-        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.08)"
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover'
     },
-
+    
     contentRight: {
         flexBasis: "100%",
         display: "flex",
         flexDirection: "column",
         marginRight: "20px"
-    },
-
-    poemCard: {
-        display: "flex",
-        gap: "10px",
-        background: "white",
-        borderRadius: "12px",
-        border: "1px solid #ccc",
-        boxShadow: "0px 3px 6px 0px #0000004D",
-        alignItems: "stretch",
-        width: "100%", // Ensure it takes available width
-        marginBottom: "40px",
-        padding: "20px 0"
     },
     cardHeader: {
         display: "flex",
@@ -339,7 +356,11 @@ const styles = {
         fontWeight: 600,
         color: "#5d4c3c",
         fontSize: "1.05rem",
-        fontFamily: "'Playfair Display', serif"
+        fontFamily: "'Playfair Display', serif",
+        cursor: 'pointer',
+        ':hover': {
+            color: '#4a2b6b'
+        }
     },
 
     poemTitle: {
@@ -365,7 +386,7 @@ const styles = {
         color: "#7d6b58",
         fontSize: "0.95rem",
         margin: 0,
-        marginBottom:"4px",
+        marginBottom: "4px",
         lineHeight: 1.6
     },
 
@@ -492,23 +513,24 @@ const styles = {
 
     statsContainer: {
         display: "flex",
-        gap: "24px",
+        gap: "10px",
         alignItems: "center"
     },
 
     likeButton: {
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        padding: "4px 8px",
-        borderRadius: "4px",
-        transition: "background 0.2s",
-
-        "&:hover": {
-            background: "#f0f0f0",
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        background: 'none',
+        border: 'none',
+        padding: '8px 16px',
+        borderRadius: '24px',
+        color: '#000',
+        fontSize: '0.95rem',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        ':hover': {
+            background: 'rgba(106, 76, 147, 0.1)'
         }
     },
 
