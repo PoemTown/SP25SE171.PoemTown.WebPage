@@ -254,7 +254,6 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
     <div style={{ 
       maxWidth: "1200px", 
       margin: "0 auto",
-      padding: "20px",
       fontFamily: "'Merriweather', serif",
       '@media (max-width: 1440px)': {
         padding: "15px"
@@ -307,7 +306,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                 <button
                   onClick={handleCreate}
                   style={{
-                    backgroundColor: "#2c3e50",
+                    backgroundColor: "#b0a499",
                     color: "#ecf0f1",
                     padding: "12px 24px",
                     borderRadius: "30px",
@@ -334,7 +333,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                   }}
                 >
                   <PlusOutlined />
-                  TẠO BỘ SƯU TẬP MỚI
+                  BỘ SƯU TẬP MỚI
                 </button>
               )}
   
