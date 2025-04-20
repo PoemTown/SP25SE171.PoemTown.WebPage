@@ -230,7 +230,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     <p style={styles.poemCollection}><BookOutlined style={{ marginRight: "6px", fontSize: "0.9rem" }} /> <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
 
                 </div>
-                <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
+                <p style={styles.poemDescription}>Mô tả: {item.description}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
                         <span style={styles.quote}>“</span>
@@ -387,7 +387,13 @@ const styles = {
         fontSize: "0.95rem",
         margin: 0,
         marginBottom: "4px",
-        lineHeight: 1.6
+        lineHeight: 1.6,
+      
+        display: "-webkit-box",
+        WebkitLineClamp: 2,             // 👈 số dòng muốn hiển thị
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+        textOverflow: "ellipsis"
     },
 
     poemCollection: {
