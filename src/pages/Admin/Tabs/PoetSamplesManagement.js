@@ -43,6 +43,8 @@ const PoetSamplesManagement = () => {
   const [poets, setPoets] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [titleSamples, setTitleSamples] = useState([]);
+  const [titleSamplesLoading, setTitleSamplesLoading] = useState(false);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 12,
@@ -64,6 +66,7 @@ const PoetSamplesManagement = () => {
   const [previewImage, setPreviewImage] = useState('');
   const [editPreviewImage, setEditPreviewImage] = useState('');
   const navigate = useNavigate();
+
   // Fetch poets data
   const fetchPoets = useCallback(async () => {
     try {
@@ -95,9 +98,30 @@ const PoetSamplesManagement = () => {
     }
   }, [filters]);
 
+  // Fetch title samples data
+  const fetchTitleSamples = useCallback(async () => {
+    try {
+      setTitleSamplesLoading(true);
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1`
+      );
+      
+      if (response.data.statusCode === 200) {
+        setTitleSamples(response.data.data);
+      } else {
+        message.error('Failed to fetch title samples');
+      }
+    } catch (error) {
+      message.error(error.message);
+    } finally {
+      setTitleSamplesLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchPoets();
-  }, [fetchPoets]);
+    fetchTitleSamples();
+  }, [fetchPoets, fetchTitleSamples]);
 
   // Image upload handler
   const handleUpload = async (file, isEdit = false) => {
@@ -202,10 +226,68 @@ const PoetSamplesManagement = () => {
     showUploadList: false
   };
 
+  // Function to handle adding title samples
+  const handleAddTitleSamples = async (poetId, titleSampleIds) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1/${poetId}?titleSampleIds=${titleSampleIds.join(',')}`,
+        {},
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      if (response.data.statusCode === 200) {
+        message.success('Thêm chuyên môn thơ thành công!');
+        return true;
+      } else {
+        message.error(response.data.message || 'Thêm chuyên môn thơ thất bại');
+        return false;
+      }
+    } catch (error) {
+      console.error('Lỗi khi thêm chuyên môn thơ:', error);
+      message.error(error.response?.data?.message || 'Lỗi khi thêm chuyên môn thơ');
+      return false;
+    }
+  };
+
+  // Function to handle removing title samples
+  const handleRemoveTitleSamples = async (poetId, titleSampleIds) => {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      
+      const response = await axios.delete(
+        `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1/${poetId}/title-samples?titleSampleIds=${titleSampleIds.join(',')}`,
+        {
+          headers: {
+            'Authorization': `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      if (response.data.statusCode === 202) {
+        message.success('Xóa chuyên môn thơ thành công!');
+        return true;
+      } else {
+        message.error(response.data.message || 'Xóa chuyên môn thơ thất bại');
+        return false;
+      }
+    } catch (error) {
+      console.error('Lỗi khi xóa chuyên môn thơ:', error);
+      message.error(error.response?.data?.message || 'Lỗi khi xóa chuyên môn thơ');
+      return false;
+    }
+  };
+
   const handleCreateSubmit = async () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
+      
       const formattedDate = values.dateOfBirth ? dayjs(values.dateOfBirth).format('YYYY-MM-DD') : null;
 
       const requestBody = {
@@ -213,7 +295,8 @@ const PoetSamplesManagement = () => {
         bio: values.bio,
         dateOfBirth: formattedDate,
         gender: values.gender,
-        avatar: values.avatar || ''
+        avatar: values.avatar || '',
+        titleSampleIds: values.titleSampleIds || []
       };
 
       const accessToken = localStorage.getItem('accessToken');
@@ -252,7 +335,6 @@ const PoetSamplesManagement = () => {
     setCurrentPoet(poet);
     setIsEditModalVisible(true);
 
-    // Format date for DatePicker using dayjs
     const formattedDate = poet.dateOfBirth ? dayjs(poet.dateOfBirth) : null;
 
     editForm.setFieldsValue({
@@ -260,7 +342,8 @@ const PoetSamplesManagement = () => {
       bio: poet.bio,
       dateOfBirth: formattedDate,
       gender: poet.gender,
-      avatar: poet.avatar || ''
+      avatar: poet.avatar || '',
+      titleSampleIds: poet.titleSamples?.map(sample => sample.id) || []
     });
 
     if (poet.avatar) {
@@ -272,6 +355,7 @@ const PoetSamplesManagement = () => {
     try {
       setLoading(true);
       const values = await editForm.validateFields();
+      
       const formattedDate = values.dateOfBirth ? dayjs(values.dateOfBirth).format('YYYY-MM-DD') : null;
 
       const requestBody = {
@@ -280,11 +364,12 @@ const PoetSamplesManagement = () => {
         bio: values.bio,
         dateOfBirth: formattedDate,
         gender: values.gender,
-        avatar: values.avatar || ''
+        avatar: values.avatar || '',
       };
 
       const accessToken = localStorage.getItem('accessToken');
 
+      // First update the poet info
       const response = await axios.put(
         `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1`,
         requestBody,
@@ -297,6 +382,26 @@ const PoetSamplesManagement = () => {
       );
 
       if (response.data.statusCode === 202) {
+        // Then handle title samples changes
+        const currentTitleSampleIds = currentPoet.titleSamples?.map(sample => sample.id) || [];
+        const newTitleSampleIds = values.titleSampleIds || [];
+        
+        // Find IDs to add (exist in new but not in current)
+        const idsToAdd = newTitleSampleIds.filter(id => !currentTitleSampleIds.includes(id));
+        
+        // Find IDs to remove (exist in current but not in new)
+        const idsToRemove = currentTitleSampleIds.filter(id => !newTitleSampleIds.includes(id));
+
+        // Add new title samples
+        if (idsToAdd.length > 0) {
+          await handleAddTitleSamples(currentPoet.id, idsToAdd);
+        }
+
+        // Remove old title samples
+        if (idsToRemove.length > 0) {
+          await handleRemoveTitleSamples(currentPoet.id, idsToRemove);
+        }
+
         message.success('Cập nhật nhà thơ thành công!');
         setIsEditModalVisible(false);
         editForm.resetFields();
@@ -476,7 +581,6 @@ const PoetSamplesManagement = () => {
         {poets.map(poet => (
           <Col key={poet.id} xs={24} sm={12} md={8} lg={6} xl={6}>
             <Card
-              onClick={() => navigate(`/knowledge/poet/${poet.id}`)}
               hoverable
               style={{
                 borderRadius: '12px',
@@ -523,9 +627,12 @@ const PoetSamplesManagement = () => {
                   marginBottom: '12px',
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  textOverflow: 'ellipsis'
+                  textOverflow: 'ellipsis',
+                  cursor: 'pointer',
+                  color: '#000'
                 }}
                 title={poet.name}
+                onClick={() => navigate(`/knowledge/poet/${poet.id}`)}
               >
                 {poet.name}
               </Title>
@@ -591,7 +698,7 @@ const PoetSamplesManagement = () => {
                 )}
               </div>
 
-              {/* Phần action buttons */}
+              {/* Action buttons */}
               <div style={{
                 marginTop: 'auto',
                 display: 'flex',
@@ -621,6 +728,16 @@ const PoetSamplesManagement = () => {
                             <div>
                               <p><strong>Giới tính:</strong> {poet.gender}</p>
                               <p><strong>Ngày sinh:</strong> {poet.dateOfBirth ? dayjs(poet.dateOfBirth).format('DD/MM/YYYY') : 'Không rõ'}</p>
+                              {poet.titleSamples && poet.titleSamples.length > 0 && (
+                                <div>
+                                  <p><strong>Chuyên môn:</strong></p>
+                                  <ul>
+                                    {poet.titleSamples.map(sample => (
+                                      <li key={sample.id}>{sample.name}</li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
                             </div>
                           </div>
                           <div>
@@ -639,12 +756,18 @@ const PoetSamplesManagement = () => {
                   <Button
                     type="text"
                     icon={<EditOutlined />}
-                    onClick={() => handleEditPoet(poet)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditPoet(poet);
+                    }}
                     style={{ color: '#1890ff' }}
                   />
                   <Popconfirm
                     title="Bạn có chắc chắn muốn xóa nhà thơ này?"
-                    onConfirm={() => handleDeletePoet(poet.id)}
+                    onConfirm={(e) => {
+                      e?.stopPropagation();
+                      handleDeletePoet(poet.id);
+                    }}
                     okText="Xóa"
                     cancelText="Hủy"
                   >
@@ -652,6 +775,7 @@ const PoetSamplesManagement = () => {
                       type="text"
                       icon={<DeleteOutlined />}
                       style={{ color: '#ff4d4f' }}
+                      onClick={(e) => e.stopPropagation()}
                     />
                   </Popconfirm>
                 </Space>
@@ -755,6 +879,33 @@ const PoetSamplesManagement = () => {
               maxLength={1000}
               style={{ resize: 'none' }}
             />
+          </Form.Item>
+
+          <Form.Item
+            name="titleSampleIds"
+            label={<Text strong>Chuyên môn thơ</Text>}
+            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ</Text>}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Chọn chuyên môn thơ"
+              size="large"
+              loading={titleSamplesLoading}
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+            >
+              {titleSamples.map(sample => (
+                <Option 
+                  key={sample.id} 
+                  value={sample.id}
+                  label={sample.name}
+                >
+                  {sample.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item
@@ -866,6 +1017,36 @@ const PoetSamplesManagement = () => {
               maxLength={1000}
               style={{ resize: 'none' }}
             />
+          </Form.Item>
+
+          <Form.Item
+            name="titleSampleIds"
+            label={<Text strong>Chuyên môn thơ</Text>}
+            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ</Text>}
+          >
+            <Select
+              mode="multiple"
+              placeholder="Chọn chuyên môn thơ"
+              size="large"
+              loading={titleSamplesLoading}
+              optionFilterProp="label"
+              filterOption={(input, option) =>
+                option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
+              }
+              onChange={(selectedValues) => {
+                editForm.setFieldsValue({ titleSampleIds: selectedValues });
+              }}
+            >
+              {titleSamples.map(sample => (
+                <Option 
+                  key={sample.id} 
+                  value={sample.id}
+                  label={sample.name}
+                >
+                  {sample.name}
+                </Option>
+              ))}
+            </Select>
           </Form.Item>
 
           <Form.Item

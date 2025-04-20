@@ -51,7 +51,7 @@ const PoetKnowledge = () => {
         const fetchCollections = async () => {
             try {
                 const response = await fetch(
-                    `https://api-poemtown-staging.nodfeather.win/api/collections/v1/poet-sample/${id}`,
+                    `${process.env.REACT_APP_API_BASE_URL}/collections/v1/poet-sample/${id}`,
                     {
                         headers: requestHeaders
                     }

@@ -84,7 +84,7 @@ const PoemTypeManagement = () => {
   const fetchPoemTypes = async () => {
     try {
       setLoading(true);
-      const response = await fetch('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1');
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
       
       if (!response.ok) {
         throw new Error('Network response was not ok');
@@ -214,7 +214,7 @@ const PoemTypeManagement = () => {
       }
 
       // Create new poem type
-      const response = await fetch('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -267,7 +267,7 @@ const PoemTypeManagement = () => {
       }
 
       // Update poem type
-      const response = await fetch('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -326,7 +326,7 @@ const PoemTypeManagement = () => {
 
       // Delete poem type
       const response = await fetch(
-        `https://api-poemtown-staging.nodfeather.win/api/poem-types/v1/${selectedType.id}`,
+        `${process.env.REACT_APP_API_BASE_URL}/poem-types/v1/${selectedType.id}`,
         {
           method: 'DELETE',
           headers: {

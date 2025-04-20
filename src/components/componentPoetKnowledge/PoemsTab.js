@@ -36,7 +36,7 @@ const PoemsTab = ({ collections, poetId }) => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/poet-sample/${poetId}`,{
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/poet-sample/${poetId}`,{
                     headers: requestHeaders,
                 }
             );
@@ -95,7 +95,7 @@ const PoemsTab = ({ collections, poetId }) => {
         try {
             // Gọi API like
             const response = await axios.post(
-                `https://api-poemtown-staging.nodfeather.win/api/likes/v1/${poemId}`,
+                `${process.env.REACT_APP_API_BASE_URL}/likes/v1/${poemId}`,
                 {},
                 {
                     headers: {

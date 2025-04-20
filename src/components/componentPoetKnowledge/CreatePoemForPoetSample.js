@@ -13,7 +13,14 @@ const { TextArea } = Input;
 const poemTypeHandlers = {
     "Thơ Tự Do": {
         validate: (lines) => ({ isValid: true, message: "" }),
-        format: (content) => content
+        format: (content) => {
+            const plainText = content
+                .replace(/<br\s*\/?>/gi, '\n')
+                .replace(/<\/p>/gi, '\n')
+                .replace(/<[^>]+>/g, '')
+                .replace(/\n+/g, '\n');
+            return plainText.trim();
+        }
     },
     "Thơ Lục Bát": {
         validate: (lines) => {
@@ -378,12 +385,12 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                         })
                     }));
                     setPoemTypes(apiTypes);
-                    
+
                     if (apiTypes.length > 0) {
                         setCurrentPoemType(apiTypes[0]);
-                        setFormData(prev => ({ 
-                            ...prev, 
-                            type: initialData?.type || apiTypes[0].value 
+                        setFormData(prev => ({
+                            ...prev,
+                            type: initialData?.type || apiTypes[0].value
                         }));
                     }
                 }
@@ -585,14 +592,13 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
             setLoading(false);
         }
     };
-
     const renderValidationError = () => {
         if (!validationError) return null;
 
         return (
             <div style={{
                 color: '#f5222d',
-                margin: '10px 0',
+                margin: '10px 0 20px 0', // Thêm margin bottom lớn hơn
                 padding: '10px',
                 backgroundColor: '#fff1f0',
                 borderRadius: '4px',
@@ -750,20 +756,22 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                     >
                         {renderPoemTypeDescription()}
 
-                        <ReactQuill
-                            theme="snow"
-                            value={formData.content}
-                            onChange={(value) => handleChange('content', value)}
-                            modules={{
-                                toolbar: [
-                                    ['bold', 'italic', 'underline'],
-                                    [{ 'list': 'ordered' }, { 'list': 'bullet' }],
-                                    ['clean']
-                                ]
-                            }}
-                            style={editorStyle}
-                            placeholder="Viết nội dung bài thơ tại đây..."
-                        />
+                        <div style={{ marginBottom: validationError ? '50px' : '20px' }}>
+                            <ReactQuill
+                                theme="snow"
+                                value={formData.content}
+                                onChange={(value) => handleChange('content', value)}
+                                modules={{
+                                    toolbar: [
+                                        ['bold', 'italic', 'underline'],
+                                        [{ 'list': 'ordered' }, { 'list': 'bullet' }],
+                                        ['clean']
+                                    ]
+                                }}
+                                style={editorStyle}
+                                placeholder="Viết nội dung bài thơ tại đây..."
+                            />
+                        </div>
 
                         {renderValidationError()}
 
