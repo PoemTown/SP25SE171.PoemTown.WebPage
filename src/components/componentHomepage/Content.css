@@ -1,0 +1,16 @@
+/* src/styles/Content.css */
+.contentContainer {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    margin: 0 auto;
+    max-width: 1200px;
+  }
+  
+  /* once the viewport is ≥1800px, bump that max‐width up */
+  @media (min-width: 1800px) {
+    .contentContainer {
+      max-width: 1600px;
+    }
+  }
+  

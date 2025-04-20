@@ -10,6 +10,7 @@ import RecordListGroupedByPoem from "./RecordListGroupedByPoem";
 import Title from "antd/es/typography/Title";
 import { RightOutlined } from "@ant-design/icons";
 import { display } from "@mui/system";
+import "./Content.css"
 
 const Content = ({ activeTab }) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -432,7 +433,7 @@ const Content = ({ activeTab }) => {
         </div>
         
       </div>
-      <div style={styles.contentContainer}>
+      <div className="contentContainer">
         <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
           <>
             <button style={styles.signupButton} onClick={handleSignup}>

@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Button, Modal, message, Spin, Switch, Input, Dropdown, Menu, Pagination } from "antd";
 import { FcFolder, FcVideoFile } from "react-icons/fc";
-import { DownOutlined } from "@ant-design/icons"; // Icon mũi tên chỉ xuống
+import { DownOutlined, PlusOutlined } from "@ant-design/icons"; // Icon mũi tên chỉ xuống
 import CreateRecord from "./CreateRecord";
 import RecordCard from "../../../components/componentHomepage/RecordCard";
 import axios from "axios";
@@ -20,7 +20,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
 
   // State phân trang
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(3);
+  const [pageSize, setPageSize] = useState(9);
   const [totalRecords, setTotalRecords] = useState(0);
 
   useEffect(() => {
@@ -117,7 +117,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
         },
       });
 
-      message.info(response.data.message);
+      message.success("Thanh toán thành công");
       setReloadTrigger((prev) => !prev);
 
     } catch (error) {
@@ -208,16 +208,33 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                 <button
                   onClick={() => setIsCreatingRecord(true)}
                   style={{
-                    backgroundColor: "#007bff",
-                    color: "white",
-                    padding: "12px 20px",
-                    borderRadius: "5px",
+                    backgroundColor: "#b0a499",
+                    color: "#ecf0f1",
+                    padding: "12px 24px",
+                    borderRadius: "30px",
                     border: "none",
-                    fontWeight: "bold",
+                    fontWeight: "600",
                     cursor: "pointer",
-                    transition: "background-color 0.3s",
+                    marginBottom: "25px",
+                    boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                    transition: "all 0.3s ease",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "8px",
+                    fontSize: "0.9em",
+                    '@media (max-width: 768px)': {
+                      padding: "10px 20px",
+                      fontSize: "0.8em",
+                      marginBottom: "20px"
+                    },
+                    ':hover': {
+                      transform: "translateY(-2px)",
+                      boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
+                      backgroundColor: "#34495e"
+                    }
                   }}
                 >
+                  <PlusOutlined />
                   BẢN GHI MỚI
                 </button>
               </div>
@@ -293,7 +310,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                 total={totalRecords} // Tổng số record được tính từ totalPages * pageSize
                 onChange={handlePageChange}
                 showSizeChanger
-                pageSizeOptions={["3", "6", "9"]}
+                pageSizeOptions={["9", "18", "27"]}
               />
             </div>
           </>
