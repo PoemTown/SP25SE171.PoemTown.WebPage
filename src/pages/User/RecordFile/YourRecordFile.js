@@ -117,7 +117,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
         },
       });
 
-      message.success(response.data.message);
+      message.success("Thanh toán thành công");
       setReloadTrigger((prev) => !prev);
 
     } catch (error) {
