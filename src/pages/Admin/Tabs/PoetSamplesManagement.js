@@ -29,8 +29,12 @@ import {
   UserOutlined,
   CalendarOutlined,
   EditOutlined,
-  DeleteOutlined
+  DeleteOutlined,
+  StarFilled,
+  FireFilled,
+  CrownFilled
 } from '@ant-design/icons';
+
 import dayjs from 'dayjs';
 import { useNavigate } from 'react-router-dom';
 
@@ -66,6 +70,14 @@ const PoetSamplesManagement = () => {
   const [previewImage, setPreviewImage] = useState('');
   const [editPreviewImage, setEditPreviewImage] = useState('');
   const navigate = useNavigate();
+
+  // Validate title samples selection
+  const validateTitleSamples = (_, value) => {
+    if (value && value.length > 2) {
+      return Promise.reject(new Error('Chỉ được chọn tối đa 2 chuyên môn!'));
+    }
+    return Promise.resolve();
+  };
 
   // Fetch poets data
   const fetchPoets = useCallback(async () => {
@@ -105,7 +117,7 @@ const PoetSamplesManagement = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1`
       );
-      
+
       if (response.data.statusCode === 200) {
         setTitleSamples(response.data.data);
       } else {
@@ -230,9 +242,13 @@ const PoetSamplesManagement = () => {
   const handleAddTitleSamples = async (poetId, titleSampleIds) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      
+
+      // Tạo query string với nhiều titleSampleIds
+      const queryParams = new URLSearchParams();
+      titleSampleIds.forEach(id => queryParams.append('titleSampleIds', id));
+
       const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1/${poetId}?titleSampleIds=${titleSampleIds.join(',')}`,
+        `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1/${poetId}?${queryParams.toString()}`,
         {},
         {
           headers: {
@@ -259,9 +275,14 @@ const PoetSamplesManagement = () => {
   const handleRemoveTitleSamples = async (poetId, titleSampleIds) => {
     try {
       const accessToken = localStorage.getItem('accessToken');
-      
+
+      // Tạo query string với nhiều titleSampleIds
+      const queryString = titleSampleIds
+        .map(id => `titleSampleIds=${encodeURIComponent(id)}`)
+        .join('&');
+
       const response = await axios.delete(
-        `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1/${poetId}/title-samples?titleSampleIds=${titleSampleIds.join(',')}`,
+        `${process.env.REACT_APP_API_BASE_URL}/title-samples/v1/${poetId}/title-samples?${queryString}`,
         {
           headers: {
             'Authorization': `Bearer ${accessToken}`
@@ -287,7 +308,7 @@ const PoetSamplesManagement = () => {
     try {
       setLoading(true);
       const values = await form.validateFields();
-      
+
       const formattedDate = values.dateOfBirth ? dayjs(values.dateOfBirth).format('YYYY-MM-DD') : null;
 
       const requestBody = {
@@ -355,7 +376,7 @@ const PoetSamplesManagement = () => {
     try {
       setLoading(true);
       const values = await editForm.validateFields();
-      
+
       const formattedDate = values.dateOfBirth ? dayjs(values.dateOfBirth).format('YYYY-MM-DD') : null;
 
       const requestBody = {
@@ -385,10 +406,10 @@ const PoetSamplesManagement = () => {
         // Then handle title samples changes
         const currentTitleSampleIds = currentPoet.titleSamples?.map(sample => sample.id) || [];
         const newTitleSampleIds = values.titleSampleIds || [];
-        
+
         // Find IDs to add (exist in new but not in current)
         const idsToAdd = newTitleSampleIds.filter(id => !currentTitleSampleIds.includes(id));
-        
+
         // Find IDs to remove (exist in current but not in new)
         const idsToRemove = currentTitleSampleIds.filter(id => !newTitleSampleIds.includes(id));
 
@@ -731,11 +752,50 @@ const PoetSamplesManagement = () => {
                               {poet.titleSamples && poet.titleSamples.length > 0 && (
                                 <div>
                                   <p><strong>Chuyên môn:</strong></p>
-                                  <ul>
-                                    {poet.titleSamples.map(sample => (
-                                      <li key={sample.id}>{sample.name}</li>
-                                    ))}
-                                  </ul>
+                                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '8px' }}>
+                                    {poet.titleSamples.map(sample => {
+                                      // Ánh xạ tên chuyên môn với icon và màu sắc tương ứng
+                                      const getStyle = (name) => {
+                                        const styles = {
+                                          'Chuyên gia thơ 8 chữ': { icon: <StarFilled style={{ fontSize: '16px' }} />, color: 'gold' },
+                                          'Chuyên gia thể thơ 9 chữ': { icon: <StarFilled style={{ fontSize: '16px' }} />, color: 'volcano' },
+                                          'Lục bát': { icon: <FireFilled style={{ fontSize: '16px' }} />, color: 'red' },
+                                          'Trữ tình': { icon: <CrownFilled style={{ fontSize: '16px' }} />, color: 'purple' },
+                                          'Tự do': { icon: <FireFilled style={{ fontSize: '16px' }} />, color: 'green' },
+                                          'Tình yêu': { icon: <CrownFilled style={{ fontSize: '16px' }} />, color: 'pink' },
+                                          'Sứ giả hòa bình': { icon: <StarFilled style={{ fontSize: '16px' }} />, color: 'blue' },
+                                          'Cảm xúc': { icon: <FireFilled style={{ fontSize: '16px' }} />, color: 'orange' },
+                                          'Chuyên gia tâm lý': { icon: <CrownFilled style={{ fontSize: '16px' }} />, color: 'cyan' }
+                                        };
+                                        
+                                        // Mặc định nếu không tìm thấy
+                                        return styles[name] || { icon: <StarFilled style={{ fontSize: '16px' }} />, color: 'gray' };
+                                      };
+                                      
+                                      const style = getStyle(sample.name);
+                                      
+                                      return (
+                                        <div
+                                          key={sample.id}
+                                          style={{
+                                            backgroundColor: style.color,
+                                            color: '#fff',
+                                            padding: '8px 12px',
+                                            borderRadius: '20px',
+                                            fontSize: '14px',
+                                            fontWeight: '500',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '6px',
+                                            boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                                          }}
+                                        >
+                                          {style.icon}
+                                          <span>{sample.name}</span>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
                                 </div>
                               )}
                             </div>
@@ -884,7 +944,10 @@ const PoetSamplesManagement = () => {
           <Form.Item
             name="titleSampleIds"
             label={<Text strong>Chuyên môn thơ</Text>}
-            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ</Text>}
+            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ (tối đa 2)</Text>}
+            rules={[
+              { validator: validateTitleSamples }
+            ]}
           >
             <Select
               mode="multiple"
@@ -892,13 +955,15 @@ const PoetSamplesManagement = () => {
               size="large"
               loading={titleSamplesLoading}
               optionFilterProp="label"
+              maxTagCount={2}
+              maxTagTextLength={10}
               filterOption={(input, option) =>
                 option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
             >
               {titleSamples.map(sample => (
-                <Option 
-                  key={sample.id} 
+                <Option
+                  key={sample.id}
                   value={sample.id}
                   label={sample.name}
                 >
@@ -1022,7 +1087,10 @@ const PoetSamplesManagement = () => {
           <Form.Item
             name="titleSampleIds"
             label={<Text strong>Chuyên môn thơ</Text>}
-            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ</Text>}
+            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ (tối đa 2)</Text>}
+            rules={[
+              { validator: validateTitleSamples }
+            ]}
           >
             <Select
               mode="multiple"
@@ -1030,6 +1098,8 @@ const PoetSamplesManagement = () => {
               size="large"
               loading={titleSamplesLoading}
               optionFilterProp="label"
+              maxTagCount={2}
+              maxTagTextLength={10}
               filterOption={(input, option) =>
                 option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
@@ -1038,8 +1108,8 @@ const PoetSamplesManagement = () => {
               }}
             >
               {titleSamples.map(sample => (
-                <Option 
-                  key={sample.id} 
+                <Option
+                  key={sample.id}
                   value={sample.id}
                   label={sample.name}
                 >
