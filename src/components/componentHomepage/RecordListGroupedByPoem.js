@@ -30,9 +30,9 @@ const PoemRecordGroup = ({
     return (
         <div style={{ ...styles.cardContainer, width: '100%' }}>
             {/* Poem Header */}
-            <div style={styles.poemHeader} onClick={() => navigate(`/poem/${poem.id}`)}>
+            <div style={styles.poemHeader} onClick={() => navigate(`/poem/${poem?.id}`)}>
                 <img
-                    src={poem.poemImage || "/anhminhhoa.png"}
+                    src={poem?.poemImage || "/anhminhhoa.png"}
                     alt="poem cover"
                     style={styles.poemCover}
                     onError={(e) => {
@@ -41,9 +41,9 @@ const PoemRecordGroup = ({
                     }}
                 />
                 <div style={styles.poemInfo}>
-                    <h3 style={styles.poemTitle}>{poem.title}</h3>
-                    <p style={styles.poemAuthor}>Tác giả: {poem.user?.displayName || "Không rõ"}</p>
-                </div>
+                    <h3 style={styles.poemTitle}>{poem?.title || "Bài thơ đã bị gỡ"}</h3>
+                    <p style={styles.poemAuthor}>Tác giả: {poem?.user?.displayName || ""}</p>
+                </div>Không rõ
             </div>
 
             {/* Records Collapse */}
@@ -560,9 +560,13 @@ const styles = {
 // Hàm helper để nhóm các bản ghi theo poem
 export const groupRecordsByPoem = (records) => {
     const poemMap = {};
+    const noPoemRecords = [];
 
     records.forEach(record => {
-        if (!record.poem) return;
+        if (!record.poem) {
+            noPoemRecords.push(record);
+            return;
+        }
 
         const poemId = record.poem.id;
         if (!poemMap[poemId]) {
@@ -574,8 +578,17 @@ export const groupRecordsByPoem = (records) => {
         poemMap[poemId].records.push(record);
     });
 
-    return Object.values(poemMap);
-};
+    const grouped = Object.values(poemMap);
+
+    if (noPoemRecords.length > 0) {
+        grouped.push({
+            poem: null,
+            records: noPoemRecords
+        });
+    }
+
+    return grouped;
+}   
 
 // Component chính để hiển thị danh sách bản ghi đã được nhóm
 const RecordListGroupedByPoem = ({ records, ...props }) => {
