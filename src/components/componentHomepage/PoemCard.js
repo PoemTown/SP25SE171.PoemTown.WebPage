@@ -9,6 +9,8 @@ import { FaUserPlus } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ReportPoemModal from "./ReportPoemModal";
+import { BookOutlined, ClockCircleOutlined } from "@ant-design/icons";
+import { Margin } from "@mui/icons-material";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -175,31 +177,31 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 
     return (
         <div style={styles.poemCard}>
-            <div style={styles.poemImageContainer}>
-                <img
-                    src={item.poemImage || "/anhminhhoa.png"}
-                    alt="anh minh hoa"
-                    style={styles.poemImage}
-                    onError={(e) => {
-                        console.log("Image failed to load, switching to fallback");
-                        e.target.onerror = null;
-                        e.target.src = "/anhminhhoa.png";
-                    }}
-                />
-            </div>
-            <div style={styles.avatarContainer}>
-                <img
-                    src={item.user ? item.user?.avatar : item.poetSample?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
-                    alt="avatar"
-                    style={styles.avatar}
-                    onError={(e) => { e.target.src = "./default_avatar.png"; }}
-                />
+            <div style={styles.imageWrapper}>
+                <div style={styles.poemImageContainer}>
+                    <img
+                        src={item.poemImage || "/anhminhhoa.png"}
+                        alt="Thơ minh họa"
+                        style={styles.poemImage}
+                        onError={(e) => {
+                            e.target.onerror = null;
+                            e.target.src = "/anhminhhoa.png";
+                          }}
+                    />
+                    <div style={styles.avatarContainer}>
+                        <img
+                            src={item.user?.avatar || item.poetSample?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
+                            alt="Tác giả"
+                            style={styles.avatar}
+                        />
+                    </div>
+                </div>
             </div>
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
                         <span style={styles.author} onClick={handleNavigate}> {item.user ? item.user?.displayName : item.poetSample?.name || 'Anonymous'}</span>
-                        <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
+                        <span style={styles.postDate}>– <ClockCircleOutlined style={{ fontSize: "0.9rem" }} />{formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
                         <button style={styles.iconButton} onClick={() => onBookmark(item.id)}>
@@ -217,7 +219,17 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
-                <p style={styles.poemType}>Thể loại: {item?.type?.name ?? ""}</p>
+                <div style={{
+                    display: "inline-flex", // dùng inline-flex để fit nội dung
+                    gap: "16px",
+                    padding: 0,
+                    marginBottom: "10px",
+                    marginTop: "10px"
+                }}>
+                    <p style={styles.poemType}>{item?.type?.name ?? ""}</p>
+                    <p style={styles.poemCollection}><BookOutlined style={{ marginRight: "6px", fontSize: "0.9rem" }} /> <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
+
+                </div>
                 <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
@@ -231,16 +243,15 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                         </p>
                     </div>
                 </div>
-                <p style={styles.poemCollection}>Tập thơ: <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
                 <div style={styles.footerContainer}>
                     {item?.isFamousPoet ? <></> :
                         <div style={styles.statsContainer}>
                             <button style={styles.likeButton} onClick={() => onLike(item.id)}>
-                                {liked ? <BiSolidLike size={17} color="#2a7fbf" /> : <BiLike size={18} />}
+                                {liked ? <BiSolidLike size={17} color="#2a7fbf" /> : <BiLike size={20} />}
                                 <span style={styles.statItem}>{item.likeCount || 0}</span>
                             </button>
                             <button style={styles.likeButton}>
-                                <BiCommentDetail size={17} />
+                                <BiCommentDetail size={20} />
                                 <span style={styles.statItem}>{item.commentCount || 0}</span>
                             </button>
                         </div>
@@ -269,112 +280,148 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 };
 
 const styles = {
+    poemCard: {
+        display: 'flex',
+        gap: '32px',
+        //background: 'linear-gradient(135deg, #f8f5ff 0%, #fff7fb 100%)',
+        background: 'linear-gradient(135deg,rgb(255, 255, 255) 0%,rgb(255, 255, 255) 100%)',
+        borderRadius: '24px',
+        boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+        padding: '24px',
+        margin: '16px 0',
+        transition: 'transform 0.3s ease, box-shadow 0.3s ease',
+        ':hover': {
+            transform: 'translateY(-4px)',
+            boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)'
+        }
+    },
+    imageWrapper: {
+        position: 'relative',
+        flexShrink: 0,
+        width: '204px',
+        borderRadius: '16px',
+        overflow: 'hidden',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
+    },
     poemImageContainer: {
-        width: "134px",
-        height: "234px",
-        border: "1px solid #000",
-        marginLeft: "20px",
-        alignSelf: "center"
+        width: '100%',
+        height: '320px',
+        position: 'relative',
+        background: '#f0eafa'
     },
-
     poemImage: {
-        width: "134px",
-        maxWidth: "134px",
-        height: "100%",
-        objectFit: "cover", // This will prevent stretching
-        objectPosition: "center" // Center the image
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover',
+        transition: 'transform 0.3s ease',
+        ':hover': {
+            transform: 'scale(1.05)'
+        }
     },
-
     avatarContainer: {
-        flexGrow: "1",
+        position: 'absolute',
+        bottom: '-24px',
+        left: '24px',
+        width: '64px',
+        height: '64px',
+        borderRadius: '50%',
+        border: '3px solid white',
+        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+        overflow: 'hidden',
+        transition: 'transform 0.3s ease',
+        ':hover': {
+            transform: 'scale(1.1)'
+        }
     },
-
     avatar: {
-        width: "40px",
-        height: "40px",
-        borderRadius: "50%",
-        objectFit: "cover",
-        border: "2px solid #eee",
-        marginTop: "4px",
+        width: '100%',
+        height: '100%',
+        objectFit: 'cover'
     },
-
+    
     contentRight: {
         flexBasis: "100%",
         display: "flex",
         flexDirection: "column",
         marginRight: "20px"
     },
-
-    poemCard: {
-        display: "flex",
-        gap: "10px",
-        background: "white",
-        borderRadius: "12px",
-        border: "1px solid #ccc",
-        boxShadow: "0px 3px 6px 0px #0000004D",
-        alignItems: "stretch",
-        width: "100%", // Ensure it takes available width
-        marginBottom: "40px",
-        padding: "20px 0"
-    },
     cardHeader: {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        fontSize: "0.9rem",
-        color: "#666",
+        marginBottom: "4px"
     },
 
     author: {
-        fontWeight: "600",
-        color: "#2a7fbf",
-        cursor: "pointer",
-        fontSize: "0.8rem",
+        fontWeight: 600,
+        color: "#5d4c3c",
+        fontSize: "1.05rem",
+        fontFamily: "'Playfair Display', serif",
+        cursor: 'pointer',
+        ':hover': {
+            color: '#4a2b6b'
+        }
     },
 
     poemTitle: {
-        color: "#222",
-        margin: "0",
-        fontSize: "1rem",
+        color: "#3a2e26",
+        margin: 0,
+        fontSize: "1.4rem",
+        fontFamily: "'Cormorant Garamond', serif",
+        fontWeight: 600
     },
 
     poemType: {
-        color: "#444",
-        margin: "1px 0 0",
-        fontSize: "0.8rem",
+        margin: 0,
+        background: "#f8f3ed",
+        borderRadius: "16px",
+        padding: "4px 12px",
+        color: "#7d6b58",
+        fontSize: "0.85rem",
+        display: "inline-flex",
+        alignItems: "center"
     },
 
     poemDescription: {
-        color: "#444",
-        fontSize: "0.8rem",
-        marginTop: "1px",
-        lineHeight: "1.4",
-        marginBottom: "5px"
+        color: "#7d6b58",
+        fontSize: "0.95rem",
+        margin: 0,
+        marginBottom: "4px",
+        lineHeight: 1.6
     },
 
     poemCollection: {
-        color: "#444",
-        fontSize: "0.8rem",
-        marginBottom: 0,
-        marginTop: 0
+        margin: 0,
+        background: "#f8f3ed",
+        borderRadius: "16px",
+        padding: "4px 12px",
+        color: "#7d6b58",
+        fontSize: "0.85rem",
+        display: "inline-flex",
+        alignItems: "center",
+        cursor: "pointer",
+        transition: "all 0.2s",
+        ":hover": {
+            background: "#f0e6e0"
+        }
     },
 
     poemContent: {
-        color: "#333",
+        color: "#5d4c3c",
         fontStyle: "italic",
-        borderLeft: "3px solid #eee",
-        paddingLeft: "15px",
-        marginBottom: "auto",
-        position: 'relative',
+        borderLeft: "3px solid #f0e6e0",
+        padding: "4px 0 4px 20px",
+        flexGrow: 1,
+        marginBottom: "8px",
+        position: "relative"
     },
 
     poemTextContainer: {
-        display: '-webkit-box',
+        display: "-webkit-box",
         WebkitLineClamp: 5,
         WebkitBoxOrient: 'vertical',
         overflow: 'hidden',
         position: 'relative',
-        paddingRight: '20px',
     },
     quote: {
         position: 'absolute',
@@ -383,21 +430,23 @@ const styles = {
         color: '#666',
     },
     quoteClose: {
-
         fontSize: '1.7rem',
         lineHeight: 1,
-        color: '#666',
+        color: '#666'
     },
     poemLine: {
-        whiteSpace: 'pre-wrap',
-        margin: "0 0 0 0",
-        lineHeight: "1.6",
-        fontSize: "0.8rem",
-        textIndent: '0.7rem',
+        margin: "0",
+        lineHeight: "1.8",
+        fontSize: "1.1rem",
+        fontFamily: "'Cormorant Garamond', serif",
+        textIndent: '1.5rem',
+        position: "relative"
     },
     ellipsis: {
         background: 'white',
         paddingLeft: '4px',
+        position: "relative",
+        zIndex: 1
     },
 
     statItem: {
@@ -408,8 +457,8 @@ const styles = {
 
     viewButton: {
         background: "none",
-        border: "1px solid #2a7fbf",
-        color: "#2a7fbf",
+        border: "1px solid #7d6b58",
+        color: "#7d6b58",
         cursor: "pointer",
         padding: "8px 16px",
         borderRadius: "20px",
@@ -418,26 +467,29 @@ const styles = {
     },
 
     viewButtonHover: {
-        background: "#2a7fbf",
+        background: "#5d4c3c",
         color: "white",
     },
 
     postDate: {
-        color: "#888",
-        fontSize: "0.8rem",
-        textAlign: "right",
+        color: "#a89b8c",
+        fontSize: "0.85rem",
+        display: "flex",
+        alignItems: "center",
+        gap: "4px",
+        marginLeft: "4px"
     },
 
     headerLeft: {
         display: "flex",
-        alignItems: "flex-start",
-        gap: "8px",
-        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        marginBottom: "4px"
     },
     headerRight: {
         display: "flex",
         gap: "12px",
-        alignItems: "center",
+        alignItems: "center"
     },
 
     iconButton: {
@@ -455,29 +507,30 @@ const styles = {
         display: "flex",
         justifyContent: "space-between",
         alignItems: "center",
-        marginTop: "auto",
-        marginRight: "20px"
+        paddingTop: "10px",
+        borderTop: "1px solid #f0e6e0"
     },
 
     statsContainer: {
         display: "flex",
-        gap: "20px",
-        alignItems: "center",
+        gap: "10px",
+        alignItems: "center"
     },
 
     likeButton: {
-        display: "flex",
-        alignItems: "center",
-        gap: "6px",
-        background: "none",
-        border: "none",
-        cursor: "pointer",
-        padding: "4px 8px",
-        borderRadius: "4px",
-        transition: "background 0.2s",
-
-        "&:hover": {
-            background: "#f0f0f0",
+        display: 'flex',
+        alignItems: 'center',
+        gap: '6px',
+        background: 'none',
+        border: 'none',
+        padding: '8px 16px',
+        borderRadius: '24px',
+        color: '#000',
+        fontSize: '0.95rem',
+        cursor: 'pointer',
+        transition: 'all 0.3s ease',
+        ':hover': {
+            background: 'rgba(106, 76, 147, 0.1)'
         }
     },
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Button, Spin, Card, Typography, Divider, Modal, Input, message, notification } from "antd";
-import { LockFilled, PlayCircleFilled, ShoppingCartOutlined } from "@ant-design/icons";
+import { Button, Spin, Card, Typography, Divider, Modal, Input, message, notification, Tag } from "antd";
+import { LeftOutlined, LockFilled, PlayCircleFilled, ShoppingCartOutlined } from "@ant-design/icons";
 import AudioPlayer from "./AudioPlayer";
 import Headeruser from "../../../components/Headeruser";
 import Headerdefault from "../../../components/Headerdefault";
@@ -159,290 +159,318 @@ const RecordDetail = () => {
                 message.error(error.response?.data?.errorMessage || "Đã xảy ra lỗi!");
               }
             }
-    return (
-        <>
-            {isLoggedIn ? <Headeruser /> : <Headerdefault />}
-
-            <div style={styles.container}>
-
-                <Button type="link" onClick={() => navigate(-1)} style={styles.backButton}>
-                    ← Quay lại
-                </Button>
-
-                <Card style={styles.card}>
-                    {isMine && (
-                        <div style={styles.ownerControls}>
-                            <Button danger onClick={showDeleteConfirm} style={{ marginRight: 8 }}>
-                                Xóa bản ghi
-                            </Button>
-                            <Button
-                                type="primary"
-                                onClick={handleToggleStatus}
-                                disabled={!record.isPublic}
-                            >
-                                {record.isPublic ? 'Chuyển sang riêng tư' : 'Đang ở chế độ riêng tư'}
-                            </Button>
-                        </div>
-                    )}
-                    {/* Phần thông tin bài thơ */}
-                    <div style={styles.section}>
-                        <Title level={3} style={styles.sectionTitle}>Thông tin bài thơ</Title>
-                        <div style={styles.poemContent}>
-                            <Title level={4}>{record.poem?.title || "Không có tiêu đề"}</Title>
-                            <Text style={styles.poemText}>
-                                <div style={{ margin: "0px auto", display: "inline-block", boxSizing: "border-box" }}>
-                                    <p style={{ whiteSpace: "pre-wrap", textAlign: "left", fontSize: "1.2rem", lineHeight: "2" }}>
-                                        {record.poem?.content}
-                                    </p>
+            return (
+                <>
+                    {isLoggedIn ? <Headeruser /> : <Headerdefault />}
+            
+                    <div style={{
+                        maxWidth: '1400px',
+                        margin: '0 auto',
+                        padding: '40px 20px',
+                        //background: 'linear-gradient(to bottom, #f8f5f0 0%, #fff 100%)',
+                        minHeight: '100vh'
+                    }}>
+                        <Button 
+                            type="text" 
+                            onClick={() => navigate(-1)} 
+                            style={{
+                                padding: '0',
+                                marginBottom: '40px',
+                                color: '#7d6b58',
+                                fontSize: '16px',
+                                display: 'flex',
+                                alignItems: 'center'
+                            }}
+                        >
+                            <LeftOutlined style={{ marginRight: '8px' }} />
+                            Trở về trang trước
+                        </Button>
+            
+                        <div style={{
+                            borderRadius: '24px',
+                            boxShadow: '0 8px 32px rgba(0, 0, 0, 0.08)',
+                            background: '#fff',
+                            overflow: 'hidden',
+                            position: 'relative',
+                            border: '1px solid #eeeae4'
+                        }}>
+                            {/* Ribbon decoration */}
+                            <div style={{
+                                position: 'absolute',
+                                top: 0,
+                                right: 0,
+                                width: '120px',
+                                height: '120px',
+                                background: 'url(/poetry-ribbon.png) no-repeat',
+                                backgroundSize: 'contain',
+                                opacity: 0.15
+                            }} />
+            
+                            {isMine && (
+                                <div style={{
+                                    padding: '20px 32px',
+                                    background: '#f8f5f0',
+                                    borderBottom: '1px solid #eeeae4',
+                                    display: 'flex',
+                                    gap: '12px'
+                                }}>
+                                    <Button 
+                                        danger 
+                                        onClick={showDeleteConfirm}
+                                        style={{ 
+                                            background: '#ffebee',
+                                            borderColor: 'transparent',
+                                            color: '#c62828'
+                                        }}
+                                    >
+                                        Xóa bản ghi
+                                    </Button>
+                                    <Button
+                                        type="primary"
+                                        onClick={handleToggleStatus}
+                                        disabled={!record.isPublic}
+                                        style={{
+                                            background: record.isPublic ? '#7d6b58' : '#b0a499',
+                                            borderColor: 'transparent',
+                                            fontWeight: 500
+                                        }}
+                                    >
+                                        {record.isPublic ? 'Chuyển sang riêng tư' : 'Đang ở chế độ riêng tư'}
+                                    </Button>
                                 </div>
-                                {/* {record.poem?.content || "Nội dung chưa có sẵn"} */}
-                            </Text>
-                            <Divider />
-                            <Text strong>Tác giả: </Text>
-                            <Text>{record.poem?.user.displayName || "Không rõ tác giả"}</Text>
-                        </div>
-                    </div>
-
-                    {/* Phần thông tin bản ghi */}
-                    <div style={styles.section}>
-                        <Title level={3} style={styles.sectionTitle}>Thông tin bản ghi</Title>
-                        <div style={styles.recordInfo}>
-                            {/* Audio Player */}
-                            <AudioPlayer
-                                record={record}
-                                currentUser={currentUser}
-                                showPurchaseConfirm={() => showPurchaseConfirm(record.id, record.price)} // Thêm logic mua nếu cần
-                            />
-
-                            {/* Thông tin chi tiết */}
-                            <div style={styles.metaSection}>
-                                {isMine && (
-                                    <>
-                                        <div style={styles.metaItem}>
-                                            <Text strong>Trạng thái: </Text>
-                                            <Text>{record.isPublic ? 'Công khai' : 'Riêng tư'}</Text>
+                            )}
+            
+                            {/* Main content */}
+                            <div style={{ padding: '40px 32px' }}>
+                                {/* Poem Section */}
+                                <div style={{ marginBottom: '48px' }}>
+                                    <div style={{
+                                        maxWidth: '800px',
+                                        margin: '0 auto',
+                                        position: 'relative',
+                                        padding: '40px',
+                                        // background: `
+                                        //     repeating-linear-gradient(
+                                        //         #fff,
+                                        //         #fff 29px,
+                                        //         #7d6b58 30px,
+                                        //         #7d6b58 31px
+                                        //     )`,
+                                        boxShadow: '0 4px 12px rgba(125, 107, 88, 0.15)'
+                                    }}>
+                                        <h1 style={{
+                                            fontSize: '2.4rem',
+                                            color: '#5d4c3c',
+                                            marginBottom: '32px',
+                                            fontFamily: '"Playfair Display", serif',
+                                            textAlign: 'center'
+                                        }}>
+                                            {record.poem?.title || "Không có tiêu đề"}
+                                        </h1>
+                                        
+                                        <pre style={{
+                                            whiteSpace: 'pre-wrap',
+                                            fontFamily: '"Cormorant Garamond", serif',
+                                            fontSize: '1.3rem',
+                                            lineHeight: '2.2',
+                                            color: '#5d4c3c',
+                                            margin: 0,
+                                            textAlign: 'center'
+                                        }}>
+                                            {record.poem?.content || "Nội dung chưa có sẵn"}
+                                        </pre>
+            
+                                        <div style={{
+                                            marginTop: '32px',
+                                            textAlign: 'right',
+                                            fontStyle: 'italic',
+                                            color: '#7d6b58'
+                                        }}>
+                                            — {record.poem?.user.displayName || "Khuyết danh"}
                                         </div>
-                                        {!record.isPublic && (
-                                            <div style={styles.metaItem}>
-                                                <Text strong>Giá bán: </Text>
-                                                <Text>{record.price === 0 ? 'MIỄN PHÍ' : `${record.price.toLocaleString()} VND`}</Text>
+                                    </div>
+                                </div>
+            
+                                {/* Record Info */}
+                                <div style={{
+                                    display: 'grid',
+                                    gridTemplateColumns: '1fr 1fr',
+                                    gap: '48px',
+                                    alignItems: 'start'
+                                }}>
+                                    {/* Audio Section */}
+                                    <div>
+                                        <AudioPlayer
+                                            record={record}
+                                            currentUser={currentUser}
+                                            showPurchaseConfirm={() => showPurchaseConfirm(record.id, record.price)}
+                                            style={{
+                                                background: '#f8f5f0',
+                                                borderRadius: '16px',
+                                                padding: '24px'
+                                            }}
+                                        />
+                                    </div>
+            
+                                    {/* Metadata */}
+                                    <div>
+                                        <div style={{
+                                            background: '#f8f5f0',
+                                            borderRadius: '16px',
+                                            padding: '24px'
+                                        }}>
+                                            <h3 style={{
+                                                fontSize: '1.1rem',
+                                                color: '#7d6b58',
+                                                textTransform: 'uppercase',
+                                                letterSpacing: '1px',
+                                                marginBottom: '24px'
+                                            }}>
+                                                Thông tin bản ghi
+                                            </h3>
+            
+                                            <div style={{ display: 'grid', gap: '16px' }}>
+                                                <div style={{ display: 'flex', gap: '12px' }}>
+                                                    <span style={{ color: '#7d6b58', minWidth: '100px' }}>Người đăng:</span>
+                                                    <span style={{ color: '#5d4c3c' }}>{record.owner?.displayName}</span>
+                                                </div>
+                                                
+                                                <div style={{ display: 'flex', gap: '12px' }}>
+                                                    <span style={{ color: '#7d6b58', minWidth: '100px' }}>Ngày đăng:</span>
+                                                    <span style={{ color: '#5d4c3c' }}>
+                                                        {new Date(record.createdTime).toLocaleDateString("vi-VN", {
+                                                            day: '2-digit',
+                                                            month: 'long',
+                                                            year: 'numeric'
+                                                        })}
+                                                    </span>
+                                                </div>
+            
+                                                <div style={{ display: 'flex', gap: '12px' }}>
+                                                    <span style={{ color: '#7d6b58', minWidth: '100px' }}>Lượt nghe:</span>
+                                                    <span style={{ color: '#5d4c3c', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                        <PlayCircleFilled style={{ color: '#7d6b58' }} /> 
+                                                        {record.playCount || 0}
+                                                    </span>
+                                                </div>
+            
+                                                {isMine && (
+                                                    <>
+                                                        <Divider style={{ margin: '16px 0', borderColor: '#eeeae4' }} />
+                                                        
+                                                        <div style={{ display: 'flex', gap: '12px' }}>
+                                                            <span style={{ color: '#7d6b58', minWidth: '100px' }}>Trạng thái:</span>
+                                                            <Tag 
+                                                                color={record.isPublic ? '#7d6b58' : '#b0a499'}
+                                                                style={{ 
+                                                                    borderRadius: '8px',
+                                                                    textTransform: 'uppercase',
+                                                                    fontWeight: 500
+                                                                }}
+                                                            >
+                                                                {record.isPublic ? 'Công khai' : 'Riêng tư'}
+                                                            </Tag>
+                                                        </div>
+            
+                                                        {!record.isPublic && (
+                                                            <div style={{ display: 'flex', gap: '12px' }}>
+                                                                <span style={{ color: '#7d6b58', minWidth: '100px' }}>Giá bán:</span>
+                                                                <span style={{ 
+                                                                    color: '#5d4c3c',
+                                                                    fontWeight: 600,
+                                                                    fontFeatureSettings: '"tnum"'
+                                                                }}>
+                                                                    {record.price === 0 
+                                                                        ? 'Miễn phí' 
+                                                                        : `${record.price.toLocaleString()}₫`
+                                                                    }
+                                                                </span>
+                                                            </div>
+                                                        )}
+                                                    </>
+                                                )}
+                                            </div>
+                                        </div>
+            
+                                        {/* Buyers List */}
+                                        {record.buyers?.length > 0 && (
+                                            <div style={{ marginTop: '32px' }}>
+                                                <h4 style={{
+                                                    fontSize: '1rem',
+                                                    color: '#7d6b58',
+                                                    marginBottom: '16px',
+                                                    display: 'flex',
+                                                    alignItems: 'center',
+                                                    gap: '8px'
+                                                }}>
+                                                    <ShoppingCartOutlined />
+                                                    <span>Đã được mua bởi</span>
+                                                </h4>
+            
+                                                <div style={{ 
+                                                    display: 'grid',
+                                                    gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
+                                                    gap: '12px'
+                                                }}>
+                                                    {record.buyers.map((buyer, index) => (
+                                                        <div 
+                                                            key={index}
+                                                            onClick={() => navigate(`/user/${buyer.userName}`)}
+                                                            style={{
+                                                                display: 'flex',
+                                                                alignItems: 'center',
+                                                                gap: '12px',
+                                                                padding: '12px',
+                                                                background: '#fff',
+                                                                borderRadius: '12px',
+                                                                border: '1px solid #eeeae4',
+                                                                cursor: 'pointer',
+                                                                transition: 'transform 0.2s',
+                                                                ':hover': {
+                                                                    transform: 'translateY(-2px)',
+                                                                    boxShadow: '0 4px 12px rgba(0, 0, 0, 0.06)'
+                                                                }
+                                                            }}
+                                                        >
+                                                            <img
+                                                                src={buyer.avatar || "/default-avatar.png"}
+                                                                alt={buyer.displayName}
+                                                                style={{
+                                                                    width: '40px',
+                                                                    height: '40px',
+                                                                    borderRadius: '50%',
+                                                                    objectFit: 'cover',
+                                                                    border: '2px solid #eeeae4'
+                                                                }}
+                                                            />
+                                                            <div>
+                                                                <div style={{
+                                                                    color: '#5d4c3c',
+                                                                    fontWeight: 500,
+                                                                    lineHeight: 1.4
+                                                                }}>
+                                                                    {buyer.displayName || "Ẩn danh"}
+                                                                </div>
+                                                                <div style={{
+                                                                    color: '#7d6b58',
+                                                                    fontSize: '0.85rem'
+                                                                }}>
+                                                                    {/* {new Date(buyer.purchasedDate).toLocaleDateString("vi-VN")} */}
+                                                                    @{buyer.userName || "Ẩn danh"}
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
-                                    </>
-
-                                )}
-                                <div style={styles.metaItem}>
-                                    <Text strong>Người đăng: </Text>
-                                    <Text>{record.owner?.displayName}</Text>
-                                </div>
-                                <div style={styles.metaItem}>
-                                    <Text strong>Ngày đăng: </Text>
-                                    <Text>{new Date(record.createdTime).toLocaleDateString("vi-VN")}</Text>
-                                </div>
-                                <div style={styles.metaItem}>
-                                    <Text strong>Lượt nghe: </Text>
-                                    <Text><PlayCircleFilled /> {record.playCount || 0}</Text>
-                                </div>
-                                <div style={styles.metaItem}>
-                                    <Text strong>Lượt mua: </Text>
-                                    <Text><ShoppingCartOutlined /> {record.buyers?.length || 0}</Text>
-
-                                    {record.buyers?.length > 0 && (
-                                        <div style={styles.buyerList}>
-                                            <div style={styles.buyerContainer}>
-                                                {record.buyers.map((buyer, index) => (
-                                                    <div key={index} style={styles.buyerCard}
-                                                        onClick={() => navigate(`/user/${buyer.userName}`)}
-                                                    >
-                                                        <img
-                                                            src={buyer.avatar || "/default-avatar.png"}
-                                                            alt={buyer.displayName}
-                                                            style={styles.buyerAvatar}
-                                                            onError={(e) => {
-                                                                e.target.onerror = null;
-                                                                e.target.src = "/default-avatar.png";
-                                                            }}
-                                                        />
-                                                        <div style={styles.buyerInfo}>
-                                                            <Text strong style={styles.buyerName}>
-                                                                {buyer.displayName || "Khách mua ẩn danh"}
-                                                            </Text>
-                                                            <Text type="secondary" style={styles.buyerUsername}>
-                                                                @{buyer.userName || "unknown"}
-                                                            </Text>
-                                                            {buyer.purchasedDate && (
-                                                                <Text type="secondary" style={styles.purchaseDate}>
-                                                                    {new Date(buyer.purchasedDate).toLocaleDateString("vi-VN")}
-                                                                </Text>
-                                                            )}
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </Card >
-            </div >
-        </>
-
-    );
-};
-
-const styles = {
-    container: {
-        maxWidth: '1200px',
-        margin: '0 auto',
-        padding: '20px'
-    },
-    backButton: {
-        marginBottom: '20px',
-        fontSize: '16px'
-    },
-    card: {
-        borderRadius: '12px',
-        boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
-    },
-    section: {
-        marginBottom: '40px'
-    },
-    sectionTitle: {
-        color: '#1890ff',
-        marginBottom: '24px'
-    },
-    poemContent: {
-        textAlign:"center",
-        backgroundColor: '#f8f9fa',
-        borderRadius: '8px',
-        padding: '24px',
-        whiteSpace: 'pre-line'
-    },
-    poemText: {
-        fontSize: '16px',
-        lineHeight: '1.8'
-    },
-    recordInfo: {
-        display: 'grid',
-        gridTemplateColumns: '1fr 1fr',
-        gap: '40px',
-        '@media (max-width: 768px)': {
-            gridTemplateColumns: '1fr'
-        }
-    },
-    metaSection: {
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '16px'
-    },
-    metaItem: {
-        display: 'flex',
-        gap: '8px',
-        fontSize: '16px'
-    },
-    buyerList: {
-        marginTop: 12,
-        borderTop: '1px solid #f0f0f0',
-        paddingTop: 12
-    },
-    buyerContainer: {
-        display: 'grid',
-        gap: '12px',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))'
-    },
-    buyerCard: {
-        display: 'flex',
-        alignItems: 'center',
-        padding: '12px',
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        transition: 'transform 0.2s',
-        ':hover': {
-            transform: 'translateY(-2px)'
-        }
-    },
-    buyerAvatar: {
-
-        width: '48px',
-        height: '48px',
-        borderRadius: '50%',
-        marginRight: '12px',
-        objectFit: 'cover'
-    },
-    buyerInfo: {
-        flex: 1,
-        minWidth: 0
-    },
-    buyerName: {
-        display: 'block',
-        fontSize: '14px',
-        lineHeight: 1.4
-    },
-    buyerUsername: {
-        display: 'block',
-        fontSize: '12px'
-    },
-    purchaseDate: {
-        display: 'block',
-        fontSize: '12px',
-        color: '#666',
-        marginTop: '4px'
-    },
-    buyerList: {
-        marginTop: 12,
-        paddingTop: 12,
-        borderTop: '1px solid #f0f0f0'
-    },
-    buyerContainer: {
-        display: 'grid',
-        gap: '12px',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-        marginTop: 8
-    },
-    buyerCard: {
-        display: 'flex',
-        alignItems: 'center',
-        padding: 12,
-        backgroundColor: '#fff',
-        borderRadius: 8,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-        transition: 'transform 0.2s',
-        ':hover': {
-            transform: 'translateY(-2px)'
-        }
-    },
-    buyerAvatar: {
-        width: 48,
-        height: 48,
-        borderRadius: '50%',
-        marginRight: 12,
-        objectFit: 'cover',
-        backgroundColor: '#f0f0f0'
-    },
-    buyerInfo: {
-        flex: 1,
-        minWidth: 0
-    },
-    buyerName: {
-        display: 'block',
-        fontSize: 14,
-        lineHeight: 1.4,
-        fontWeight: 500
-    },
-    buyerUsername: {
-        display: 'block',
-        fontSize: 12,
-        color: '#666'
-    },
-    purchaseDate: {
-        display: 'block',
-        fontSize: 12,
-        color: '#999',
-        marginTop: 4
-    }
+                </>
+            );
 };
 
 export default RecordDetail;

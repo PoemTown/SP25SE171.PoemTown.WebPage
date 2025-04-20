@@ -198,7 +198,7 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                     <div style={{ display: "flex", flexDirection: "row", gap: "40px" }}>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0px" }}>
                             <Text strong style={{ fontSize: "20px", margin: "0", color: coverColorCode || "white" }}>
-                                <span>{userData.displayName}</span> <WarningFilled style={{ color: "red", cursor: "pointer" }} onClick={handleReportUser} />
+                                <span>{userData.displayName}</span> {isMine ? null : <WarningFilled style={{ color: "red", cursor: "pointer" }} onClick={handleReportUser} />}
                             </Text>
                             <Text style={{ color: coverColorCode || "rgba(255,255,255,0.8)", margin: "0", fontSize: "0.9em" }}>
                                 @{userData.userName || "Anonymous"}
