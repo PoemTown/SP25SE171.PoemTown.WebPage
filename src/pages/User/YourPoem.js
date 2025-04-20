@@ -615,7 +615,6 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             type="primary" 
             danger 
             onClick={handleDeletePoem}
-            loading={isDeleteModalVisible}
           >
             Xóa
           </Button>,

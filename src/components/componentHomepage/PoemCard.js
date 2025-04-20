@@ -186,7 +186,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                         onError={(e) => {
                             e.target.onerror = null;
                             e.target.src = "/anhminhhoa.png";
-                          }}
+                        }}
                     />
                     <div style={styles.avatarContainer}>
                         <img
@@ -230,13 +230,24 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     <p style={styles.poemCollection}><BookOutlined style={{ marginRight: "6px", fontSize: "0.9rem" }} /> <span style={{ fontWeight: "bold", cursor: "pointer" }} onClick={() => navigate(`/collection/${item.collection.id}`)}>{item.collection?.collectionName}</span></p>
 
                 </div>
-                <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
+                <p style={styles.poemDescription}>Mô tả: {item.description}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
                         <span style={styles.quote}>“</span>
                         {displayedLines.map((line, index) => (
                             <p key={index} style={styles.poemLine}>{line}</p>
                         ))}
+                        {/* <pre style={{
+                                whiteSpace: 'pre-wrap',
+                                fontFamily: '"Cormorant Garamond", serif',
+                                fontSize: '1.2rem',
+                                lineHeight: '1.8',
+                                color: '#5d4c3c',
+                                margin: 0,
+                                textAlign: 'center',
+                            }}>
+                                {item?.content || "Nội dung chưa có sẵn"}
+                            </pre> */}
                         <p style={styles.poemLine}>
                             {hasMoreLines && <span style={styles.ellipsis}>...</span>}
                             <span style={styles.quoteClose}>”</span>
@@ -338,7 +349,7 @@ const styles = {
         height: '100%',
         objectFit: 'cover'
     },
-    
+
     contentRight: {
         flexBasis: "100%",
         display: "flex",
@@ -387,7 +398,12 @@ const styles = {
         fontSize: "0.95rem",
         margin: 0,
         marginBottom: "4px",
-        lineHeight: 1.6
+        lineHeight: 1.6,
+        display: "-webkit-box",
+        WebkitLineClamp: 2,             // 👈 số dòng muốn hiển thị
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+        textOverflow: "ellipsis"
     },
 
     poemCollection: {
@@ -430,17 +446,25 @@ const styles = {
         color: '#666',
     },
     quoteClose: {
+        position: 'absolute',
+        right: 0,
         fontSize: '1.7rem',
         lineHeight: 1,
         color: '#666'
     },
     poemLine: {
+        textAlign: 'center',
         margin: "0",
         lineHeight: "1.8",
         fontSize: "1.1rem",
         fontFamily: "'Cormorant Garamond', serif",
         textIndent: '1.5rem',
-        position: "relative"
+        position: "relative",
+        display: "-webkit-box",
+        WebkitLineClamp: 1,             // 👈 số dòng muốn hiển thị
+        WebkitBoxOrient: "vertical",
+        overflow: "hidden",
+        textOverflow: "ellipsis"
     },
     ellipsis: {
         background: 'white',
