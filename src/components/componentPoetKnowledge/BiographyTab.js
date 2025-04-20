@@ -1,8 +1,8 @@
 import React from "react";
 
-const BiographyWithStats = ({ poet, achievements, userStatistic, isLoading }) => {
+const BiographyTab = ({ poet, formatDate }) => {
     // Format date as DD-MM-YYYY
-    const formatDate = (dateString) => {
+    const formatDateLocal = (dateString) => {
         if (!dateString) return "Không rõ";
         const date = new Date(dateString);
         const day = String(date.getDate()).padStart(2, '0');
@@ -11,192 +11,6 @@ const BiographyWithStats = ({ poet, achievements, userStatistic, isLoading }) =>
         return `${day}-${month}-${year}`;
     };
 
-    // Default styling values for the panels
-    const achievementBorder = "#FFD700";
-    const achievementTitleBackground = "linear-gradient(to right, #FFD700, #FFA500)";
-    const achievementTitleColorCode = "#fff";
-    const achievementBackground = "none";
-    const achievementBackgroundColorCode = "#333";
-
-    const statisticBorder = "#3498db";
-    const statisticTitleBackground = "linear-gradient(to right, #3498db, #2980b9)";
-    const statisticTitleColorCode = "#fff";
-    const statisticBackground = "none";
-    const statisticBackgroundColorCode = "#333";
-
-    const totalFollowings = userStatistic?.totalFollowings || 0;
-    const totalFollowers = userStatistic?.totalFollowers || 0;
-
-    return (
-        <div style={{
-            display: "flex",
-            gap: "30px",
-            padding: "40px 40px",
-            maxWidth: "1800px",  
-            margin: "0 auto",
-            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
-        }}>
-            {/* Main Biography Content (Left Side) */}
-            <div style={{ flex: 3 }}>
-                <BiographyTab poet={poet} formatDate={formatDate} />
-            </div>
-
-            {/* Stats Panels (Right Side) */}
-            <div style={{ flex: 1, minWidth: "350px" }}>
-                <div style={{ display: "flex", flexDirection: "column", gap: "30px", position: "sticky", top: "20px" }}>
-                    {/* Thành tựu cá nhân */}
-                    <div
-                        style={{
-                            borderRadius: "10px",
-                            border: `2px solid ${achievementBorder}`,
-                            boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
-                        }}
-                    >
-                        <div
-                            style={{
-                                background: achievementTitleBackground,
-                                height: "53px",
-                                borderRadius: "10px 10px 0 0",
-                                display: "flex",
-                                alignItems: "center",
-                                justifyContent: "center",
-                                borderBottom: `2px solid ${achievementBorder}`,
-                                marginBottom: 0,
-                            }}
-                        >
-                            <h3 style={{ fontWeight: "bold", margin: 0, textAlign: "center", color: achievementTitleColorCode }}>
-                                Thành tựu cá nhân
-                            </h3>
-                        </div>
-                        <div
-                            style={{
-                                background: achievementBackground,
-                                padding: "10px 20px",
-                                borderRadius: "0 0 10px 10px",
-                                backgroundColor: "#fff",
-                            }}
-                        >
-                            <ul
-                                style={{
-                                    fontSize: "14px",
-                                    color: achievementBackgroundColorCode,
-                                    listStyle: "none",
-                                    padding: 0,
-                                    margin: 0,
-                                }}
-                            >
-                                {achievements && achievements.length > 0 ? (
-                                    achievements.slice(0, 4).map((item) => (
-                                        <li key={item.id} style={{ marginBottom: "4px" }}>
-                                            <span
-                                                style={{
-                                                    marginRight: "8px",
-                                                    backgroundColor: "#fff",
-                                                    borderRadius: "30px",
-                                                    padding: "1px",
-                                                }}
-                                            >
-                                                {item.rank === 1 ? (
-                                                    <>🥇</>
-                                                ) : item.rank === 2 ? (
-                                                    <>🥈</>
-                                                ) : item.rank === 3 ? (
-                                                    <>🥉</>
-                                                ) : (
-                                                    <>🎓</>
-                                                )}
-                                            </span>
-                                            {item.name}
-                                        </li>
-                                    ))
-                                ) : (
-                                    <li style={{ textAlign: "center" }}>Hiện chưa có thành tựu</li>
-                                )}
-                            </ul>
-                            {achievements && achievements.length > 0 && (
-                                <a
-                                    href="#"
-                                    style={{
-                                        color: "#007bff",
-                                        fontSize: "12px",
-                                        display: "block",
-                                        marginTop: "10px",
-                                    }}
-                                >
-                                    Xem thêm &gt;
-                                </a>
-                            )}
-                        </div>
-                    </div>
-
-                    {/* Thống kê người dùng */}
-                    <div
-                        style={{
-                            borderRadius: "10px",
-                            border: `2px solid ${statisticBorder}`,
-                            boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
-                        }}
-                    >
-                        <div style={{
-                            background: statisticTitleBackground,
-                            height: "53px",
-                            borderRadius: "10px 10px 0 0",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            borderBottom: `2px solid ${statisticBorder}`,
-                        }}>
-                            <h3
-                                style={{
-                                    fontWeight: "bold", color: statisticTitleColorCode, margin: 0, textAlign: "center"
-                                }}
-                            >
-                                Thống kê người dùng
-                            </h3>
-                        </div>
-                        <div
-                            style={{
-                                background: statisticBackground,
-                                padding: "10px 20px",
-                                borderRadius: "0 0 10px 10px",
-                                backgroundColor: "#fff",
-                            }}
-                        >
-                            <ul style={{ 
-                                fontSize: "14px", 
-                                color: statisticBackgroundColorCode, 
-                                listStyle: "none", 
-                                padding: 0, 
-                                margin: 0,
-                                display: "grid",
-                                gap: "8px"
-                            }}>
-                                <li>Tổng bài viết: {isLoading ? <span>...</span> : userStatistic?.totalPoems || 0}</li>
-                                <li>Tổng bộ sưu tập: {isLoading ? <span>...</span> : userStatistic?.totalCollections || 0}</li>
-                                <li>Tổng audio cá nhân: {isLoading ? <span>...</span> : userStatistic?.totalPersonalAudios || 0}</li>
-                                <li>Tổng lượt thích: {isLoading ? <span>...</span> : userStatistic?.totalLikes || 0}</li>
-                                <li>Đang theo dõi: {isLoading ? <span>...</span> : totalFollowings || 0}</li>
-                                <li>Người theo dõi: {isLoading ? <span>...</span> : totalFollowers || 0}</li>
-                                <li>Bookmark bài viết: {isLoading ? <span>...</span> : userStatistic?.poemBookmarks || 0}</li>
-                                <li>Bookmark bộ sưu tập: {isLoading ? <span>...</span> : userStatistic?.collectionBookmarks || 0}</li>
-                            </ul>
-                            <a href="#" style={{ 
-                                color: "#007bff", 
-                                fontSize: "12px", 
-                                display: "block", 
-                                marginTop: "10px" 
-                            }}>
-                                Xem thêm &gt;
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    );
-};
-
-const BiographyTab = ({ poet, formatDate }) => {
     return (
         <div style={{
             backgroundColor: "#f5f7fa",
@@ -375,7 +189,7 @@ const BiographyTab = ({ poet, formatDate }) => {
                                             marginBottom: "2px"
                                         }}>Ngày sinh</div>
                                         <div style={{ fontWeight: "500" }}>
-                                            {formatDate(poet?.dateOfBirth) || "Không rõ"}
+                                            {formatDate ? formatDate(poet?.dateOfBirth) : formatDateLocal(poet?.dateOfBirth) || "Không rõ"}
                                         </div>
                                     </div>
                                 </div>
@@ -491,21 +305,6 @@ const BiographyTab = ({ poet, formatDate }) => {
                             }}>
                                 {poet?.bio || "Chưa có tiểu sử."}
                             </div>
-                            
-                            {/* Additional decorative elements */}
-                            <div style={{
-                                display: "flex",
-                                justifyContent: "flex-end",
-                                marginTop: "20px"
-                            }}>
-                                <div style={{
-                                    fontFamily: "'Georgia', serif",
-                                    fontSize: "14px",
-                                    color: "#bdc3c7",
-                                    fontStyle: "italic"
-                                }}>
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -514,4 +313,4 @@ const BiographyTab = ({ poet, formatDate }) => {
     );
 };
 
-export default BiographyWithStats;
+export default BiographyTab;
