@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import CreatePoemForm from "./Form/CreatePoemForm";
 import { Menu, Dropdown, Modal, Button, message } from "antd";
-import { MoreOutlined, BookOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined } from "@ant-design/icons";
+import { MoreOutlined, BookOutlined, ExclamationCircleOutlined, HeartFilled, HeartOutlined, PlusOutlined } from "@ant-design/icons";
 import CommentModal from "./Form/CommentModal";
 import { IoBookmark } from "react-icons/io5";
 import { CiBookmark } from "react-icons/ci";
@@ -251,21 +251,33 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             <button
               onClick={() => setIsCreatingPoem(true)}
               style={{
-                backgroundColor: "#007bff",
-                color: "white",
-                padding: "12px 20px",
-                borderRadius: "5px",
+                backgroundColor: "#b0a499",
+                color: "#ecf0f1",
+                padding: "12px 24px",
+                borderRadius: "30px",
                 border: "none",
-                fontWeight: "bold",
+                fontWeight: "600",
                 cursor: "pointer",
-                display: "block",
-                marginBottom: "20px",
-                transition: "background-color 0.3s",
-                ":hover": {
-                  backgroundColor: "#0056b3",
+                marginBottom: "25px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "0.9em",
+                '@media (max-width: 768px)': {
+                  padding: "10px 20px",
+                  fontSize: "0.8em",
+                  marginBottom: "20px"
+                },
+                ':hover': {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
+                  backgroundColor: "#34495e"
                 }
               }}
             >
+              <PlusOutlined />
               SÁNG TÁC THƠ
             </button>
           )}
@@ -417,12 +429,12 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                                 </Dropdown>
                               )}
                             </div>
-                          </div>
+                          </div> 
                         </div>
                       </div>
 
                       <p style={{ color: "#444", margin: "5px 0", fontSize: "0.85rem" }}>
-                        Thể loại: {poemType[poem.type]}
+                        Thể loại: {poem?.type?.name ?? ""}
                       </p>
                       <p style={{ color: "#444", fontSize: "0.85rem", margin: "5px 0", lineHeight: "1.4" }}>
                         Mô tả: {truncatedDescription}
