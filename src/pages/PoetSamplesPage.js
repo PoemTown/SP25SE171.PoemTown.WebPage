@@ -94,7 +94,7 @@ const PoetSamplesPage = () => {
             }
         } catch (err) {
             setError(err.response?.data?.message || err.message || 'Lỗi không xác định');
-            message.error('Có lỗi xảy ra khi tải dữ liệu: ' + 
+            message.error('Có lỗi xảy ra khi tải dữ liệu: ' +
                 (err.response?.data?.message || 'Vui lòng thử lại sau'));
         } finally {
             setLoading(false);
@@ -114,19 +114,19 @@ const PoetSamplesPage = () => {
         setPagination(prev => ({ ...prev, current: 1 }));
         fetchPoets();
     };
-    
+
     const navigate = useNavigate();
-    
+
     const formatDate = (dateString) => {
         if (!dateString) return 'Không rõ';
         const options = { year: 'numeric', month: 'short', day: 'numeric' };
         return new Date(dateString).toLocaleDateString('vi-VN', options);
     };
-    
+
     const isLoggedIn = !!localStorage.getItem('accessToken');
-    
+
     const getGenderLabel = (gender) => {
-        switch(gender?.toLowerCase()) {
+        switch (gender?.toLowerCase()) {
             case 'male': return 'Nam';
             case 'female': return 'Nữ';
             default: return 'Không rõ';
@@ -156,7 +156,7 @@ const PoetSamplesPage = () => {
 
         if (!loadingTitles && titleSamples.length > 0) {
             const poetTitleIds = poet.titleSamples.map(t => t.id);
-            const matchedTitles = titleSamples.filter(title => 
+            const matchedTitles = titleSamples.filter(title =>
                 poetTitleIds.includes(title.id));
 
             return matchedTitles
@@ -166,7 +166,7 @@ const PoetSamplesPage = () => {
                         icon: titleConfig.icon,
                         color: titleConfig.color,
                         tooltip: title.name,
-                        shortName: title.name.split(' ')[0]
+                        shortName: title.name
                     } : null;
                 })
                 .filter(Boolean);
@@ -338,9 +338,9 @@ const PoetSamplesPage = () => {
                                                             overflow: 'hidden'
                                                         }}
                                                         cover={
-                                                            <div style={{ 
-                                                                height: '220px', 
-                                                                overflow: 'hidden', 
+                                                            <div style={{
+                                                                height: '220px',
+                                                                overflow: 'hidden',
                                                                 position: 'relative'
                                                             }}>
                                                                 {poet.avatar ? (
@@ -372,7 +372,7 @@ const PoetSamplesPage = () => {
                                                                         />
                                                                     </div>
                                                                 )}
-                                                                
+
                                                                 {/* Badges display with horizontal scroll */}
                                                                 {badges.length > 0 && (
                                                                     <div style={{
@@ -381,7 +381,7 @@ const PoetSamplesPage = () => {
                                                                         left: '12px',
                                                                         right: '12px',
                                                                         display: 'flex',
-                                                                        gap: '8px',
+                                                                        gap: '10px', 
                                                                         overflowX: 'auto',
                                                                         paddingBottom: '8px',
                                                                         scrollbarWidth: 'none',
@@ -391,11 +391,12 @@ const PoetSamplesPage = () => {
                                                                             <Tooltip key={index} title={badge.tooltip}>
                                                                                 <Tag icon={badge.icon} color={badge.color} style={{
                                                                                     borderRadius: '20px',
-                                                                                    padding: '4px 12px',
+                                                                                    padding: '6px 14px', 
                                                                                     fontWeight: 600,
                                                                                     margin: 0,
                                                                                     flexShrink: 0,
-                                                                                    whiteSpace: 'nowrap'
+                                                                                    whiteSpace: 'nowrap',
+                                                                                    fontSize: '14px' 
                                                                                 }}>
                                                                                     {badge.shortName}
                                                                                 </Tag>
