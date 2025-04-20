@@ -149,7 +149,7 @@ const CollectionTab = ({ poet }) => {
                         </div>
                     </>
                 ) :
-                    <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                    <div style={{ padding: "0", maxWidth: "1200px" }}>
                         {hasPermission === true && (
                             <button
                                 onClick={handleChangeToCreate}
@@ -162,7 +162,8 @@ const CollectionTab = ({ poet }) => {
                                     fontWeight: "bold",
                                     cursor: "pointer",
                                     display: "block",
-                                    marginBottom: "20px",
+                                    marginTop: "10px",
+                                    marginLeft: "40px"
                                 }}
                             >
                                 BỘ SƯU TẬP MỚI

@@ -1,6 +1,16 @@
 import React from "react";
 
 const BiographyWithStats = ({ poet, achievements, userStatistic, isLoading }) => {
+    // Format date as DD-MM-YYYY
+    const formatDate = (dateString) => {
+        if (!dateString) return "Không rõ";
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = date.getFullYear();
+        return `${day}-${month}-${year}`;
+    };
+
     // Default styling values for the panels
     const achievementBorder = "#FFD700";
     const achievementTitleBackground = "linear-gradient(to right, #FFD700, #FFA500)";
@@ -28,11 +38,11 @@ const BiographyWithStats = ({ poet, achievements, userStatistic, isLoading }) =>
         }}>
             {/* Main Biography Content (Left Side) */}
             <div style={{ flex: 3 }}>
-                <BiographyTab poet={poet} />
+                <BiographyTab poet={poet} formatDate={formatDate} />
             </div>
 
             {/* Stats Panels (Right Side) */}
-            <div style={{ flex: 1, minWidth: "350px" }}>  {/* Tăng minWidth từ 300px lên 350px */}
+            <div style={{ flex: 1, minWidth: "350px" }}>
                 <div style={{ display: "flex", flexDirection: "column", gap: "30px", position: "sticky", top: "20px" }}>
                     {/* Thành tựu cá nhân */}
                     <div
@@ -186,7 +196,7 @@ const BiographyWithStats = ({ poet, achievements, userStatistic, isLoading }) =>
     );
 };
 
-const BiographyTab = ({ poet }) => {
+const BiographyTab = ({ poet, formatDate }) => {
     return (
         <div style={{
             backgroundColor: "#f5f7fa",
@@ -215,25 +225,25 @@ const BiographyTab = ({ poet }) => {
                 borderRadius: "16px",
                 boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
                 padding: "40px",
-                maxWidth: "1200px",  // Tăng maxWidth từ 1000px lên 1200px
+                maxWidth: "1200px",
                 width: "100%",
                 position: "relative",
                 zIndex: 1,
                 border: "1px solid rgba(0,0,0,0.05)"
             }}>
-                {/* Header with decorative elements - Điều chỉnh để tiêu đề lệch trái */}
+                {/* Header with decorative elements */}
                 <div style={{
-                    textAlign: "left",  // Thay đổi từ "center" sang "left"
+                    textAlign: "left",
                     marginBottom: "32px",
                     position: "relative",
-                    paddingLeft: "20px"  // Thêm padding-left để lệch trái rõ hơn
+                    paddingLeft: "20px"
                 }}>
                     <h2 style={{
                         fontSize: "28px",
                         fontWeight: 600,
                         color: "#2c3e50",
                         display: "inline-block",
-                        padding: "0 30px 0 0",  // Bỏ padding right để lệch trái
+                        padding: "0 30px 0 0",
                         background: "#fff",
                         position: "relative",
                         zIndex: 1,
@@ -265,7 +275,7 @@ const BiographyTab = ({ poet }) => {
                     {/* Left Column - Avatar and basic info */}
                     <div style={{
                         flex: "1",
-                        minWidth: "550px",  // Tăng minWidth từ 500px lên 550px
+                        minWidth: "550px",
                         padding: "20px",
                         backgroundColor: "#f8f9fa",
                         borderRadius: "12px",
@@ -365,7 +375,7 @@ const BiographyTab = ({ poet }) => {
                                             marginBottom: "2px"
                                         }}>Ngày sinh</div>
                                         <div style={{ fontWeight: "500" }}>
-                                            {poet?.dateOfBirth || "Không rõ"}
+                                            {formatDate(poet?.dateOfBirth) || "Không rõ"}
                                         </div>
                                     </div>
                                 </div>
@@ -435,7 +445,7 @@ const BiographyTab = ({ poet }) => {
                     {/* Right Column - Biography */}
                     <div style={{
                         flex: "2",
-                        minWidth: "350px"  // Tăng minWidth từ 300px lên 350px
+                        minWidth: "350px"
                     }}>
                         <div style={{ 
                             backgroundColor: "#fff",

@@ -6,14 +6,17 @@ import {
 } from "@mui/material";
 import { 
     Logout, LibraryBooks, Collections, Report, Notifications, 
-    ManageAccounts, Home
+    ManageAccounts, Home, Category
 } from "@mui/icons-material";
+import { Title as TitleIcon } from '@mui/icons-material'; // Ensure this is correct
+
 import ReportFromUser from "../Admin/Tabs/ReportFromUser";
 import PoemManagement from "../Admin/Tabs/PoemManagement";
 import PoetSamplesManagement from "../Admin/Tabs/PoetSamplesManagement";
 import CommunityCollectionManagement from "../Admin/Tabs/CommunityCollectionManagement";
 import AccountManagement from "../Admin/Tabs/AccountManagement";
-
+import PoemTypeManagement from "../Admin/Tabs/PoemTypeManagement";
+import TitleSamplesManagement from "../Admin/Tabs/TitleSamplesManagement"; 
 const drawerWidth = 280;
 
 const ModeratorPage = () => {
@@ -50,9 +53,11 @@ const ModeratorPage = () => {
                         { key: "reports", icon: <Report />, text: "Report Management" },
                         { key: "poems", icon: <LibraryBooks />, text: "Poem Management" },
                         { key: "poetsamples", icon: <Collections />, text: "PoetSamples Management" },
-                        { key: "community-collections", icon: <Collections />, text: "Community Collection Management" },
+                        // { key: "community-collections", icon: <Collections />, text: "Community Collection Management" },
                         { key: "users", icon: <ManageAccounts />, text: "User Management" },
-                        { key: "notifications", icon: <Notifications />, text: "Notification Management" },
+                        // { key: "notifications", icon: <Notifications />, text: "Notification Management" },
+                        { key: "poemtypes", icon: <Category />, text: "Poem Types" },
+                        { key: "titlesamples", icon: <TitleIcon />, text: "Title Samples" }, 
                     ].map((item) => (
                         <ListItem disablePadding key={item.key}>
                             <ListItemButton 
@@ -101,6 +106,8 @@ const ModeratorPage = () => {
                 {currentPage === "poetsamples" && <PoetSamplesManagement />}
                 {currentPage === "community-collections" && <CommunityCollectionManagement />}
                 {currentPage === "users" && <AccountManagement />}
+                {currentPage === "poemtypes" && <PoemTypeManagement />}
+                {currentPage === "titlesamples" && <TitleSamplesManagement />} 
             </Box>
         </Box>
     );

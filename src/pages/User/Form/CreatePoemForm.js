@@ -425,6 +425,13 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     };
 
     switch (poemType.name) {
+      case 'Thơ Tự Do':
+        const plainText = content.replace(/<br\s*\/?>/gi, '\n')
+          .replace(/<\/p>/gi, '\n')
+          .replace(/<[^>]+>/g, '')
+          .replace(/\n+/g, '\n');
+        return plainText.trim();
+
       case 'Thơ Lục Bát':
         let lucBatLines = [];
         let currentLine = [];

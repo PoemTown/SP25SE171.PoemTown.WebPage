@@ -108,7 +108,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
         const accessToken = localStorage.getItem('accessToken');
         try {
             const response = await fetch(
-                `https://api-poemtown-staging.nodfeather.win/api/poems/v1/${item.id}`,
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/${item.id}`,
                 {
                     method: 'DELETE',
                     headers: {
