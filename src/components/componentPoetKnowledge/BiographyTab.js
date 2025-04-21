@@ -97,46 +97,11 @@ const BiographyTab = ({ poet, formatDate }) => {
                             ))}
                         </div>
                         
-                        {/* Literary Style Section */}
-                        <div className="literary-style">
-                            <h3>
-                                <span className="icon-text">✍️</span>
-                                Phong cách sáng tác
-                            </h3>
-                            <div className="style-tags">
-                                <span className="tag">Trữ tình</span>
-                                <span className="tag">Lãng mạn</span>
-                                <span className="tag">Hiện thực</span>
-                                {poet?.style && <span className="tag">{poet.style}</span>}
-                            </div>
-                        </div>
+                      
                     </div>
                 </div>
 
-                {/* Famous Works Preview */}
-                <div className="works-preview">
-                    <h2>
-                        <span className="icon-text">📚</span>
-                        Tác phẩm tiêu biểu
-                    </h2>
-                    {/* <div className="works-grid">
-                        <div className="work-item">
-                            <div className="work-cover" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1544947950-fa07a98d237f?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')" }}></div>
-                            <h3>Tập thơ đầu tay</h3>
-                            <p>Năm xuất bản: 1990</p>
-                        </div>
-                        <div className="work-item">
-                            <div className="work-cover" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1589998059171-988d887df646?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')" }}></div>
-                            <h3>Trường ca cuộc đời</h3>
-                            <p>Năm xuất bản: 1995</p>
-                        </div>
-                        <div className="work-item">
-                            <div className="work-cover" style={{ backgroundImage: "url('https://images.unsplash.com/photo-1512820790803-83ca734da794?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80')" }}></div>
-                            <h3>Hồn quê</h3>
-                            <p>Năm xuất bản: 2002</p>
-                        </div>
-                    </div> */}
-                </div>
+              
             </div>
 
             {/* CSS Styles */}
