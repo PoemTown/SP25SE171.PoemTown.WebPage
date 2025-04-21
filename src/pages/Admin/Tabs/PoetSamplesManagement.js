@@ -922,14 +922,13 @@ const PoetSamplesManagement = () => {
             label={<Text strong>Tiểu sử</Text>}
             rules={[
               { required: true, message: 'Vui lòng nhập tiểu sử!' },
-              { max: 1000, message: 'Tiểu sử không được vượt quá 1000 ký tự' }
+              
             ]}
           >
             <TextArea
               rows={4}
               placeholder="Nhập tiểu sử nhà thơ..."
               showCount
-              maxLength={1000}
               style={{ resize: 'none' }}
             />
           </Form.Item>
