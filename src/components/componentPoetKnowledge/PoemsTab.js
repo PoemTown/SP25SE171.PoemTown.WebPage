@@ -160,7 +160,8 @@ const PoemsTab = ({ collections, poetId }) => {
                         cursor: "pointer",
                         display: "block",
                         marginTop: "10px",
-                        marginLeft: "40px"
+                        marginLeft: "40px",
+                        marginBottom: "40px"
                     }}
                 >
                     SÁNG TÁC THƠ

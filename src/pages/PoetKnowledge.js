@@ -13,6 +13,7 @@ import { Tooltip, Tag } from "antd";
 import BiographyTab from "../components/componentPoetKnowledge/BiographyTab";
 import PoemsTab from "../components/componentPoetKnowledge/PoemsTab";
 import CollectionTab from "../components/componentPoetKnowledge/CollectionTab";
+import Footer from "../components/Footer";
 
 const PoetKnowledge = () => {
     const { id } = useParams();
@@ -285,6 +286,7 @@ const PoetKnowledge = () => {
             }}>
                 {renderTabContent()}
             </div>
+            <Footer />
         </>
     );
 };
