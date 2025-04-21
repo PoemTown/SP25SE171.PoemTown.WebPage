@@ -30,7 +30,7 @@ import axios from 'axios';
 import Headeruser from '../components/Headeruser';
 import Headerdefault from '../components/Headerdefault';
 import { useNavigate } from 'react-router-dom';
-
+import Footer  from '../components/Footer'
 const { Title, Text, Paragraph } = Typography;
 
 const PoetSamplesPage = () => {
@@ -67,18 +67,19 @@ const PoetSamplesPage = () => {
         try {
             setLoading(true);
             const queryParams = new URLSearchParams();
-
+    
             if (searchQuery) {
-                queryParams.append('name', searchQuery);
+                queryParams.append('filterOptions.name', searchQuery); // Thay đổi từ 'name' thành 'filterOptions.name'
             }
-
+    
             queryParams.append('pageNumber', pagination.current);
             queryParams.append('pageSize', pagination.pageSize);
-
+    
             const response = await axios.get(
                 `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1?${queryParams.toString()}`
             );
-
+    
+            // Phần còn lại giữ nguyên
             if (response.data.statusCode === 200) {
                 setPoets(response.data.data);
                 setPagination(prev => ({
@@ -398,7 +399,6 @@ const PoetSamplesPage = () => {
                                                                                     whiteSpace: 'nowrap',
                                                                                     fontSize: '14px' 
                                                                                 }}>
-                                                                                    {badge.shortName}
                                                                                 </Tag>
                                                                             </Tooltip>
                                                                         ))}
@@ -491,20 +491,9 @@ const PoetSamplesPage = () => {
                         </>
                     )}
                 </div>
-
-                {/* Footer */}
-                <div style={{
-                    marginTop: '80px',
-                    padding: '40px 0',
-                    textAlign: 'center',
-                    color: '#666',
-                    borderTop: '1px solid #f0f0f0'
-                }}>
-                    <Text style={{ fontSize: '16px' }}>
-                        © {new Date().getFullYear()} Bộ sưu tập Thơ ca
-                    </Text>
-                </div>
+                
             </div>
+            <Footer />
         </div>
     );
 };

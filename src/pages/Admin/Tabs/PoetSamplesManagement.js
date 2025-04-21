@@ -59,6 +59,7 @@ const PoetSamplesManagement = () => {
     pageNumber: 1,
     pageSize: 12
   });
+  
   const [isCreateModalVisible, setIsCreateModalVisible] = useState(false);
   const [isEditModalVisible, setIsEditModalVisible] = useState(false);
   const [currentPoet, setCurrentPoet] = useState(null);
@@ -70,14 +71,6 @@ const PoetSamplesManagement = () => {
   const [previewImage, setPreviewImage] = useState('');
   const [editPreviewImage, setEditPreviewImage] = useState('');
   const navigate = useNavigate();
-
-  // Validate title samples selection
-  const validateTitleSamples = (_, value) => {
-    if (value && value.length > 2) {
-      return Promise.reject(new Error('Chỉ được chọn tối đa 2 chuyên môn!'));
-    }
-    return Promise.resolve();
-  };
 
   // Fetch poets data
   const fetchPoets = useCallback(async () => {
@@ -929,14 +922,13 @@ const PoetSamplesManagement = () => {
             label={<Text strong>Tiểu sử</Text>}
             rules={[
               { required: true, message: 'Vui lòng nhập tiểu sử!' },
-              { max: 1000, message: 'Tiểu sử không được vượt quá 1000 ký tự' }
+              
             ]}
           >
             <TextArea
               rows={4}
               placeholder="Nhập tiểu sử nhà thơ..."
               showCount
-              maxLength={1000}
               style={{ resize: 'none' }}
             />
           </Form.Item>
@@ -944,10 +936,7 @@ const PoetSamplesManagement = () => {
           <Form.Item
             name="titleSampleIds"
             label={<Text strong>Chuyên môn thơ</Text>}
-            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ (tối đa 2)</Text>}
-            rules={[
-              { validator: validateTitleSamples }
-            ]}
+            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ</Text>}
           >
             <Select
               mode="multiple"
@@ -955,8 +944,6 @@ const PoetSamplesManagement = () => {
               size="large"
               loading={titleSamplesLoading}
               optionFilterProp="label"
-              maxTagCount={2}
-              maxTagTextLength={10}
               filterOption={(input, option) =>
                 option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
@@ -1072,14 +1059,12 @@ const PoetSamplesManagement = () => {
             label={<Text strong>Tiểu sử</Text>}
             rules={[
               { required: true, message: 'Vui lòng nhập tiểu sử!' },
-              { max: 1000, message: 'Tiểu sử không được vượt quá 1000 ký tự' }
             ]}
           >
             <TextArea
               rows={4}
               placeholder="Nhập tiểu sử nhà thơ..."
               showCount
-              maxLength={1000}
               style={{ resize: 'none' }}
             />
           </Form.Item>
@@ -1087,10 +1072,7 @@ const PoetSamplesManagement = () => {
           <Form.Item
             name="titleSampleIds"
             label={<Text strong>Chuyên môn thơ</Text>}
-            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ (tối đa 2)</Text>}
-            rules={[
-              { validator: validateTitleSamples }
-            ]}
+            extra={<Text type="secondary">Chọn các chuyên môn thơ của nhà thơ</Text>}
           >
             <Select
               mode="multiple"
@@ -1098,8 +1080,6 @@ const PoetSamplesManagement = () => {
               size="large"
               loading={titleSamplesLoading}
               optionFilterProp="label"
-              maxTagCount={2}
-              maxTagTextLength={10}
               filterOption={(input, option) =>
                 option.label.toLowerCase().indexOf(input.toLowerCase()) >= 0
               }
