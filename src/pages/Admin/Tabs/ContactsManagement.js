@@ -8,7 +8,7 @@ import {
 } from '@mui/material';
 import { Edit, Delete, Add, CloudUpload } from '@mui/icons-material';
 
-const API_URL = 'https://api-poemtown-staging.nodfeather.win/api/system-contacts/v1';
+const API_URL = `${process.env.REACT_APP_API_BASE_URL}/system-contacts/v1`;
 const ICON_UPLOAD_URL = `${API_URL}/icon`;
 
 const ContactsManagement = () => {
