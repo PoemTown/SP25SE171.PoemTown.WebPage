@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 import { useSignalR } from "../SignalR/SignalRContext";
+import { message, Button, Spin } from "antd";
+import { LoadingOutlined } from '@ant-design/icons';
+
 
 const LoginPage = () => {
     const [formData, setFormData] = useState({ email: "", password: "" });
@@ -10,9 +13,13 @@ const LoginPage = () => {
     const [forgotEmail, setForgotEmail] = useState("");
     const [forgotPasswordMessage, setForgotPasswordMessage] = useState("");
     const [isSending, setIsSending] = useState(false);
-
+    const [touched, setTouched] = useState({
+        email: false,
+        password: false,
+    });
+    const [loading, setLoading] = useState(false);
     // SignalR
-    const {createAnnouncementConnection } = useSignalR();
+    const { createAnnouncementConnection } = useSignalR();
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -45,6 +52,7 @@ const LoginPage = () => {
     };
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setLoading(true); // Start loading
 
         try {
             const response = await axios.post(
@@ -53,7 +61,7 @@ const LoginPage = () => {
             );
 
             if (response.status === 200) {
-                const { accessToken, refreshToken, role,avatar } = response.data.data;
+                const { accessToken, refreshToken, role, avatar } = response.data.data;
 
                 localStorage.setItem("accessToken", accessToken);
                 localStorage.setItem("refreshToken", refreshToken);
@@ -80,152 +88,201 @@ const LoginPage = () => {
             }
         } catch (err) {
             console.error("Login failed:", err.response?.data || err.message);
-            setError("Email hoặc mật khẩu không chính xác.");
+            if (err.response.data.statusCode === 401) {
+                switch (err.response.data.errorMessage) {
+                    case "Password is incorrect":
+                        message.error("Mật khẩu không chính xác.");
+                        break;
+                    case "User not found":
+                        message.error("Người đùng không tồn tại");
+                        break;
+                    default:
+                        message.error("Email hoặc mật khẩu không chính xác");
+                        break;
+                }
+            }
+            else {
+                message.error("Đã có lỗi xảy ra, vui lòng thử lại sau !");
+
+            }
+        } finally {
+            setLoading(false);
         }
     };
 
+
     return (
-        <div style={styles.loginContainer}>
-            {/* Left Section */}
-            <div style={styles.loginFormContainer}>
-                <h1 style={styles.loginTitle}>Chào mừng quay lại!</h1>
-                <p style={styles.loginSubtitle}>Mời bạn điền thông tin để đăng nhập</p>
+        <Spin spinning={loading} size="large" tip="Đang đăng nhập..." style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+            <div style={styles.loginContainer}>
+                {/* Left Section */}
+                <div style={styles.loginFormContainer}>
+                    <h1 style={styles.loginTitle}>Chào mừng quay lại!</h1>
+                    <p style={styles.loginSubtitle}>Mời bạn điền thông tin để đăng nhập</p>
 
-                {/* Form */}
-                <form onSubmit={handleSubmit}>
-                    <div style={styles.formGroup}>
-                        <label style={styles.label} htmlFor="email">
-                            Địa chỉ email
-                        </label>
-                        <input
-                            id="email"
-                            name="email"
-                            type="email"
-                            placeholder="Nhập email"
-                            style={styles.formInput}
-                            value={formData.email}
-                            onChange={handleInputChange}
-                        />
-                    </div>
 
-                    <div style={styles.formGroup}>
-                        <label style={styles.label} htmlFor="password">
-                            Mật khẩu
-                        </label>
-                        <input
-                            id="password"
-                            name="password"
-                            type="password"
-                            placeholder="Nhập mật khẩu"
-                            style={styles.formInput}
-                            value={formData.password}
-                            onChange={handleInputChange}
-                        />
-                    </div>
-
-                    {error && <p style={styles.error}>{error}</p>}
-
-                    <div style={{ textAlign: "center", marginBottom: "20px", width: "100%" }}>
-                        <button
-                            type="button"
-                            style={{
-                                background: "none",
-                                border: "none",
-                                color: "#007bff",
-                                textDecoration: "underline",
-                                cursor: "pointer",
-                                fontSize: "0.9rem",
-                            }}
-                            onClick={() => setForgotPasswordPopupOpen(true)}
-                        >
-                            Quên mật khẩu?
-                        </button>
-                    </div>
-
-                    <button type="submit" style={styles.loginButton}>
-                        Đăng nhập
-                    </button>
-                </form>
-
-                {/* Forgot Password Popup */}
-                {isForgotPasswordPopupOpen && (
-                    <div style={styles.popupOverlay}>
-                        <div style={styles.popup}>
-                            <h2>Khôi phục mật khẩu</h2>
-                            <p>Nhập địa chỉ email của bạn để nhận liên kết khôi phục mật khẩu:</p>
+                    {/* Form */}
+                    <form onSubmit={handleSubmit}>
+                        <div style={styles.formGroup}>
+                            <label style={styles.label} htmlFor="email">
+                                Địa chỉ email
+                            </label>
                             <input
+                                id="email"
+                                name="email"
                                 type="email"
                                 placeholder="Nhập email"
                                 style={styles.formInput}
-                                value={forgotEmail}
-                                onChange={(e) => setForgotEmail(e.target.value)}
+                                value={formData.email}
+                                onBlur={() => setTouched({ ...touched, email: true })}
+                                onChange={handleInputChange}
                             />
+                            {touched.email && formData.email === '' && (
+                                <p style={{ color: 'red', marginTop: 4 }}>Email không được để trống.</p>
+                            )}
+                        </div>
+
+                        <div style={styles.formGroup}>
+                            <label style={styles.label} htmlFor="password">
+                                Mật khẩu
+                            </label>
+                            <input
+                                id="password"
+                                name="password"
+                                type="password"
+                                placeholder="Nhập mật khẩu"
+                                style={styles.formInput}
+                                value={formData.password}
+                                onBlur={() => setTouched({ ...touched, password: true })}
+                                onChange={handleInputChange}
+                            />
+                            {touched.password && formData.password === '' && (
+                                <p style={{ color: 'red', marginTop: 4 }}>Mật khẩu không được để trống.</p>
+                            )}
+                        </div>
+
+                        {error && <p style={styles.error}>{error}</p>}
+
+                        <div style={{ textAlign: "center", marginBottom: "20px", width: "100%" }}>
                             <button
-                                style={styles.loginButton}
-                                onClick={handleForgotPassword}
-                                disabled={isSending}
+                                type="button"
+                                style={{
+                                    background: "none",
+                                    border: "none",
+                                    color: "#007bff",
+                                    textDecoration: "underline",
+                                    cursor: "pointer",
+                                    fontSize: "0.9rem",
+                                }}
+                                onClick={() => setForgotPasswordPopupOpen(true)}
                             >
-                                {isSending ? (
-                                    <span className="spinner"></span>
-                                ) : (
-                                    "Gửi"
-                                )}
-                            </button>
-                            <p style={forgotPasswordMessage.includes("được gửi") ? styles.successMessage : styles.error}>
-                                {forgotPasswordMessage}
-                            </p>
-                            <button
-                                style={styles.homeButton}
-                                onClick={() => setForgotPasswordPopupOpen(false)}
-                            >
-                                Đóng
+                                Quên mật khẩu?
                             </button>
                         </div>
-                    </div>
-                )}
 
-                {/* Divider */}
-                <div style={styles.divider}>
-                    <span style={styles.dividerLine}></span>
-                    <span style={styles.dividerText}>or</span>
-                    <span style={styles.dividerLine}></span>
+                        <Button
+                            type="primary"
+                            htmlType="submit"
+                            disabled={!formData.email || !formData.password}
+                            style={{
+                                ...styles.loginButton,
+                                opacity: formData.email === '' || formData.password === '' ? 0.5 : 1,
+                                cursor: formData.email === '' || formData.password === '' ? 'not-allowed' : 'pointer',
+                            }}
+                        >
+                            Đăng nhập
+                        </Button>
+                        {/* <button type="submit" style={{
+                        ...styles.loginButton,
+                        opacity: formData.email === '' || formData.password === '' ? 0.5 : 1,
+                        cursor: formData.email === '' || formData.password === '' ? 'not-allowed' : 'pointer',
+                    }}
+                        disabled={formData.email === '' || formData.password === ''}>
+                        Đăng nhập
+                    </button> */}
+                    </form>
+
+                    {/* Forgot Password Popup */}
+                    {isForgotPasswordPopupOpen && (
+                        <div style={styles.popupOverlay}>
+                            <div style={styles.popup}>
+                                <h2>Khôi phục mật khẩu</h2>
+                                <p>Nhập địa chỉ email của bạn để nhận liên kết khôi phục mật khẩu:</p>
+                                <input
+                                    type="email"
+                                    placeholder="Nhập email"
+                                    style={styles.formInput}
+                                    value={forgotEmail}
+                                    onChange={(e) => setForgotEmail(e.target.value)}
+                                />
+                                <button
+                                    style={styles.loginButton}
+                                    onClick={handleForgotPassword}
+                                    disabled={isSending}
+                                >
+                                    {isSending ? (
+                                        <span className="spinner"></span>
+                                    ) : (
+                                        "Gửi"
+                                    )}
+                                </button>
+                                <p style={forgotPasswordMessage.includes("được gửi") ? styles.successMessage : styles.error}>
+                                    {forgotPasswordMessage}
+                                </p>
+                                <button
+                                    style={styles.homeButton}
+                                    onClick={() => setForgotPasswordPopupOpen(false)}
+                                >
+                                    Đóng
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Divider */}
+                    <div style={styles.divider}>
+                        <span style={styles.dividerLine}></span>
+                        <span style={styles.dividerText}>or</span>
+                        <span style={styles.dividerLine}></span>
+                    </div>
+
+                    {/* Google Login */}
+                    <button style={styles.googleButton}>
+                        <img
+                            src="./GGicon.png"
+                            alt="Google Logo"
+                            style={styles.googleIcon}
+                        />
+                        Đăng nhập với Google
+                    </button>
+
+                    {/* Home Link */}
+                    <button
+                        style={styles.homeButton}
+                        onClick={() => (window.location.href = "/")}
+                    >
+                        Quay về trang chủ
+                    </button>
+
+                    {/* Signup Link */}
+                    <p style={styles.signupLink}>
+                        Chưa có tài khoản?{" "}
+                        <a href="/signup" style={styles.signupLinkHighlight}>
+                            Đăng ký ngay!
+                        </a>
+                    </p>
                 </div>
 
-                {/* Google Login */}
-                <button style={styles.googleButton}>
-                    <img
-                        src="./GGicon.png"
-                        alt="Google Logo"
-                        style={styles.googleIcon}
-                    />
-                    Đăng nhập với Google
-                </button>
+                {/* Right Section */}
+                <div
+                    style={{
+                        ...styles.loginImageContainer,
+                        backgroundImage: `url('./Login.jpg')`,
+                    }}
+                ></div>
 
-                {/* Home Link */}
-                <button
-                    style={styles.homeButton}
-                    onClick={() => (window.location.href = "/")}
-                >
-                    Quay về trang chủ
-                </button>
-
-                {/* Signup Link */}
-                <p style={styles.signupLink}>
-                    Chưa có tài khoản?{" "}
-                    <a href="/signup" style={styles.signupLinkHighlight}>
-                        Đăng ký ngay!
-                    </a>
-                </p>
             </div>
+        </Spin>
 
-            {/* Right Section */}
-            <div
-                style={{
-                    ...styles.loginImageContainer,
-                    backgroundImage: `url('./Login.jpg')`,
-                }}
-            ></div>
-        </div>
     );
 };
 
