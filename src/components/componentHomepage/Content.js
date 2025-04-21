@@ -36,12 +36,14 @@ const Content = ({ activeTab }) => {
   const [userLeaderBoard, setUserLeaderBoard] = useState({ topUsers: [] });
   const [isLeaderboardUserModalVisible, setIsLeaderboardUserModalVisible] = useState(false);
   const [isLeaderboardPoemModalVisible, setIsLeaderboardPoemModalVisible] = useState(false);
+  const [dailyMessage, setDailyMessage] = useState("Nổ lực hết mình để đạt được thành quả tốt nhất!!!");
+  const [isLoadingDailyMessage, setIsLoadingDailyMessage] = useState(false);
+  const [errorDailyMessage, setErrorDailyMessage] = useState(null);
 
   const accessToken = localStorage.getItem("accessToken");
   const [hoveredUserLdb, setHoveredUserLdb] = useState(null);
 
   const navigate = useNavigate();
-
 
   // ── Famous poets ─────────────────────────────────────────────────
   const [famousPoets, setFamousPoets] = useState([]);
@@ -53,7 +55,7 @@ const Content = ({ activeTab }) => {
     poetChunks.push(famousPoets.slice(i, i + 3));
   }
 
-  // 2️⃣ Keep track of which chunk we’re on
+  // 2️⃣ Keep track of which chunk we're on
   const [currentChunkIdx, setCurrentChunkIdx] = useState(0);
   useEffect(() => {
     if (poetChunks.length < 2) return;
@@ -62,6 +64,24 @@ const Content = ({ activeTab }) => {
     }, 5000);
     return () => clearInterval(timer);
   }, [poetChunks]);
+
+  const fetchDailyMessage = async () => {
+    setIsLoadingDailyMessage(true);
+    setErrorDailyMessage(null);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/daily-messages/v1/in-use`
+      );
+      if (!response.ok) throw new Error('Không lấy được thông điệp');
+      const json = await response.json();
+      setDailyMessage(json.data.message || "Nổ lực hết mình để đạt được thành quả tốt nhất!!!");
+    } catch (err) {
+      setErrorDailyMessage(err.message);
+      console.error("Error fetching daily message:", err);
+    } finally {
+      setIsLoadingDailyMessage(false);
+    }
+  };
 
   useEffect(() => {
     const fetchFamous = async () => {
@@ -81,8 +101,8 @@ const Content = ({ activeTab }) => {
       }
     };
     fetchFamous();
+    fetchDailyMessage();
   }, []);
-
 
   const showModal = () => {
     setIsModalOpen(true);
@@ -189,12 +209,10 @@ const Content = ({ activeTab }) => {
     fetchData(`${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem?pageNumber=${currentPage}&pageSize=${pageSize}`);
   };
 
-
   const handleChangeToBookmarkCollection = () => {
     setIsBookmarkCollectionTab(true)
     fetchData(`${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/collection?pageNumber=${currentPage}&pageSize=${pageSize}`);
   }
-
 
   const handleLike = async (postId) => {
     if (isLoggedIn === false) {
@@ -215,7 +233,6 @@ const Content = ({ activeTab }) => {
           ...prev,
           [postId]: !isCurrentlyLiked
         }));
-
 
         setData(prevData => prevData.map(item =>
           item.id === postId ? {
@@ -245,7 +262,6 @@ const Content = ({ activeTab }) => {
 
       if (!response.ok) {
         message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
-
       }
 
       const data = await response.json();
@@ -269,7 +285,6 @@ const Content = ({ activeTab }) => {
         } else if (apiUrl.includes('/record-files/')) {
           setRecord(data.data)
           setData([]); // Clear poem data
-
           setCollections([]);
         } else {
           // Handle poems data
@@ -284,7 +299,6 @@ const Content = ({ activeTab }) => {
           setData(data.data);
           setCollections([]); // Clear collection data
           setRecord([]);// Clear record data
-
         }
       }
     } catch (error) {
@@ -325,12 +339,6 @@ const Content = ({ activeTab }) => {
         setTitle("");
         setIsCommunity(false);
         break;
-      // case "community":
-      //   apiUrl = `${process.env.REACT_APP_API_BASE_URL}/collections/v1/community?pageNumber=${currentPage}&pageSize=${pageSize}`;
-      //   setIsBookmarkTab(false);
-      //   setTitle("Hãy cùng nhau chung tay đóng góp cho cộng đồng Thị trấn thơ 🏡")
-      //   setIsCommunity(true);
-      //   break;
       case "audioread":
         apiUrl = `${process.env.REACT_APP_API_BASE_URL}/record-files/v1/all?pageNumber=${currentPage}&pageSize=${pageSize}`;
         setIsBookmarkTab(false);
@@ -364,7 +372,6 @@ const Content = ({ activeTab }) => {
 
       if (!response.ok) {
         message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
-
       }
 
       const data = await response.json();
@@ -386,7 +393,6 @@ const Content = ({ activeTab }) => {
 
       if (!response.ok) {
         message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
-
       }
 
       const data = await response.json();
@@ -423,15 +429,23 @@ const Content = ({ activeTab }) => {
       {!isBookmarkTab && (
         <div style={styles.idea}>
           <p style={{ fontWeight: "bold", marginTop: "5px", marginLeft: "10px" }}>Thông điệp của ngày: </p>
-          <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>Nổ lực hết mình để đạt được thành quả tốt nhất!!!</p>
+          {isLoadingDailyMessage ? (
+            <Spin size="small" />
+          ) : errorDailyMessage ? (
+            <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>
+              Nổ lực hết mình để đạt được thành quả tốt nhất!!!
+            </p>
+          ) : (
+            <p style={{ flexGrow: 1, textAlign: "center", alignSelf: "center" }}>
+              {dailyMessage}
+            </p>
+          )}
         </div>
       )}
       <div style={{display: "flex", flexDirection: "row"}}>
-        
         <div>
           <h2 style={styles.contentTitle}>{title}</h2>
         </div>
-        
       </div>
       <div className="contentContainer">
         <Modal open={isModalOpen} onCancel={handleCancel} footer={() => (
@@ -442,21 +456,16 @@ const Content = ({ activeTab }) => {
             <button style={styles.loginButton} onClick={handleLogin}>
               Đăng nhập
             </button>
-
           </>
         )}>
-
           <h2 style={{ textAlign: "center", color: "red", fontSize: "1.8rem" }}>Vui lòng đăng nhập để sử dụng</h2>
           <img alt="Access Denied" style={{ margin: "0 15%", width: "70%" }} src="./access_denied_nofitication.png" />
         </Modal>
 
-
-
         <div style={styles.FamousPoetColumn}>
           {errorFamousPoets && (
             <div style={styles.error}>Lỗi: {errorFamousPoets}</div>
-          )
-          }
+          )}
           <Card
             title={<Title level={2} style={{ fontWeight: 'bold', fontSize: '1rem' }}>Các nhà thơ nổi tiếng 🎓</Title>}
             bordered={false}
@@ -509,7 +518,6 @@ const Content = ({ activeTab }) => {
           </Card>
         </div>
 
-
         <div style={styles.leftColumn}>
           <div style={styles.poemsList}>
             {isLoading && (
@@ -561,12 +569,6 @@ const Content = ({ activeTab }) => {
                     isCommunity={isCommunity}
                   />
                 ))}
-                {/* {records.map((item) => (
-                  <RecordCard
-                    key={item.id}
-                    record={item}
-                  />
-                ))} */}
                 <RecordListGroupedByPoem
                   records={records}
                 />
@@ -835,14 +837,12 @@ const styles = {
     padding: 16
   },
 
-  // outer box that holds all chunks stacked
   carouselContainer: {
     position: 'relative',
     height: "700px",
     width: '100%',
   },
 
-  // each chunk (group of 3) is absolute, covering the container
   slideChunk: {
     display: "flex",
     flexDirection: "column",
@@ -878,8 +878,8 @@ const styles = {
     width: "84px",
     maxWidth: "84px",
     height: "100%",
-    objectFit: "cover", // This will prevent stretching
-    objectPosition: "center" // Center the image
+    objectFit: "cover",
+    objectPosition: "center"
   },
 
   idea: {

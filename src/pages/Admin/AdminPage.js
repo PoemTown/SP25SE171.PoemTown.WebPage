@@ -8,7 +8,8 @@ import {
     Dashboard, Logout, Gavel, Assignment, ReceiptLong, ManageAccounts, 
     LibraryBooks, Collections, Report, Notifications, ShoppingCart, Home, Wallet,
     Category, Group, Description, MonetizationOn, CollectionsBookmark, 
-    RateReview, RequestQuote, PeopleAlt, Title as TitleIcon
+    RateReview, RequestQuote, PeopleAlt, Title as TitleIcon, ContactMail,
+    Article, Chat // New icons for Contents and DailyMessages
 } from "@mui/icons-material";
 import TransactionsManagement from "./Tabs/TransactionsManagement";
 import OrderManagement from "./Tabs/OrderManagement";
@@ -22,7 +23,10 @@ import PoetSamplesManagement from "./Tabs/PoetSamplesManagement";
 import CommunityCollectionManagement from "./Tabs/CommunityCollectionManagement";
 import RequestFromUser from "./Tabs/RequestFromUser";
 import PoemTypeManagement from "./Tabs/PoemTypeManagement";
-import TitleSamplesManagement from "./Tabs/TitleSamplesManagement"; 
+import TitleSamplesManagement from "./Tabs/TitleSamplesManagement";
+import ContactsManagement from "./Tabs/ContactsManagement";
+import ContentsManagement from "./Tabs/ContentsManagement"; 
+import DailyMessagesManagement from "./Tabs/DailyMessagesManagement";
 
 const drawerWidth = 280;
 
@@ -72,7 +76,9 @@ const AdminPage = () => {
                         { key: "poemtypes", icon: <Category />, text: "Poem Types" },
                         { key: "titlesamples", icon: <TitleIcon />, text: "Title Samples" }, 
                         { key: "poetsamples", icon: <CollectionsBookmark />, text: "Poet Samples" },
-                        // { key: "community-collections", icon: <Group />, text: "Community Collections" },
+                        { key: "contents", icon: <Article />, text: "Contents" }, // New menu item
+                        { key: "dailymessages", icon: <Chat />, text: "Daily Messages" }, // New menu item
+                        { key: "contacts", icon: <ContactMail />, text: "Contacts" },
                         { key: "reports", icon: <RateReview />, text: "User Reports" },
                         { key: "requests", icon: <RequestQuote />, text: "User Requests" },
                         { key: "notifications", icon: <Notifications />, text: "Notifications" },
@@ -137,7 +143,7 @@ const AdminPage = () => {
 
             <Box sx={{ flexGrow: 1, p: 3 }}>
                 <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
-                    {currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace('-', ' ')}
+                    {currentPage.charAt(0).toUpperCase() + currentPage.slice(1).replace(/([A-Z])/g, ' $1').trim()}
                 </Typography>
                 {currentPage === "transactions" && <TransactionsManagement />}
                 {currentPage === "orders" && <OrderManagement />}
@@ -151,7 +157,10 @@ const AdminPage = () => {
                 {currentPage === "community-collections" && <CommunityCollectionManagement />}
                 {currentPage === "poetsamples" && <PoetSamplesManagement />}
                 {currentPage === "poemtypes" && <PoemTypeManagement />}
-                {currentPage === "titlesamples" && <TitleSamplesManagement />} 
+                {currentPage === "titlesamples" && <TitleSamplesManagement />}
+                {currentPage === "contents" && <ContentsManagement />} =
+                {currentPage === "dailymessages" && <DailyMessagesManagement />} 
+                {currentPage === "contacts" && <ContactsManagement />}
             </Box>
         </Box>
     );
