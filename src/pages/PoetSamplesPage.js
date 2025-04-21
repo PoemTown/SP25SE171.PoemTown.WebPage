@@ -30,7 +30,7 @@ import axios from 'axios';
 import Headeruser from '../components/Headeruser';
 import Headerdefault from '../components/Headerdefault';
 import { useNavigate } from 'react-router-dom';
-
+import Footer  from '../components/Footer'
 const { Title, Text, Paragraph } = Typography;
 
 const PoetSamplesPage = () => {
@@ -491,20 +491,9 @@ const PoetSamplesPage = () => {
                         </>
                     )}
                 </div>
-
-                {/* Footer */}
-                <div style={{
-                    marginTop: '80px',
-                    padding: '40px 0',
-                    textAlign: 'center',
-                    color: '#666',
-                    borderTop: '1px solid #f0f0f0'
-                }}>
-                    <Text style={{ fontSize: '16px' }}>
-                        © {new Date().getFullYear()} Bộ sưu tập Thơ ca
-                    </Text>
-                </div>
+                
             </div>
+            <Footer />
         </div>
     );
 };
