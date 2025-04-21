@@ -1,7 +1,46 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { FaFacebook, FaInstagram, FaDiscord, FaEnvelope, FaHeart } from "react-icons/fa";
 
 const Footer = () => {
+  const [contacts, setContacts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchContacts = async () => {
+      try {
+        const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/system-contacts/v1");
+        if (!response.ok) {
+          throw new Error("Failed to fetch contact information");
+        }
+        const data = await response.json();
+        setContacts(data.data);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchContacts();
+  }, []);
+
+  // Function to render appropriate icon based on contact name
+  const renderIcon = (name) => {
+    switch (name.toLowerCase()) {
+      case 'facebook':
+        return <FaFacebook className="social-icon" />;
+      case 'instagram':
+        return <FaInstagram className="social-icon" />;
+      case 'discord':
+        return <FaDiscord className="social-icon" />;
+      case 'email':
+        return <FaEnvelope className="social-icon" />;
+      default:
+        return null;
+    }
+  };
+
   return (
     <footer className="footer-container">
       <div className="footer-content">
@@ -9,21 +48,27 @@ const Footer = () => {
         <div className="footer-column">
           <h4 className="footer-heading">Thông tin liên hệ</h4>
           <div className="social-icons">
-            <a href="#" aria-label="Facebook" className="icon-link">
-              <FaFacebook className="social-icon" />
-            </a>
-            <a href="#" aria-label="Instagram" className="icon-link">
-              <FaInstagram className="social-icon" />
-            </a>
-            <a href="#" aria-label="Discord" className="icon-link">
-              <FaDiscord className="social-icon" />
-            </a>
-            <a href="#" aria-label="Email" className="icon-link">
-              <FaEnvelope className="social-icon" />
-            </a>
+            {loading ? (
+              <p>Loading...</p>
+            ) : error ? (
+              <p>Error loading contacts</p>
+            ) : (
+              contacts.map((contact) => (
+                <a
+                  key={contact.id}
+                  href={contact.description}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={contact.name}
+                  className="icon-link"
+                >
+                  {renderIcon(contact.name)}
+                </a>
+              ))
+            )}
           </div>
           <p className="contact-info">
-            Email: info@poemtown.com<br />
+            Email: petalakapetservice@gmail.com<br />
             Hotline: 1900 1234
           </p>
         </div>
