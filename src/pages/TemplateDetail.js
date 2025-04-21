@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Headeruser from "../components/Headeruser";
 import Headerdefault from "../components/Headerdefault";
-import { Button, message } from "antd";
+import { Button, message, Modal } from "antd";
 import { HiUsers } from "react-icons/hi2";
 import { FaCheck, FaUserPlus } from "react-icons/fa";
 
@@ -16,6 +16,8 @@ const TemplateDetail = () => {
     const [hoverBuy, setHoverBuy] = useState(false);
     const [imagesLoaded, setImagesLoaded] = useState(false);
     const [isBought, setIsBought] = useState(false);
+    const location = useLocation();
+    const { price } = location.state || {};
     // For header (type 1)
     const [headerbackground, setHeaderBackground] = useState(null);
     const [headerColorCode, setHeaderColorCode] = useState("#000");
@@ -199,7 +201,17 @@ const TemplateDetail = () => {
         console.log(response)
         const data = await response.json();
         message.success(data.message);
+        setTimeout(() => {
+            navigate(-1);  // Quay lại trang trước
+        }, 2000);
     }
+
+    const handleBuyClick = () => {
+        Modal.confirm({
+          title: `Bạn chắc chắn muốn mua bản thiết kế này với giá ${price.toLocaleString("vi-VN")}₫`,
+          onOk: handleBuyTemplate, // Gọi hàm mua khi người dùng nhấn "OK"
+        });
+      };
 
     const buttonStyle = {
         backgroundColor: hover ? "white" : "blue",
@@ -398,9 +410,9 @@ const TemplateDetail = () => {
                             style={buyButtonStyle}
                             onMouseEnter={() => setHoverBuy(true)}
                             onMouseLeave={() => setHoverBuy(false)}
-                            onClick={handleBuyTemplate}
+                            onClick={handleBuyClick}
                         >
-                            Mua bản thiết kế này
+                            Mua bản thiết kế này 
                         </button>
                     }
                 </div>

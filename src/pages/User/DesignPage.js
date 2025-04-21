@@ -14,7 +14,9 @@ import { createStyles } from "antd-style";
 import { useNavigate } from "react-router-dom";
 import { DoubleRightOutlined } from "@ant-design/icons";
 
+
 const useStyle = createStyles(({ prefixCls, css }) => ({
+
     linearGradientButton: css`
       &.${prefixCls}-btn-primary:not([disabled]):not(.${prefixCls}-btn-dangerous) {
         > span {
@@ -32,7 +34,7 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
         }
   
         &:hover::before {
-          opacity: 0;
+          opacity: 0; 
         }
       }
     `,
@@ -41,7 +43,6 @@ const useStyle = createStyles(({ prefixCls, css }) => ({
 const DesignPage = () => {
     const { styles } = useStyle();
     const navigate = useNavigate();
-
     const [userData, setUserData] = useState({
         displayName: "Anonymous",
         email: "",
@@ -595,9 +596,14 @@ const DesignPage = () => {
                     {/* Left Column */}
                     <div style={{
                         flex: 7,
-                        border: isHoverThemeEdit ? "1px solid #ddd" : "none",
-                        backgroundColor: isHoverThemeEdit ? "#ffffff" : "#ffffff00",
-                        padding: "20px"
+                        border: "2px solid #e0d8c5",
+                        backgroundColor: "#f9f7f1",
+                        padding: "24px",
+                        borderRadius: "16px",
+                        transition: "all 0.3s ease",
+                        boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
+                        position: 'relative',
+                        overflow: 'hidden',
                     }}
                         onMouseEnter={() => {
                             setIsHoverThemeEdit(true);
@@ -609,78 +615,227 @@ const DesignPage = () => {
                         }}
                         onClick={e => e.stopPropagation()}
                     >
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", }}>
-                            <h3 style={{ fontWeight: "bold", marginTop: 0 }}>Bản mẫu của bạn</h3>
-                            {/* Settings icon or modal trigger */}
-                        </div>
-                        <label>Tên</label>
-                        <input
-                            type="text"
-                            value={myInUseTemplate ? myInUseTemplate.name : "Name of Template"}
-                            readOnly
-                            style={{ display: "block", margin: "10px 0", padding: "15px", width: "96%" }}
-                        />
-                        <div style={{ display: "flex", overflowX: "auto", gap: "10px", paddingBottom: "10px" }}>
-                            {templates.map((template) => (
-                                <button
-                                    key={template.id}
-                                    onClick={() => handleSelectTemplate(template.id, template.name)}
+                        <div style={{ position: 'relative', zIndex: 1 }}>
+                            {/* Header */}
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "space-between",
+                                alignItems: "center",
+                                marginBottom: "24px",
+                                borderBottom: "2px solid #d4c9b1",
+                                paddingBottom: "16px"
+                            }}>
+                                <h3 style={{
+                                    fontWeight: 600,
+                                    margin: 0,
+                                    fontSize: "1.75rem",
+                                    fontFamily: "'Crimson Pro', serif",
+                                    color: "#5d4737",
+                                    letterSpacing: "0.05em"
+                                }}>
+                                    📜 Bản Mẫu Thơ
+                                </h3>
+                            </div>
+
+                            {/* Template Name Input */}
+                            <div style={{ marginBottom: "24px" }}>
+                                <label style={{
+                                    display: "block",
+                                    marginBottom: "8px",
+                                    color: "#7a6856",
+                                    fontSize: "0.95rem",
+                                    fontStyle: "italic"
+                                }}>
+                                    Tên bản mẫu
+                                </label>
+                                <input
+                                    type="text"
+                                    value={myInUseTemplate?.name || "Chưa đặt tên..."}
+                                    readOnly
                                     style={{
-                                        padding: "20px 40px",
-                                        backgroundColor: template.name === myInUseTemplate?.name ? "#78cfcc" : " ",
-                                        border: template.isInUse
-                                            ? "2px solid blue"
-                                            : template.name === myInUseTemplate?.name
-                                                ? "2px solid blue"
-                                                : "1px solid black",
-                                        fontWeight: template.name === myInUseTemplate?.name ? "bold" : "normal",
-                                        borderRadius: "5px",
+                                        width: "100%",
+                                        padding: "12px 16px",
+                                        borderRadius: "8px",
+                                        border: "1px solid #d4c9b1",
+                                        backgroundColor: "#fffefc",
+                                        fontFamily: "'Playfair Display', serif",
+                                        fontSize: "1.1rem",
+                                        color: "#5d4737",
+                                        letterSpacing: "0.02em"
+                                    }}
+                                />
+                            </div>
+
+                            {/* Template Selection */}
+                            <div style={{
+                                display: "flex",
+                                gap: "12px",
+                                overflowX: "auto",
+                                paddingBottom: "16px",
+                                marginBottom: "24px",
+                                scrollbarWidth: 'thin',
+                                scrollbarColor: "#a3917f #f9f7f1"
+                            }}>
+                                {templates.map((template) => (
+                                    <button
+                                        key={template.id}
+                                        onClick={() => handleSelectTemplate(template.id, template.name)}
+                                        style={{
+                                            flexShrink: 0,
+                                            padding: "16px 32px",
+                                            backgroundColor: template.name === myInUseTemplate?.name ? "#e8e0d1" : "transparent",
+                                            border: `2px solid ${template.name === myInUseTemplate?.name ? "#9b8774" : "#d4c9b1"}`,
+                                            borderRadius: "8px",
+                                            cursor: "pointer",
+                                            transition: "all 0.3s ease",
+                                            color: "#5d4737",
+                                            fontWeight: 500,
+                                            fontFamily: "'Crimson Pro', serif",
+                                            ":hover": {
+                                                transform: "translateY(-2px)",
+                                                boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
+                                            }
+                                        }}
+                                    >
+                                        {template.name}
+                                    </button>
+                                ))}
+
+                                {/* Add Template Button */}
+                                <button
+                                    style={{
+                                        flexShrink: 0,
+                                        padding: "16px",
+                                        border: "2px dashed #d4c9b1",
+                                        borderRadius: "8px",
                                         cursor: "pointer",
+                                        background: "transparent",
+                                        color: "#7a6856",
+                                        transition: "all 0.3s ease",
+                                        ":hover": {
+                                            borderColor: "#9b8774",
+                                            color: "#5d4737",
+                                            transform: "scale(1.05)"
+                                        }
+                                    }}
+                                    onClick={() => setShowAddTemplateModal(true)}
+                                >
+                                    <span style={{ fontSize: "1.5rem", fontFamily: "'Playfair Display', serif" }}>+ Thêm Mới</span>
+                                </button>
+                            </div>
+
+                            {/* Action Buttons */}
+                            <div style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                gap: "12px",
+                                marginTop: "24px",
+                                borderTop: "2px solid #d4c9b1",
+                                paddingTop: "24px"
+                            }}>
+                                <button
+                                    onClick={handleDeleteTemplate}
+                                    style={{
+                                        padding: "12px 24px",
+                                        backgroundColor: "#f5e6e5",
+                                        color: "#a44a4a",
+                                        border: "1px solid #e0c0bf",
+                                        borderRadius: "8px",
+                                        cursor: "pointer",
+                                        transition: "all 0.3s ease",
+                                        fontFamily: "'Crimson Pro', serif",
+                                        ":hover": {
+                                            backgroundColor: "#f0d4d3"
+                                        }
                                     }}
                                 >
-                                    {template.name}
+                                    🍂 Xóa Bản Mẫu
                                 </button>
-                            ))}
-                            <button
-                                style={{
-                                    padding: "10px 30px",
-                                    border: "1px dashed black",
-                                    borderRadius: "5px",
-                                    cursor: "pointer",
-                                }}
-                                onClick={() => { setShowAddTemplateModal(true) }}
-                            >
-                                +
-                            </button>
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-                            <button
-                                onClick={handleDeleteTemplate}
-                                style={{
-                                    backgroundColor: "#d9534f",
-                                    color: "white",
-                                    padding: "10px 15px",
-                                    borderRadius: "5px",
-                                    marginTop: "10px",
-                                    cursor: "pointer",
-                                }}
-                            >
-                                XÓA
-                            </button>
-                        </div>
-                        <div>
-                            <h3>Áp dụng template vào bản mẫu của bạn:</h3>
-                            <Select
-                                value={selectedTemplate}
-                                style={{ width: 300, }}
-                                onChange={handleChangeSelectedTemplate}
-                                options={userTemplates.map((template) => ({
-                                    value: template.id,
-                                    label: `${template.templateName} (${template.tagName})`,
-                                }))}
-                                placeholder="Chọn template"
-                            />
-                            <Button color="green" variant="solid" onClick={handleApplyFullTemplate} style={{ marginLeft: "10px" }}>Áp dụng</Button>
+                            </div>
+
+                            {/* Template Application Section */}
+                            <div style={{ marginTop: "32px" }}>
+                                <h4 style={{
+                                    marginBottom: "16px",
+                                    color: "#7a6856",
+                                    fontFamily: "'Crimson Pro', serif",
+                                    fontSize: "1.25rem"
+                                }}>
+                                    🖌️ Áp Dụng Mẫu
+                                </h4>
+                                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                                    <Select
+                                        value={selectedTemplate}
+                                        onChange={handleChangeSelectedTemplate}
+                                        style={{
+                                            width: "100%",
+                                            border: "2px solid #d4c9b1",
+                                            borderRadius: "6px",
+                                            backgroundColor: "#fffefc",
+                                            fontFamily: "'Crimson Pro', serif",
+                                            color: "#5d4737",
+                                        }}
+                                        dropdownStyle={{
+                                            backgroundColor: "#fffefc",
+                                            border: "1px solid #d4c9b1",
+                                            borderRadius: "6px",
+                                            boxShadow: "0 4px 12px rgba(94, 71, 55, 0.12)"
+                                        }}
+                                        suffixIcon={
+                                            <svg
+                                                width="18"
+                                                height="18"
+                                                viewBox="0 0 24 24"
+                                                fill="#5d4737"
+                                                style={{ transition: "transform 0.3s" }}
+                                            >
+                                                <path d="M7 10l5 5 5-5z" />
+                                            </svg>
+                                        }
+                                        placeholder="Chọn mẫu thơ..."
+                                        optionFilterProp="children"
+                                        options={userTemplates.map(template => ({
+                                            value: template.id,
+                                            label: (
+                                                <div style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: "8px",
+                                                    padding: "8px 0",
+                                                    color: "#5d4737"
+                                                }}>
+                                                    <span style={{ fontSize: "1.2rem" }}>📜</span>
+                                                    <span>{template.templateName}</span>
+                                                    <span style={{
+                                                        fontSize: "0.85em",
+                                                        color: "#7a6856",
+                                                        marginLeft: "auto"
+                                                    }}>
+                                                        {template.tagName}
+                                                    </span>
+                                                </div>
+                                            )
+                                        }))}
+                                    />
+
+
+                                    <Button color="green" variant="solid" onClick={handleApplyFullTemplate} style={{
+                                        padding: "12px 24px",
+                                        backgroundColor: "#e8e0d1",
+                                        color: "#5d4737",
+                                        border: "2px solid #d4c9b1",
+                                        borderRadius: "8px",
+                                        cursor: "pointer",
+                                        transition: "all 0.3s ease",
+                                        fontFamily: "'Crimson Pro', serif",
+                                        ":hover": {
+                                            backgroundColor: "#dcd3c4",
+                                            transform: "translateY(-1px)"
+                                        }
+                                    }}>Áp dụng</Button>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
 
@@ -871,17 +1026,19 @@ const DesignPage = () => {
                     </div>
                 </div>
             </div>
-            {showPopupModalHeader && (
-                <UserCoverEditModal
-                    themes={themes}
-                    selectedTemplateId={selectedTemplateId}
-                    setSelectedTemplateId={setSelectedTemplateId}
-                    setTempCoverImage={setTempHeaderImage}
-                    setTempCoverColorCode={setTempHeaderColorCode}
-                    coverImage={inUseHeader}  // original in-use cover/header
-                    closeModal={() => setShowPopupModalHeader(false)}
-                />
-            )}
+            {
+                showPopupModalHeader && (
+                    <UserCoverEditModal
+                        themes={themes}
+                        selectedTemplateId={selectedTemplateId}
+                        setSelectedTemplateId={setSelectedTemplateId}
+                        setTempCoverImage={setTempHeaderImage}
+                        setTempCoverColorCode={setTempHeaderColorCode}
+                        coverImage={inUseHeader}  // original in-use cover/header
+                        closeModal={() => setShowPopupModalHeader(false)}
+                    />
+                )
+            }
             <NavigationEditModal
                 show={showPopupModalNav}
                 onClose={() => setShowPopupModalNav(false)}
@@ -951,40 +1108,42 @@ const DesignPage = () => {
                     </Button>
                 </Space>
             </ConfigProvider>
-            {showAddTemplateModal && (
-                <div
-                    style={{
-                        position: "fixed",
-                        top: "50%",
-                        left: "50%",
-                        backgroundColor: "white",
-                        transform: "translate(-50%, -50%)",
-                        padding: "20px",
-                        borderRadius: "10px",
-                        boxShadow: "0 0 10px rgba(0,0,0,0.6)",
-                        zIndex: 1000,
-                        width: "300px"
-                    }}
-                >
-                    <h3>Tạo bản mẫu mới</h3>
-                    <input
-                        type="text"
-                        value={newTemplateName}
-                        onChange={(e) => setNewTemplateName(e.target.value)}
-                        placeholder="Nhập tên bản mẫu"
-                        style={{ display: "block", padding: "10px", width: "250px", margin: "0 auto 10px auto", }}
-                    />
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
-                        <button onClick={() => setShowAddTemplateModal(false)} style={{ padding: "10px", borderRadius: "5px" }}>
-                            Hủy
-                        </button>
-                        <button onClick={handleAddTemplate} style={{ padding: "10px", borderRadius: "5px", backgroundColor: "#6aad5e", color: "white" }}>
-                            Lưu
-                        </button>
+            {
+                showAddTemplateModal && (
+                    <div
+                        style={{
+                            position: "fixed",
+                            top: "50%",
+                            left: "50%",
+                            backgroundColor: "white",
+                            transform: "translate(-50%, -50%)",
+                            padding: "20px",
+                            borderRadius: "10px",
+                            boxShadow: "0 0 10px rgba(0,0,0,0.6)",
+                            zIndex: 1000,
+                            width: "300px"
+                        }}
+                    >
+                        <h3>Tạo bản mẫu mới</h3>
+                        <input
+                            type="text"
+                            value={newTemplateName}
+                            onChange={(e) => setNewTemplateName(e.target.value)}
+                            placeholder="Nhập tên bản mẫu"
+                            style={{ display: "block", padding: "10px", width: "250px", margin: "0 auto 10px auto", }}
+                        />
+                        <div style={{ display: "flex", justifyContent: "flex-end", gap: "10px" }}>
+                            <button onClick={() => setShowAddTemplateModal(false)} style={{ padding: "10px", borderRadius: "5px" }}>
+                                Hủy
+                            </button>
+                            <button onClick={handleAddTemplate} style={{ padding: "10px", borderRadius: "5px", backgroundColor: "#6aad5e", color: "white" }}>
+                                Lưu
+                            </button>
+                        </div>
                     </div>
-                </div>
-            )}
-        </div>
+                )
+            }
+        </div >
     )
 }
 export default DesignPage;

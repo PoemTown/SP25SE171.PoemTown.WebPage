@@ -1041,19 +1041,48 @@ const PoemDetail = () => {
                                 backgroundColor: '#f8f5f0',
                                 borderRadius: '8px',
                                 borderLeft: '3px solid #7d6b58',
-                                fontFamily: "'Noto Serif', serif"
+                                fontFamily: "'Noto Serif', serif",
+                                display: "flex",
+                                justifyContent: "center"
                             }}>
-                                <pre style={{
-                                    whiteSpace: 'pre-wrap',
-                                    fontFamily: "'Noto Serif', serif",
-                                    fontSize: '18px',
-                                    lineHeight: '2',
-                                    color: '#5d4c3c',
-                                    margin: 0,
-                                    textAlign: 'center'
-                                }}>
-                                    {poem?.content}
-                                </pre>
+                                <div>
+                                    {poem?.type?.name === "Thơ Lục Bát" ? (
+                                        <div>
+                                            {poem?.content.split("\n").map((line, index) => {
+                                                const wordCount = line.trim().split(/\s+/).length;
+                                                const isSixWords = wordCount === 6;
+
+                                                return (
+                                                    <p
+                                                        key={index}
+                                                        style={{
+                                                            marginLeft: isSixWords ? "2em" : "0",
+                                                            marginBottom: "0.3em",
+                                                            fontFamily: "'Times New Roman', serif",
+                                                            fontSize: "1.1rem",
+                                                            textAlign: "left",
+                                                        }}
+                                                    >
+                                                        {line}
+                                                    </p>
+                                                );
+                                            })}
+                                        </div>
+                                    ) : (
+
+                                        <pre style={{
+                                            whiteSpace: 'pre-wrap',
+                                            fontFamily: "'Noto Serif', serif",
+                                            fontSize: '18px',
+                                            lineHeight: '2',
+                                            color: '#5d4c3c',
+                                            margin: 0,
+                                            textAlign: "left"
+                                        }}>
+                                            {poem?.content}
+                                        </pre>
+                                    )}
+                                </div>
                             </div>
 
                             {/* Comments Section */}
