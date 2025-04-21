@@ -21,6 +21,7 @@ import Headerdefault from "../../components/Headerdefault";
 import YourWallet from "./YourWallet";
 import UsageRight from "./UsageRight";
 import YourBio from "./YourBio";
+import ContributePage from "./ContributePage";
 
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
@@ -94,7 +95,8 @@ const UserPage = () => {
             "Bản nháp của bạn",
             "Lịch sử chỉnh sửa",
             "Quản lý Bản Quyền",
-            "Quản lý ví"
+            "Quản lý ví",
+            "Đóng góp"
         ];
         return validTabs.includes(activeTabFromUrl) ? activeTabFromUrl : "Tiểu sử";
     });
@@ -422,6 +424,8 @@ const UserPage = () => {
                         {/* {activeTab === "Trang trí" &&
                         <YourDesign displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} setBackgroundImage={setBackgroundImage} achievementBackground={achievementBackground} statisticBackground={statisticBackground} achievementTitleBackground={achievementTitleBackground} statisticTitleBackground={statisticTitleBackground} achievementTitleColor={achievementTitleColor} statisticTitleColor={statisticTitleColor} achievementBackgroundColor={achievementBackgroundColor} statisticBackgroundColor={statisticBackgroundColor} />} */}
                         {activeTab === "Quản lý ví" && (<YourWallet />)}
+                        {activeTab === "Đóng góp" && (<ContributePage />)}
+
                     </div>
                     {!isCreatingPoem && !isCreatingCollection &&
                         <div style={{ display: "flex", flex: 3 }}>
@@ -439,7 +443,7 @@ const UserPage = () => {
                         className: styles.linearGradientButton,
                     }}
                 >
-                    <Space style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}>
+                    <Space style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px", zIndex:"999" }}>
                         <Button type="primary" size="large" iconPosition="end" icon={<DoubleRightOutlined />} style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }} onClick={() => { navigate('/design') }}>
                             Thiết kế Trang
                         </Button>

@@ -217,22 +217,28 @@ const PoemVersionPage = () => {
                     style={{ marginBottom: 24 }}
                     extra={
                         <div style={{ display: 'flex', gap: 12 }}>
-                            <Button
-                                type="primary"
-                                icon={<GiftOutlined />}
-                                onClick={handleFreeVersion}
-                                disabled={currentVersion?.price === 0}
-                            >
-                                Miễn phí
-                            </Button>
-                            <Button
-                                type="primary"
-                                icon={<DollarOutlined />}
-                                onClick={() => setIsModalVisible(true)}
-                                disabled={currentVersion?.price > 0}
-                            >
-                                Bán lại
-                            </Button>
+                            {(currentVersion?.status === 1 || currentVersion?.status === 4) && (
+                                <Button
+                                    type="primary"
+                                    icon={<GiftOutlined />}
+                                    onClick={handleFreeVersion}
+                                    
+                                >
+                                    Miễn phí
+                                </Button>
+                            )}
+
+                            {(currentVersion?.status === 3 || currentVersion?.status === 4) && (
+                                <Button
+                                    type="primary"
+                                    icon={<DollarOutlined />}
+                                    onClick={() => setIsModalVisible(true)}
+                                    
+                                >
+                                    Bán lại
+                                </Button>
+                            )}
+
                         </div>
                     }
                 >
@@ -373,7 +379,7 @@ const PoemVersionPage = () => {
                                             style={{ width: '100%' }}
                                             extra={<Tag color="volcano">CŨ</Tag>}
                                         >
-                                            <div className="version-details-grid"> 
+                                            <div className="version-details-grid">
                                                 <DetailItem
                                                     label="Trạng thái"
                                                     value={Status[version?.status] || "Không xác định"}

@@ -153,7 +153,13 @@ const Headeruser = ({ userData }) => {
       >
         Hồ sơ người dùng
       </Menu.Item>
-
+      <Menu.Item
+        key="change-password"
+        onClick={() => navigate("/change-password")}
+        style={{ padding: "10px 16px", fontSize: "14px", fontWeight: 500 }}
+      >
+        Thay đổi mật khẩu
+      </Menu.Item>
       <Menu.Item
         key="logout"
         onClick={() => {

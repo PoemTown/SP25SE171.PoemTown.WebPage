@@ -233,10 +233,38 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                 <p style={styles.poemDescription}>Mô tả: {item.description}</p>
                 <div style={styles.poemContent}>
                     <div style={styles.poemTextContainer}>
-                        <span style={styles.quote}>“</span>
-                        {displayedLines.map((line, index) => (
-                            <p key={index} style={styles.poemLine}>{line}</p>
-                        ))}
+                        {/* <span style={styles.quote}>“</span> */}
+
+                        {item.type?.name === "Thơ Lục Bát" ? (
+                            <div>
+                                {item.content.split("\n").map((line, index) => {
+                                    const wordCount = line.trim().split(/\s+/).length;
+                                    const isSixWords = wordCount === 6;
+
+                                    return (
+                                        <p
+                                            key={index}
+                                            style={{
+                                                marginLeft: isSixWords ? "2em" : "0",
+                                                marginBottom: "0.3em",
+                                                fontFamily: "'Times New Roman', serif",
+                                                fontSize: "1.1rem",
+                                                textAlign: "left",
+                                            }}
+                                        >
+                                            {line} 
+                                        </p>
+                                    );
+                                })}
+                            </div>
+                        ) : (
+                            
+                                displayedLines.map((line, index) => (
+                                    <p key={index} style={styles.poemLine}>{line}</p>
+                                ))
+                            
+                        )}
+
                         {/* <pre style={{
                                 whiteSpace: 'pre-wrap',
                                 fontFamily: '"Cormorant Garamond", serif',
@@ -248,10 +276,13 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                             }}>
                                 {item?.content || "Nội dung chưa có sẵn"}
                             </pre> */}
-                        <p style={styles.poemLine}>
+
+
+
+                        {/* <p style={styles.poemLine}>
                             {hasMoreLines && <span style={styles.ellipsis}>...</span>}
                             <span style={styles.quoteClose}>”</span>
-                        </p>
+                        </p> */}
                     </div>
                 </div>
                 <div style={styles.footerContainer}>
@@ -453,7 +484,7 @@ const styles = {
         color: '#666'
     },
     poemLine: {
-        textAlign: 'center',
+        //textAlign: 'center',
         margin: "0",
         lineHeight: "1.8",
         fontSize: "1.1rem",

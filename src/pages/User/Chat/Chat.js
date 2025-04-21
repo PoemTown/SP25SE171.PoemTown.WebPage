@@ -10,7 +10,7 @@ const MessengerPage = ({ refreshKey }) => {
     const [chatMessages, setChatMessages] = useState([]);
     const [chatInput, setChatInput] = useState("");
     const jwtToken = localStorage.getItem("accessToken");
-    const currentUserId = localStorage.getItem("userId");
+    const currentUserId = localStorage.getItem("userId"); 
     const chatContainerRef = useRef(null);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 

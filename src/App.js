@@ -27,6 +27,7 @@ import PoetKnowledge from "./pages/PoetKnowledge";
 import PoetSamplesPage from "./pages/PoetSamplesPage"
 import RecordDetail from "./pages/User/RecordFile/RecordDetail";
 import PoemVersionPage from "./pages/User/PoemVersionPage";
+import ChangePassword from "./pages/ChangePassword";
 const AdminRoute = ({ element }) => {
   const role = JSON.parse(localStorage.getItem("role")) || [];
 
@@ -54,6 +55,8 @@ function App() {
         <Route path="/confirm-email" element={<EmailConfirmationPage />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/profile" element={<ProfilePage />} />
+        <Route path="/change-password" element={<ChangePassword />} />
+
         <Route path="/shop" element={<Shop />} />
         <Route path="/shop/:masterTemplateId" element={<TemplateDetail />} />
         <Route path="/search" element={<SearchPage />} />        

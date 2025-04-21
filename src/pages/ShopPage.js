@@ -39,12 +39,12 @@ const Shop = () => {
         const filteredTemplates = (data.data || []).filter(item => item.tagName !== "DEFAULT");
 
         setTemplates(filteredTemplates);
-        setTotalItems(filteredTemplates.length); 
+        setTotalItems(filteredTemplates.length);
     }
 
 
-    const handleViewDetail = (id) => {
-        navigate(`/shop/${id}`);
+    const handleViewDetail = (id, price) => {
+        navigate(`/shop/${id}`, { state: { price } });
     };
 
     const templateType = {
@@ -117,7 +117,11 @@ const Shop = () => {
                                 </span>
                             </p>
                         </div>
-                        <Button style={styles.buttonViewDetail} onClick={() => handleViewDetail(item.id)}>Xem chi tiết</Button>
+                        {
+                            item.status === 1 && (
+                                <Button style={styles.buttonViewDetail} onClick={() => handleViewDetail(item.id, item.price)}>Xem chi tiết</Button>
+                            )
+                        }
                     </div>
                 ))}
             </div>

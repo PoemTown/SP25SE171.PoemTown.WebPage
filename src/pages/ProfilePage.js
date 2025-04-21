@@ -281,7 +281,7 @@ const ProfilePage = () => {
             <div style={styles.buttonGroup}>
               {!isEditing ? (
                 <Button type="primary" style={styles.editButton} onClick={handleEdit}>
-                  Edit
+                  Chỉnh sửa
                 </Button>
               ) : (
                 <>

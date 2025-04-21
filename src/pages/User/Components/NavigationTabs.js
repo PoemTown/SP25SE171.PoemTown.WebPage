@@ -12,6 +12,7 @@ const NavigationTabs = ({ isMine, activeTab, setActiveTab, setIsCreatingPoem, se
         "Quản lý Bản Quyền",
         // "Trang trí",
         "Quản lý ví",
+        "Đóng góp"
     ] : [
         "Tiểu sử",
         "Thơ của bạn",

@@ -20,7 +20,7 @@ export const useChat = (jwtToken, updateMessages) => {
     connect.on("ReceiveMessage", (fromUserId, message) => {
       // Gọi callback để cập nhật tin nhắn mới vào MessengerPage
       updateMessages(fromUserId, message);
-    });
+    }); 
 
     connect
       .start()
