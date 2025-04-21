@@ -8,7 +8,7 @@ import {
     Dashboard, Logout, Gavel, Assignment, ReceiptLong, ManageAccounts, 
     LibraryBooks, Collections, Report, Notifications, ShoppingCart, Home, Wallet,
     Category, Group, Description, MonetizationOn, CollectionsBookmark, 
-    RateReview, RequestQuote, PeopleAlt, Title as TitleIcon
+    RateReview, RequestQuote, PeopleAlt, Title as TitleIcon, ContactMail
 } from "@mui/icons-material";
 import TransactionsManagement from "./Tabs/TransactionsManagement";
 import OrderManagement from "./Tabs/OrderManagement";
@@ -22,7 +22,8 @@ import PoetSamplesManagement from "./Tabs/PoetSamplesManagement";
 import CommunityCollectionManagement from "./Tabs/CommunityCollectionManagement";
 import RequestFromUser from "./Tabs/RequestFromUser";
 import PoemTypeManagement from "./Tabs/PoemTypeManagement";
-import TitleSamplesManagement from "./Tabs/TitleSamplesManagement"; 
+import TitleSamplesManagement from "./Tabs/TitleSamplesManagement";
+import ContactsManagement from "./Tabs/ContactsManagement";
 
 const drawerWidth = 280;
 
@@ -72,7 +73,7 @@ const AdminPage = () => {
                         { key: "poemtypes", icon: <Category />, text: "Poem Types" },
                         { key: "titlesamples", icon: <TitleIcon />, text: "Title Samples" }, 
                         { key: "poetsamples", icon: <CollectionsBookmark />, text: "Poet Samples" },
-                        // { key: "community-collections", icon: <Group />, text: "Community Collections" },
+                        { key: "contacts", icon: <ContactMail />, text: "Contacts" },
                         { key: "reports", icon: <RateReview />, text: "User Reports" },
                         { key: "requests", icon: <RequestQuote />, text: "User Requests" },
                         { key: "notifications", icon: <Notifications />, text: "Notifications" },
@@ -151,7 +152,8 @@ const AdminPage = () => {
                 {currentPage === "community-collections" && <CommunityCollectionManagement />}
                 {currentPage === "poetsamples" && <PoetSamplesManagement />}
                 {currentPage === "poemtypes" && <PoemTypeManagement />}
-                {currentPage === "titlesamples" && <TitleSamplesManagement />} 
+                {currentPage === "titlesamples" && <TitleSamplesManagement />}
+                {currentPage === "contacts" && <ContactsManagement />}
             </Box>
         </Box>
     );
