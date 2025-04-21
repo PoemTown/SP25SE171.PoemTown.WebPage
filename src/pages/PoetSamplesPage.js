@@ -67,18 +67,19 @@ const PoetSamplesPage = () => {
         try {
             setLoading(true);
             const queryParams = new URLSearchParams();
-
+    
             if (searchQuery) {
-                queryParams.append('name', searchQuery);
+                queryParams.append('filterOptions.name', searchQuery); // Thay đổi từ 'name' thành 'filterOptions.name'
             }
-
+    
             queryParams.append('pageNumber', pagination.current);
             queryParams.append('pageSize', pagination.pageSize);
-
+    
             const response = await axios.get(
                 `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1?${queryParams.toString()}`
             );
-
+    
+            // Phần còn lại giữ nguyên
             if (response.data.statusCode === 200) {
                 setPoets(response.data.data);
                 setPagination(prev => ({
@@ -398,7 +399,6 @@ const PoetSamplesPage = () => {
                                                                                     whiteSpace: 'nowrap',
                                                                                     fontSize: '14px' 
                                                                                 }}>
-                                                                                    {badge.shortName}
                                                                                 </Tag>
                                                                             </Tooltip>
                                                                         ))}

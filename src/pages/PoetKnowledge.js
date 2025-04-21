@@ -3,7 +3,13 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import Headeruser from "../components/Headeruser";
 import Headerdefault from "../components/Headerdefault";
-import { CheckCircleFilled } from "@ant-design/icons";
+import {
+    CheckCircleFilled,
+    StarFilled,
+    FireFilled,
+    CrownFilled
+} from "@ant-design/icons";
+import { Tooltip, Tag } from "antd";
 import BiographyTab from "../components/componentPoetKnowledge/BiographyTab";
 import PoemsTab from "../components/componentPoetKnowledge/PoemsTab";
 import CollectionTab from "../components/componentPoetKnowledge/CollectionTab";
@@ -11,7 +17,7 @@ import CollectionTab from "../components/componentPoetKnowledge/CollectionTab";
 const PoetKnowledge = () => {
     const { id } = useParams();
     const [poet, setPoet] = useState(null);
-    const [collections, setCollections] = useState([]); 
+    const [collections, setCollections] = useState([]);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
     const [activeTab, setActiveTab] = useState("Tiểu sử");
 
@@ -81,14 +87,74 @@ const PoetKnowledge = () => {
         setActiveTab(tab);
     };
 
+    const renderAdditionalBadges = () => {
+        const badgeConfigs = {
+            'Chuyên gia thơ 8 chữ': { icon: <StarFilled />, color: 'gold' },
+            'Chuyên gia thể thơ 9 chữ': { icon: <StarFilled />, color: 'volcano' },
+            'Lục bát': { icon: <FireFilled />, color: 'red' },
+            'Trữ tình': { icon: <CrownFilled />, color: 'purple' },
+            'Tự do': { icon: <FireFilled />, color: 'green' },
+            'Tình yêu': { icon: <CrownFilled />, color: 'pink' },
+            'Sứ giả hòa bình': { icon: <StarFilled />, color: 'blue' },
+            'Cảm xúc': { icon: <FireFilled />, color: 'orange' },
+            'Chuyên gia tâm lý': { icon: <CrownFilled />, color: 'cyan' }
+        };
+
+        if (!poet || !poet.titleSamples || poet.titleSamples.length === 0) {
+            return null;
+        }
+
+        const poetBadges = poet.titleSamples
+            .map(title => {
+                const config = badgeConfigs[title.name];
+                return config ? { ...config, name: title.name } : null;
+            })
+            .filter(Boolean);
+
+        if (poetBadges.length === 0) {
+            return null;
+        }
+
+        return (
+            <div style={{
+                display: 'flex',
+                flexWrap: 'wrap',
+                gap: '8px',
+                marginTop: '12px'
+            }}>
+                {poetBadges.map((badge, index) => (
+                    <Tooltip key={index} title={badge.name}>
+                        <Tag
+                            icon={badge.icon}
+                            color={badge.color}
+                            style={{
+                                margin: 0,
+                                padding: '4px 12px',
+                                fontSize: '14px',
+                                lineHeight: '24px',
+                                border: 'none',
+                                height: 'auto',
+                                display: 'flex',
+                                alignItems: 'center',
+                                gap: '4px'
+                            }}
+                        >
+                            {badge.name}
+                        </Tag>
+                    </Tooltip>
+                ))}
+            </div>
+        );
+    };
+
     const renderTabContent = () => {
         switch (activeTab) {
             case "Tiểu sử":
                 return <BiographyTab poet={poet} />;
             case `Thơ của ${poet?.name}`:
-                return <PoemsTab collections={collections} poetId={id}></PoemsTab>; 
+                return <PoemsTab collections={collections} poetId={id}></PoemsTab>;
             case `Tập thơ của ${poet?.name}`:
-                return <CollectionTab poet={poet}/>;
+                return <CollectionTab poet={poet} />;
             default:
                 return null;
         }
@@ -147,9 +213,9 @@ const PoetKnowledge = () => {
                     </div>
 
                     <div style={{
-                        paddingBottom: "150px",
-                        color: "white",
-                        textShadow: "1px 1px 3px rgba(0, 0, 0, 0.8)"
+                        paddingBottom: "20px",
+                        color: "black",
+                        // Bỏ dòng textShadow đi
                     }}>
                         <h1 style={{
                             margin: 0,
@@ -160,16 +226,22 @@ const PoetKnowledge = () => {
                             gap: "8px"
                         }}>
                             {poet?.name}
-                            <CheckCircleFilled style={{ color: "#1890ff", fontSize: "18px" }} />
+                            <Tooltip title="Tài khoản xác minh">
+                                <CheckCircleFilled style={{ color: "#1890ff", fontSize: "18px" }} />
+                            </Tooltip>
                         </h1>
 
                         <p style={{
                             margin: "5px 0 0",
                             fontSize: "16px",
                             opacity: 0.9
+                            // Bỏ textShadow ở đây nếu có
                         }}>
                             @{poet?.name?.toLowerCase().replace(/\s+/g, '')}
                         </p>
+
+                        {/* Hiển thị các badge khác bên dưới tên */}
+                        {renderAdditionalBadges()}
                     </div>
                 </div>
             </div>
