@@ -9,7 +9,7 @@ import {
     LibraryBooks, Collections, Report, Notifications, ShoppingCart, Home, Wallet,
     Category, Group, Description, MonetizationOn, CollectionsBookmark, 
     RateReview, RequestQuote, PeopleAlt, Title as TitleIcon, ContactMail,
-    Article, Chat // New icons for Contents and DailyMessages
+    Article, Chat, Announcement // Added Announcement icon
 } from "@mui/icons-material";
 import TransactionsManagement from "./Tabs/TransactionsManagement";
 import OrderManagement from "./Tabs/OrderManagement";
@@ -27,6 +27,7 @@ import TitleSamplesManagement from "./Tabs/TitleSamplesManagement";
 import ContactsManagement from "./Tabs/ContactsManagement";
 import ContentsManagement from "./Tabs/ContentsManagement"; 
 import DailyMessagesManagement from "./Tabs/DailyMessagesManagement";
+import AnnouncementsManagement from "./Tabs/AnnouncementsManagement"; 
 
 const drawerWidth = 280;
 
@@ -76,12 +77,12 @@ const AdminPage = () => {
                         { key: "poemtypes", icon: <Category />, text: "Poem Types" },
                         { key: "titlesamples", icon: <TitleIcon />, text: "Title Samples" }, 
                         { key: "poetsamples", icon: <CollectionsBookmark />, text: "Poet Samples" },
-                        { key: "contents", icon: <Article />, text: "Contents" }, // New menu item
-                        { key: "dailymessages", icon: <Chat />, text: "Daily Messages" }, // New menu item
+                        { key: "contents", icon: <Article />, text: "Contents" },
+                        { key: "dailymessages", icon: <Chat />, text: "Daily Messages" },
+                        { key: "announcements", icon: <Announcement />, text: "Announcements" }, // Added new menu item
                         { key: "contacts", icon: <ContactMail />, text: "Contacts" },
                         { key: "reports", icon: <RateReview />, text: "User Reports" },
                         { key: "requests", icon: <RequestQuote />, text: "User Requests" },
-                        { key: "notifications", icon: <Notifications />, text: "Notifications" },
                     ].map((item) => (
                         <ListItem disablePadding key={item.key}>
                             <ListItemButton 
@@ -158,8 +159,9 @@ const AdminPage = () => {
                 {currentPage === "poetsamples" && <PoetSamplesManagement />}
                 {currentPage === "poemtypes" && <PoemTypeManagement />}
                 {currentPage === "titlesamples" && <TitleSamplesManagement />}
-                {currentPage === "contents" && <ContentsManagement />} =
+                {currentPage === "contents" && <ContentsManagement />}
                 {currentPage === "dailymessages" && <DailyMessagesManagement />} 
+                {currentPage === "announcements" && <AnnouncementsManagement />} 
                 {currentPage === "contacts" && <ContactsManagement />}
             </Box>
         </Box>
