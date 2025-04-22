@@ -11,6 +11,8 @@ import { useEffect, useState } from "react";
 import ReportPoemModal from "./ReportPoemModal";
 import { BookOutlined, ClockCircleOutlined } from "@ant-design/icons";
 import { Margin } from "@mui/icons-material";
+import zIndex from "@mui/material/styles/zIndex";
+import { height } from "@mui/system";
 
 const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -174,7 +176,9 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             navigate(`/knowledge/poet/${item.poetSample?.id}`)
         }
     }
-
+    const allLines = item.content.split("\n");
+    const maxLines = 4;
+    const displayLines = allLines.slice(0, maxLines);
     return (
         <div style={styles.poemCard}>
             <div style={styles.imageWrapper}>
@@ -237,32 +241,57 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
 
                         {item.type?.name === "Thơ Lục Bát" ? (
                             <div>
-                                {item.content.split("\n").map((line, index) => {
+                                {displayLines.map((line, index) => {
                                     const wordCount = line.trim().split(/\s+/).length;
                                     const isSixWords = wordCount === 6;
-
                                     return (
                                         <p
                                             key={index}
                                             style={{
+                                                margin: "0",
                                                 marginLeft: isSixWords ? "2em" : "0",
-                                                marginBottom: "0.3em",
-                                                fontFamily: "'Times New Roman', serif",
+                                                lineHeight: "1.8",
                                                 fontSize: "1.1rem",
-                                                textAlign: "left",
+                                                fontFamily: "'Cormorant Garamond', serif",
+                                                textIndent: '1.5rem',
+                                                position: "relative",
+                                                display: "-webkit-box",
+                                                WebkitLineClamp: 1,             // 👈 số dòng muốn hiển thị
+                                                WebkitBoxOrient: "vertical",
+                                                overflow: "hidden",
+                                                textOverflow: "ellipsis"
                                             }}
                                         >
-                                            {line} 
+                                            {line}
                                         </p>
                                     );
                                 })}
+                                {allLines.length > 4 && (
+                                    <p style={{
+                                        background: 'linear-gradient(to right, transparent 50%, white 70%)',
+                                        paddingLeft: '1em',
+                                        whiteSpace: 'nowrap',
+                                        margin: 0
+                                    }}>...</p>
+                                )}
+
                             </div>
                         ) : (
-                            
-                                displayedLines.map((line, index) => (
+                            <div>
+                                {displayedLines.map((line, index) => (
                                     <p key={index} style={styles.poemLine}>{line}</p>
-                                ))
-                            
+                                ))}
+                                {allLines.length > 4 && (
+                                    <p style={{
+                                        background: 'linear-gradient(to right, transparent 50%, white 70%)',
+                                        paddingLeft: '1em',
+                                        whiteSpace: 'nowrap',
+                                        margin: 0
+                                    }}>...</p>
+                                )}
+                            </div>
+
+
                         )}
 
                         {/* <pre style={{
@@ -335,21 +364,25 @@ const styles = {
         ':hover': {
             transform: 'translateY(-4px)',
             boxShadow: '0 12px 40px rgba(0, 0, 0, 0.15)'
-        }
+        },
+
     },
     imageWrapper: {
         position: 'relative',
         flexShrink: 0,
         width: '204px',
+        height:'360px',
         borderRadius: '16px',
         overflow: 'hidden',
+
         boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)'
     },
     poemImageContainer: {
         width: '100%',
         height: '320px',
+        background: '#f0eafa',
         position: 'relative',
-        background: '#f0eafa'
+        
     },
     poemImage: {
         width: '100%',
@@ -373,12 +406,12 @@ const styles = {
         transition: 'transform 0.3s ease',
         ':hover': {
             transform: 'scale(1.1)'
-        }
+        },
     },
     avatar: {
         width: '100%',
         height: '100%',
-        objectFit: 'cover'
+        objectFit: 'cover',
     },
 
     contentRight: {
