@@ -96,6 +96,9 @@ const LoginPage = () => {
                     case "User not found":
                         message.error("Người đùng không tồn tại");
                         break;
+                    case "Email is not confirmed":
+                        message.error("Tài khoản chưa được kích hoạt");
+                        break;
                     default:
                         message.error("Email hoặc mật khẩu không chính xác");
                         break;
