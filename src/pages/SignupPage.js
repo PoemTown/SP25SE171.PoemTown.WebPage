@@ -3,6 +3,7 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
+
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -29,7 +30,7 @@ const SignupPage = () => {
             alert("You must agree to the terms and conditions.");
             return;
         }
-    
+
         try {
             const response = await axios.post(
                 `${process.env.REACT_APP_API_BASE_URL}/authentications/v1/registration`,
@@ -46,14 +47,22 @@ const SignupPage = () => {
             );
             console.log("Registration successful:", response.data);
             alert("Đăng ký thành công!");
-    
+
             navigate("/confirm-email", { state: { email: formData.email } });
         } catch (error) {
             console.error("Registration failed:", error.response || error.message);
             alert("Đăng ký thất bại. Vui lòng thử lại.");
         }
     };
-    
+    const getTodayInUTC7 = () => {
+        const now = new Date();
+        // Convert to UTC+7
+        const utc7Offset = 7 * 60; // minutes
+        const localOffset = now.getTimezoneOffset(); // minutes
+        const utc7Time = new Date(now.getTime() + (utc7Offset + localOffset) * 60 * 1000);
+
+        return utc7Time.toISOString().split('T')[0]; // "YYYY-MM-DD"
+    };
 
     return (
         <div style={styles.loginContainer}>
@@ -68,14 +77,15 @@ const SignupPage = () => {
                     <div style={styles.formRow}>
                         <div style={styles.formGroup}>
                             <label style={styles.label} htmlFor="username">
-                                Tên người dùng
+                                Username
                             </label>
                             <input
                                 id="username"
                                 name="username"
                                 type="text"
-                                placeholder="Nhập tên người dùng"
+                                placeholder="Mã tên người dùng"
                                 style={styles.formInput}
+                                required="true"
                                 value={formData.username}
                                 onChange={handleChange}
                             />
@@ -89,6 +99,7 @@ const SignupPage = () => {
                                 id="email"
                                 name="email"
                                 type="email"
+                                required="true"
                                 placeholder="Nhập email"
                                 style={styles.formInput}
                                 value={formData.email}
@@ -107,6 +118,7 @@ const SignupPage = () => {
                                 id="password"
                                 name="password"
                                 type="password"
+                                required="true"
                                 placeholder="Nhập mật khẩu"
                                 style={styles.formInput}
                                 value={formData.password}
@@ -125,7 +137,13 @@ const SignupPage = () => {
                                 placeholder="Nhập số điện thoại"
                                 style={styles.formInput}
                                 value={formData.phoneNumber}
-                                onChange={handleChange}
+                                onChange={(e) => {
+                                    const value = e.target.value;
+                                    // Allow only digits and max 10 characters
+                                    if (/^\d{0,10}$/.test(value)) {
+                                        handleChange(e);
+                                    }
+                                }}
                             />
                         </div>
                     </div>
@@ -193,6 +211,7 @@ const SignupPage = () => {
                                 style={styles.formInput}
                                 value={formData.dateOfBirth}
                                 onChange={handleChange}
+                                max={getTodayInUTC7()}
                             />
                         </div>
                     </div>
@@ -226,14 +245,14 @@ const SignupPage = () => {
                 </div>
 
                 {/* Google Login */}
-                <button style={styles.googleButton}>
+                {/* <button style={styles.googleButton}>
                     <img
                         src="./GGicon.png"
                         alt="Google Logo"
                         style={styles.googleIcon}
                     />
                     Đăng nhập với Google
-                </button>
+                </button> */}
 
                 {/* Home Link */}
                 <button
@@ -305,8 +324,8 @@ const styles = {
         padding: "10px",
         border: "1px solid #ccc",
         borderRadius: "5px",
-        
-        
+
+
     },
     formCheckbox: {
         display: "flex",
