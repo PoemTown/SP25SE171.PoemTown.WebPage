@@ -245,15 +245,15 @@ const LoginPage = () => {
                         <span style={styles.dividerLine}></span>
                     </div>
 
-                    {/* Google Login */}
-                    <button style={styles.googleButton}>
-                        <img
-                            src="./GGicon.png"
-                            alt="Google Logo"
-                            style={styles.googleIcon}
-                        />
-                        Đăng nhập với Google
-                    </button>
+                    {/* Google Login
+                    // <button style={styles.googleButton}>
+                    //     <img
+                    //         src="./GGicon.png"
+                    //         alt="Google Logo"
+                    //         style={styles.googleIcon}
+                    //     />
+                    //     Đăng nhập với Google
+                    // </button> */}
 
                     {/* Home Link */}
                     <button
