@@ -12,8 +12,12 @@ import {
     Layout,
     Spin,
     notification,
+    Typography,
+    Space,
 } from "antd";
 import Headeruser from "../components/Headeruser";
+import { ArrowLeftOutlined } from '@ant-design/icons';
+import { useNavigate } from 'react-router-dom';
 import axios from "axios";
 
 const { Content } = Layout;
@@ -26,29 +30,35 @@ const ChangePassword = () => {
     const [newPasswordVisible, setNewPasswordVisible] = React.useState(false);
     const [isSubmit, setIsSubmit] = React.useState(false);
     const [key, setKey] = useState(0); // Add this state for forcing re-render
+    const navigate = useNavigate();
+    const [form] = Form.useForm();
+
+    const fetchUserProfile = async () => {
+        try {
+            setLoading(true);
+
+            const response = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile`,
+                {
+                    method: "GET",
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                        "Content-Type": "application/json",
+                    },
+                }
+            );
+            const data = await response.json();
+            setUser(data.data);
+            setAvatarUrl(data.data.avatar || "https://via.placeholder.com/80");
+        } catch (error) {
+            message.error("Lỗi khi tải thông tin người dùng!");
+        } finally {
+            setLoading(false);
+        }
+    };
 
     useEffect(() => {
-        const fetchUserProfile = async () => {
-            try {
-                const response = await fetch(
-                    `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile`,
-                    {
-                        method: "GET",
-                        headers: {
-                            Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
-                            "Content-Type": "application/json",
-                        },
-                    }
-                );
-                const data = await response.json();
-                setUser(data.data);
-                setAvatarUrl(data.data.avatar || "https://via.placeholder.com/80");
-            } catch (error) {
-                message.error("Lỗi khi tải thông tin người dùng!");
-            } finally {
-                setLoading(false);
-            }
-        };
+
 
         fetchUserProfile();
     }, []);
@@ -95,100 +105,156 @@ const ChangePassword = () => {
             }
         }
     };
+    const handleCancel = () => {
+        form.resetFields(); // Reset form inputs
+        fetchUserProfile(); // Refetch fresh data from server
+    };
 
     return (
         <div key={key}>
-        <Spin spinning={isSubmit} size="large" tip="Đang xử lý..." style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
-
-            <Layout>
-                <Headeruser />
-                <Content
-                    style={{
-                        padding: "40px",
-                        display: "flex",
-                        justifyContent: "center",
-                    }}
-                >
-                    <Card
-                        title="Chỉnh sửa hồ sơ"
-                        style={{ width: "100%", maxWidth: 900 }}
-                        headStyle={{ fontSize: "22px", fontWeight: "bold" }}
+            <Spin spinning={isSubmit} size="large" tip="Đang cập nhật..." style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+                <Layout>
+                    <Headeruser />
+                    <Content
+                        style={{
+                            padding: "40px",
+                            display: "flex",
+                            justifyContent: "center",
+                        }}
                     >
-                        {loading ? (
-                            <div style={{ textAlign: "center", padding: "40px 0" }}>
-                                <Spin size="large" />
+                        <Card
+                            style={{ width: "100%", maxWidth: 900 }}
+                            headStyle={{ fontSize: "22px", fontWeight: "bold" }}
+                            bodyStyle={{ padding: "24px" }}
+                        >
+                            {/* Back button added here */}
+                            {/* Back Arrow */}
+                            <div
+                                onClick={() => navigate('/')}
+                                style={{
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    cursor: 'pointer',
+                                    marginBottom: '16px',
+                                    color: '#1890ff',
+                                    fontWeight: 500
+                                }}
+                            >
+                                <ArrowLeftOutlined style={{ marginRight: '8px' }} />
+                                <span>Quay lại trang chủ</span>
                             </div>
-                        ) : (
-                            <>
-                                <Row justify="center" align="middle" gutter={16} style={{ marginBottom: 32 }}>
-                                    <Col>
-                                        <Avatar size={80} src={avatarUrl} />
-                                    </Col>
-                                </Row>
 
-                                <Form
-                                    layout="vertical"
-                                    onFinish={onFinish}
-                                >
-                                    <Row gutter={16}>
-                                        <Col span={12}>
-                                            <Form.Item
-                                                name="userName"
-                                                label="Username"
-                                                initialValue={user?.userName}
-                                                rules={[{ message: "Vui lòng nhập Username" }]}
-                                            >
-                                                <Input disabled />
-                                            </Form.Item>
-                                        </Col>
-                                        <Col span={12}>
-                                            <Form.Item
-                                                name="currentPassword"
-                                                label="Mật khẩu hiện tại"
-                                                rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
-                                            >
-                                                <Input.Password
-                                                    placeholder="Nhập mật khẩu hiện tại"
-                                                    visibilityToggle={{ visible: passwordVisible, onVisibleChange: setPasswordVisible }}
-                                                />
-                                                {/* <Input type="password" placeholder="Nhập mật khẩu hiện tại" /> */}
-                                            </Form.Item>
+                            <Typography.Title level={2} style={{ marginBottom: 24, marginTop: 0 }}>
+                                Chỉnh sửa hồ sơ
+                            </Typography.Title>
+
+                            {loading ? (
+                                <div style={{ textAlign: "center", padding: "40px 0" }}>
+                                    <Spin size="large" />
+                                </div>
+                            ) : (
+                                <>
+                                    <Row justify="center" align="middle" gutter={16} style={{ marginBottom: 32 }}>
+                                        <Col>
+                                            <Avatar size={80} src={avatarUrl} />
                                         </Col>
                                     </Row>
 
-                                    <Row gutter={16}>
-                                        <Col span={12}>
-                                            <Form.Item
-                                                name="newPassword"
-                                                label="Mật khẩu mới"
+                                    <Form
+                                        layout="vertical"
+                                        onFinish={onFinish}
+                                    >
+                                        <Row gutter={16}>
+                                            <Col span={12}>
+                                                <Form.Item
+                                                    name="userName"
+                                                    label="Username"
+                                                    initialValue={user?.userName}
+                                                    rules={[{ message: "Vui lòng nhập Username" }]}
+                                                >
+                                                    <Input disabled />
+                                                </Form.Item>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Form.Item
+                                                    name="currentPassword"
+                                                    label="Mật khẩu hiện tại"
+                                                    rules={[{ required: true, message: "Vui lòng nhập mật khẩu hiện tại" }]}
+                                                >
+                                                    <Input.Password
+                                                        placeholder="Nhập mật khẩu hiện tại"
+                                                        visibilityToggle={{ visible: passwordVisible, onVisibleChange: setPasswordVisible }}
+                                                    />
+                                                </Form.Item>
+                                            </Col>
+                                        </Row>
 
-                                                rules={[{ required: true, message: "Vui lòng nhập mật khẩu mới" }]}
-                                            >
-                                                <Input.Password placeholder="Nhập mật khẩu mới" visibilityToggle={{ visible: newPasswordVisible, onVisibleChange: setNewPasswordVisible }} />
-                                            </Form.Item>
-                                        </Col>
-                                        <Col span={12}>
-                                            <Form.Item
-                                                name="confirm" label="Xác nhận mật khẩu mới"
-                                                rules={[{ required: true, message: "Vui lòng xác nhận mật khẩu vừa nhập" }]}
-                                            >
-                                                <Input.Password placeholder="Xác nhận mật khẩu vừa nhập" visibilityToggle={{ visible: newPasswordVisible, onVisibleChange: setNewPasswordVisible }} />
-                                            </Form.Item>
-                                        </Col>
-                                    </Row>
+                                        <Row gutter={16}>
+                                            <Col span={12}>
+                                                <Form.Item
+                                                    name="newPassword"
+                                                    label="Mật khẩu mới"
+                                                    rules={[
+                                                        { required: true, message: "Vui lòng nhập mật khẩu mới" },
+                                                    ]}
+                                                >
+                                                    <Input.Password
+                                                        placeholder="Nhập mật khẩu mới"
+                                                        visibilityToggle={{ visible: newPasswordVisible, onVisibleChange: setNewPasswordVisible }}
+                                                    />
+                                                </Form.Item>
+                                            </Col>
+                                            <Col span={12}>
+                                                <Form.Item
+                                                    name="confirm"
+                                                    label="Xác nhận mật khẩu mới"
+                                                    dependencies={['newPassword']}
+                                                    rules={[
+                                                        { required: true, message: "Vui lòng xác nhận mật khẩu" },
+                                                        ({ getFieldValue }) => ({
+                                                            validator(_, value) {
+                                                                if (!value || getFieldValue('newPassword') === value) {
+                                                                    return Promise.resolve();
+                                                                }
+                                                                return Promise.reject(new Error('Mật khẩu xác nhận không khớp!'));
+                                                            },
+                                                        }),
+                                                    ]}
+                                                >
+                                                    <Input.Password
+                                                        placeholder="Xác nhận mật khẩu vừa nhập"
+                                                        visibilityToggle={{ visible: newPasswordVisible, onVisibleChange: setNewPasswordVisible }}
+                                                    />
+                                                </Form.Item>
+                                            </Col>
+                                        </Row>
 
-                                    <Form.Item style={{ textAlign: "center", marginTop: 24 }}>
-                                        <Button type="primary" htmlType="submit" size="large">
-                                            Lưu thay đổi
-                                        </Button>
-                                    </Form.Item>
-                                </Form>
-                            </>
-                        )}
-                    </Card>
-                </Content>
-            </Layout>
-        </Spin>
+                                        <Form.Item style={{ textAlign: "center", marginTop: 24 }}>
+                                            <Space>
+                                                <Button
+                                                    type="default"
+                                                    size="large"
+                                                    onClick={() => handleCancel()}
+                                                >
+                                                    Hủy bỏ
+                                                </Button>
+                                                <Button
+                                                    type="primary"
+                                                    htmlType="submit"
+                                                    size="large"
+                                                    loading={isSubmit}
+                                                >
+                                                    Lưu thay đổi
+                                                </Button>
+                                            </Space>
+                                        </Form.Item>
+                                    </Form>
+                                </>
+                            )}
+                        </Card>
+                    </Content>
+                </Layout>
+            </Spin>
         </div>
     );
 };
