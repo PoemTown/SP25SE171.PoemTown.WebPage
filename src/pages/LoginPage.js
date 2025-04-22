@@ -2,11 +2,13 @@ import React, { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 import { useSignalR } from "../SignalR/SignalRContext";
-import { message, Button, Spin } from "antd";
+import { message, Button, Spin, Modal } from "antd";
 import { LoadingOutlined } from '@ant-design/icons';
+import { useNavigate } from "react-router-dom";
 
 
 const LoginPage = () => {
+    const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: "", password: "" });
     const [error, setError] = useState("");
     const [isForgotPasswordPopupOpen, setForgotPasswordPopupOpen] = useState(false);
@@ -50,6 +52,27 @@ const LoginPage = () => {
             setIsSending(false);
         }
     };
+
+
+    const handleEmailVerification = async (email) => {
+        try {
+            // Call the API to send OTP for email confirmation
+            const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/accounts/v1/email/otp`, { email: email });
+    
+            // If API call is successful, redirect to confirmation page
+            if (response.status === 202) {
+                message.success("Đã gửi email xác nhận, vui lòng kiểm tra hộp thư đến!");
+                // Redirect to the email confirmation page
+                navigate("/confirm-email", { state: { email } });
+            } else {
+                message.error("Có lỗi khi gửi yêu cầu xác nhận email. Vui lòng thử lại!");
+            }
+        } catch (error) {
+            console.error("Error sending OTP for email confirmation:", error);
+            message.error("Có lỗi khi gửi yêu cầu xác nhận email. Vui lòng thử lại!");
+        }
+    };
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true); // Start loading
@@ -97,7 +120,13 @@ const LoginPage = () => {
                         message.error("Người đùng không tồn tại");
                         break;
                     case "Email is not confirmed":
-                        message.error("Tài khoản chưa được kích hoạt");
+                        Modal.confirm({
+                            title: 'Tài khoản chưa được kích hoạt',
+                            content: 'Bạn chưa xác nhận email, hãy nhấn nút xác nhận bên dưới xác nhận email.',
+                            okText: 'Xác nhận',
+                            cancelText: 'Hủy',
+                            onOk: () => handleEmailVerification(formData.email),
+                        });
                         break;
                     default:
                         message.error("Email hoặc mật khẩu không chính xác");
