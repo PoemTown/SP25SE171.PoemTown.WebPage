@@ -246,14 +246,14 @@ const LoginPage = () => {
                     </div>
 
                     {/* Google Login */}
-                    <button style={styles.googleButton}>
+                    {/* <button style={styles.googleButton}>
                         <img
                             src="./GGicon.png"
                             alt="Google Logo"
                             style={styles.googleIcon}
                         />
                         Đăng nhập với Google
-                    </button>
+                    </button> */}
 
                     {/* Home Link */}
                     <button
