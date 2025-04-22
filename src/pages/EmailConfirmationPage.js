@@ -62,7 +62,11 @@ const EmailConfirmationPage = () => {
         const errorData = await response.json();
         switch (errorData.errorMessage) {
           case "Email Otp is incorrect":
-            message.error("Mã xác nhận không đúng hoặc đã hết hạn")
+            message.error("Mã xác nhận không đúng")
+            break;
+          case "Email OTP is expired":
+            message.error("Mã xác nhận đã hết hạn")
+            break;
         }
         console.error("Lỗi xác nhận:", errorData);
         //setError(errorData.message || "Có lỗi xảy ra, vui lòng thử lại.");
