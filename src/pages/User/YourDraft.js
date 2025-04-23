@@ -1,20 +1,22 @@
 import React, { useState, useEffect } from "react";
 import CreatePoemForm from "./Form/CreatePoemForm";
-import { Menu, Dropdown, Modal, Button } from "antd";
+import { Menu, Dropdown, Modal, Button, message } from "antd";
 import { MoreOutlined, BookOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
-
-const YourDraft = ({ isCreatingPoem ,setIsCreatingPoem, displayName, avatar, statisticBorder, achievementBorder }) => {
+import { RiDeleteBinLine } from "react-icons/ri";
+import axios from "axios";
+const YourDraft = ({ isCreatingPoem, setIsCreatingPoem, displayName, avatar, statisticBorder, achievementBorder }) => {
     const [poems, setPoems] = useState([]);
     const [selectedPoemId, setSelectedPoemId] = useState(null);
     const [selectedPoemData, setSelectedPoemData] = useState(null);
     const [isDeleteModalVisible, setIsDeleteModalVisible] = useState(false);
     const navigate = useNavigate();
     const [onHover, setOnHover] = useState(false);
+    const accessToken = localStorage.getItem("accessToken");
+    const [reloadTrigger, setReloadTrigger] = useState(false);
 
     useEffect(() => {
         const fetchPoems = async () => {
-            const accessToken = localStorage.getItem("accessToken");
             try {
                 const response = await fetch(
                     `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=0`,
@@ -25,7 +27,7 @@ const YourDraft = ({ isCreatingPoem ,setIsCreatingPoem, displayName, avatar, sta
                     }
                 );
                 const data = await response.json();
-                console.log("ASdasd",data)
+                console.log("ASdasd", data)
                 if (data.statusCode === 200) {
                     const poemsWithId = data.data.map((poem) => ({
                         id: poem.id,
@@ -53,7 +55,7 @@ const YourDraft = ({ isCreatingPoem ,setIsCreatingPoem, displayName, avatar, sta
         };
 
         fetchPoems();
-    }, []);
+    }, [reloadTrigger]);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -71,8 +73,23 @@ const YourDraft = ({ isCreatingPoem ,setIsCreatingPoem, displayName, avatar, sta
     };
 
     const handleDeleteForever = async () => {
-        console.log("Xóa vĩnh viễn:", selectedPoemId);
-        setIsDeleteModalVisible(false);
+        try {
+            const response = await axios.delete(
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/${selectedPoemId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                }
+            )
+            console.log("Xóa vĩnh viễn:", selectedPoemId);
+            message.success("Xóa bản nháp thành công!");
+            setIsDeleteModalVisible(false);
+            setReloadTrigger((prev) => !prev);
+
+        } catch (error) {
+            message.error("Xóa bản nháp thất bại!");
+        }
     };
 
     const handleMoveToTrash = async () => {
@@ -131,17 +148,11 @@ const YourDraft = ({ isCreatingPoem ,setIsCreatingPoem, displayName, avatar, sta
                                                     <Dropdown
                                                         overlay={
                                                             <Menu>
-                                                                <Menu.Item key="report" >
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-
-                                                                    </div>
-                                                                </Menu.Item>
                                                                 <Menu.Item key="copylink">
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
-
+                                                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }} onClick={() => showDeleteModal(item.id)}>
+                                                                        <RiDeleteBinLine color="red" /> Xóa
                                                                     </div>
                                                                 </Menu.Item>
-
                                                             </Menu>
                                                         }
                                                         trigger={["click"]}
@@ -201,17 +212,17 @@ const YourDraft = ({ isCreatingPoem ,setIsCreatingPoem, displayName, avatar, sta
                     <Button key="cancel" onClick={() => setIsDeleteModalVisible(false)}>
                         Hủy
                     </Button>,
-                    <Button key="trash" type="default" onClick={handleMoveToTrash}>
-                        Chuyển vào thùng rác
-                    </Button>,
+                    // <Button key="trash" type="default" onClick={handleMoveToTrash}>
+                    //     Chuyển vào thùng rác
+                    // </Button>,
                     <Button key="delete" type="primary" danger onClick={handleDeleteForever}>
-                        Xóa vĩnh viễn
-                    </Button>,
+                        Xóa
+                    </Button>
                 ]}
             >
                 <p>
                     <ExclamationCircleOutlined style={{ color: "red", marginRight: "10px" }} />
-                    Bạn muốn xóa bài thơ này vĩnh viễn hay chuyển vào thùng rác?
+                    Bạn muốn xóa bản nháp này phải không?
                 </p>
             </Modal>
         </div>

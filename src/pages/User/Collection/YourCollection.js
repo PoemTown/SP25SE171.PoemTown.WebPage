@@ -216,7 +216,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
       message.success("Xóa tập thơ thành công!");
     } catch (error) {
       console.error("Error:", error);
-      message.error(error.response.data?.errorMessage);
+      message.error("Lỗi khi xóa!");
     }
   };
 
