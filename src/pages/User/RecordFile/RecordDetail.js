@@ -65,7 +65,7 @@ const RecordDetail = () => {
             content: (
                 <Input
                     type="number"
-                    min={0}
+                    min={10000}
                     placeholder="Nhập giá bán"
                     ref={priceRef}
                     onKeyDown={(e) => {
