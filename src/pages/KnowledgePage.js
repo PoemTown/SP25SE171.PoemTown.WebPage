@@ -175,8 +175,14 @@ const KnowledgePage = () => {
                                 }}
                             >
                                 <Paragraph style={{ margin: 0, paddingLeft: 20 }}>
-                                    {type.description}
+                                    {type.description.split('\n').map((line, index) => (
+                                        <span key={index}>
+                                            {line}
+                                            <br />
+                                        </span>
+                                    ))}
                                 </Paragraph>
+
 
                                 {type.poem && (
                                     <>
@@ -199,7 +205,7 @@ const KnowledgePage = () => {
                                                 {formatPoemContent(type.poem.content)}
                                             </div>
                                             <Divider style={{ margin: '12px 0' }} />
-                                            <PoetInfoWrapper 
+                                            <PoetInfoWrapper
                                                 onClick={() => handlePoetClick(type.poem.poetSample.id)}
                                             >
                                                 {type.poem.poetSample.avatar && (

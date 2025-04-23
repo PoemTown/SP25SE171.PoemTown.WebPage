@@ -50,6 +50,7 @@ const PoemTypeManagement = () => {
   const [editingType, setEditingType] = useState({
     id: '',
     name: '',
+    guideLine:'',
     description: '',
     color: '#3f51b5'
   });
@@ -146,6 +147,7 @@ const PoemTypeManagement = () => {
     setEditingType({
       id: selectedType.id,
       name: selectedType.name,
+      guideLine: selectedType.guideLine,
       description: selectedType.description,
       color: selectedType.color
     });
@@ -157,6 +159,7 @@ const PoemTypeManagement = () => {
     setEditingType({
       id: '',
       name: '',
+      guideLine:'',
       description: '',
       color: '#3f51b5'
     });
@@ -250,7 +253,7 @@ const PoemTypeManagement = () => {
   const handleEdit = async () => {
     try {
       // Validate form
-      if (!editingType.name || !editingType.description || !editingType.color) {
+      if (!editingType.name || !editingType.description || !editingType.color || !editingType.guideLine) {
         setSnackbar({
           open: true,
           message: 'Vui lòng điền đầy đủ thông tin',
@@ -276,6 +279,7 @@ const PoemTypeManagement = () => {
         body: JSON.stringify({
           id: editingType.id,
           name: editingType.name,
+          guideLine: editingType.guideLine,
           description: editingType.description,
           color: editingType.color
         })
@@ -404,7 +408,7 @@ const PoemTypeManagement = () => {
               <TableRow>
                 <TableCell>STT</TableCell>
                 <TableCell>Tên thể loại</TableCell>
-                <TableCell>Mô tả</TableCell>
+                <TableCell>Cách làm thơ</TableCell>
                 <TableCell>Màu sắc</TableCell>
                 <TableCell>Hành động</TableCell>
               </TableRow>
@@ -427,7 +431,7 @@ const PoemTypeManagement = () => {
                           textOverflow: 'ellipsis'
                         }}
                       >
-                        {type?.description || 'Không có mô tả'}
+                        {type?.guideLine || 'Không có mô tả'}
                       </Typography>
                     </TableCell>
                     <TableCell>
@@ -524,6 +528,12 @@ const PoemTypeManagement = () => {
                 />
               </DialogContentText>
               <DialogContentText>
+                <strong>Cách làm:</strong>
+              </DialogContentText>
+              <Paper elevation={0} sx={{ p: 2, mt: 1, bgcolor: 'grey.100' }}>
+                <Typography>{selectedType.guideLine || "Chưa có"}</Typography>
+              </Paper>
+              <DialogContentText sx={{ mt: 2}}>
                 <strong>Mô tả:</strong>
               </DialogContentText>
               <Paper elevation={0} sx={{ p: 2, mt: 1, bgcolor: 'grey.100' }}>
@@ -597,6 +607,21 @@ const PoemTypeManagement = () => {
                 disabled={isCreating}
                 error={!newPoemType.name}
                 helperText={!newPoemType.name ? 'Vui lòng nhập tên thể loại' : ''}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Cách làm thơ"
+                name="guideLine"
+                value={newPoemType.guideLine}
+                onChange={handleInputChange}
+                multiline
+                rows={4}
+                required
+                disabled={isCreating}
+                error={!newPoemType.guideLine}
+                helperText={!newPoemType.guideLine ? 'Vui lòng nhập cách làm thơ' : ''}
               />
             </Grid>
             <Grid item xs={12}>
@@ -696,6 +721,21 @@ const PoemTypeManagement = () => {
                 disabled={isEditing}
                 error={!editingType.name}
                 helperText={!editingType.name ? 'Vui lòng nhập tên thể loại' : ''}
+              />
+            </Grid>
+            <Grid item xs={12}>
+              <TextField
+                fullWidth
+                label="Cách làm thơ"
+                name="guideLine"
+                value={editingType.guideLine}
+                onChange={handleEditInputChange}
+                multiline
+                rows={4}
+                required
+                disabled={isEditing}
+                error={!editingType.guideLine}
+                helperText={!editingType.guideLine ? 'Vui lòng nhập cách làm thơ' : ''}
               />
             </Grid>
             <Grid item xs={12}>

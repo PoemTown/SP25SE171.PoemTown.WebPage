@@ -884,7 +884,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
         color: poemType.color || 'inherit'
       }}>
         <strong>Thể loại: {poemType.name}</strong>
-        <p>{poemType.description}</p>
+        <p>{poemType.guideLine}</p>
         {poemType.poem && (
           <div style={{ marginTop: '10px', padding: '10px', backgroundColor: 'rgba(0,0,0,0.05)', borderRadius: '4px' }}>
             <strong>Ví dụ:</strong>

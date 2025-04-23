@@ -14,13 +14,13 @@ export const useChat = (jwtToken, updateMessages) => {
       .withUrl(CHAT_HUB_URL, {
         accessTokenFactory: () => jwtToken, // Nếu có dùng JWT
       })
-      .withAutomaticReconnect() 
+      .withAutomaticReconnect()
       .build();
 
     connect.on("ReceiveMessage", (fromUserId, message) => {
       // Gọi callback để cập nhật tin nhắn mới vào MessengerPage
       updateMessages(fromUserId, message);
-    }); 
+    });
 
     connect
       .start()
@@ -32,8 +32,10 @@ export const useChat = (jwtToken, updateMessages) => {
     return () => {
       connect.stop();
     };
-  }, [jwtToken, updateMessages]);
-
+  }, [jwtToken]);
+  const disconnect = () => {
+    connectionRef.current?.stop();
+  };
   const sendMessage = async (toUserId, message) => {
     try {
       const res = await axios.post(

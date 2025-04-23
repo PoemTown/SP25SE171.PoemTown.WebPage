@@ -4,15 +4,16 @@ import { Tooltip } from "antd";
 import EmojiPicker from "emoji-picker-react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { IoMdSend } from "react-icons/io";
+import axios from "axios";
 const MessengerPage = ({ refreshKey }) => {
     const [conversations, setConversations] = useState([]);
     const [selectedConversation, setSelectedConversation] = useState(null);
     const [chatMessages, setChatMessages] = useState([]);
     const [chatInput, setChatInput] = useState("");
     const jwtToken = localStorage.getItem("accessToken");
-    const currentUserId = localStorage.getItem("userId"); 
+    const currentUserId = localStorage.getItem("userId");
     const chatContainerRef = useRef(null);
-  const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
 
 
     // Hàm updateMessages cập nhật tin nhắn mới từ SignalR
@@ -42,7 +43,7 @@ const MessengerPage = ({ refreshKey }) => {
 
     const handleEmojiClick = (emojiData) => {
         setChatInput((prevInput) => prevInput + emojiData.emoji);
-      };
+    };
 
     const { sendMessage } = useChat(jwtToken, updateMessages);
 
@@ -55,6 +56,7 @@ const MessengerPage = ({ refreshKey }) => {
     useEffect(() => {
         if (selectedConversation) {
             fetchContentChat(selectedConversation.id);
+            markMessage();
         }
     }, [selectedConversation]);
 
@@ -65,6 +67,34 @@ const MessengerPage = ({ refreshKey }) => {
                 chatContainerRef.current.scrollHeight;
         }
     }, [chatMessages]);
+
+    async function markMessage() {
+
+        const fromUserId = selectedConversation.lastMessage.fromUser.id;
+        const toUserId = currentUserId;
+
+        const url = `${process.env.REACT_APP_API_BASE_URL}/chat/v1/mark`;
+        try {
+            const response = await axios.put(
+                url,
+                null,
+                {
+                    headers: {
+                        Authorization: `Bearer ${jwtToken}`,
+                    },
+                    params: {
+                        fromUserId,
+                        toUserId,
+                    }
+                }
+            );
+            fetchChatPartner();
+
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        }
+    }
+
 
     async function fetchChatPartner(pageNumber = 1, pageSize = 10) {
         const url = `${process.env.REACT_APP_API_BASE_URL}/chat/v1/partner?pageNumber=${pageNumber}&pageSize=${pageSize}`;
@@ -131,9 +161,9 @@ const MessengerPage = ({ refreshKey }) => {
     function formatDate(dateStr) {
         const date = new Date(dateStr);
         return date.toLocaleDateString("vi-VN"); // → "09/04/2025"
-      }
-      
-      
+    }
+
+
     return (
         <div style={styles.container}>
             {/* Sidebar: danh sách cuộc trò chuyện */}
@@ -142,28 +172,43 @@ const MessengerPage = ({ refreshKey }) => {
                     <h2>Tin nhắn</h2>
                 </header>
                 <ul style={styles.conversationList}>
-                    {conversations.map((conv) => (
-                        <li
-                            key={conv.id}
-                            style={styles.conversationItem}
-                            onClick={() => setSelectedConversation(conv)}
-                        >
-                            <img src={conv.avatar} alt="avatar" style={styles.avatar} />
-                            <div style={styles.conversationDetails}>
-                                <span style={styles.conversationName}>
-                                    {conv.fromUser
-                                        ? conv.fromUser.displayName
-                                        : conv.displayName}
-                                </span>
-                                <span style={styles.conversationMessage}>
-                                    {conv.lastMessage.messageText}
-                                </span>
-                            </div>
-                            <div style={styles.conversationTime}>
-                                {formatTime(conv.lastMessage.createdTime)}
-                            </div>
-                        </li>
-                    ))}
+                    {conversations.map((conv) => {
+                        const isSelected = selectedConversation?.id === conv.id;
+                        const isUnread = conv.lastMessage?.isRead === false && conv.lastMessage.fromUser.id !== currentUserId;
+
+                        return (
+                            <li
+                                key={conv.id}
+                                style={{
+                                    ...styles.conversationItem,
+                                    ...(isSelected && styles.selectedConversationItem),
+                                }}
+                                onClick={() => setSelectedConversation(conv)}
+                            >
+                                <img src={conv.avatar} alt="avatar" style={styles.avatar} />
+                                <div style={styles.conversationDetails}>
+                                    <span style={{
+                                        ...styles.conversationName,
+                                        ...(isUnread && styles.unreadText)
+                                    }}>
+                                        {isUnread && <span style={styles.unreadDot}></span>}
+                                        {conv.fromUser
+                                            ? conv.fromUser.displayName
+                                            : conv.displayName}
+                                    </span>
+                                    <span style={{
+                                        ...styles.conversationMessage,
+                                        ...(isUnread && styles.unreadText)
+                                    }}>
+                                        {conv.lastMessage?.messageText}
+                                    </span>
+                                </div>
+                                <div style={styles.conversationTime}>
+                                    {conv.lastMessage?.createdTime && formatTime(conv.lastMessage.createdTime)}
+                                </div>
+                            </li>
+                        );
+                    })}
                 </ul>
             </div>
             {/* Chat area: hiển thị nội dung chat của cuộc trò chuyện được chọn */}
@@ -202,8 +247,8 @@ const MessengerPage = ({ refreshKey }) => {
                                         <div
                                             style={{
                                                 ...styles.messageBubble,
-                                                backgroundColor: isMine ? "#FEE9A3" : "#3B1E1E",
-                                                color: isMine ? "#000" : "#fff",
+                                                backgroundColor: isMine ? "#3B4DFF" : "#DBDBDB",
+                                                color: isMine ? "#fff" : "#000",
                                                 borderTopLeftRadius: isMine ? "12px" : "4px",
                                                 borderTopRightRadius: isMine ? "4px" : "12px",
                                                 textAlign: isMine ? "left" : "left",
@@ -219,47 +264,47 @@ const MessengerPage = ({ refreshKey }) => {
                             })}
                         </div>
 
-                         <form style={styles.chatInputContainer} onSubmit={handleSendMessage}>
-                                  <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%" }}>
-                                    {/* Nút chọn emoji */}
-                                    <div style={{ position: "relative" }}>
-                                      <BsEmojiSmile
+                        <form style={styles.chatInputContainer} onSubmit={handleSendMessage}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "10px", width: "100%" }}>
+                                {/* Nút chọn emoji */}
+                                <div style={{ position: "relative" }}>
+                                    <BsEmojiSmile
                                         style={{ fontSize: "24px", cursor: "pointer", color: "#555" }}
                                         title="Gửi emoji"
                                         onClick={() => setShowEmojiPicker((prev) => !prev)}
-                                      />
-                                      {/* Bảng emoji hiển thị khi showEmojiPicker = true */}
-                                      {showEmojiPicker && (
-                                        <div style={{ position: "absolute", bottom: "40px", zIndex: 999 }}>
-                                          <EmojiPicker onEmojiClick={handleEmojiClick} />
-                                        </div>
-                                      )}
-                                    </div>
-                        
-                                    {/* Input chat */}
-                                    <input
-                                      type="text"
-                                      placeholder="Nhập tin nhắn..."
-                                      value={chatInput}
-                                      onChange={(e) => setChatInput(e.target.value)}
-                                      style={styles.chatInput}
                                     />
-                        
-                                    {/* Nút gửi */}
-                                    <div
-                                      style={{
+                                    {/* Bảng emoji hiển thị khi showEmojiPicker = true */}
+                                    {showEmojiPicker && (
+                                        <div style={{ position: "absolute", bottom: "40px", zIndex: 999 }}>
+                                            <EmojiPicker onEmojiClick={handleEmojiClick} />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Input chat */}
+                                <input
+                                    type="text"
+                                    placeholder="Nhập tin nhắn..."
+                                    value={chatInput}
+                                    onChange={(e) => setChatInput(e.target.value)}
+                                    style={styles.chatInput}
+                                />
+
+                                {/* Nút gửi */}
+                                <div
+                                    style={{
                                         ...styles.sendButton,
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
                                         cursor: chatInput.trim() ? "pointer" : "not-allowed",
-                                      }}
-                                      onClick={chatInput.trim() ? handleSendMessage : null}
-                                    >
-                                      <IoMdSend style={{ fontSize: "24px", color: "blue" }} />
-                                    </div>
-                                  </div>
-                                </form>
+                                    }}
+                                    onClick={chatInput.trim() ? handleSendMessage : null}
+                                >
+                                    <IoMdSend style={{ fontSize: "24px", color: "blue" }} />
+                                </div>
+                            </div>
+                        </form>
                     </>
                 ) : (
                     <div style={styles.noConversation}>Chọn một cuộc trò chuyện để bắt đầu</div>
@@ -276,7 +321,7 @@ const styles = {
         display: "flex",
         height: "80vh",
         maxWidth: "800px",
-        minWidth:"800px",
+        minWidth: "800px",
         margin: "20px auto",
         borderRadius: "16px",
         boxShadow: "0 8px 30px rgba(0,0,0,0.12)",
@@ -342,6 +387,16 @@ const styles = {
             }
         }
     },
+    selectedConversationItem: {
+        backgroundColor: '#e8f4ff', // Màu nền khi được chọn
+        borderLeft: '3px solid #1890ff', // Thêm border left để làm nổi bật
+        fontWeight: '600', // Làm đậm chữ
+    },
+
+    unreadText: {
+        fontWeight: '600',
+        color: '#1d1d1f', // Màu chữ đậm hơn
+    },
     avatar: {
         width: "48px",
         height: "48px",
@@ -355,6 +410,8 @@ const styles = {
         minWidth: 0,
     },
     conversationName: {
+        position: 'relative', // Cần cho positioning của dot
+        paddingLeft: '14px',
         display: "block",
         fontSize: "14px",
         fontWeight: 500,
@@ -364,7 +421,20 @@ const styles = {
         textOverflow: "ellipsis",
         whiteSpace: "nowrap",
     },
+    unreadDot: {
+        position: 'absolute',
+        left: 0,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '8px',
+        height: '8px',
+        borderRadius: '50%',
+        backgroundColor: '#1B56FD', // Màu xanh
+        boxShadow: '0 2px 4px rgba(33,150,243,0.3)',
+    },
     conversationMessage: {
+        paddingLeft: '14px',
+
         display: "block",
         fontSize: "13px",
         color: "#868e96",
