@@ -2,8 +2,8 @@ import React, { useState } from "react";
 import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 import { useSignalR } from "../SignalR/SignalRContext";
-import { message, Button, Spin, Modal } from "antd";
-import { LoadingOutlined } from '@ant-design/icons';
+import { message, Button, Spin, Modal, Input, Form, Divider } from "antd";
+import { LoadingOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
 
 
@@ -58,7 +58,7 @@ const LoginPage = () => {
         try {
             // Call the API to send OTP for email confirmation
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/accounts/v1/email/otp`, { email: email });
-    
+
             // If API call is successful, redirect to confirmation page
             if (response.status === 202) {
                 message.success("Đã gửi email xác nhận, vui lòng kiểm tra hộp thư đến!");
@@ -74,7 +74,6 @@ const LoginPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
         setLoading(true); // Start loading
 
         try {
@@ -144,383 +143,245 @@ const LoginPage = () => {
 
 
     return (
-        <Spin spinning={loading} size="large" tip="Đang đăng nhập..." style={{ display: "flex", justifyContent: "center", alignItems: "center", minHeight: "100vh" }}>
+        <Spin spinning={loading} size="large" tip="Đang đăng nhập..." style={{ minHeight: '100vh' }}>
             <div style={styles.loginContainer}>
-                {/* Left Section */}
-                <div style={styles.loginFormContainer}>
-                    <h1 style={styles.loginTitle}>Chào mừng quay lại!</h1>
-                    <p style={styles.loginSubtitle}>Mời bạn điền thông tin để đăng nhập</p>
-
-
-                    {/* Form */}
-                    <form onSubmit={handleSubmit}>
-                        <div style={styles.formGroup}>
-                            <label style={styles.label} htmlFor="email">
-                                Địa chỉ email
-                            </label>
-                            <input
-                                id="email"
-                                name="email"
-                                type="email"
-                                placeholder="Nhập email"
-                                style={styles.formInput}
-                                value={formData.email}
-                                onBlur={() => setTouched({ ...touched, email: true })}
-                                onChange={handleInputChange}
-                            />
-                            {touched.email && formData.email === '' && (
-                                <p style={{ color: 'red', marginTop: 4 }}>Email không được để trống.</p>
-                            )}
-                        </div>
-
-                        <div style={styles.formGroup}>
-                            <label style={styles.label} htmlFor="password">
-                                Mật khẩu
-                            </label>
-                            <input
-                                id="password"
-                                name="password"
-                                type="password"
-                                placeholder="Nhập mật khẩu"
-                                style={styles.formInput}
-                                value={formData.password}
-                                onBlur={() => setTouched({ ...touched, password: true })}
-                                onChange={handleInputChange}
-                            />
-                            {touched.password && formData.password === '' && (
-                                <p style={{ color: 'red', marginTop: 4 }}>Mật khẩu không được để trống.</p>
-                            )}
-                        </div>
-
-                        {error && <p style={styles.error}>{error}</p>}
-
-                        <div style={{ textAlign: "center", marginBottom: "20px", width: "100%" }}>
-                            <button
-                                type="button"
-                                style={{
-                                    background: "none",
-                                    border: "none",
-                                    color: "#007bff",
-                                    textDecoration: "underline",
-                                    cursor: "pointer",
-                                    fontSize: "0.9rem",
-                                }}
-                                onClick={() => setForgotPasswordPopupOpen(true)}
-                            >
-                                Quên mật khẩu?
-                            </button>
-                        </div>
-
-                        <Button
-                            type="primary"
-                            htmlType="submit"
-                            disabled={!formData.email || !formData.password}
-                            style={{
-                                ...styles.loginButton,
-                                opacity: formData.email === '' || formData.password === '' ? 0.5 : 1,
-                                cursor: formData.email === '' || formData.password === '' ? 'not-allowed' : 'pointer',
-                            }}
-                        >
-                            Đăng nhập
-                        </Button>
-                        {/* <button type="submit" style={{
-                        ...styles.loginButton,
-                        opacity: formData.email === '' || formData.password === '' ? 0.5 : 1,
-                        cursor: formData.email === '' || formData.password === '' ? 'not-allowed' : 'pointer',
-                    }}
-                        disabled={formData.email === '' || formData.password === ''}>
-                        Đăng nhập
-                    </button> */}
-                    </form>
-
-                    {/* Forgot Password Popup */}
-                    {isForgotPasswordPopupOpen && (
-                        <div style={styles.popupOverlay}>
-                            <div style={styles.popup}>
-                                <h2>Khôi phục mật khẩu</h2>
-                                <p>Nhập địa chỉ email của bạn để nhận liên kết khôi phục mật khẩu:</p>
-                                <input
-                                    type="email"
-                                    placeholder="Nhập email"
-                                    style={styles.formInput}
-                                    value={forgotEmail}
-                                    onChange={(e) => setForgotEmail(e.target.value)}
-                                />
-                                <button
-                                    style={styles.loginButton}
-                                    onClick={handleForgotPassword}
-                                    disabled={isSending}
-                                >
-                                    {isSending ? (
-                                        <span className="spinner"></span>
-                                    ) : (
-                                        "Gửi"
-                                    )}
-                                </button>
-                                <p style={forgotPasswordMessage.includes("được gửi") ? styles.successMessage : styles.error}>
-                                    {forgotPasswordMessage}
-                                </p>
-                                <button
-                                    style={styles.homeButton}
-                                    onClick={() => setForgotPasswordPopupOpen(false)}
-                                >
-                                    Đóng
-                                </button>
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Divider */}
-                    <div style={styles.divider}>
-                        <span style={styles.dividerLine}></span>
-                        <span style={styles.dividerText}>or</span>
-                        <span style={styles.dividerLine}></span>
+                {/* Left Section - Form */}
+                <div style={styles.formWrapper}>
+                    <div style={styles.header}>
+                        <h1 style={styles.title}>Chào mừng quay lại! 👋</h1>
+                        <p style={styles.subtitle}>Vui lòng đăng nhập để tiếp tục</p>
                     </div>
 
-                    {/* Google Login
-                    // <button style={styles.googleButton}>
-                    //     <img
-                    //         src="./GGicon.png"
-                    //         alt="Google Logo"
-                    //         style={styles.googleIcon}
-                    //     />
-                    //     Đăng nhập với Google
-                    // </button> */}
+                    <Form layout="vertical" onFinish={handleSubmit}>
+                        {/* Email Field */}
+                        <Form.Item
+                            label="Email"
+                            validateStatus={touched.email && !formData.email ? 'error' : ''}
+                            help={touched.email && !formData.email && 'Email không được để trống'}
+                        >
+                            <Input
+                                prefix={<MailOutlined style={styles.inputIcon} />}
+                                size="large"
+                                placeholder="Nhập email của bạn"
+                                name="email"
+                                value={formData.email}
+                                onChange={handleInputChange}
+                                onBlur={() => setTouched({ ...touched, email: true })}
+                            />
+                        </Form.Item>
 
-                    {/* Home Link */}
-                    <button
-                        style={styles.homeButton}
-                        onClick={() => (window.location.href = "/")}
+                        {/* Password Field */}
+                        <Form.Item
+                            label="Mật khẩu"
+                            validateStatus={touched.password && !formData.password ? 'error' : ''}
+                            help={touched.password && !formData.password && 'Mật khẩu không được để trống'}
+                        >
+                            <Input.Password
+                                prefix={<LockOutlined style={styles.inputIcon} />}
+                                size="large"
+                                placeholder="Nhập mật khẩu"
+                                name="password"
+                                value={formData.password}
+                                onChange={handleInputChange}
+                                onBlur={() => setTouched({ ...touched, password: true })}
+                            />
+                        </Form.Item>
+
+                        {/* Forgot Password */}
+                        <div style={styles.forgotPassword}>
+                            <Button
+                                type="link"
+                                onClick={() => setForgotPasswordPopupOpen(true)}
+                                style={styles.linkButton}
+                            >
+                                Quên mật khẩu?
+                            </Button>
+                        </div>
+
+                        {/* Submit Button */}
+                        <Form.Item>
+                            <Button
+                                type="primary"
+                                htmlType="submit"
+                                size="large"
+                                block
+                                loading={loading}
+                                style={styles.submitButton}
+                                disabled={!formData.email || !formData.password}
+                            >
+                                Đăng nhập
+                            </Button>
+                        </Form.Item>
+                    </Form>
+
+                    {/* Divider */}
+                    <Divider style={styles.divider}>Hoặc tiếp tục với</Divider>
+
+                    {/* Social Login */}
+                    {/* <Button 
+                        icon={<GoogleOutlined />}
+                        size="large"
+                        block
+                        style={styles.socialButton}
                     >
-                        Quay về trang chủ
-                    </button>
+                        Đăng nhập với Google
+                    </Button> */}
 
                     {/* Signup Link */}
-                    <p style={styles.signupLink}>
-                        Chưa có tài khoản?{" "}
-                        <a href="/signup" style={styles.signupLinkHighlight}>
-                            Đăng ký ngay!
-                        </a>
-                    </p>
+                    <div style={styles.footer}>
+                        <span style={styles.footerText}>Chưa có tài khoản? </span>
+                        <Button
+                            type="link"
+                            href="/signup"
+                            style={styles.signupLink}
+                        >
+                            Đăng ký ngay
+                        </Button>
+                    </div>
                 </div>
 
-                {/* Right Section */}
-                <div
-                    style={{
-                        ...styles.loginImageContainer,
-                        backgroundImage: `url('./Login.jpg')`,
-                    }}
-                ></div>
+                {/* Right Section - Image */}
+                <div style={{ ...styles.imageSection, backgroundImage: `url('./Login.jpg')`, }} >
+                    <div style={styles.imageOverlay} >
+                        <h2 style={styles.imageTitle}>Khám phá thế giới mới</h2>
+                        <p style={styles.imageText}>Kết nối với cộng đồng và trải nghiệm những điều tuyệt vời</p>
+                    </div>
+                </div>
 
+                {/* Forgot Password Modal */}
+                <Modal
+                    title="Khôi phục mật khẩu"
+                    visible={isForgotPasswordPopupOpen}
+                    onCancel={() => setForgotPasswordPopupOpen(false)}
+                    footer={null}
+                    centered
+                >
+                    <Form layout="vertical">
+                        <Form.Item label="Email">
+                            <Input
+                                placeholder="Nhập email đăng ký"
+                                size="large"
+                                value={forgotEmail}
+                                onChange={(e) => setForgotEmail(e.target.value)}
+                            />
+                        </Form.Item>
+                        <Button
+                            type="primary"
+                            block
+                            size="large"
+                            loading={isSending}
+                            onClick={handleForgotPassword}
+                        >
+                            Gửi yêu cầu
+                        </Button>
+                    </Form>
+                </Modal>
             </div>
         </Spin>
-
     );
-};
-
+}
 const styles = {
     loginContainer: {
-        display: "flex",
-        minHeight: "100vh",
-        flexDirection: "row",
+        display: 'flex',
+        minHeight: '100vh',
     },
-    loginFormContainer: {
+    formWrapper: {
         flex: 1,
-        padding: "40px",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        backgroundColor: "#f9f9f9",
+        maxWidth: 520,
+        padding: 48,
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        backgroundColor: '#fff',
     },
-    loginTitle: {
-        fontSize: "2rem",
-        fontWeight: "bold",
-        marginBottom: "20px",
+    header: {
+        marginBottom: 40,
+        textAlign: 'center',
     },
-    loginSubtitle: {
-        color: "#666",
-        marginBottom: "20px",
-        textAlign: "center",
+    title: {
+        fontSize: 28,
+        fontWeight: 600,
+        marginBottom: 8,
+        color: '#1a1a1a',
     },
-    formGroup: {
-        marginBottom: "15px",
-        width: "100%",
+    subtitle: {
+        fontSize: 16,
+        color: '#666',
     },
-    label: {
-        display: "block",
-        marginBottom: "5px",
-        color: "#333",
-        fontWeight: "600",
+    inputIcon: {
+        color: '#1890ff',
+        marginRight: 8,
     },
-    formInput: {
-        width: "300px",
-        padding: "10px",
-        border: "1px solid #ccc",
-        borderRadius: "5px",
-        marginBottom: "10px"
+    forgotPassword: {
+        textAlign: 'right',
+        margin: '-12px 0 24px 0',
     },
-    loginButton: {
-        width: "100%",
-        padding: "12px",
-        backgroundColor: "#5c3d2e",
-        color: "white",
-        fontSize: "1rem",
-        fontWeight: "bold",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-        transition: "background-color 0.3s ease",
+    linkButton: {
+        padding: 0,
+        fontSize: 14,
+    },
+    submitButton: {
+        height: 48,
+        fontSize: 16,
+        fontWeight: 500,
     },
     divider: {
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        margin: "20px 0",
+        color: '#666',
+        margin: '32px 0',
     },
-    dividerLine: {
-        flex: 1,
-        height: "1px",
-        backgroundColor: "#ccc",
+    socialButton: {
+        height: 48,
+        fontSize: 16,
+        borderColor: '#d9d9d9',
     },
-    dividerText: {
-        margin: "0 10px",
-        color: "#999",
+    footer: {
+        marginTop: 32,
+        textAlign: 'center',
     },
-    googleIcon: {
-        width: "20px",
-        height: "20px",
-        marginRight: "10px",
-    },
-    googleButton: {
-        width: "50%",
-        padding: "12px",
-        border: "1px solid #ccc",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        borderRadius: "5px",
-        backgroundColor: "white",
-        cursor: "pointer",
+    footerText: {
+        color: '#666',
     },
     signupLink: {
-        marginTop: "20px",
-        textAlign: "center",
-        color: "#666",
+        padding: 0,
+        fontSize: 14,
     },
-    signupLinkHighlight: {
-        color: "#007bff",
-        textDecoration: "none",
-    },
-    loginImageContainer: {
+    imageSection: {
         flex: 1,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-        backgroundRepeat: "no-repeat",
+        //background: "linear-gradient(135deg, #5c3d2e 0%, #3a241b 100%)",
+        position: 'relative',
+        backgroundImage: "url('./Login.jpg')",
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
     },
-    homeButton: {
-        width: "50%",
-        padding: "12px",
-        marginTop: "10px",
-        backgroundColor: "#007bff",
-        color: "white",
-        fontSize: "1rem",
-        fontWeight: "bold",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-        transition: "background-color 0.3s ease",
-    },
-    error: {
-        color: "red",
-        marginBottom: "15px",
-        fontSize: "0.9rem",
-        textAlign: "center",
-    },
-    popupOverlay: {
-        position: "fixed",
-        top: 0,
+    imageOverlay: {
+        position: 'absolute',
+        bottom: 0,
         left: 0,
-        width: "100vw",
-        height: "100vh",
-        backgroundColor: "rgba(0, 0, 0, 0.5)",
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
+        right: 0,
+        padding: 48,
+        background: 'linear-gradient(transparent, rgba(0, 0, 0, 0.7))',
     },
-    popup: {
-        backgroundColor: "white",
-        padding: "20px",
-        borderRadius: "8px",
-        boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-        width: "400px",
-        textAlign: "center",
+    imageTitle: {
+        fontSize: 28,
+        color: '#fff',
+        marginBottom: 16,
     },
-    popupTitle: {
-        marginBottom: "10px",
-        fontSize: "1.5rem",
+    imageText: {
+        fontSize: 16,
+        color: 'rgba(255, 255, 255, 0.85)',
     },
-    popupActions: {
-        display: "flex",
-        justifyContent: "space-between",
-        marginTop: "20px",
-    },
-    popupButton: {
-        padding: "10px 20px",
-        backgroundColor: "#5c3d2e",
-        color: "white",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-    },
-    popupButtonCancel: {
-        padding: "10px 20px",
-        backgroundColor: "#ccc",
-        color: "#333",
-        border: "none",
-        borderRadius: "5px",
-        cursor: "pointer",
-    },
-    success: {
-        color: "green",
-        fontSize: "0.9rem",
-        marginBottom: "10px",
-    },
-    spinner: {
-        display: "inline-block",
-        width: "15px",
-        height: "15px",
-        border: "3px solid rgba(0, 0, 0, 0.2)",
-        borderTopColor: "#007bff",
-        borderRadius: "50%",
-        animation: "spin 1s linear infinite",
-    },
-    successMessage: {
-        color: "green",
-        fontSize: "0.9rem",
-        marginTop: "10px",
-        textAlign: "center",
-    },
-    "@keyframes spin": {
-        from: { transform: "rotate(0deg)" },
-        to: { transform: "rotate(360deg)" },
-    },
-
-    "@media (max-width: 768px)": {
+    '@media (max-width: 768px)': {
         loginContainer: {
-            flexDirection: "column",
+            flexDirection: 'column',
         },
-        loginFormContainer: {
-            padding: "20px",
+        formWrapper: {
+            maxWidth: '100%',
+            padding: 24,
+            minHeight: '100vh',
         },
-        loginImageContainer: {
-            width: "100%",
-            height: "300px",
-        },
-        googleButton: {
-            width: "100%",
+        imageSection: {
+            display: 'none',
         },
     },
 };
-
 export default LoginPage;

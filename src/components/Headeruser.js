@@ -199,7 +199,7 @@ const Headeruser = ({ userData }) => {
         <ChatDropdown userData={userData} refreshKey={refreshKey} setRefreshKey={setRefreshKey} />
         <Dropdown overlay={notificationMenu} trigger={["click"]} placement="bottomRight">
           <Badge count={announcements?.filter(notif => !notif.isRead).length || 0} overflowCount={9}>
-            <BellOutlined style={{ ...styles.icon, color: "#000", fontSize: "21px" }} />
+            <BellOutlined style={{ ...styles.icon, color: "#7d6b58", fontSize: "21px" }} />
           </Badge>
         </Dropdown>
         <Dropdown overlay={menu} trigger={["click"]}>
@@ -264,7 +264,7 @@ const styles = {
   },
   icon: {
     fontSize: "24px",
-    color: "#000",
+    color: "#7d6b58",
     cursor: "pointer"
   },
 };

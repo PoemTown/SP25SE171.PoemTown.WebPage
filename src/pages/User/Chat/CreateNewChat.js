@@ -118,8 +118,8 @@ const CreateNewChat = ({ userData, refreshKey, onClose }) => {
                 <div
                   style={{
                     ...styles.messageBubble,
-                    backgroundColor: isMine ? "#FEE9A3" : "#3B1E1E",
-                    color: isMine ? "#000" : "#fff",
+                    backgroundColor: isMine ? "#3B4DFF" : "#DBDBDB",
+                    color: isMine ? "#fff" : "#000",
                     borderTopLeftRadius: isMine ? "12px" : "4px",
                     borderTopRightRadius: isMine ? "4px" : "12px",
                     textAlign: isMine ? "left" : "left",
@@ -218,7 +218,7 @@ const styles = {
   },
   closeIcon: {
     position: "absolute",
-    top: "15px",
+    top: "15px", 
     right: "20px",
     fontSize: "22px",
     cursor: "pointer",

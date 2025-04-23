@@ -12,7 +12,7 @@ const ChatDropdown = ({ userData, refreshKey, setRefreshKey }) => {
   };
 
   const handleChatRefresh = () => {
-    // When the chat is refreshed, update the refreshKey to trigger a re-render
+    // When the chat is refreshed, update the refreshKey to tr igger a re-render
     setRefreshKey(prevKey => prevKey + 1);
   };
 
@@ -32,10 +32,10 @@ const ChatDropdown = ({ userData, refreshKey, setRefreshKey }) => {
       visible={visible}
       onVisibleChange={handleVisibleChange}
       placement="bottomCenter"
-      
+      destroyPopupOnHide={true}
     >
       <Badge>
-        <TbMessage style={{ fontSize: "24px", color: "#000" }} />
+        <TbMessage style={{ fontSize: "24px", color: "#7d6b58" }} />
       </Badge>
     </Dropdown>
   );

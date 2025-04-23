@@ -621,7 +621,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                 border: '1px solid #b7eb8f'
             }}>
                 <strong>Thể loại: {currentPoemType.label}</strong>
-                <p>{currentPoemType.description}</p>
+                <p>{currentPoemType.guideLine}</p>
             </div>
         );
     };
