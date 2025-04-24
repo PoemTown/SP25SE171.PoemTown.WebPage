@@ -137,7 +137,7 @@ const LoginPage = () => {
                     default:
                         message.error("Email hoặc mật khẩu không chính xác.");
                         break;
-                }
+                } 
             }
             else {
                 message.error("Đã có lỗi xảy ra, vui lòng thử lại sau !");
