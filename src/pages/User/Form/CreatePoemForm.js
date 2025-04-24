@@ -2,15 +2,16 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import ReactQuill, { Quill } from "react-quill";
 import "react-quill/dist/quill.snow.css";
-import { Button, Input, message, Modal, Select, Spin, Card, Upload } from "antd";
+import { Button, Input, message, Modal, Select, Spin, Card, Upload, Tooltip } from "antd";
 import { FcIdea } from "react-icons/fc";
 import { FaSpellCheck } from "react-icons/fa6";
-import { UploadOutlined, ArrowLeftOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, SaveOutlined, SendOutlined, ExclamationCircleOutlined } from '@ant-design/icons';
 
 const { TextArea } = Input;
 const { Option } = Select;
 
 const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
+  // State quản lý dữ liệu bài thơ
   const [poemData, setPoemData] = useState({
     title: "",
     description: "",
@@ -24,9 +25,11 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     sourceCopyRightId: null,
     poemTypeId: "1"
   });
+
+  // Các state khác
   const [imageLoading, setImageLoading] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedType, setSelectedType] = useState(" ");
+  const [selectedType, setSelectedType] = useState("1");
   const [collections, setCollections] = useState([]);
   const [poemFile, setPoemFile] = useState(null);
   const [suggestion, setSuggestion] = useState(null);
@@ -43,6 +46,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
   const [previewImage, setPreviewImage] = useState(null);
   const [imageType, setImageType] = useState("cơ bản");
   const [poemTypes, setPoemTypes] = useState([]);
+  const [imageError, setImageError] = useState(false);
 
   const quillRef = useRef(null);
   const accessToken = localStorage.getItem("accessToken");
@@ -167,7 +171,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
         const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
         if (response.data && response.data.data) {
           setPoemTypes(response.data.data);
-          setSelectedType(response.data.data[0]?.id)
+          setSelectedType(response.data.data[0]?.id.toString() || "1");
         }
       } catch (error) {
         console.error("Error fetching poem types:", error);
@@ -188,7 +192,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
         });
         if (response.data && response.data.data) {
           setCollections(response.data.data);
-          setPoemData(prev => ({ ...prev, collectionId: response.data.data[0].id }))
+          setPoemData(prev => ({ ...prev, collectionId: response.data.data[0]?.id || "" }))
         }
       } catch (error) {
         console.error("Error fetching collections:", error);
@@ -241,11 +245,13 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   }, []);
 
+  // Xử lý thay đổi input
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setPoemData((prev) => ({ ...prev, [name]: value }));
   };
 
+  // Xử lý lưu nháp
   const handleSave = async () => {
     try {
       await handleSubmit(0);
@@ -254,14 +260,26 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý submit bài thơ
   const handleSubmit = async (status) => {
     setIsLoading(true);
+    
+    // Kiểm tra đăng nhập
     if (!accessToken) {
       message.error("Vui lòng đăng nhập để đăng bài.");
       setIsLoading(false);
       return;
     }
 
+    // Kiểm tra hình ảnh khi đăng bài (status = 1)
+    if (status === 1 && !poemData.poemImage) {
+      message.error("Vui lòng thêm hình ảnh minh họa trước khi đăng bài!");
+      setImageError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // Kiểm tra các trường bắt buộc khi đăng bài
     if (status === 1) {
       if (!poemData.title.trim()) {
         message.error("Vui lòng nhập tiêu đề");
@@ -275,6 +293,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
       }
     }
 
+    // Validate cấu trúc bài thơ theo thể loại
     const validatePoemStructure = () => {
       const lines = formatContent(poemData.content, selectedType)
         .split('\n')
@@ -286,8 +305,8 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
       };
 
       switch (selectedType) {
-        case '1': return true;
-        case '2':
+        case '1': return true; // Thơ tự do không cần validate
+        case '2': // Lục bát
           const lastLineWords = lines[lines.length - 1].trim().split(/\s+/).length;
           if (lastLineWords !== 8) {
             message.error("Lục bát phải kết thúc bằng câu 8 chữ!");
@@ -297,24 +316,24 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
             const wordCount = line.trim().split(/\s+/).length;
             return index % 2 === 0 ? wordCount === 6 : wordCount === 8;
           });
-        case '3':
+        case '3': // Song thất lục bát
           if (lines.length % 4 !== 0) return false;
           const pattern = [7, 7, 6, 8];
           return lines.every((line, index) => {
             const stanzaIndex = index % 4;
             return line.trim().split(/\s+/).length === pattern[stanzaIndex];
           });
-        case '4':
+        case '4': // Thất ngôn tứ tuyệt
           return lines.length === 4 && lines.every(line => line.trim().split(/\s+/).length === 7);
-        case '5':
+        case '5': // Ngũ ngôn tứ tuyệt
           return lines.length === 4 && lines.every(line => line.trim().split(/\s+/).length === 5);
-        case '6':
+        case '6': // Thất ngôn bát cú
           return lines.length === 8 && lines.every(line => line.trim().split(/\s+/).length === 7);
-        case '7': return lines.every(line => line.trim().split(/\s+/).length === 4);
-        case '8': return lines.every(line => line.trim().split(/\s+/).length === 5);
-        case '9': return lines.every(line => line.trim().split(/\s+/).length === 6);
-        case '10': return lines.every(line => line.trim().split(/\s+/).length === 7);
-        case '11': return lines.every(line => line.trim().split(/\s+/).length === 8);
+        case '7': return lines.every(line => line.trim().split(/\s+/).length === 4); // 4 chữ
+        case '8': return lines.every(line => line.trim().split(/\s+/).length === 5); // 5 chữ
+        case '9': return lines.every(line => line.trim().split(/\s+/).length === 6); // 6 chữ
+        case '10': return lines.every(line => line.trim().split(/\s+/).length === 7); // 7 chữ
+        case '11': return lines.every(line => line.trim().split(/\s+/).length === 8); // 8 chữ
         default: return true;
       }
     };
@@ -329,6 +348,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
       return;
     }
 
+    // Chuẩn bị dữ liệu gửi lên server
     const formattedContent = formatContent(poemData.content, selectedType);
     const requestData = {
       title: poemData.title,
@@ -378,10 +398,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý thay đổi nội dung bài thơ
   const handleInputContent = (value) => {
     setPoemData(prev => ({ ...prev, content: value }));
   };
 
+  // Định dạng nội dung theo thể loại thơ
   const formatContent = (content, typeId) => {
     const poemType = poemTypes.find(type => type.id.toString() === typeId);
     if (!poemType || typeId === '1') {
@@ -498,12 +520,14 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý upload hình ảnh
   const handleUploadImage = async (event) => {
     const file = event.target.files[0];
     if (file) {
       setIsLoading(true);
       const imageUrl = URL.createObjectURL(file);
       setPoemFile(imageUrl);
+      setImageError(false);
 
       const formData = new FormData();
       formData.append("file", file);
@@ -521,10 +545,10 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
 
         if (!response.ok) throw new Error("Failed to upload image");
         const data = await response.json();
-        message.success("Poem Image updated successfully!");
+        message.success("Cập nhật hình ảnh thành công!");
         setPoemData((prev) => ({ ...prev, poemImage: data.data }));
       } catch (error) {
-        message.error("Error uploading image!");
+        message.error("Lỗi khi tải lên hình ảnh!");
         console.error(error);
       } finally {
         setIsLoading(false);
@@ -532,6 +556,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý gợi ý từ AI
   const handleAISuggest = async () => {
     const content = formatContent(poemData.content, selectedType);
     const poemType = poemTypes.find(type => type.id.toString() === selectedType);
@@ -542,7 +567,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
 
     let question = '';
-    console.log(poemType)
     switch (poemType.name) {
       case "Thơ Tự Do":
         question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ Tự Do. Chỉ trả về cả bài thơ hoàn chỉnh"
@@ -581,7 +605,6 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
         question = "Hãy sáng tác thêm 4 câu tiếp nối cho đoạn thơ trên theo đúng thể thơ tôi đã đề cập. Chỉ trả về cả bài thơ hoàn chỉnh";
     }
 
-    console.log(question);
     const requestBody = {
       poemTypeId: poemType.id,
       poemContent: content,
@@ -611,6 +634,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý kiểm tra đạo văn
   const handleAICheckPlagiarism = async () => {
     const content = formatContent(poemData.content, selectedType);
     const requestBody = { poemContent: content };
@@ -635,6 +659,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý tạo hình ảnh bằng AI
   const handleAIRenderImage = async () => {
     let content = formatContent(poemData.content, selectedType).substring(0, 600);
     setIsLoading(true);
@@ -692,6 +717,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
       setPreviewSelectedIndex(previewImages.length);
       setIsModalContentCompleteOpen(false);
       setIsPreviewModalOpen(true);
+      setImageError(false);
     } catch (error) {
       message.error("Lỗi khi tạo hình ảnh!");
       console.error(error);
@@ -700,6 +726,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý lưu nháp
   const handleSaveDraft = async () => {
     setIsLoading(true);
     if (!accessToken) {
@@ -752,15 +779,24 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
     }
   };
 
+  // Xử lý submit bài thơ từ nháp
   const handleSubmitDraft = async () => {
     setIsLoading(true);
     if (!accessToken) {
-      message.error("Vui lòng đăng nhập để lưu nháp.");
+      message.error("Vui lòng đăng nhập để đăng bài.");
       setIsLoading(false);
       return;
     }
 
-    // Validation checks
+    // Kiểm tra hình ảnh
+    if (!poemData.poemImage) {
+      message.error("Vui lòng thêm hình ảnh minh họa trước khi đăng bài!");
+      setImageError(true);
+      setIsLoading(false);
+      return;
+    }
+
+    // Kiểm tra các trường bắt buộc
     if (!poemData.title.trim()) {
       message.error("Vui lòng nhập tiêu đề");
       setIsLoading(false);
@@ -847,10 +883,11 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
       );
       if (!response.ok) throw new Error("Failed to apply the image");
       const imageData = await response.json();
-      message.success("Poem Image updated successfully!");
+      message.success("Cập nhật hình ảnh thành công!");
       setPoemData(prev => ({ ...prev, poemImage: imageData.data }));
       setPoemFile(imageData.data);
       setIsPreviewModalOpen(false);
+      setImageError(false);
     } catch (error) {
       message.error("Lỗi khi áp dụng hình ảnh!");
       console.error(error);
@@ -868,6 +905,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
   const handleOptionChange = (value) => setImageType(value);
   const handleImagePromptChange = (e) => setImagePrompt(e.target.value);
 
+  // Hiển thị mô tả thể loại thơ
   const renderPoemTypeDescription = () => {
     if (!selectedType) return null;
 
@@ -946,7 +984,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
           <div style={gridStyle}>
             <div style={formGroupStyle}>
               <div style={formGroupStyle}>
-                <label style={formLabelStyle}>Tiêu đề bài thơ</label>
+                <label style={formLabelStyle}>Tiêu đề bài thơ <span style={{ color: 'red' }}>*</span></label>
                 <Input
                   placeholder="Nhập tiêu đề..."
                   name="title"
@@ -957,7 +995,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
               </div>
 
               <div style={formGroupStyle}>
-                <label style={formLabelStyle}>Mô tả ngắn</label>
+                <label style={formLabelStyle}>Mô tả ngắn <span style={{ color: 'red' }}>*</span></label>
                 <Input.TextArea
                   rows={3}
                   placeholder="Mô tả về bài thơ..."
@@ -988,7 +1026,14 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
             </div>
 
             <div style={formGroupStyle}>
-              <label style={formLabelStyle}>Ảnh minh họa</label>
+              <label style={formLabelStyle}>
+                Ảnh minh họa <span style={{ color: 'red' }}>*</span>
+                {imageError && (
+                  <span style={{ color: 'red', marginLeft: '8px' }}>
+                    <ExclamationCircleOutlined /> Vui lòng thêm ảnh minh họa
+                  </span>
+                )}
+              </label>
               <div style={{ display: 'flex', gap: '16px' }}>
                 <div style={{ flex: 1 }}>
                   <Upload
@@ -1022,17 +1067,18 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
                     alt="Ảnh minh họa bài thơ"
                     style={{
                       ...imagePreviewStyle,
-                      border: !poemFile && !poemData.poemImage ? '1px dashed #d9d9d9' : 'none'
+                      border: imageError ? '1px dashed #f5222d' : 
+                        (!poemFile && !poemData.poemImage ? '1px dashed #d9d9d9' : 'none')
                     }}
                   />
                   {!poemFile && !poemData.poemImage && (
                     <div style={{
                       textAlign: 'center',
-                      color: '#999',
+                      color: imageError ? '#f5222d' : '#999',
                       marginTop: '8px',
                       fontSize: '12px'
                     }}>
-                      Ảnh mặc định
+                      {imageError ? 'Vui lòng thêm ảnh minh họa' : 'Ảnh mặc định'}
                     </div>
                   )}
                 </div>
@@ -1151,14 +1197,19 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
         >
           {setDrafting ? "Lưu nháp" : "Lưu vào nháp"}
         </Button>
-        <Button
-          type="primary"
-          icon={<SendOutlined />}
-          onClick={setDrafting ? handleSubmitDraft : () => handleSubmit(1)}
-          loading={isLoading}
+        <Tooltip 
+          title={!poemData.poemImage ? "Vui lòng thêm ảnh minh họa trước khi đăng bài" : ""}
         >
-          Đăng bài
-        </Button>
+          <Button
+            type="primary"
+            icon={<SendOutlined />}
+            onClick={setDrafting ? handleSubmitDraft : () => handleSubmit(1)}
+            loading={isLoading}
+            disabled={!poemData.poemImage}
+          >
+            Đăng bài
+          </Button>
+        </Tooltip>
       </div>
 
       {/* Modal gợi ý từ AI */}
@@ -1170,6 +1221,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
           <Button key="cancel" onClick={handleCancel}>Đóng</Button>,
           <Button key="copy" type="primary" onClick={handleCopyToContent}>Dán vào nội dung</Button>
         ]}
+        width={700}
       >
         <div style={{ marginBottom: '16px', color: '#666' }}>
           Đây là nội dung chúng tôi sử dụng AI để gợi ý cho bạn. Hãy bấm "Dán vào nội dung" để áp dụng vào bài thơ của bạn.
@@ -1188,9 +1240,12 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
         onCancel={handleCancelModalContentComplete}
         footer={[
           <Button key="cancel" onClick={handleCancelModalContentComplete}>Đóng</Button>,
-          <Button key="preview" onClick={() => setIsPreviewModalOpen(true)}>Xem lại ảnh đã tạo</Button>,
+          <Button key="preview" onClick={() => setIsPreviewModalOpen(true)} disabled={previewImages.length === 0}>
+            Xem lại ảnh đã tạo
+          </Button>,
           <Button key="confirm" type="primary" onClick={handleAIRenderImage}>Xác nhận tạo ảnh</Button>
         ]}
+        width={700}
       >
         <div style={{ marginBottom: '16px' }}>
           <div style={{ marginBottom: '16px' }}>
