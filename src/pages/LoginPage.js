@@ -43,6 +43,7 @@ const LoginPage = () => {
 
             if (response.status === 202) {
                 setForgotPasswordMessage("Yêu cầu khôi phục mật khẩu đã được gửi!");
+                message.success("Yêu cầu khôi phục mật khẩu đã được gửi!")
                 setTimeout(() => {
                     setForgotPasswordPopupOpen(false);
                 }, 1500);
@@ -50,6 +51,7 @@ const LoginPage = () => {
         } catch (err) {
             console.error("Password recovery failed:", err.response?.data || err.message);
             setForgotPasswordMessage("Không thể gửi yêu cầu, vui lòng kiểm tra lại email.");
+            message.error("Không thể gửi yêu cầu, vui lòng kiểm tra lại email!")
         } finally {
             setIsSending(false);
         }
