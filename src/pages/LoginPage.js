@@ -120,19 +120,22 @@ const LoginPage = () => {
                         message.error("Mật khẩu không chính xác.");
                         break;
                     case "User not found":
-                        message.error("Người đùng không tồn tại");
+                        message.error("Người đùng không tồn tại.");
                         break;
                     case "Email is not confirmed":
                         Modal.confirm({
-                            title: 'Tài khoản chưa được kích hoạt',
+                            title: 'Tài khoản chưa được kích hoạt.',
                             content: 'Bạn chưa xác nhận email, hãy nhấn nút xác nhận bên dưới xác nhận email.',
                             okText: 'Xác nhận',
                             cancelText: 'Hủy',
                             onOk: () => handleEmailVerification(formData.email),
                         });
                         break;
+                    case "Account is locked, please contact admin":
+                        message.error("Tài khoản bạn đã bị khóa, xin vui lòng liên hệ với quản trị viên.");
+                        break;
                     default:
-                        message.error("Email hoặc mật khẩu không chính xác");
+                        message.error("Email hoặc mật khẩu không chính xác.");
                         break;
                 }
             }
