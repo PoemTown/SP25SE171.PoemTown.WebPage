@@ -3,7 +3,7 @@ import axios from "axios";
 import { jwtDecode } from 'jwt-decode';
 import { useSignalR } from "../SignalR/SignalRContext";
 import { message, Button, Spin, Modal, Input, Form, Divider } from "antd";
-import { LoadingOutlined, LockOutlined, MailOutlined } from '@ant-design/icons';
+import { LoadingOutlined, LockOutlined, MailOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
 
 
@@ -20,6 +20,8 @@ const LoginPage = () => {
         password: false,
     });
     const [loading, setLoading] = useState(false);
+    const [isHovered, setIsHovered] = useState(false);
+
     // SignalR
     const { createAnnouncementConnection } = useSignalR();
 
@@ -212,6 +214,28 @@ const LoginPage = () => {
                                 Đăng nhập
                             </Button>
                         </Form.Item>
+                        <Form.Item>
+                            <Button
+                                type="primary"
+                                size="large"
+                                ghost
+                                block
+                                loading={loading}
+                                style={{
+                                    ...styles.submitButton,
+                                    ...(isHovered ? {
+                                        color: '#40a9ff',
+                                        borderColor: '#40a9ff',
+                                        backgroundColor: 'rgba(24, 144, 255, 0.1)'
+                                    } : {})
+                                }}
+                                onMouseEnter={() => setIsHovered(true)}
+                                onMouseLeave={() => setIsHovered(false)}
+                                onClick={() => { navigate('/') }}
+                            >
+                                Quay về trang chủ
+                            </Button>
+                        </Form.Item>
                     </Form>
 
                     {/* Divider */}
@@ -324,6 +348,7 @@ const styles = {
         height: 48,
         fontSize: 16,
         fontWeight: 500,
+        transition: 'all 0.3s ease',
     },
     divider: {
         color: '#666',
