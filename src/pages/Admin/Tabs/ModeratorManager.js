@@ -19,9 +19,10 @@ import {
     TextField,
     Chip
 } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { ArrowBackIos, ArrowForwardIos, Delete } from "@mui/icons-material";
 import axios from "axios";
 import AccountDetail from "../Form/AccountDetail";
+import { message } from "antd";
 import { message } from "antd";
 
 const getAccountType = (type) => {
@@ -32,6 +33,7 @@ const getAccountType = (type) => {
         default: return "Không xác định";
     }
 };
+
 const getTypeColor = (status) => {
     switch (status) {
         case 2: return "warning";
@@ -40,6 +42,7 @@ const getTypeColor = (status) => {
         default: return "default";
     }
 };
+
 const ModeratorManagement = () => {
     const [accounts, setAccounts] = useState([]);
     const [currentPage, setCurrentPage] = useState(0);
@@ -57,6 +60,10 @@ const ModeratorManagement = () => {
         fullName: '',
         phoneNumber: ''
     });
+    const [deleting, setDeleting] = useState(false);
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState(false);
+    const [accountToDelete, setAccountToDelete] = useState(null);
+
     const itemsPerPage = 5;
 
     useEffect(() => {
@@ -116,8 +123,71 @@ const ModeratorManagement = () => {
             fetchAccounts();
             setOpenCreateDialog(false);
             setNewAccount({ email: "", fullName: "", phoneNumber: "" });
+            message.success("Tạo mới người quản lý thành công");
         } catch (err) {
             console.error("Không thể tạo mới người quản lý.");
+            message.error("Tạo mới người quản lý thất bại");
+        }
+    };
+
+    const handleDeleteAccount = async (accountId) => {
+        setDeleting(true);
+        try {
+            await axios.delete(
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts/moderator/${accountId}`,
+                {
+                    headers: {
+                        Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
+                    },
+                }
+            );
+            message.success("Xóa người quản lý thành công");
+            fetchAccounts();
+        } catch (err) {
+            console.error("Lỗi khi xóa người quản lý:", err);
+            message.error("Xóa người quản lý thất bại");
+        } finally {
+            setDeleting(false);
+            setConfirmDeleteOpen(false);
+        }
+    };
+
+    const openDeleteDialog = (account) => {
+        setAccountToDelete(account);
+        setConfirmDeleteOpen(true);
+    };
+
+    const closeDeleteDialog = () => {
+        setAccountToDelete(null);
+        setConfirmDeleteOpen(false);
+    };
+
+    const confirmDeleteAccount = () => {
+        if (accountToDelete) {
+            handleDeleteAccount(accountToDelete.id);
+        }
+    };
+
+    const handleEmailChange = (e) => {
+        const emailValue = e.target.value;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        setNewAccount({ ...newAccount, email: emailValue });
+
+        if (!emailRegex.test(emailValue)) {
+            setErrors({ ...errors, email: 'Xin vui lòng nhập đúng Email.' });
+        } else {
+            setErrors({ ...errors, email: '' });
+        }
+    };
+
+    const handleFullNameChange = (e) => {
+        const fullNameValue = e.target.value;
+        setNewAccount({ ...newAccount, fullName: fullNameValue });
+
+        if (!fullNameValue.trim()) {
+            setErrors({ ...errors, fullName: 'Họ và tên không được để trống.' });
+        } else {
+            setErrors({ ...errors, fullName: '' });
         }
     };
 
@@ -172,6 +242,7 @@ const ModeratorManagement = () => {
                             <TableCell>Email</TableCell>
                             <TableCell>Trạng thái</TableCell>
                             <TableCell>Avatar</TableCell>
+                            <TableCell>Thao tác</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -179,11 +250,14 @@ const ModeratorManagement = () => {
                             <TableRow
                                 key={account.id}
                                 hover
-                                onClick={() => fetchAccountDetail(account.id)}
-                                sx={{ cursor: "pointer" }}
                             >
                                 <TableCell>{currentPage * itemsPerPage + index + 1}</TableCell>
-                                <TableCell>{account.userName || "Không có tên đăng nhập"}</TableCell>
+                                <TableCell 
+                                    onClick={() => fetchAccountDetail(account.id)}
+                                    sx={{ cursor: "pointer" }}
+                                >
+                                    {account.userName || "Không có tên đăng nhập"}
+                                </TableCell>
                                 <TableCell>{account.fullName || "Không có họ và tên"}</TableCell>
                                 <TableCell>{account.email || "Không có email"}</TableCell>
                                 <TableCell>
@@ -193,9 +267,25 @@ const ModeratorManagement = () => {
                                         size="small"
                                     />
                                 </TableCell>
-
                                 <TableCell>
-                                    <Avatar src={account.avatar || ""} alt={account.fullName} />
+                                    <Avatar 
+                                        src={account.avatar || ""} 
+                                        alt={account.fullName} 
+                                        onClick={() => fetchAccountDetail(account.id)}
+                                        sx={{ cursor: "pointer" }}
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <IconButton
+                                        color="error"
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            openDeleteDialog(account);
+                                        }}
+                                        disabled={deleting}
+                                    >
+                                        <Delete />
+                                    </IconButton>
                                 </TableCell>
                             </TableRow>
                         ))}
@@ -266,6 +356,24 @@ const ModeratorManagement = () => {
             </Dialog>
 
             <AccountDetail open={openDialog} onClose={() => setOpenDialog(false)} account={selectedAccount} loading={loading} />
+
+            {/* Dialog xác nhận xóa */}
+            <Dialog open={confirmDeleteOpen} onClose={closeDeleteDialog}>
+                <DialogTitle>Xác nhận xóa</DialogTitle>
+                <DialogContent>
+                    Bạn có chắc chắn muốn xóa người quản lý <strong>{accountToDelete?.userName}</strong>?
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={closeDeleteDialog} color="inherit">Hủy</Button>
+                    <Button 
+                        onClick={confirmDeleteAccount} 
+                        color="error" 
+                        disabled={deleting}
+                    >
+                        {deleting ? "Đang xóa..." : "Xóa"}
+                    </Button>
+                </DialogActions>
+            </Dialog>
         </Box>
     );
 };

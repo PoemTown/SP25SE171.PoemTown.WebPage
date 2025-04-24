@@ -69,7 +69,7 @@ const DailyMessagesManagement = () => {
     } catch (err) {
       setError(err.response?.data?.message || err.message);
       setLoading(false);
-      showSnackbar('Error fetching messages', 'error');
+      showSnackbar('Lỗi khi tải danh sách tin nhắn', 'error');
     }
   };
 
@@ -98,9 +98,9 @@ const DailyMessagesManagement = () => {
     try {
       await api.delete(`/${messageToDelete.id}`);
       fetchMessages();
-      showSnackbar('Message deleted successfully', 'success');
+      showSnackbar('Xóa tin nhắn thành công', 'success');
     } catch (err) {
-      showSnackbar(err.response?.data?.message || 'Error deleting message', 'error');
+      showSnackbar(err.response?.data?.message || 'Lỗi khi xóa tin nhắn', 'error');
     } finally {
       setOpenDeleteDialog(false);
       setMessageToDelete(null);
@@ -110,18 +110,16 @@ const DailyMessagesManagement = () => {
   const handleSubmit = async () => {
     try {
       if (formData.id) {
-        // Update existing message - ID is passed in the request body
-        await api.put('/', formData); // Note: ID is in the body, not endpoint
-        showSnackbar('Message updated successfully', 'success');
+        await api.put('/', formData);
+        showSnackbar('Cập nhật tin nhắn thành công', 'success');
       } else {
-        // Create new message
         await api.post('/', { message: formData.message, isInUse: formData.isInUse });
-        showSnackbar('Message created successfully', 'success');
+        showSnackbar('Thêm tin nhắn mới thành công', 'success');
       }
       fetchMessages();
       setOpenForm(false);
     } catch (err) {
-      showSnackbar(err.response?.data?.message || 'Error saving message', 'error');
+      showSnackbar(err.response?.data?.message || 'Lỗi khi lưu tin nhắn', 'error');
     }
   };
 
@@ -153,7 +151,7 @@ const DailyMessagesManagement = () => {
   if (error) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <Typography color="error">Error: {error}</Typography>
+        <Typography color="error">Lỗi: {error}</Typography>
       </Box>
     );
   }
@@ -161,14 +159,14 @@ const DailyMessagesManagement = () => {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">Daily Messages Management</Typography>
+        <Typography variant="h5">Quản lý tin nhắn hàng ngày</Typography>
         <Button
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
           onClick={handleCreate}
         >
-          Add New Message
+          Thêm tin nhắn
         </Button>
       </Box>
 
@@ -176,10 +174,10 @@ const DailyMessagesManagement = () => {
         <Table>
           <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>No.</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Message</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Status</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '150px' }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>STT</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Nội dung</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Trạng thái</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '150px' }}>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -189,7 +187,7 @@ const DailyMessagesManagement = () => {
                 <TableCell>{message.message}</TableCell>
                 <TableCell>
                   <Typography color={message.isInUse ? "primary" : "textSecondary"}>
-                    {message.isInUse ? "Active" : "Inactive"}
+                    {message.isInUse ? "Đang hoạt động" : "Không hoạt động"}
                   </Typography>
                 </TableCell>
                 <TableCell>
@@ -206,14 +204,14 @@ const DailyMessagesManagement = () => {
         </Table>
       </TableContainer>
 
-      {/* Add/Edit Form */}
+      {/* Form thêm/sửa tin nhắn */}
       <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{formData.id ? 'Edit Message' : 'Add New Message'}</DialogTitle>
+        <DialogTitle>{formData.id ? 'Chỉnh sửa tin nhắn' : 'Thêm tin nhắn mới'}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
             <TextField
               name="message"
-              label="Message Content"
+              label="Nội dung tin nhắn"
               value={formData.message}
               onChange={handleChange}
               fullWidth
@@ -231,7 +229,7 @@ const DailyMessagesManagement = () => {
                   color="primary"
                 />
               }
-              label="Active Message"
+              label="Tin nhắn đang hoạt động"
             />
           </Box>
         </DialogContent>
@@ -241,7 +239,7 @@ const DailyMessagesManagement = () => {
             onClick={() => setOpenForm(false)}
             color="secondary"
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             startIcon={<SaveIcon />}
@@ -249,17 +247,17 @@ const DailyMessagesManagement = () => {
             color="primary"
             variant="contained"
           >
-            Save
+            Lưu
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Hộp thoại xác nhận xóa */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete this message?
+            Bạn có chắc chắn muốn xóa tin nhắn này không?
           </Typography>
           <Box sx={{ fontStyle: 'italic', mt: 2, p: 1, backgroundColor: '#f5f5f5' }}>
             "{messageToDelete?.message}"
@@ -267,7 +265,7 @@ const DailyMessagesManagement = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
-            Cancel
+            Hủy
           </Button>
           <Button 
             onClick={handleDeleteConfirm} 
@@ -275,12 +273,12 @@ const DailyMessagesManagement = () => {
             variant="contained"
             startIcon={<DeleteIcon />}
           >
-            Delete
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
+      {/* Thông báo snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

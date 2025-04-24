@@ -38,42 +38,6 @@ const AnnouncementsManagement = () => {
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState('');
 
-  const announcementTypes = {
-    1: 'Like',
-    2: 'Comment',
-    3: 'User',
-    4: 'Report',
-    5: 'Collection',
-    6: 'Poem',
-    7: 'Transaction',
-    8: 'Achievement',
-    9: 'Poem Leaderboard',
-    10: 'User Leaderboard',
-    11: 'Record File',
-    12: 'Follower',
-    13: 'Withdrawal Form',
-    14: 'Chat',
-    15: 'System'
-  };
-
-  const typeColors = {
-    1: 'primary',
-    2: 'secondary',
-    3: 'info',
-    4: 'warning',
-    5: 'success',
-    6: 'error',
-    7: 'primary',
-    8: 'secondary',
-    9: 'info',
-    10: 'warning',
-    11: 'success',
-    12: 'error',
-    13: 'primary',
-    14: 'secondary',
-    15: 'info'
-  };
-
   useEffect(() => {
     fetchAnnouncements();
   }, [page, rowsPerPage]);
@@ -83,7 +47,7 @@ const AnnouncementsManagement = () => {
       setLoading(true);
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
-        throw new Error('No access token found');
+        throw new Error('Không tìm thấy access token');
       }
 
       const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/announcements/v1/system?page=${page + 1}&limit=${rowsPerPage}`, {
@@ -94,7 +58,7 @@ const AnnouncementsManagement = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Lỗi HTTP! Mã trạng thái: ${response.status}`);
       }
 
       const data = await response.json();
@@ -111,7 +75,7 @@ const AnnouncementsManagement = () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
-        throw new Error('No access token found');
+        throw new Error('Không tìm thấy access token');
       }
 
       const response = await fetch('https://api-poemtown-staging.nodfeather.win/api/announcements/v1/system', {
@@ -127,16 +91,14 @@ const AnnouncementsManagement = () => {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`Lỗi HTTP! Mã trạng thái: ${response.status}`);
       }
 
       const data = await response.json();
-      setSnackbarMessage('Announcement created successfully!');
+      setSnackbarMessage('Tạo thông báo thành công!');
       setSnackbarOpen(true);
       setOpenCreateDialog(false);
       setNewAnnouncement({ title: '', content: '' });
-      
-      // Refresh the announcements list
       fetchAnnouncements();
     } catch (err) {
       setError(err.message);
@@ -154,7 +116,7 @@ const AnnouncementsManagement = () => {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleString();
+    return date.toLocaleString('vi-VN');
   };
 
   const handleInputChange = (e) => {
@@ -180,7 +142,7 @@ const AnnouncementsManagement = () => {
   if (error) {
     return (
       <Alert severity="error" onClose={() => setError(null)}>
-        Error: {error}
+        Lỗi: {error}
       </Alert>
     );
   }
@@ -189,7 +151,7 @@ const AnnouncementsManagement = () => {
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
         <Typography variant="h5" gutterBottom>
-          System Announcements Management
+          Quản lý thông báo
         </Typography>
         <Button
           variant="contained"
@@ -197,13 +159,13 @@ const AnnouncementsManagement = () => {
           startIcon={<Add />}
           onClick={() => setOpenCreateDialog(true)}
         >
-          Create New
+          Tạo mới
         </Button>
       </Box>
       
       {announcements.length === 0 ? (
         <Alert severity="info" sx={{ mt: 2 }}>
-          No announcements found.
+          Không có thông báo nào.
         </Alert>
       ) : (
         <>
@@ -211,11 +173,9 @@ const AnnouncementsManagement = () => {
             <Table>
               <TableHead>
                 <TableRow>
-                  <TableCell>Title</TableCell>
-                  <TableCell>Content</TableCell>
-                  <TableCell>Type</TableCell>
-                  <TableCell>Status</TableCell>
-                  <TableCell>Created Time</TableCell>
+                  <TableCell>Tiêu đề</TableCell>
+                  <TableCell>Nội dung</TableCell>
+                  <TableCell>Thời gian tạo</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -224,30 +184,6 @@ const AnnouncementsManagement = () => {
                     <TableCell>{announcement.title}</TableCell>
                     <TableCell sx={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {announcement.content}
-                    </TableCell>
-                    <TableCell>
-                      <Chip 
-                        label={announcementTypes[announcement.type] || `Type ${announcement.type}`} 
-                        color={typeColors[announcement.type] || 'default'} 
-                        size="small" 
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {announcement.isRead ? (
-                        <Chip 
-                          icon={<CheckCircle />} 
-                          label="Read" 
-                          color="success" 
-                          size="small" 
-                        />
-                      ) : (
-                        <Chip 
-                          icon={<Cancel />} 
-                          label="Unread" 
-                          color="error" 
-                          size="small" 
-                        />
-                      )}
                     </TableCell>
                     <TableCell>{formatDate(announcement.createdTime)}</TableCell>
                   </TableRow>
@@ -264,17 +200,18 @@ const AnnouncementsManagement = () => {
             rowsPerPage={rowsPerPage}
             onRowsPerPageChange={handleChangeRowsPerPage}
             rowsPerPageOptions={[5, 10, 25]}
+            labelRowsPerPage="Số hàng mỗi trang"
           />
         </>
       )}
 
-      {/* Create Announcement Dialog */}
+      {/* Dialog Tạo Thông Báo */}
       <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
-        <DialogTitle>Create New Announcement</DialogTitle>
+        <DialogTitle>Tạo thông báo mới</DialogTitle>
         <DialogContent>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: '400px', pt: 2 }}>
             <TextField
-              label="Title"
+              label="Tiêu đề"
               name="title"
               value={newAnnouncement.title}
               onChange={handleInputChange}
@@ -282,7 +219,7 @@ const AnnouncementsManagement = () => {
               required
             />
             <TextField
-              label="Content"
+              label="Nội dung"
               name="content"
               value={newAnnouncement.content}
               onChange={handleInputChange}
@@ -294,19 +231,19 @@ const AnnouncementsManagement = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenCreateDialog(false)}>Cancel</Button>
+          <Button onClick={() => setOpenCreateDialog(false)}>Hủy</Button>
           <Button 
             onClick={handleCreateAnnouncement} 
             color="primary" 
             variant="contained"
             disabled={!newAnnouncement.title || !newAnnouncement.content}
           >
-            Create
+            Tạo
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Success Snackbar */}
+      {/* Snackbar thành công */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
