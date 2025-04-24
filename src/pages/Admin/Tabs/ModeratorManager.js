@@ -127,7 +127,7 @@ const ModeratorManagement = () => {
         setNewAccount({ ...newAccount, email: emailValue });
 
         if (!emailRegex.test(emailValue)) {
-            setErrors({ ...errors, email: 'Please enter a valid email.' });
+            setErrors({ ...errors, email: 'Xin vui lòng nhập đúng Email.' });
         } else {
             setErrors({ ...errors, email: '' });
         }
@@ -138,7 +138,7 @@ const ModeratorManagement = () => {
         setNewAccount({ ...newAccount, fullName: fullNameValue });
 
         if (!fullNameValue.trim()) {
-            setErrors({ ...errors, fullName: 'Full name is required.' });
+            setErrors({ ...errors, fullName: 'Họ và tên không được để trống.' });
         } else {
             setErrors({ ...errors, fullName: '' });
         }
