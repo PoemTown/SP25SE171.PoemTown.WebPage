@@ -353,7 +353,7 @@ const ProfilePage = () => {
                       size="large"
                       inputMode="numeric"
                       pattern="[0-9]*"
-                      maxLength={(10)}
+                      maxLength={(11)}
                       required
                     />
                   </div>

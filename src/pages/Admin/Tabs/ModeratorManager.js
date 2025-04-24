@@ -22,6 +22,7 @@ import {
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 import axios from "axios";
 import AccountDetail from "../Form/AccountDetail";
+import { message } from "antd";
 
 const getAccountType = (type) => {
     switch (type) {
@@ -50,6 +51,11 @@ const ModeratorManagement = () => {
         email: "",
         fullName: "",
         phoneNumber: "",
+    });
+    const [errors, setErrors] = useState({
+        email: '',
+        fullName: '',
+        phoneNumber: ''
     });
     const itemsPerPage = 5;
 
@@ -115,6 +121,29 @@ const ModeratorManagement = () => {
         }
     };
 
+    const handleEmailChange = (e) => {
+        const emailValue = e.target.value;
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        setNewAccount({ ...newAccount, email: emailValue });
+
+        if (!emailRegex.test(emailValue)) {
+            setErrors({ ...errors, email: 'Please enter a valid email.' });
+        } else {
+            setErrors({ ...errors, email: '' });
+        }
+    };
+
+    const handleFullNameChange = (e) => {
+        const fullNameValue = e.target.value;
+        setNewAccount({ ...newAccount, fullName: fullNameValue });
+
+        if (!fullNameValue) {
+            setErrors({ ...errors, fullName: 'Full name is required.' });
+        } else {
+            setErrors({ ...errors, fullName: '' });
+        }
+    };
+
     const totalPages = Math.ceil(accounts.length / itemsPerPage);
     const displayedAccounts = accounts.slice(currentPage * itemsPerPage, (currentPage + 1) * itemsPerPage);
 
@@ -159,8 +188,8 @@ const ModeratorManagement = () => {
                                 <TableCell>{account.email || "Không có email"}</TableCell>
                                 <TableCell>
                                     <Chip
-                                        label={getAccountType(account.status)} 
-                                        color={getTypeColor(account.status)}    
+                                        label={getAccountType(account.status)}
+                                        color={getTypeColor(account.status)}
                                         size="small"
                                     />
                                 </TableCell>
@@ -191,9 +220,39 @@ const ModeratorManagement = () => {
             <Dialog open={openCreateDialog} onClose={() => setOpenCreateDialog(false)}>
                 <DialogTitle>Thêm mới người quản lý</DialogTitle>
                 <DialogContent>
-                    <TextField margin="dense" label="Email" fullWidth value={newAccount.email} onChange={(e) => setNewAccount({ ...newAccount, email: e.target.value })} />
-                    <TextField margin="dense" label="Họ và tên" fullWidth value={newAccount.fullName} onChange={(e) => setNewAccount({ ...newAccount, fullName: e.target.value })} />
-                    <TextField margin="dense" label="Số điện thoại" fullWidth value={newAccount.phoneNumber} onChange={(e) => setNewAccount({ ...newAccount, phoneNumber: e.target.value })} />
+                    <TextField
+                        margin="dense"
+                        label="Email"
+                        fullWidth
+                        value={newAccount.email}
+                        onChange={handleEmailChange}
+                        error={!!errors.email}
+                        helperText={errors.email}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Họ và tên"
+                        fullWidth
+                        value={newAccount.fullName}
+                        onChange={handleFullNameChange}
+                        error={!!errors.fullName}
+                        helperText={errors.fullName}
+                    />
+                    <TextField
+                        margin="dense"
+                        label="Số điện thoại"
+                        fullWidth
+                        inputMode="tel"
+                        value={newAccount.phoneNumber}
+                        onChange={(e) => {
+                            const value = e.target.value;
+                            if (/^\d{0,11}$/.test(value)) {
+                              setNewAccount({ ...newAccount, phoneNumber: value });
+                            }
+                          }}
+                        error={!!errors.phoneNumber}
+                        helperText={errors.phoneNumber}
+                    />
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setOpenCreateDialog(false)}>Hủy</Button>
