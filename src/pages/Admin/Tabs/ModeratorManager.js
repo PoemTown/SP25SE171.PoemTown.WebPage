@@ -23,7 +23,6 @@ import { ArrowBackIos, ArrowForwardIos, Delete } from "@mui/icons-material";
 import axios from "axios";
 import AccountDetail from "../Form/AccountDetail";
 import { message } from "antd";
-import { message } from "antd";
 
 const getAccountType = (type) => {
     switch (type) {
@@ -165,29 +164,6 @@ const ModeratorManagement = () => {
     const confirmDeleteAccount = () => {
         if (accountToDelete) {
             handleDeleteAccount(accountToDelete.id);
-        }
-    };
-
-    const handleEmailChange = (e) => {
-        const emailValue = e.target.value;
-        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
-        setNewAccount({ ...newAccount, email: emailValue });
-
-        if (!emailRegex.test(emailValue)) {
-            setErrors({ ...errors, email: 'Xin vui lòng nhập đúng Email.' });
-        } else {
-            setErrors({ ...errors, email: '' });
-        }
-    };
-
-    const handleFullNameChange = (e) => {
-        const fullNameValue = e.target.value;
-        setNewAccount({ ...newAccount, fullName: fullNameValue });
-
-        if (!fullNameValue.trim()) {
-            setErrors({ ...errors, fullName: 'Họ và tên không được để trống.' });
-        } else {
-            setErrors({ ...errors, fullName: '' });
         }
     };
 

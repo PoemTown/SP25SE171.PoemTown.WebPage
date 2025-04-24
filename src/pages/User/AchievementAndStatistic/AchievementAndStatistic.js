@@ -100,7 +100,7 @@ const AchievementAndStatistic = ({
             position: "relative",
             paddingBottom: "6px"
           }}>
-            Literary Achievements
+            Thành tựu cá nhân
             <span style={{
               position: "absolute",
               bottom: 0,
@@ -166,7 +166,7 @@ const AchievementAndStatistic = ({
                     transform: "rotate(15deg)"
                   }
                 }} />
-                <div>Your poetic journey begins here...</div>
+                <div>Hành trình thơ ca của bạn bắt đầu từ đây...</div>
               </div>
             )}
           </div>
@@ -202,7 +202,7 @@ const AchievementAndStatistic = ({
                   }
                 }}
               >
-                View All Achievements
+                Xem các thành tựu
                 <span style={{ 
                   fontSize: "16px",
                   transition: "transform 0.3s ease",
@@ -288,7 +288,7 @@ const AchievementAndStatistic = ({
             position: "relative",
             paddingBottom: "6px"
           }}>
-            Writing Statistics
+            Thống kê trang cá nhân
             <span style={{
               position: "absolute",
               bottom: 0,
@@ -322,42 +322,42 @@ const AchievementAndStatistic = ({
           }}>
             <ElegantStatItem 
               icon={<FaBook style={{ fontSize: "20px" }}/>} 
-              label="Poems" 
+              label="Bài thơ" 
               value={userStatistic?.totalPoems || 0}
               color={statisticBackgroundColorCode}
               accentColor="#7E57C2"
             />
             <ElegantStatItem 
               icon={<FaBookmark style={{ fontSize: "20px" }}/>}
-              label="Collections" 
+              label="Bộ sưu tập" 
               value={userStatistic?.totalCollections || 0}
               color={statisticBackgroundColorCode}
               accentColor="#7E57C2"
             />
             <ElegantStatItem 
               icon={<FaHeadphones style={{ fontSize: "20px" }}/>}
-              label="Recordings" 
+              label="Bản ghi âm" 
               value={userStatistic?.totalPersonalAudios || 0}
               color={statisticBackgroundColorCode}
               accentColor="#7E57C2"
             />
             <ElegantStatItem 
               icon={<FaHeart style={{ fontSize: "20px", color: "#FF5252" }}/>}
-              label="Likes" 
+              label="Lượt thích" 
               value={userStatistic?.totalLikes || 0}
               color={statisticBackgroundColorCode}
               accentColor="#FF5252"
             />
             <ElegantStatItem 
               icon={<FaUserFriends style={{ fontSize: "20px" }}/>}
-              label="Following" 
+              label="Đang theo dõi" 
               value={totalFollowings || 0}
               color={statisticBackgroundColorCode}
               accentColor="#7E57C2"
             />
             <ElegantStatItem 
               icon={<FaUserFriends style={{ transform: "scaleX(-1)", fontSize: "20px" }}/>}
-              label="Followers" 
+              label="Lượt theo dõi" 
               value={totalFollowers || 0}
               color={statisticBackgroundColorCode}
               accentColor="#7E57C2"
