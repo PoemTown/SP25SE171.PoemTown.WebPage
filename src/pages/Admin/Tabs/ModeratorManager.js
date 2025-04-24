@@ -137,7 +137,7 @@ const ModeratorManagement = () => {
         const fullNameValue = e.target.value;
         setNewAccount({ ...newAccount, fullName: fullNameValue });
 
-        if (!fullNameValue) {
+        if (!fullNameValue.trim()) {
             setErrors({ ...errors, fullName: 'Full name is required.' });
         } else {
             setErrors({ ...errors, fullName: '' });
@@ -247,16 +247,21 @@ const ModeratorManagement = () => {
                         onChange={(e) => {
                             const value = e.target.value;
                             if (/^\d{0,11}$/.test(value)) {
-                              setNewAccount({ ...newAccount, phoneNumber: value });
+                                setNewAccount({ ...newAccount, phoneNumber: value });
                             }
-                          }}
+                        }}
                         error={!!errors.phoneNumber}
                         helperText={errors.phoneNumber}
                     />
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={() => setOpenCreateDialog(false)}>Hủy</Button>
-                    <Button onClick={handleCreateAccount} variant="contained" color="primary">Tạo mới</Button>
+                    <Button onClick={() => {
+                        setOpenCreateDialog(false);
+                        setNewAccount({ email: "", fullName: "", phoneNumber: "" });
+                        setErrors({email: "", fullName: "", phoneNumber: ""})
+                    }}>Hủy</Button>
+                    <Button onClick={handleCreateAccount} variant="contained" color="primary" disabled={!newAccount.email || !newAccount.fullName || errors.email}
+                    >Tạo mới</Button>
                 </DialogActions>
             </Dialog>
 
