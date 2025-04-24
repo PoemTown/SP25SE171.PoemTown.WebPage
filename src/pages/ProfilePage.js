@@ -76,10 +76,19 @@ const ProfilePage = () => {
       'displayName'
     ];
 
+    const fieldLabels = {
+      fullName: 'Tên đầy đủ',
+      address: 'Địa chỉ',
+      userName: 'Username',
+      phoneNumber: 'Số điện thoại',
+      displayName: 'Tên hiển thị'
+    };
+
     const missingFields = requiredFields.filter(field => !formData[field]?.trim());
 
     if (missingFields.length > 0) {
-      message.error(`Please fill in all required fields: ${missingFields.join(', ')}`);
+      const missingLabels = missingFields.map(field => fieldLabels[field] || field);
+      message.error(`Vui lòng điền đầy đủ thông tin vào các trường: ${missingLabels.join(', ')}`);
       return;
     }
     const updatedData = {
