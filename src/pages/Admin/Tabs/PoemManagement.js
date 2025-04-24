@@ -23,7 +23,7 @@ const { confirm } = Modal;
 
 const PoemManagement = () => {
   const navigate = useNavigate();
-  
+
   const [poems, setPoems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -60,7 +60,7 @@ const PoemManagement = () => {
     setLoadingTypes(true);
     try {
       const accessToken = localStorage.getItem('accessToken');
-      const response = await axios.get('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1', {
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -80,10 +80,10 @@ const PoemManagement = () => {
       if (!filtersToSend.sortOptions) {
         delete filtersToSend.sortOptions;
       }
-      
+
       const queryParams = new URLSearchParams(filtersToSend).toString();
       const accessToken = localStorage.getItem('accessToken');
-      const response = await axios.get(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/poems?${queryParams}`, {
+      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/poems?${queryParams}`, {
         headers: {
           Authorization: `Bearer ${accessToken}`
         }
@@ -188,10 +188,11 @@ const PoemManagement = () => {
               updatePoemStatus(poemId, value);
             }}
           >
-            <Option value="0">Draft</Option>
-            <Option value="1">Posted</Option>
-            <Option value="2">Suspended</Option>
-            <Option value="3">Pending</Option>
+            <Option value="0">Bản nháp</Option>
+            <Option value="1">Đã đăng</Option>
+            <Option value="2">Bị tạm ngưng</Option>
+            <Option value="3">Đang chờ duyệt</Option>
+
           </Select>
         </div>
       ),
@@ -206,7 +207,7 @@ const PoemManagement = () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const response = await axios.put(
-        `https://api-poemtown-staging.nodfeather.win/api/poems/v1/admin/${poemId}?status=${status}`,
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/admin/${poemId}?status=${status}`,
         {},
         {
           headers: {
@@ -218,7 +219,7 @@ const PoemManagement = () => {
 
       if (response.status === 200) {
         message.success('Cập nhật trạng thái bài thơ thành công');
-        fetchPoems(filters);       
+        fetchPoems(filters);
       } else {
         message.error('Cập nhật trạng thái thất bại');
       }
@@ -240,20 +241,20 @@ const PoemManagement = () => {
       onOk() {
         return new Promise((resolve, reject) => {
           const accessToken = localStorage.getItem('accessToken');
-          axios.delete(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/admin/${poemId}`, {
+          axios.delete(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/admin/${poemId}`, {
             headers: {
               Authorization: `Bearer ${accessToken}`
             }
           })
-          .then(() => {
-            message.success('Xóa bài thơ thành công');
-            fetchPoems(filters);
-            resolve();
-          })
-          .catch(error => {
-            message.error('Xóa bài thơ thất bại: ' + (error.response?.data?.message || error.message));
-            reject();
-          });
+            .then(() => {
+              message.success('Xóa bài thơ thành công');
+              fetchPoems(filters);
+              resolve();
+            })
+            .catch(error => {
+              message.error('Xóa bài thơ thất bại: ' + (error.response?.data?.message || error.message));
+              reject();
+            });
         });
       }
     });
@@ -458,16 +459,16 @@ const PoemManagement = () => {
                   display: 'flex',
                   flexDirection: 'column'
                 }}
-                bodyStyle={{ 
+                bodyStyle={{
                   padding: '20px',
                   flex: 1,
                   display: 'flex',
                   flexDirection: 'column'
                 }}
               >
-                <div style={{ 
-                  height: '200px', 
-                  overflow: 'hidden', 
+                <div style={{
+                  height: '200px',
+                  overflow: 'hidden',
                   position: 'relative',
                   flexShrink: 0
                 }}>
@@ -512,28 +513,28 @@ const PoemManagement = () => {
                       alignItems: 'center',
                       gap: '4px'
                     }}>
-                      <ShoppingOutlined style={{ fontSize: '14px' }} /> 
+                      <ShoppingOutlined style={{ fontSize: '14px' }} />
                       {poem.price?.toLocaleString()}đ
                     </div>
                   )}
                 </div>
-              
-                <div style={{ 
+
+                <div style={{
                   flex: 1,
                   display: 'flex',
                   flexDirection: 'column',
                   justifyContent: 'space-between'
                 }}>
                   <div>
-                    <div style={{ 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
                       marginBottom: '12px',
                       gap: '10px'
                     }}>
                       <Avatar src={poem.user?.avatar} size={40} />
                       <div style={{ flex: 1 }}>
-                        <div style={{ 
+                        <div style={{
                           fontWeight: 500,
                           fontSize: '14px',
                           lineHeight: '1.4',
@@ -543,8 +544,8 @@ const PoemManagement = () => {
                         }}>
                           {poem.user?.displayName || poem.user?.userName || 'Ẩn danh'}
                         </div>
-                        <div style={{ 
-                          fontSize: '12px', 
+                        <div style={{
+                          fontSize: '12px',
                           color: '#7f8c8d',
                           lineHeight: '1.4'
                         }}>
@@ -555,11 +556,11 @@ const PoemManagement = () => {
                         {statusOptions.find(s => s.value === poem.status?.toString())?.label}
                       </Tag>
                     </div>
-              
-                    <Title 
-                      level={4} 
-                      style={{ 
-                        marginBottom: '12px', 
+
+                    <Title
+                      level={4}
+                      style={{
+                        marginBottom: '12px',
                         color: '#2c3e50',
                         fontSize: '18px',
                         lineHeight: '1.4',
@@ -573,7 +574,7 @@ const PoemManagement = () => {
                     >
                       {poem.title}
                     </Title>
-              
+
                     <Paragraph
                       style={{
                         color: '#7f8c8d',
@@ -590,10 +591,10 @@ const PoemManagement = () => {
                     >
                       {poem.description || 'Không có mô tả'}
                     </Paragraph>
-              
+
                     {poem.poemType && (
                       <div style={{ marginBottom: '12px' }}>
-                        <Tag 
+                        <Tag
                           color={poemTypes.find(t => t.id === poem.poemType.id)?.color || '#2db7f5'}
                           style={{ marginRight: 0 }}
                         >
@@ -602,13 +603,13 @@ const PoemManagement = () => {
                       </div>
                     )}
                   </div>
-              
+
                   <div>
                     <Divider style={{ margin: '12px 0' }} />
-                    <Space 
-                      size="middle" 
-                      style={{ 
-                        width: '100%', 
+                    <Space
+                      size="middle"
+                      style={{
+                        width: '100%',
                         justifyContent: 'space-between',
                         alignItems: 'center'
                       }}
@@ -625,7 +626,7 @@ const PoemManagement = () => {
                           </Badge>
                         </Tooltip>
                       </Space>
-              
+
                       <Space size="middle">
                         {poem.collection && (
                           <Tooltip title={`Tập thơ: ${poem.collection.collectionName}`}>
@@ -634,30 +635,30 @@ const PoemManagement = () => {
                             </Tag>
                           </Tooltip>
                         )}
-                        
+
                         <Tooltip title="Xem chi tiết">
-                          <Button 
-                            type="text" 
-                            icon={<EyeOutlined />} 
+                          <Button
+                            type="text"
+                            icon={<EyeOutlined />}
                             onClick={() => navigate(`/poem/${poem.id}`)}
                             style={{ color: '#1890ff' }}
                           />
                         </Tooltip>
 
-                        <Dropdown 
+                        <Dropdown
                           overlay={
                             <Menu>
-                              <Menu.Item 
-                                key="edit" 
-                                icon={<EditOutlined />} 
+                              <Menu.Item
+                                key="edit"
+                                icon={<EditOutlined />}
                                 onClick={() => handleEditPoem(poem.id, poem.status)}
                                 disabled={updatingStatus}
                               >
                                 Tùy chỉnh trạng thái
                               </Menu.Item>
-                              <Menu.Item 
-                                key="delete" 
-                                icon={<DeleteOutlined />} 
+                              <Menu.Item
+                                key="delete"
+                                icon={<DeleteOutlined />}
                                 danger
                                 onClick={() => handleDeletePoem(poem.id)}
                               >
@@ -668,9 +669,9 @@ const PoemManagement = () => {
                           trigger={['click']}
                           placement="bottomRight"
                         >
-                          <Button 
-                            type="text" 
-                            icon={<MoreOutlined />} 
+                          <Button
+                            type="text"
+                            icon={<MoreOutlined />}
                             style={{ color: '#8c8c8c' }}
                             loading={updatingStatus}
                           />

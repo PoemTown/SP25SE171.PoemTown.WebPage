@@ -13,7 +13,8 @@ import MainBackgroundEditModal from "./Components/MainBackgroundEditModal";
 import { createStyles } from "antd-style";
 import { useNavigate } from "react-router-dom";
 import { DoubleRightOutlined } from "@ant-design/icons";
-
+import { FaMedal, FaPenAlt, FaBook, FaHeadphones, FaHeart, FaUserFriends, FaBookmark } from "react-icons/fa";
+import { GiInkSwirl, GiQuillInk } from "react-icons/gi";
 const useStyle = createStyles(({ prefixCls, css }) => ({
     linearGradientButton: css`
       &.${prefixCls}-btn-primary:not([disabled]):not(.${prefixCls}-btn-dangerous) {
@@ -685,16 +686,25 @@ const DesignPage = () => {
                     </div>
 
                     {/* Right Column */}
-                    <div style={{ flex: 3 }}>
-                        {/* Other content */}
+                    {/* Right Column */}
+                    <div style={{
+                        flex: 3,
+                        display: "flex",
+                        flexDirection: "column",
+                        gap: "24px"
+                    }}>
+                        {/* Achievement Section */}
                         <div
                             style={{
-                                borderRadius: "10px",
-                                border: `2px solid ${inUseAchievementBorder.colorCode}`,
-                                boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
+                                borderRadius: "16px",
+                                overflow: "hidden",
+                                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                                border: `1px solid ${inUseAchievementBorder.colorCode || "rgba(255, 215, 0, 0.3)"}`,
+                                backgroundColor: "#fff",
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
+                            {/* Achievement Title */}
                             <div
                                 onClick={() => {
                                     setShowPopupModalAchievementTitle(true);
@@ -709,33 +719,40 @@ const DesignPage = () => {
                                     setIsHoverMainBackground(true)
                                 }}
                                 style={{
-                                    padding: 0,
-                                    margin: 0,
-                                    border: "none",
-                                    background: "none",
+                                    backgroundImage: inUseAchievementTitle.image ? `url("${inUseAchievementTitle.image}")` : "linear-gradient(145deg, #FFD700, #FFC107)",
+                                    padding: "16px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    position: "relative",
                                     cursor: "pointer",
-                                    display: "block",
-                                    width: "100%",
-                                    opacity: isHoverAchievementTitle ? 0.5 : 1, // inline hover effect
+                                    opacity: isHoverAchievementTitle ? 0.8 : 1,
+                                    transition: "opacity 0.2s ease"
                                 }}
                             >
-                                <div
-                                    style={{
-                                        backgroundImage: inUseAchievementTitle.image ? `url("${inUseAchievementTitle.image}")` : "none",
-                                        height: 53,
-                                        borderRadius: "10px 10px 0 0",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        borderBottom: `2px solid ${inUseAchievementBorder.colorCode}`,
-                                        marginBottom: 0,
-                                    }}
-                                >
-                                    <h3 style={{ fontWeight: "bold", margin: 0, textAlign: "center", color: inUseAchievementTitle.colorCode }}>
-                                        Thành tựu cá nhân
-                                    </h3>
+                                <h3 style={{
+                                    margin: 0,
+                                    color: inUseAchievementTitle.colorCode || "#FFF",
+                                    fontSize: "16px",
+                                    fontWeight: 600,
+                                    letterSpacing: "0.5px",
+                                    textShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                                    zIndex: 1
+                                }}>
+                                    Thành Tựu Thi Nhân
+                                </h3>
+                                <div style={{
+                                    position: "absolute",
+                                    right: 16,
+                                    opacity: 0.1,
+                                    fontSize: "40px",
+                                    color: inUseAchievementTitle.colorCode || "#FFF"
+                                }}>
+                                    <GiQuillInk />
                                 </div>
                             </div>
+
+                            {/* Achievement Content */}
                             <div
                                 onClick={() => {
                                     setOriginalAchievement(inUseAchievement);
@@ -751,40 +768,72 @@ const DesignPage = () => {
                                     setIsHoverMainBackground(true)
                                 }}
                                 style={{
-                                    padding: 0,
-                                    margin: 0,
-                                    border: "none",
-                                    background: "none",
+                                    backgroundImage: inUseAchievement.image ? `url("${inUseAchievement.image}")` : "linear-gradient(145deg, rgba(255,251,240,0.95), rgba(255,245,230,0.95))",
+                                    padding: "20px",
                                     cursor: "pointer",
-                                    display: "block",
-                                    width: "100%",
-                                    opacity: isHoverAchievementContent ? 0.5 : 1, // inline hover effect
+                                    opacity: isHoverAchievementContent ? 0.8 : 1,
+                                    transition: "opacity 0.2s ease"
                                 }}
                             >
-                                <div style={{ backgroundImage: inUseAchievement.image ? `url("${inUseAchievement.image}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px" }}>
-                                    <ul style={{ fontSize: "14px", color: inUseAchievement.colorCode, listStyle: "none", padding: 0, margin: 0 }}>
-                                        <li>🏆 Cúp vàng bài viết tháng 8/2024</li>
-                                        <li>🏆 Cúp đồng tác giả tháng 8/2024</li>
-                                        <li>🏆 Cúp vàng bài viết tháng 7/2024</li>
-                                        <li>🥈 Cúp bạc tác giả tháng 6/2024</li>
-                                    </ul>
-                                    <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
-                                        Xem thêm &gt;
-                                    </a>
+                                <div style={{
+                                    display: "flex",
+                                    flexDirection: "column",
+                                    gap: "12px"
+                                }}>
+                                    {[
+                                        "🏆 Cúp vàng bài viết tháng 8/2024",
+                                        "🏆 Cúp đồng tác giả tháng 8/2024",
+                                        "🏆 Cúp vàng bài viết tháng 7/2024",
+                                        "🥈 Cúp bạc tác giả tháng 6/2024"
+                                    ].map((item, index) => (
+                                        <div key={index} style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "10px",
+                                            padding: "10px",
+                                            backgroundColor: "rgba(255,255,255,0.7)",
+                                            borderRadius: "8px",
+                                            boxShadow: "0 2px 8px rgba(0,0,0,0.05)"
+                                        }}>
+                                            <span style={{ fontSize: "18px" }}>{item.split(" ")[0]}</span>
+                                            <span style={{
+                                                fontSize: "14px",
+                                                color: inUseAchievement.colorCode || "#5D4037"
+                                            }}>
+                                                {item.split(" ").slice(1).join(" ")}
+                                            </span>
+                                        </div>
+                                    ))}
                                 </div>
+                                <a href="#" style={{
+                                    display: "inline-block",
+                                    marginTop: "16px",
+                                    color: inUseAchievement.colorCode || "#7E57C2",
+                                    fontSize: "13px",
+                                    fontWeight: 500,
+                                    textDecoration: "none",
+                                    transition: "all 0.2s ease",
+                                    ":hover": {
+                                        textDecoration: "underline"
+                                    }
+                                }}>
+                                    Xem thêm thành tựu →
+                                </a>
                             </div>
                         </div>
 
-                        {/* Thống kê người dùng */}
+                        {/* Statistics Section */}
                         <div
                             style={{
-                                borderRadius: "10px",
-                                border: `2px solid ${inUseStatisticBorder.colorCode}`,
-                                boxShadow: "0px 2px 5px rgba(0,0,0,0.1)",
-                                marginTop: "20px",
+                                borderRadius: "16px",
+                                overflow: "hidden",
+                                boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                                border: `1px solid ${inUseStatisticBorder.colorCode || "rgba(126, 87, 194, 0.2)"}`,
+                                backgroundColor: "#fff",
                             }}
                             onClick={(e) => e.stopPropagation()}
                         >
+                            {/* Statistics Title */}
                             <div
                                 onClick={() => {
                                     setShowPopupModalStatisticTitle(true);
@@ -799,32 +848,40 @@ const DesignPage = () => {
                                     setIsHoverMainBackground(true)
                                 }}
                                 style={{
-                                    padding: 0,
-                                    margin: 0,
-                                    border: "none",
-                                    background: "none",
+                                    backgroundImage: inUseStatisticTitle.image ? `url("${inUseStatisticTitle.image}")` : "linear-gradient(145deg, #7E57C2, #673AB7)",
+                                    padding: "16px",
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    position: "relative",
                                     cursor: "pointer",
-                                    display: "block",
-                                    width: "100%",
-                                    opacity: isHoverStatisticTitle ? 0.5 : 1, // inline hover effect
+                                    opacity: isHoverStatisticTitle ? 0.8 : 1,
+                                    transition: "opacity 0.2s ease"
                                 }}
                             >
-                                <div
-                                    style={{
-                                        backgroundImage: inUseStatisticTitle.image ? `url("${inUseStatisticTitle.image}")` : "none",
-                                        height: 53,
-                                        borderRadius: "10px 10px 0 0",
-                                        display: "flex",
-                                        alignItems: "center",
-                                        justifyContent: "center",
-                                        borderBottom: `2px solid ${inUseStatisticBorder.colorCode}`,
-                                    }}
-                                >
-                                    <h3 style={{ fontWeight: "bold", color: inUseStatisticTitle.colorCode, margin: 0, textAlign: "center" }}>
-                                        Thống kê người dùng
-                                    </h3>
+                                <h3 style={{
+                                    margin: 0,
+                                    color: inUseStatisticTitle.colorCode || "#FFF",
+                                    fontSize: "16px",
+                                    fontWeight: 600,
+                                    letterSpacing: "0.5px",
+                                    textShadow: "0 1px 3px rgba(0,0,0,0.2)",
+                                    zIndex: 1
+                                }}>
+                                    Thống Kê Thi Phẩm
+                                </h3>
+                                <div style={{
+                                    position: "absolute",
+                                    right: 16,
+                                    opacity: 0.1,
+                                    fontSize: "40px",
+                                    color: inUseStatisticTitle.colorCode || "#FFF"
+                                }}>
+                                    <GiInkSwirl />
                                 </div>
                             </div>
+
+                            {/* Statistics Content */}
                             <div
                                 onClick={() => {
                                     setShowPopupModalStatistic(true);
@@ -840,32 +897,78 @@ const DesignPage = () => {
                                     setIsHoverMainBackground(true)
                                 }}
                                 style={{
-                                    padding: 0,
-                                    margin: 0,
-                                    border: "none",
-                                    background: "none",
+                                    backgroundImage: inUseStatistic.image ? `url("${inUseStatistic.image}")` : "linear-gradient(145deg, rgba(248, 245, 255, 0.95), rgba(238, 230, 255, 0.95))",
+                                    padding: "20px",
                                     cursor: "pointer",
-                                    display: "block",
-                                    width: "100%",
-                                    opacity: isHoverStatisticContent ? 0.5 : 1, // inline hover effect
+                                    opacity: isHoverStatisticContent ? 0.8 : 1,
+                                    transition: "opacity 0.2s ease"
                                 }}
                             >
-                                <div style={{ backgroundImage: inUseStatistic.image ? `url("${inUseStatistic.image}")` : "none", padding: "10px 20px", borderRadius: "0 0 10px 10px" }}>
-                                    <ul style={{ fontSize: "14px", color: inUseStatistic.colorCode, listStyle: "none", padding: 0, margin: 0 }}>
-                                        <li>Tổng bài viết: 2</li>
-                                        <li>Tổng bộ sưu tập: 5</li>
-                                        <li>Tổng audio cá nhân: 16</li>
-                                        <li>Tổng lượt xem: 662</li>
-                                        <li>Tổng lượt thích: 233</li>
-                                        <li>Đang theo dõi: 60</li>
-                                        <li>Người theo dõi: 1,585</li>
-                                        <li>Bookmark bài viết: 35</li>
-                                        <li>Bookmark bộ sưu tập: 12</li>
-                                    </ul>
-                                    <a href="#" style={{ color: "#007bff", fontSize: "12px", display: "block", marginTop: "10px" }}>
-                                        Xem thêm &gt;
-                                    </a>
+                                <div style={{
+                                    display: "grid",
+                                    gridTemplateColumns: "repeat(2, 1fr)",
+                                    gap: "12px"
+                                }}>
+                                    {[
+                                        { icon: <FaBook style={{ color: inUseStatistic.colorCode || "#7E57C2" }} />, label: "Bài thơ", value: "2" },
+                                        { icon: <FaBookmark style={{ color: inUseStatistic.colorCode || "#7E57C2" }} />, label: "Bộ sưu tập", value: "5" },
+                                        { icon: <FaHeadphones style={{ color: inUseStatistic.colorCode || "#7E57C2" }} />, label: "Bản ghi âm", value: "16" },
+                                        { icon: <FaHeart style={{ color: "#FF5252" }} />, label: "Lượt thích", value: "233" },
+                                        { icon: <FaUserFriends style={{ color: inUseStatistic.colorCode || "#7E57C2" }} />, label: "Đang theo dõi", value: "60" },
+                                        { icon: <FaUserFriends style={{ transform: "scaleX(-1)", color: inUseStatistic.colorCode || "#7E57C2" }} />, label: "Người theo dõi", value: "1,585" }
+                                    ].map((item, index) => (
+                                        <div key={index} style={{
+                                            backgroundColor: "rgba(255,255,255,0.7)",
+                                            borderRadius: "8px",
+                                            padding: "12px",
+                                            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                                            display: "flex",
+                                            flexDirection: "column",
+                                            alignItems: "center",
+                                            gap: "6px"
+                                        }}>
+                                            <div style={{
+                                                width: "36px",
+                                                height: "36px",
+                                                borderRadius: "50%",
+                                                backgroundColor: "rgba(126, 87, 194, 0.1)",
+                                                display: "flex",
+                                                alignItems: "center",
+                                                justifyContent: "center"
+                                            }}>
+                                                {item.icon}
+                                            </div>
+                                            <span style={{
+                                                fontSize: "12px",
+                                                color: inUseStatistic.colorCode || "#5E35B1",
+                                                textAlign: "center"
+                                            }}>
+                                                {item.label}
+                                            </span>
+                                            <span style={{
+                                                fontSize: "16px",
+                                                fontWeight: 600,
+                                                color: inUseStatistic.colorCode || "#5E35B1"
+                                            }}>
+                                                {item.value}
+                                            </span>
+                                        </div>
+                                    ))}
                                 </div>
+                                <a href="#" style={{
+                                    display: "inline-block",
+                                    marginTop: "16px",
+                                    color: inUseStatistic.colorCode || "#7E57C2",
+                                    fontSize: "13px",
+                                    fontWeight: 500,
+                                    textDecoration: "none",
+                                    transition: "all 0.2s ease",
+                                    ":hover": {
+                                        textDecoration: "underline"
+                                    }
+                                }}>
+                                    Xem thêm thống kê →
+                                </a>
                             </div>
                         </div>
                     </div>

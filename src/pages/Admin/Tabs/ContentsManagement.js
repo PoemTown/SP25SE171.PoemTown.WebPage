@@ -69,7 +69,7 @@ const ContentsManagement = () => {
     } catch (err) {
       setError(err.response?.data?.message || err.message);
       setLoading(false);
-      showSnackbar('Error fetching contents', 'error');
+      showSnackbar('Lỗi khi tải nội dung', 'error');
     }
   };
 
@@ -103,9 +103,9 @@ const ContentsManagement = () => {
     try {
       await api.delete(`/${contentToDelete.id}`);
       fetchContents();
-      showSnackbar('Content deleted successfully', 'success');
+      showSnackbar('Xóa nội dung thành công', 'success');
     } catch (err) {
-      showSnackbar(err.response?.data?.message || 'Error deleting content', 'error');
+      showSnackbar(err.response?.data?.message || 'Lỗi khi xóa nội dung', 'error');
     } finally {
       setOpenDeleteDialog(false);
       setContentToDelete(null);
@@ -115,18 +115,16 @@ const ContentsManagement = () => {
   const handleSubmit = async () => {
     try {
       if (formData.id) {
-        // Update existing content
         await api.put('/', formData);
-        showSnackbar('Content updated successfully', 'success');
+        showSnackbar('Cập nhật nội dung thành công', 'success');
       } else {
-        // Create new content
         await api.post('/', { title: formData.title, content: formData.content });
-        showSnackbar('Content created successfully', 'success');
+        showSnackbar('Tạo nội dung mới thành công', 'success');
       }
       fetchContents();
       setOpenForm(false);
     } catch (err) {
-      showSnackbar(err.response?.data?.message || 'Error saving content', 'error');
+      showSnackbar(err.response?.data?.message || 'Lỗi khi lưu nội dung', 'error');
     }
   };
 
@@ -154,7 +152,7 @@ const ContentsManagement = () => {
   if (error) {
     return (
       <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
-        <Typography color="error">Error: {error}</Typography>
+        <Typography color="error">Lỗi: {error}</Typography>
       </Box>
     );
   }
@@ -162,14 +160,14 @@ const ContentsManagement = () => {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">Contents Management</Typography>
+        <Typography variant="h5">Quản lý nội dung</Typography>
         <Button
           variant="contained"
           color="primary"
           startIcon={<AddIcon />}
           onClick={handleCreate}
         >
-          Add New Content
+          Thêm nội dung mới
         </Button>
       </Box>
 
@@ -177,9 +175,9 @@ const ContentsManagement = () => {
         <Table>
           <TableHead sx={{ backgroundColor: '#f5f5f5' }}>
             <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>No.</TableCell>
-              <TableCell sx={{ fontWeight: 'bold' }}>Title</TableCell>
-              <TableCell sx={{ fontWeight: 'bold', width: '200px' }}>Actions</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>STT</TableCell>
+              <TableCell sx={{ fontWeight: 'bold' }}>Tiêu đề</TableCell>
+              <TableCell sx={{ fontWeight: 'bold', width: '200px' }}>Hành động</TableCell>
             </TableRow>
           </TableHead>
           <TableBody>
@@ -204,7 +202,7 @@ const ContentsManagement = () => {
         </Table>
       </TableContainer>
 
-      {/* View Dialog */}
+      {/* Xem nội dung */}
       <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="md" fullWidth>
         <DialogTitle>{currentContent?.title}</DialogTitle>
         <DialogContent dividers>
@@ -213,18 +211,18 @@ const ContentsManagement = () => {
           </Box>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Close</Button>
+          <Button onClick={() => setOpenDialog(false)}>Đóng</Button>
         </DialogActions>
       </Dialog>
 
-      {/* Add/Edit Form */}
+      {/* Form thêm/sửa */}
       <Dialog open={openForm} onClose={() => setOpenForm(false)} maxWidth="md" fullWidth>
-        <DialogTitle>{formData.id ? 'Edit Content' : 'Add New Content'}</DialogTitle>
+        <DialogTitle>{formData.id ? 'Chỉnh sửa nội dung' : 'Thêm nội dung mới'}</DialogTitle>
         <DialogContent dividers>
           <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, p: 2 }}>
             <TextField
               name="title"
-              label="Title"
+              label="Tiêu đề"
               value={formData.title}
               onChange={handleChange}
               fullWidth
@@ -233,7 +231,7 @@ const ContentsManagement = () => {
             />
             <TextField
               name="content"
-              label="Content"
+              label="Nội dung"
               value={formData.content}
               onChange={handleChange}
               fullWidth
@@ -250,7 +248,7 @@ const ContentsManagement = () => {
             onClick={() => setOpenForm(false)}
             color="secondary"
           >
-            Cancel
+            Hủy
           </Button>
           <Button
             startIcon={<SaveIcon />}
@@ -258,22 +256,22 @@ const ContentsManagement = () => {
             color="primary"
             variant="contained"
           >
-            Save
+            Lưu
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Xác nhận xóa */}
       <Dialog open={openDeleteDialog} onClose={() => setOpenDeleteDialog(false)}>
-        <DialogTitle>Confirm Delete</DialogTitle>
+        <DialogTitle>Xác nhận xóa</DialogTitle>
         <DialogContent>
           <Typography>
-            Are you sure you want to delete "{contentToDelete?.title}"?
+            Bạn có chắc chắn muốn xóa "{contentToDelete?.title}" không?
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenDeleteDialog(false)} color="primary">
-            Cancel
+            Hủy
           </Button>
           <Button 
             onClick={handleDeleteConfirm} 
@@ -281,12 +279,12 @@ const ContentsManagement = () => {
             variant="contained"
             startIcon={<DeleteIcon />}
           >
-            Delete
+            Xóa
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Snackbar */}
+      {/* Thông báo */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

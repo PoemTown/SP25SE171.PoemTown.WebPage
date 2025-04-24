@@ -56,13 +56,13 @@ const ContactsManagement = () => {
             const response = await fetch(API_URL, {
                 headers: getAuthHeaders()
             });
-            if (!response.ok) throw new Error('Failed to fetch contacts');
+            if (!response.ok) throw new Error('Không thể tải danh sách liên hệ');
             const data = await response.json();
             setContacts(data.data);
             setLoading(false);
         } catch (error) {
-            console.error('Error fetching contacts:', error);
-            showSnackbar('Failed to load contacts', 'error');
+            console.error('Lỗi khi tải liên hệ:', error);
+            showSnackbar('Tải danh sách liên hệ thất bại', 'error');
             setLoading(false);
         }
     };
@@ -105,29 +105,29 @@ const ContactsManagement = () => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Validate file type
+        // Kiểm tra loại file
         if (!file.type.match('image.*')) {
-            showSnackbar('Please select an image file (JPEG, PNG, etc.)', 'error');
+            showSnackbar('Vui lòng chọn file ảnh (JPEG, PNG, v.v.)', 'error');
             return;
         }
 
-        // Validate file size (e.g., 2MB max)
+        // Kiểm tra kích thước file (tối đa 2MB)
         if (file.size > 2 * 1024 * 1024) {
-            showSnackbar('File size should be less than 2MB', 'error');
+            showSnackbar('Kích thước file phải nhỏ hơn 2MB', 'error');
             return;
         }
 
         try {
             setUploading(true);
             
-            // Create preview
+            // Tạo preview
             const reader = new FileReader();
             reader.onload = (event) => {
                 setPreviewImage(event.target.result);
             };
             reader.readAsDataURL(file);
 
-            // Prepare form data for binary upload
+            // Chuẩn bị form data để upload
             const uploadFormData = new FormData();
             uploadFormData.append('file', file);
 
@@ -139,17 +139,17 @@ const ContactsManagement = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Upload failed');
+                throw new Error(errorData.message || 'Upload thất bại');
             }
 
             const result = await response.json();
             if (result.statusCode === 201) {
                 setFormData(prev => ({ ...prev, icon: result.data }));
-                showSnackbar('Icon uploaded successfully', 'success');
+                showSnackbar('Tải lên biểu tượng thành công', 'success');
             }
         } catch (error) {
-            console.error('Error uploading icon:', error);
-            showSnackbar(error.message || 'Failed to upload icon', 'error');
+            console.error('Lỗi khi tải lên biểu tượng:', error);
+            showSnackbar(error.message || 'Tải lên biểu tượng thất bại', 'error');
             setPreviewImage(null);
         } finally {
             setUploading(false);
@@ -163,7 +163,7 @@ const ContactsManagement = () => {
 
     const handleSubmit = async () => {
         if (!formData.name || !formData.description || !formData.icon) {
-            showSnackbar('Please fill all fields and upload an icon', 'error');
+            showSnackbar('Vui lòng điền đầy đủ thông tin và tải lên biểu tượng', 'error');
             return;
         }
 
@@ -177,14 +177,14 @@ const ContactsManagement = () => {
                     description: formData.description
                 };
 
-                // Update existing contact
+                // Cập nhật liên hệ hiện tại
                 response = await fetch(`${API_URL}`, {
                     method: 'PUT',
                     headers: getAuthHeadersWithContentType(),
                     body: JSON.stringify(putData)
                 });
             } else {
-                // Add new contact (POST request remains the same)
+                // Thêm liên hệ mới
                 response = await fetch(API_URL, {
                     method: 'POST',
                     headers: getAuthHeadersWithContentType(),
@@ -198,18 +198,18 @@ const ContactsManagement = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Request failed');
+                throw new Error(errorData.message || 'Yêu cầu thất bại');
             }
 
             showSnackbar(
-                currentContact ? 'Contact updated successfully' : 'Contact added successfully',
+                currentContact ? 'Cập nhật liên hệ thành công' : 'Thêm liên hệ thành công',
                 'success'
             );
-            fetchContacts(); // Refresh the list
+            fetchContacts(); // Làm mới danh sách
             handleCloseDialog();
         } catch (error) {
-            console.error('Error saving contact:', error);
-            showSnackbar(error.message || 'Failed to save contact', 'error');
+            console.error('Lỗi khi lưu liên hệ:', error);
+            showSnackbar(error.message || 'Lưu liên hệ thất bại', 'error');
         }
     };
 
@@ -227,14 +227,14 @@ const ContactsManagement = () => {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.message || 'Delete failed');
+                throw new Error(errorData.message || 'Xóa thất bại');
             }
 
-            showSnackbar('Contact deleted successfully', 'success');
-            fetchContacts(); // Refresh the list
+            showSnackbar('Xóa liên hệ thành công', 'success');
+            fetchContacts(); // Làm mới danh sách
         } catch (error) {
-            console.error('Error deleting contact:', error);
-            showSnackbar(error.message || 'Failed to delete contact', 'error');
+            console.error('Lỗi khi xóa liên hệ:', error);
+            showSnackbar(error.message || 'Xóa liên hệ thất bại', 'error');
         } finally {
             setDeleteConfirmOpen(false);
             setContactToDelete(null);
@@ -268,7 +268,7 @@ const ContactsManagement = () => {
 
     return (
         <Box>
-            {/* Delete Confirmation Dialog */}
+            {/* Dialog xác nhận xóa */}
             <Dialog
                 open={deleteConfirmOpen}
                 onClose={handleDeleteCancel}
@@ -276,17 +276,17 @@ const ContactsManagement = () => {
                 aria-describedby="alert-dialog-description"
             >
                 <DialogTitle id="alert-dialog-title">
-                    {"Confirm Delete"}
+                    {"Xác nhận xóa"}
                 </DialogTitle>
                 <DialogContent>
                     <Typography variant="body1">
-                        Are you sure you want to delete this contact? This action cannot be undone.
+                        Bạn có chắc chắn muốn xóa liên hệ này? Hành động này không thể hoàn tác.
                     </Typography>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleDeleteCancel}>Cancel</Button>
+                    <Button onClick={handleDeleteCancel}>Hủy</Button>
                     <Button onClick={handleDeleteConfirm} color="error" autoFocus>
-                        Delete
+                        Xóa
                     </Button>
                 </DialogActions>
             </Dialog>
@@ -297,7 +297,7 @@ const ContactsManagement = () => {
                     startIcon={<Add />}
                     onClick={() => handleOpenDialog()}
                 >
-                    Add Contact
+                    Thêm liên hệ
                 </Button>
             </Box>
 
@@ -305,10 +305,10 @@ const ContactsManagement = () => {
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell>Name</TableCell>
-                            <TableCell>Description/Link</TableCell>
-                            <TableCell>Icon</TableCell>
-                            <TableCell>Actions</TableCell>
+                            <TableCell>Tên</TableCell>
+                            <TableCell>Mô tả/Liên kết</TableCell>
+                            <TableCell>Biểu tượng</TableCell>
+                            <TableCell>Hành động</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -339,13 +339,13 @@ const ContactsManagement = () => {
 
             <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="sm" fullWidth>
                 <DialogTitle>
-                    {currentContact ? 'Edit Contact' : 'Add New Contact'}
+                    {currentContact ? 'Chỉnh sửa liên hệ' : 'Thêm liên hệ mới'}
                 </DialogTitle>
                 <DialogContent>
                     <Box sx={{ mt: 2 }}>
                         <TextField
                             fullWidth
-                            label="Name"
+                            label="Tên"
                             name="name"
                             value={formData.name}
                             onChange={handleInputChange}
@@ -354,7 +354,7 @@ const ContactsManagement = () => {
                         />
                         <TextField
                             fullWidth
-                            label="Description/Link"
+                            label="Mô tả/Liên kết"
                             name="description"
                             value={formData.description}
                             onChange={handleInputChange}
@@ -364,7 +364,7 @@ const ContactsManagement = () => {
                         
                         <Box sx={{ mt: 2, mb: 2 }}>
                             <Typography variant="subtitle1" gutterBottom>
-                                Icon
+                                Biểu tượng
                             </Typography>
                             <input
                                 type="file"
@@ -379,22 +379,22 @@ const ContactsManagement = () => {
                                 onClick={triggerFileInput}
                                 disabled={uploading}
                             >
-                                {uploading ? 'Uploading...' : 'Upload Icon'}
+                                {uploading ? 'Đang tải lên...' : 'Tải lên biểu tượng'}
                             </Button>
                             {uploading && (
                                 <CircularProgress size={24} sx={{ ml: 2 }} />
                             )}
                             <Typography variant="caption" display="block" sx={{ mt: 1 }}>
-                                Maximum file size: 2MB. Accepted formats: JPEG, PNG
+                                Kích thước tối đa: 2MB. Định dạng hỗ trợ: JPEG, PNG
                             </Typography>
                         </Box>
 
                         {previewImage && (
                             <Box sx={{ mt: 2, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                <Typography variant="caption">Preview:</Typography>
+                                <Typography variant="caption">Xem trước:</Typography>
                                 <Avatar 
                                     src={previewImage} 
-                                    alt="Icon preview" 
+                                    alt="Xem trước biểu tượng" 
                                     sx={{ width: 100, height: 100, mt: 1 }}
                                 />
                             </Box>
@@ -402,13 +402,13 @@ const ContactsManagement = () => {
                     </Box>
                 </DialogContent>
                 <DialogActions>
-                    <Button onClick={handleCloseDialog}>Cancel</Button>
+                    <Button onClick={handleCloseDialog}>Hủy</Button>
                     <Button 
                         onClick={handleSubmit} 
                         variant="contained"
                         disabled={!formData.name || !formData.description || !formData.icon}
                     >
-                        {currentContact ? 'Update' : 'Add'}
+                        {currentContact ? 'Cập nhật' : 'Thêm'}
                     </Button>
                 </DialogActions>
             </Dialog>

@@ -119,7 +119,7 @@ const UserPage = () => {
             navigate(`/user/${username}/${activeTab}`, { replace: true });
         }
     }, [activeTab, activeTabFromUrl, navigate, username]);
-    
+
     useEffect(() => {
         let isMounted = true;
 
@@ -439,11 +439,43 @@ const UserPage = () => {
                         className: styles.linearGradientButton,
                     }}
                 >
-                    <Space style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }}>
-                        <Button type="primary" size="large" iconPosition="end" icon={<DoubleRightOutlined />} style={{ position: "fixed", right: 0, bottom: 60, padding: "30px", borderTopLeftRadius: "20px", borderBottomLeftRadius: "20px", borderTopRightRadius: "0px", borderBottomRightRadius: "0px" }} onClick={() => { navigate('/design') }}>
+                    <Space
+                        style={{
+                            position: "fixed",
+                            right: 0,
+                            bottom: 60,
+                            padding: "30px",
+                            borderTopLeftRadius: "20px",
+                            borderBottomLeftRadius: "20px",
+                            borderTopRightRadius: "0px",
+                            borderBottomRightRadius: "0px",
+                            zIndex: 9999, // Đặt tầng cao
+                        }}
+                    >
+                        <Button
+                            type="primary"
+                            size="large"
+                            iconPosition="end"
+                            icon={<DoubleRightOutlined />}
+                            style={{
+                                position: "fixed",
+                                right: 0,
+                                bottom: 60,
+                                padding: "30px",
+                                borderTopLeftRadius: "20px",
+                                borderBottomLeftRadius: "20px",
+                                borderTopRightRadius: "0px",
+                                borderBottomRightRadius: "0px",
+                                zIndex: 9999, 
+                            }}
+                            onClick={() => {
+                                navigate("/design");
+                            }}
+                        >
                             Thiết kế Trang
                         </Button>
                     </Space>
+
                 </ConfigProvider>
 
             )}
