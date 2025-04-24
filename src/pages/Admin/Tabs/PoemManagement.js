@@ -1,13 +1,16 @@
 import axios from 'axios';
-import React, { useEffect, useState, useCallback } from 'react';
-import { 
-  Card, Spin, Alert, Row, Col, Select, Avatar, Space, Typography, 
-  Pagination, Button, Tag, Tooltip, Divider, Badge, Input 
+import React, { useEffect, useState, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
+import {
+  Card, Spin, Alert, Row, Col, Select, Avatar, Space, Typography,
+  Pagination, Button, Tag, Tooltip, Divider, Badge, Input,
+  Dropdown, Menu, Modal, message
 } from 'antd';
-import { 
-  HeartOutlined, MessageOutlined, FilterOutlined, ClearOutlined, 
+import {
+  HeartOutlined, MessageOutlined, FilterOutlined, ClearOutlined,
   SortAscendingOutlined, StarOutlined, ShoppingOutlined, BookOutlined,
-  SearchOutlined 
+  SearchOutlined, ClockCircleOutlined, EyeOutlined,
+  MoreOutlined, EditOutlined, DeleteOutlined
 } from '@ant-design/icons';
 import dayjs from 'dayjs';
 import relativeTime from 'dayjs/plugin/relativeTime';
@@ -16,43 +19,30 @@ dayjs.extend(relativeTime);
 
 const { Title, Paragraph, Text } = Typography;
 const { Option } = Select;
-const { Search } = Input;
-const API_URL = 'https://api-poemtown-staging.nodfeather.win/api/poems/v1/posts';
-
-// Debounce function
-const debounce = (func, delay) => {
-  let timer;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => func.apply(this, args), delay);
-  };
-};
-
-export const getPoemPosts = async (filters) => {
-  try {
-    const queryParams = new URLSearchParams(filters).toString();
-    const response = await axios.get(`${API_URL}?${queryParams}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching poem posts:', error);
-    throw error;
-  }
-};
+const { confirm } = Modal;
 
 const PoemManagement = () => {
+  const navigate = useNavigate();
+  
   const [poems, setPoems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [poemTypes, setPoemTypes] = useState([]);
+  const [loadingTypes, setLoadingTypes] = useState(false);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
   const [pagination, setPagination] = useState({
     pageNumber: 1,
     pageSize: 10,
     totalPages: 1,
     totalRecords: 0
   });
+
   const [filters, setFilters] = useState({
     'filterOptions.status': '',
     'filterOptions.title': '',
-    sortOptions: '1', 
+    'filterOptions.type': '',
+    sortOptions: '',
     pageNumber: 1,
     pageSize: 10,
   });
@@ -60,62 +50,106 @@ const PoemManagement = () => {
   const [selectedFilters, setSelectedFilters] = useState({
     status: null,
     title: '',
-    sort: '1'
+    type: null,
+    sort: ''
   });
 
-  // Debounced fetch function
+  const debounceRef = useRef(null);
+
+  const fetchPoemTypes = useCallback(async () => {
+    setLoadingTypes(true);
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await axios.get('https://api-poemtown-staging.nodfeather.win/api/poem-types/v1', {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+      setPoemTypes(response.data.data);
+    } catch (err) {
+      console.error('Error fetching poem types:', err);
+    } finally {
+      setLoadingTypes(false);
+    }
+  }, []);
+
+  const fetchPoems = useCallback(async (currentFilters) => {
+    setLoading(true);
+    try {
+      const filtersToSend = { ...currentFilters };
+      if (!filtersToSend.sortOptions) {
+        delete filtersToSend.sortOptions;
+      }
+      
+      const queryParams = new URLSearchParams(filtersToSend).toString();
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await axios.get(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/poems?${queryParams}`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      });
+
+      const data = response.data;
+
+      setPoems(data.data);
+      setPagination({
+        pageNumber: data.pageNumber,
+        pageSize: data.pageSize,
+        totalPages: data.totalPages,
+        totalRecords: data.totalRecords
+      });
+    } catch (err) {
+      setError(err);
+      console.error('Error fetching poems:', err);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const debouncedFetch = useCallback(
-    debounce((filters) => {
-      setLoading(true);
-      getPoemPosts(filters)
-        .then(data => {
-          setPoems(data.data);
-          setPagination({
-            pageNumber: data.pageNumber,
-            pageSize: data.pageSize,
-            totalPages: data.totalPages,
-            totalRecords: data.totalRecords
-          });
-          setLoading(false);
-        })
-        .catch(error => {
-          setError(error);
-          setLoading(false);
-        });
-    }, 500),
-    []
+    (currentFilters) => {
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
+      debounceRef.current = setTimeout(() => {
+        fetchPoems(currentFilters);
+      }, 500);
+    },
+    [fetchPoems]
   );
 
   useEffect(() => {
     debouncedFetch(filters);
     return () => {
-      // Cleanup function to cancel any pending debounce calls
-      debouncedFetch.cancel?.();
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+      }
     };
   }, [filters, debouncedFetch]);
 
+  useEffect(() => {
+    fetchPoemTypes();
+  }, [fetchPoemTypes]);
+
   const handleFilterChange = (key, value, filterName) => {
-    const newFilters = { 
-      ...filters, 
-      [key]: value, 
+    const newFilters = {
+      ...filters,
+      [key]: value,
       pageNumber: 1
     };
     setFilters(newFilters);
     setSelectedFilters(prev => ({ ...prev, [filterName]: value }));
   };
 
-  const handleSearch = (value) => {
-    handleFilterChange('filterOptions.title', value, 'title');
-  };
-
   const handleInputChange = (e) => {
     const value = e.target.value;
     setSelectedFilters(prev => ({ ...prev, title: value }));
-    setFilters(prev => ({ 
-      ...prev, 
+    const newFilters = {
+      ...filters,
       'filterOptions.title': value,
       pageNumber: 1
-    }));
+    };
+    setFilters(newFilters);
   };
 
   const handlePageChange = (page, pageSize) => {
@@ -126,7 +160,8 @@ const PoemManagement = () => {
     const newFilters = {
       'filterOptions.status': '',
       'filterOptions.title': '',
-      sortOptions: '1',
+      'filterOptions.type': '',
+      sortOptions: '',
       pageNumber: 1,
       pageSize: 10
     };
@@ -134,7 +169,93 @@ const PoemManagement = () => {
     setSelectedFilters({
       status: null,
       title: '',
-      sort: '1'
+      type: null,
+      sort: ''
+    });
+  };
+
+  const handleEditPoem = (poemId, currentStatus) => {
+    let modal = Modal.info({
+      title: 'Thay đổi trạng thái bài thơ',
+      content: (
+        <div>
+          <p>Chọn trạng thái mới cho bài thơ:</p>
+          <Select
+            style={{ width: '100%', marginTop: '10px' }}
+            defaultValue={currentStatus.toString()}
+            onChange={(value) => {
+              modal.destroy();
+              updatePoemStatus(poemId, value);
+            }}
+          >
+            <Option value="0">Draft</Option>
+            <Option value="1">Posted</Option>
+            <Option value="2">Suspended</Option>
+            <Option value="3">Pending</Option>
+          </Select>
+        </div>
+      ),
+      okText: 'Đóng',
+      onOk: () => modal.destroy(),
+      maskClosable: true
+    });
+  };
+
+  const updatePoemStatus = async (poemId, status) => {
+    setUpdatingStatus(true);
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await axios.put(
+        `https://api-poemtown-staging.nodfeather.win/api/poems/v1/admin/${poemId}?status=${status}`,
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      if (response.status === 200) {
+        message.success('Cập nhật trạng thái bài thơ thành công');
+        fetchPoems(filters);       
+      } else {
+        message.error('Cập nhật trạng thái thất bại');
+      }
+    } catch (error) {
+      console.error('Error updating poem status:', error);
+      message.error('Có lỗi xảy ra khi cập nhật trạng thái');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
+
+  const handleDeletePoem = (poemId) => {
+    confirm({
+      title: 'Xác nhận xóa bài thơ',
+      content: 'Bạn có chắc chắn muốn xóa bài thơ này? Hành động này không thể hoàn tác.',
+      okText: 'Xóa',
+      okType: 'danger',
+      cancelText: 'Hủy',
+      onOk() {
+        return new Promise((resolve, reject) => {
+          const accessToken = localStorage.getItem('accessToken');
+          axios.delete(`https://api-poemtown-staging.nodfeather.win/api/poems/v1/admin/${poemId}`, {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          })
+          .then(() => {
+            message.success('Xóa bài thơ thành công');
+            fetchPoems(filters);
+            resolve();
+          })
+          .catch(error => {
+            message.error('Xóa bài thơ thất bại: ' + (error.response?.data?.message || error.message));
+            reject();
+          });
+        });
+      }
     });
   };
 
@@ -146,6 +267,7 @@ const PoemManagement = () => {
   ];
 
   const sortOptions = [
+    { value: '', label: 'Mặc định (Mới nhất)', icon: <ClockCircleOutlined /> },
     { value: '1', label: 'Lượt like tăng dần' },
     { value: '2', label: 'Lượt like giảm dần' },
     { value: '3', label: 'Bình luận tăng dần' },
@@ -154,7 +276,7 @@ const PoemManagement = () => {
     { value: '6', label: 'Sắp xếp theo z - a' },
   ];
 
-  if (loading) {
+  if ((loading && poems.length === 0) || loadingTypes) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
         <Spin size="large" />
@@ -165,20 +287,20 @@ const PoemManagement = () => {
   if (error) {
     return (
       <div style={{ maxWidth: '800px', margin: '0 auto', padding: '20px' }}>
-        <Alert 
-          message="Error loading poems" 
-          description={error.message} 
-          type="error" 
-          showIcon 
+        <Alert
+          message="Error loading poems"
+          description={error.message}
+          type="error"
+          showIcon
         />
       </div>
     );
   }
 
   return (
-    <div style={{ 
-      maxWidth: '1200px', 
-      margin: '0 auto', 
+    <div style={{
+      maxWidth: '1200px',
+      margin: '0 auto',
       padding: '20px',
       fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif"
     }}>
@@ -190,19 +312,19 @@ const PoemManagement = () => {
       </div>
 
       <Row gutter={[16, 16]} style={{ marginBottom: '30px', alignItems: 'center' }}>
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <Search
+        <Col xs={24} sm={12} md={6} lg={6}>
+          <Input
             placeholder="Tìm kiếm theo tên bài thơ"
             allowClear
-            enterButton={<SearchOutlined />}
+            prefix={<SearchOutlined />}
             value={selectedFilters.title}
             onChange={handleInputChange}
-            onSearch={handleSearch}
+            onPressEnter={() => debouncedFetch(filters)}
           />
         </Col>
 
-        <Col xs={24} sm={12} md={8} lg={6}>
-          <Select 
+        <Col xs={24} sm={12} md={6} lg={4}>
+          <Select
             placeholder="Chọn trạng thái"
             style={{ width: '100%' }}
             value={selectedFilters.status}
@@ -219,7 +341,26 @@ const PoemManagement = () => {
           </Select>
         </Col>
 
-        <Col xs={24} sm={12} md={8} lg={6}>
+        <Col xs={24} sm={12} md={6} lg={4}>
+          <Select
+            placeholder="Chọn loại thơ"
+            style={{ width: '100%' }}
+            value={selectedFilters.type}
+            onChange={value => handleFilterChange('filterOptions.type', value, 'type')}
+            allowClear
+            loading={loadingTypes}
+            suffixIcon={<FilterOutlined />}
+          >
+            <Option value="">Tất cả loại thơ</Option>
+            {poemTypes.map(type => (
+              <Option key={type.id} value={type.id}>
+                <Tag color={type.color}>{type.name}</Tag>
+              </Option>
+            ))}
+          </Select>
+        </Col>
+
+        <Col xs={24} sm={12} md={6} lg={4}>
           <Select
             placeholder="Sắp xếp theo"
             style={{ width: '100%' }}
@@ -228,24 +369,27 @@ const PoemManagement = () => {
             suffixIcon={<SortAscendingOutlined />}
           >
             {sortOptions.map(option => (
-              <Option key={option.value} value={option.value}>{option.label}</Option>
+              <Option key={option.value} value={option.value}>
+                {option.icon && <span style={{ marginRight: '8px' }}>{option.icon}</span>}
+                {option.label}
+              </Option>
             ))}
           </Select>
         </Col>
 
-        <Col xs={24} sm={12} md={8} lg={6} style={{ textAlign: 'right' }}>
-          <Button 
-            type="default" 
-            icon={<ClearOutlined />} 
+        <Col xs={24} sm={12} md={6} lg={6} style={{ textAlign: 'right' }}>
+          <Button
+            type="default"
+            icon={<ClearOutlined />}
             onClick={resetFilters}
-            disabled={!selectedFilters.status && !selectedFilters.title && selectedFilters.sort === '1'}
+            disabled={!selectedFilters.status && !selectedFilters.title && !selectedFilters.sort && !selectedFilters.type}
           >
             Đặt lại bộ lọc
           </Button>
         </Col>
       </Row>
 
-      {(selectedFilters.title || selectedFilters.status || selectedFilters.sort !== '1') && (
+      {(selectedFilters.title || selectedFilters.status || selectedFilters.sort || selectedFilters.type) && (
         <div style={{ marginBottom: '20px', padding: '10px 15px', background: '#f0f2f5', borderRadius: '4px' }}>
           <Space>
             <span style={{ fontWeight: '500' }}>Bộ lọc đang áp dụng:</span>
@@ -261,7 +405,14 @@ const PoemManagement = () => {
                 </Tag>
               </span>
             )}
-            {selectedFilters.sort !== '1' && (
+            {selectedFilters.type && (
+              <span>
+                Loại thơ: <Tag color={poemTypes.find(t => t.id === selectedFilters.type)?.color}>
+                  {poemTypes.find(t => t.id === selectedFilters.type)?.name || selectedFilters.type}
+                </Tag>
+              </span>
+            )}
+            {selectedFilters.sort && (
               <span>
                 Sắp xếp: <span style={{ color: '#1890ff' }}>
                   {sortOptions.find(s => s.value === selectedFilters.sort)?.label || selectedFilters.sort}
@@ -273,11 +424,11 @@ const PoemManagement = () => {
       )}
 
       {poems.length === 0 ? (
-        <div style={{ 
-          textAlign: 'center', 
-          padding: '40px', 
-          backgroundColor: '#f8f9fa', 
-          borderRadius: '5px', 
+        <div style={{
+          textAlign: 'center',
+          padding: '40px',
+          backgroundColor: '#f8f9fa',
+          borderRadius: '5px',
           color: '#7f8c8d'
         }}>
           <Paragraph>Không tìm thấy bài thơ nào phù hợp</Paragraph>
@@ -287,7 +438,7 @@ const PoemManagement = () => {
         </div>
       ) : (
         <>
-          <div style={{ 
+          <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(350px, 1fr))',
             gap: '25px',
@@ -297,115 +448,243 @@ const PoemManagement = () => {
               <Card
                 key={poem.id}
                 hoverable
-                style={{ 
+                style={{
                   borderRadius: '8px',
                   overflow: 'hidden',
                   boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
                   transition: 'transform 0.3s ease, box-shadow 0.3s ease',
-                  position: 'relative'
+                  position: 'relative',
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column'
                 }}
-                bodyStyle={{ padding: '20px' }}
-                cover={
-                  <div style={{ height: '200px', overflow: 'hidden', position: 'relative' }}>
-                    <img 
-                      alt={poem.title} 
-                      src={poem.poemImage} 
-                      style={{ 
-                        width: '100%',
-                        height: '100%',
-                        objectFit: 'cover',
-                        transition: 'transform 0.3s ease'
-                      }}
-                    />
-                    {poem.isFamousPoet && (
-                      <div style={{ 
-                        position: 'absolute', 
-                        top: '10px', 
-                        right: '10px', 
-                        background: 'rgba(0,0,0,0.5)', 
-                        padding: '5px 10px', 
-                        borderRadius: '4px',
-                        color: 'white'
-                      }}>
-                        <StarOutlined /> Nhà thơ nổi tiếng
-                      </div>
-                    )}
-                    {poem.isSellUsageRight && (
-                      <div style={{ 
-                        position: 'absolute', 
-                        bottom: '10px', 
-                        left: '10px', 
-                        background: 'rgba(0,0,0,0.5)', 
-                        padding: '5px 10px', 
-                        borderRadius: '4px',
-                        color: 'white'
-                      }}>
-                        <ShoppingOutlined /> Bản quyền: {poem.price?.toLocaleString()}đ
-                      </div>
-                    )}
-                  </div>
-                }
+                bodyStyle={{ 
+                  padding: '20px',
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column'
+                }}
               >
-                <div style={{ display: 'flex', alignItems: 'center', marginBottom: '15px' }}>
-                  <Avatar src={poem.user?.avatar} size={40} />
-                  <div style={{ marginLeft: '10px', flex: 1 }}>
-                    <div style={{ fontWeight: '500' }}>{poem.user?.displayName || poem.user?.userName || 'Ẩn danh'}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#7f8c8d' }}>
-                      {dayjs(poem.createdTime).format('DD/MM/YYYY HH:mm')}
+                <div style={{ 
+                  height: '200px', 
+                  overflow: 'hidden', 
+                  position: 'relative',
+                  flexShrink: 0
+                }}>
+                  <img
+                    alt={poem.title}
+                    src={poem.poemImage}
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      objectFit: 'cover',
+                      transition: 'transform 0.3s ease'
+                    }}
+                  />
+                  {poem.isFamousPoet && (
+                    <div style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: '10px',
+                      background: 'rgba(0,0,0,0.7)',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      color: 'white',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <StarOutlined style={{ fontSize: '14px' }} /> Nhà thơ nổi tiếng
                     </div>
-                  </div>
-                  <Tag color={statusOptions.find(s => s.value === poem.status?.toString())?.color}>
-                    {statusOptions.find(s => s.value === poem.status?.toString())?.label}
-                  </Tag>
-                </div>
-                
-                <Title level={4} style={{ marginBottom: '10px', color: '#2c3e50' }}>
-                  {poem.title}
-                </Title>
-                
-                <Paragraph 
-                  style={{ 
-                    color: '#7f8c8d',
-                    marginBottom: '15px',
-                    display: '-webkit-box',
-                    WebkitLineClamp: '3',
-                    WebkitBoxOrient: 'vertical',
-                    overflow: 'hidden'
-                  }}
-                >
-                  {poem.description || 'Không có mô tả'}
-                </Paragraph>
-                
-                <Divider style={{ margin: '10px 0' }} />
-                
-                <Space size="large" style={{ width: '100%', justifyContent: 'space-between' }}>
-                  <Space>
-                    <Tooltip title="Lượt thích">
-                      <Badge count={poem.likeCount || 0}>
-                        <HeartOutlined style={{ color: '#e74c3c', fontSize: '18px' }} />
-                      </Badge>
-                    </Tooltip>
-                    <Tooltip title="Bình luận">
-                      <Badge count={poem.commentCount || 0}>
-                        <MessageOutlined style={{ color: '#3498db', fontSize: '18px' }} />
-                      </Badge>
-                    </Tooltip>
-                  </Space>
-                  
-                  {poem.collection && (
-                    <Tooltip title={`Tập thơ: ${poem.collection.collectionName}`}>
-                      <Tag icon={<BookOutlined />} color="purple">
-                        {poem.collection.collectionName}
-                      </Tag>
-                    </Tooltip>
                   )}
-                </Space>
+                  {poem.isSellUsageRight && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: '10px',
+                      left: '10px',
+                      background: 'rgba(0,0,0,0.7)',
+                      padding: '4px 8px',
+                      borderRadius: '4px',
+                      color: 'white',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '4px'
+                    }}>
+                      <ShoppingOutlined style={{ fontSize: '14px' }} /> 
+                      {poem.price?.toLocaleString()}đ
+                    </div>
+                  )}
+                </div>
+              
+                <div style={{ 
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'space-between'
+                }}>
+                  <div>
+                    <div style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      marginBottom: '12px',
+                      gap: '10px'
+                    }}>
+                      <Avatar src={poem.user?.avatar} size={40} />
+                      <div style={{ flex: 1 }}>
+                        <div style={{ 
+                          fontWeight: 500,
+                          fontSize: '14px',
+                          lineHeight: '1.4',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap'
+                        }}>
+                          {poem.user?.displayName || poem.user?.userName || 'Ẩn danh'}
+                        </div>
+                        <div style={{ 
+                          fontSize: '12px', 
+                          color: '#7f8c8d',
+                          lineHeight: '1.4'
+                        }}>
+                          {dayjs(poem.createdTime).format('DD/MM/YYYY HH:mm')}
+                        </div>
+                      </div>
+                      <Tag color={statusOptions.find(s => s.value === poem.status?.toString())?.color}>
+                        {statusOptions.find(s => s.value === poem.status?.toString())?.label}
+                      </Tag>
+                    </div>
+              
+                    <Title 
+                      level={4} 
+                      style={{ 
+                        marginBottom: '12px', 
+                        color: '#2c3e50',
+                        fontSize: '18px',
+                        lineHeight: '1.4',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        minHeight: '50px'
+                      }}
+                    >
+                      {poem.title}
+                    </Title>
+              
+                    <Paragraph
+                      style={{
+                        color: '#7f8c8d',
+                        marginBottom: '12px',
+                        fontSize: '14px',
+                        lineHeight: '1.5',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        display: '-webkit-box',
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: 'vertical',
+                        minHeight: '63px'
+                      }}
+                    >
+                      {poem.description || 'Không có mô tả'}
+                    </Paragraph>
+              
+                    {poem.poemType && (
+                      <div style={{ marginBottom: '12px' }}>
+                        <Tag 
+                          color={poemTypes.find(t => t.id === poem.poemType.id)?.color || '#2db7f5'}
+                          style={{ marginRight: 0 }}
+                        >
+                          {poemTypes.find(t => t.id === poem.poemType.id)?.name || poem.poemType.name}
+                        </Tag>
+                      </div>
+                    )}
+                  </div>
+              
+                  <div>
+                    <Divider style={{ margin: '12px 0' }} />
+                    <Space 
+                      size="middle" 
+                      style={{ 
+                        width: '100%', 
+                        justifyContent: 'space-between',
+                        alignItems: 'center'
+                      }}
+                    >
+                      <Space size="middle">
+                        <Tooltip title="Lượt thích">
+                          <Badge count={poem.likeCount || 0} size="small">
+                            <HeartOutlined style={{ color: '#e74c3c', fontSize: '18px' }} />
+                          </Badge>
+                        </Tooltip>
+                        <Tooltip title="Bình luận">
+                          <Badge count={poem.commentCount || 0} size="small">
+                            <MessageOutlined style={{ color: '#3498db', fontSize: '18px' }} />
+                          </Badge>
+                        </Tooltip>
+                      </Space>
+              
+                      <Space size="middle">
+                        {poem.collection && (
+                          <Tooltip title={`Tập thơ: ${poem.collection.collectionName}`}>
+                            <Tag icon={<BookOutlined />} color="purple" style={{ marginRight: 0 }}>
+                              {poem.collection.collectionName}
+                            </Tag>
+                          </Tooltip>
+                        )}
+                        
+                        <Tooltip title="Xem chi tiết">
+                          <Button 
+                            type="text" 
+                            icon={<EyeOutlined />} 
+                            onClick={() => navigate(`/poem/${poem.id}`)}
+                            style={{ color: '#1890ff' }}
+                          />
+                        </Tooltip>
+
+                        <Dropdown 
+                          overlay={
+                            <Menu>
+                              <Menu.Item 
+                                key="edit" 
+                                icon={<EditOutlined />} 
+                                onClick={() => handleEditPoem(poem.id, poem.status)}
+                                disabled={updatingStatus}
+                              >
+                                Tùy chỉnh trạng thái
+                              </Menu.Item>
+                              <Menu.Item 
+                                key="delete" 
+                                icon={<DeleteOutlined />} 
+                                danger
+                                onClick={() => handleDeletePoem(poem.id)}
+                              >
+                                Xóa
+                              </Menu.Item>
+                            </Menu>
+                          }
+                          trigger={['click']}
+                          placement="bottomRight"
+                        >
+                          <Button 
+                            type="text" 
+                            icon={<MoreOutlined />} 
+                            style={{ color: '#8c8c8c' }}
+                            loading={updatingStatus}
+                          />
+                        </Dropdown>
+                      </Space>
+                    </Space>
+                  </div>
+                </div>
               </Card>
             ))}
           </div>
 
           {pagination.totalPages > 1 && (
-            <div style={{ 
+            <div style={{
               display: 'flex',
               justifyContent: 'center',
               marginTop: '30px'
