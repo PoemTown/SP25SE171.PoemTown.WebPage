@@ -898,7 +898,7 @@ const YourWallet = () => {
                 type: 'number',
                 min: 50000,
                 max: walletBalance,
-                message: `Số tiền phải từ 50,000 VNĐ đến ${walletBalance?.toLocaleString()} VNĐ`,
+                message: `Số tiền phải từ 50,000 VNĐ`,
               },
             ]}
           >
