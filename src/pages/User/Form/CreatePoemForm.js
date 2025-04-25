@@ -950,6 +950,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
             position: "fixed",
             top: 0,
             left: 0,
+            right: 0,
             width: "100%",
             height: "100%",
             backgroundColor: "rgba(0, 0, 0, 0.5)",
@@ -957,6 +958,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
             alignItems: "center",
             justifyContent: "center",
             zIndex: 9999,
+            
           }}
         >
           <Spin size="large" tip="Đang tải..." />

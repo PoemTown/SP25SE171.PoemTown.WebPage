@@ -19,35 +19,33 @@ const PoemsTab = ({ collections, poetId }) => {
         setIsLoggedIn(!!token);
     }, []);
 
-
     useEffect(() => {
         const storedRoles = JSON.parse(localStorage.getItem("role")) || [];
         setRoles(storedRoles);
         fetchPoems();
-    }, [poetId,]);
+    }, [poetId]);
 
     const requestHeaders = {
         "Content-Type": "application/json",
         ...(accessToken && { Authorization: `Bearer ${accessToken}` })
     };
 
-
     const fetchPoems = async () => {
         try {
             setLoading(true);
             const response = await axios.get(
-                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/poet-sample/${poetId}`,{
+                `${process.env.REACT_APP_API_BASE_URL}/poems/v1/poet-sample/${poetId}`,
+                {
                     headers: requestHeaders,
                 }
             );
 
             if (response.data && response.data.data) {
                 setPoems(response.data.data);
-                console.log(response.data.data)
                 const initialBookmarkedState = {};
                 response.data.data.forEach(item => {
                     initialBookmarkedState[item.id] = !!item.targetMark;
-                })
+                });
                 setBookmarkedPoems(initialBookmarkedState);
             }
         } catch (error) {
@@ -62,15 +60,13 @@ const PoemsTab = ({ collections, poetId }) => {
 
     const handleBookmark = async (id) => {
         try {
-            // Gọi API bookmark
             if (!isLoggedIn) {
-                message.error("Vui lòng đăng nhâp để sử dụng chức năng này");
+                message.error("Vui lòng đăng nhập để sử dụng chức năng này");
                 return;
             }
             const endpoint = `${process.env.REACT_APP_API_BASE_URL}/target-marks/v1/poem/${id}`;
 
             const currentState = bookmarkedPoems[id];
-            console.log(endpoint);
             const response = await fetch(endpoint, {
                 method: currentState ? "DELETE" : "POST",
                 headers: {
@@ -93,7 +89,6 @@ const PoemsTab = ({ collections, poetId }) => {
 
     const handleLike = async (poemId) => {
         try {
-            // Gọi API like
             const response = await axios.post(
                 `${process.env.REACT_APP_API_BASE_URL}/likes/v1/${poemId}`,
                 {},
@@ -105,13 +100,11 @@ const PoemsTab = ({ collections, poetId }) => {
             );
 
             if (response.data.success) {
-                // Cập nhật trạng thái like
                 if (likedPoems.includes(poemId)) {
                     setLikedPoems(likedPoems.filter(id => id !== poemId));
                 } else {
                     setLikedPoems([...likedPoems, poemId]);
                 }
-                // Cập nhật danh sách bài thơ để refresh số lượng like
                 fetchPoems();
             }
         } catch (error) {
@@ -122,7 +115,6 @@ const PoemsTab = ({ collections, poetId }) => {
 
     const handleMove = async (collectionId, poemId) => {
         try {
-            // Gọi API di chuyển bài thơ
             const response = await axios.post(
                 `${process.env.REACT_APP_API_BASE_URL}/collections/v1/${collectionId}/${poemId}`,
                 {},
@@ -133,11 +125,10 @@ const PoemsTab = ({ collections, poetId }) => {
                     },
                 }
             );
-            console.log(response)
 
             if (response.data.statusCode === 200) {
                 message.success("Đã di chuyển bài thơ thành công");
-                fetchPoems(); // Refresh danh sách
+                fetchPoems();
             }
         } catch (error) {
             console.error("Error moving poem:", error);
@@ -169,16 +160,32 @@ const PoemsTab = ({ collections, poetId }) => {
             )}
 
             {isCreatingPoem ? (
-                <CreatePoemForPoetSample
-                    collections={collections}
-                    poetId={poetId}
-                    setDrafting={false}
-                    onBack={() => {
-                        setIsCreatingPoem(false);
-                        fetchPoems();
-                    }}
-                    onPoemCreated={fetchPoems}
-                />
+                <div style={{
+                    display: "flex",
+                    justifyContent: "center",
+                    width: "100%",
+                    paddingTop: "40px",
+                    paddingLeft: "30%"
+                }}>
+                    <div style={{
+                        maxWidth: "800px",
+                        width: "100%",
+                        padding: "0 40px",
+                        margin: "0 auto",
+                    }}>
+
+                        <CreatePoemForPoetSample
+                            collections={collections}
+                            poetId={poetId}
+                            setDrafting={false}
+                            onBack={() => {
+                                setIsCreatingPoem(false);
+                                fetchPoems();
+                            }}
+                            onPoemCreated={fetchPoems}
+                        />
+                    </div>
+                </div>
             ) : (
                 <Spin spinning={loading}>
                     <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
