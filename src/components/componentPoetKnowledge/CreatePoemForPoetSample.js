@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, Spin, Select, Input, message, Card, Upload } from "antd";
-import { UploadOutlined, ArrowLeftOutlined, SaveOutlined, SendOutlined } from '@ant-design/icons';
+import { UploadOutlined, ArrowLeftOutlined, SendOutlined } from '@ant-design/icons';
 import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 import axios from 'axios';
 
 const { Option } = Select;
 const { TextArea } = Input;
-
 
 const poemTypeHandlers = {
     "Thơ Tự Do": {
@@ -276,9 +275,9 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         title: "",
         content: "",
         description: "",
-        status: 0,
+        status: 1,
         poemImage: "",
-        type: "",
+        poemTypeId: "",
         collectionId: collections.length > 0 ? collections[0].id : ""
     });
 
@@ -288,6 +287,12 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
     const [poemTypes, setPoemTypes] = useState([]);
     const [currentPoemType, setCurrentPoemType] = useState(null);
     const [fetchingTypes, setFetchingTypes] = useState(true);
+    const [formErrors, setFormErrors] = useState({
+        title: false,
+        description: false,
+        poemImage: false,
+        content: false
+    });
 
     // Styles
     const containerStyle = {
@@ -361,7 +366,6 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
     const footerStyle = {
         display: 'flex',
         justifyContent: 'flex-end',
-        gap: '12px',
         marginTop: '24px',
         paddingTop: '16px',
         borderTop: '1px solid #f0f0f0'
@@ -378,6 +382,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                         value: type.id,
                         label: type.name,
                         description: type.description,
+                        guideLine: type.guideLine,
                         color: type.color,
                         ...(poemTypeHandlers[type.name] || {
                             validate: (lines) => ({ isValid: true, message: "" }),
@@ -390,7 +395,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                         setCurrentPoemType(apiTypes[0]);
                         setFormData(prev => ({
                             ...prev,
-                            type: initialData?.type || apiTypes[0].value
+                            poemTypeId: initialData?.poemTypeId || apiTypes[0].value
                         }));
                     }
                 }
@@ -408,14 +413,14 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
     // Initialize form with initialData if provided
     useEffect(() => {
         if (initialData && poemTypes.length > 0) {
-            const type = poemTypes.find(t => t.value === initialData.type) || poemTypes[0];
+            const type = poemTypes.find(t => t.value === initialData.poemTypeId) || poemTypes[0];
             setFormData({
                 title: initialData.title || "",
                 content: initialData.content || "",
                 description: initialData.description || "",
-                status: initialData.status || 0,
+                status: 1,
                 poemImage: initialData.poemImage || "",
-                type: initialData.type || poemTypes[0].value,
+                poemTypeId: initialData.poemTypeId || poemTypes[0].value,
                 collectionId: initialData.collection?.id || (collections.length > 0 ? collections[0].id : "")
             });
             setCurrentPoemType(type);
@@ -484,6 +489,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                         ...prev,
                         poemImage: imageUrl
                     }));
+                    setFormErrors(prev => ({ ...prev, poemImage: false }));
                 }
             });
             return false;
@@ -497,20 +503,21 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
 
     const handleChange = (name, value) => {
         setFormData(prev => ({ ...prev, [name]: value }));
+        setFormErrors(prev => ({ ...prev, [name]: false }));
 
-        if (name === 'type') {
+        if (name === 'poemTypeId') {
             const type = poemTypes.find(t => t.value === value);
             if (type) setCurrentPoemType(type);
             validatePoemContent(formData.content, value);
         }
 
         if (name === 'content') {
-            validatePoemContent(value, formData.type);
+            validatePoemContent(value, formData.poemTypeId);
         }
     };
 
-    const validatePoemContent = (content, type) => {
-        const currentType = poemTypes.find(t => t.value === type) || currentPoemType;
+    const validatePoemContent = (content, poemTypeId) => {
+        const currentType = poemTypes.find(t => t.value === poemTypeId) || currentPoemType;
         if (!currentType) return true;
 
         const lines = content
@@ -529,23 +536,28 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
         return currentPoemType.format(formData.content);
     };
 
-    const handleSubmit = async (status) => {
-        if (!formData.title.trim()) {
-            message.warning("Vui lòng nhập tiêu đề bài thơ");
+    const validateForm = () => {
+        const errors = {
+            title: !formData.title.trim(),
+            description: !formData.description.trim(),
+            poemImage: !formData.poemImage,
+            content: !formData.content.trim()
+        };
+        
+        setFormErrors(errors);
+        
+        const contentValid = validatePoemContent(formData.content, formData.poemTypeId);
+        
+        return !Object.values(errors).some(error => error) && contentValid;
+    };
+
+    const handleSubmit = async () => {
+        if (!validateForm()) {
+            message.error("Vui lòng điền đầy đủ thông tin bắt buộc");
             return;
         }
 
-        if (!formData.content.trim()) {
-            message.warning("Vui lòng nhập nội dung bài thơ");
-            return;
-        }
-
-        if (!formData.collectionId) {
-            message.warning("Vui lòng chọn tập thơ");
-            return;
-        }
-
-        if (!validatePoemContent(formData.content, formData.type)) {
+        if (!validatePoemContent(formData.content, formData.poemTypeId)) {
             message.error("Nội dung thơ không đúng luật: " + validationError);
             return;
         }
@@ -558,9 +570,9 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                 title: formData.title,
                 content: formattedContent,
                 description: formData.description,
-                status: status,
+                status: 1,
                 poemImage: formData.poemImage,
-                type: formData.type,
+                poemTypeId: formData.poemTypeId,
                 collectionId: formData.collectionId
             };
 
@@ -574,11 +586,7 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
             });
 
             if (response.status === 200) {
-                message.success(
-                    status === 1
-                        ? "Bài thơ đã được đăng thành công!"
-                        : "Bài thơ đã được lưu nháp!"
-                );
+                message.success("Bài thơ đã được đăng thành công!");
                 if (onPoemCreated) onPoemCreated();
                 if (onBack) onBack();
                 else navigate(-1);
@@ -592,13 +600,14 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
             setLoading(false);
         }
     };
+
     const renderValidationError = () => {
         if (!validationError) return null;
 
         return (
             <div style={{
                 color: '#f5222d',
-                margin: '10px 0 20px 0', // Thêm margin bottom lớn hơn
+                margin: '10px 0 20px 0',
                 padding: '10px',
                 backgroundColor: '#fff1f0',
                 borderRadius: '4px',
@@ -622,6 +631,20 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
             }}>
                 <strong>Thể loại: {currentPoemType.label}</strong>
                 <p>{currentPoemType.guideLine}</p>
+            </div>
+        );
+    };
+
+    const renderFieldError = (fieldName, message) => {
+        if (!formErrors[fieldName]) return null;
+        
+        return (
+            <div style={{
+                color: '#f5222d',
+                fontSize: '12px',
+                marginTop: '4px'
+            }}>
+                {message}
             </div>
         );
     };
@@ -650,25 +673,30 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                         <div style={gridStyle}>
                             <div style={formGroupStyle}>
                                 <div style={formGroupStyle}>
-                                    <label style={formLabelStyle}>Tiêu đề bài thơ</label>
+                                    <label style={formLabelStyle}>Tiêu đề bài thơ *</label>
                                     <Input
                                         placeholder="Nhập tiêu đề..."
                                         value={formData.title}
                                         onChange={(e) => handleChange('title', e.target.value)}
                                         style={inputStyle}
+                                        status={formErrors.title ? 'error' : ''}
                                     />
+                                    {renderFieldError('title', 'Vui lòng nhập tiêu đề bài thơ')}
                                 </div>
 
                                 <div style={formGroupStyle}>
-                                    <label style={formLabelStyle}>Mô tả ngắn</label>
+                                    <label style={formLabelStyle}>Mô tả ngắn *</label>
                                     <TextArea
                                         rows={3}
                                         placeholder="Mô tả về bài thơ..."
                                         value={formData.description}
                                         onChange={(e) => handleChange('description', e.target.value)}
                                         style={inputStyle}
+                                        status={formErrors.description ? 'error' : ''}
                                     />
+                                    {renderFieldError('description', 'Vui lòng nhập mô tả bài thơ')}
                                 </div>
+
                                 <div style={formGroupStyle}>
                                     <label style={formLabelStyle}>Tập thơ</label>
                                     <Select
@@ -689,8 +717,8 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                                 <div style={formGroupStyle}>
                                     <label style={formLabelStyle}>Thể loại thơ</label>
                                     <Select
-                                        value={formData.type}
-                                        onChange={(value) => handleChange('type', value)}
+                                        value={formData.poemTypeId}
+                                        onChange={(value) => handleChange('poemTypeId', value)}
                                         style={inputStyle}
                                         loading={fetchingTypes}
                                     >
@@ -705,17 +733,19 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
 
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
                                 <div>
-                                    <label style={formLabelStyle}>Ảnh minh họa</label>
+                                    <label style={formLabelStyle}>Ảnh minh họa *</label>
                                     <Upload {...uploadProps}>
                                         <Button
                                             icon={<UploadOutlined />}
                                             loading={imageLoading}
                                             size="large"
                                             block
+                                            status={formErrors.poemImage ? 'error' : ''}
                                         >
                                             {imageLoading ? 'Đang tải lên...' : 'Chọn ảnh'}
                                         </Button>
                                     </Upload>
+                                    {renderFieldError('poemImage', 'Vui lòng tải lên ảnh minh họa')}
                                 </div>
 
                                 {formData.poemImage && (
@@ -768,9 +798,13 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
                                         ['clean']
                                     ]
                                 }}
-                                style={editorStyle}
+                                style={{
+                                    ...editorStyle,
+                                    border: formErrors.content ? '1px solid #ff4d4f' : '1px solid #d9d9d9'
+                                }}
                                 placeholder="Viết nội dung bài thơ tại đây..."
                             />
+                            {renderFieldError('content', 'Vui lòng nhập nội dung bài thơ')}
                         </div>
 
                         {renderValidationError()}
@@ -792,20 +826,12 @@ const CreatePoemForm = ({ initialData, onBack, collections, poetId, onPoemCreate
 
                 <div style={footerStyle}>
                     <Button
-                        type="default"
-                        icon={<SaveOutlined />}
-                        onClick={() => handleSubmit(0)}
-                        style={{ width: '120px' }}
-                        loading={loading}
-                    >
-                        Lưu nháp
-                    </Button>
-                    <Button
                         type="primary"
                         icon={<SendOutlined />}
-                        onClick={() => handleSubmit(1)}
+                        onClick={handleSubmit}
                         style={{ width: '120px' }}
                         loading={loading}
+                        disabled={!formData.poemImage || !formData.title || !formData.description || !formData.content}
                     >
                         Đăng bài
                     </Button>

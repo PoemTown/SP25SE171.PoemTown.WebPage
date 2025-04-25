@@ -163,13 +163,14 @@ const CollectionTab = ({ poet }) => {
                                     cursor: "pointer",
                                     display: "block",
                                     marginTop: "10px",
-                                    marginLeft: "40px"
+                                    marginLeft: "40px",
+                                    marginBottom: "40px"
                                 }}
                             >
                                 BỘ SƯU TẬP MỚI
                             </button>
                         )}
-                        <div style={{ maxWidth: "1200px", margin: "0 auto" }}>
+                        <div style={{ maxWidth: "1200px", margin: "0 40px" }}>
                             {collections.map((item) => (
                                 <CollectionCard
                                     key={item.id}

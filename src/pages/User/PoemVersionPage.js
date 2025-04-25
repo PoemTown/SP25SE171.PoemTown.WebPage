@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import {
     Card,
     Tag,
@@ -23,7 +23,8 @@ import {
     HistoryOutlined,
     GiftOutlined,
     DollarOutlined,
-    HourglassOutlined
+    HourglassOutlined,
+    ArrowLeftOutlined
 } from "@ant-design/icons";
 import axios from "axios";
 import Headeruser from "../../components/Headeruser";
@@ -34,6 +35,7 @@ const { Panel } = Collapse;
 
 const PoemVersionPage = () => {
     const { poemId } = useParams();
+    const navigate = useNavigate();
     const [version, setVersion] = useState(null);
     const [loading, setLoading] = useState(true);
     const [isModalVisible, setIsModalVisible] = useState(false);
@@ -47,6 +49,7 @@ const PoemVersionPage = () => {
         4: "Default",
         2: "Không sử dụng"
     });
+    
     useEffect(() => {
         fetchVersions();
         setIsLoggedIn(!!accessToken);
@@ -54,11 +57,10 @@ const PoemVersionPage = () => {
 
     const fetchVersions = async () => {
         try {
-            const pageSize = 100;        // hoặc giá trị từ state
-            const pageNumber = 1;       // hoặc giá trị từ state
+            const pageSize = 100;
+            const pageNumber = 1;
             const response = await axios.get(
-                `${process.env.REACT_APP_API_BASE_URL}/usage-rights/v1/poem-version/${poemId}?pageSize=${pageSize}&pageNumber=${pageNumber}`
-                ,
+                `${process.env.REACT_APP_API_BASE_URL}/usage-rights/v1/poem-version/${poemId}?pageSize=${pageSize}&pageNumber=${pageNumber}`,
                 {
                     headers: {
                         Authorization: `Bearer ${accessToken}`,
@@ -66,7 +68,6 @@ const PoemVersionPage = () => {
                 }
             );
             setVersion(response.data.data);
-
         } catch (error) {
             console.error("Error fetching versions:", error);
             notification.error({
@@ -76,6 +77,10 @@ const PoemVersionPage = () => {
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleBack = () => {
+        navigate(-1);
     };
 
     const handleFreeVersion = async () => {
@@ -132,7 +137,7 @@ const PoemVersionPage = () => {
 
     const currentVersion = version?.find(v => v?.isInUse) || null;
     const olderVersions = version?.filter(v => !v?.isInUse) || [];
-    console.log(olderVersions)
+
     const BuyerList = ({ usageRights }) => (
         <List
             itemLayout="horizontal"
@@ -200,11 +205,22 @@ const PoemVersionPage = () => {
     }
 
     return (
-        <>{isLoggedIn ? <Headeruser /> : <Headerdefault />}
+        <>
+            {isLoggedIn ? <Headeruser /> : <Headerdefault />}
             <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
-                <Title level={2} style={{ marginBottom: 24 }}>
-                    <HistoryOutlined /> {version[0]?.poem?.title || 'Quản lý phiên bản'}
-                </Title>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                    <Button 
+                        type="text" 
+                        icon={<ArrowLeftOutlined />} 
+                        onClick={handleBack}
+                        style={{ marginRight: 16 }}
+                    >
+                        Quay lại
+                    </Button>
+                    <Title level={2} style={{ margin: 0, flex: 1 }}>
+                        <HistoryOutlined /> {version[0]?.poem?.title || 'Quản lý phiên bản'}
+                    </Title>
+                </div>
 
                 {/* Phiên bản hiện tại */}
                 <Card
@@ -222,7 +238,6 @@ const PoemVersionPage = () => {
                                     type="primary"
                                     icon={<GiftOutlined />}
                                     onClick={handleFreeVersion}
-                                    
                                 >
                                     Miễn phí
                                 </Button>
@@ -233,12 +248,10 @@ const PoemVersionPage = () => {
                                     type="primary"
                                     icon={<DollarOutlined />}
                                     onClick={() => setIsModalVisible(true)}
-                                    
                                 >
                                     Bán lại
                                 </Button>
                             )}
-
                         </div>
                     }
                 >
@@ -478,7 +491,6 @@ const PoemVersionPage = () => {
         </>
     );
 };
-
 
 const DetailItem = ({ label, value, icon }) => (
     <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
