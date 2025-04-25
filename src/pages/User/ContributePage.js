@@ -19,7 +19,7 @@ const ContributePage = () => {
 
                 while (hasMore) {
                     const response = await fetch(
-                        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?pageNumber=${currentPage}&pageSize=${pageSize}`,
+                        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?pageNumber=${currentPage}&pageSize=${pageSize}&filterOptions.status=1`,
                         {
                             headers: {
                                 Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

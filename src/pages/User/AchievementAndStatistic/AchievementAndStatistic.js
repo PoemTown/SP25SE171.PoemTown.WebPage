@@ -447,7 +447,7 @@ const ElegantAchievementItem = ({ item, index, color, borderColor }) => {
         </div>
         
         {/* Progress bar with smooth animation */}
-        <div style={{
+        {/* <div style={{
           display: "flex",
           alignItems: "center",
           gap: "8px"
@@ -477,7 +477,7 @@ const ElegantAchievementItem = ({ item, index, color, borderColor }) => {
           }}>
             {Math.round((item.progress || 0) * 100)}%
           </span>
-        </div>
+        </div> */}
       </div>
     </div>
   );
