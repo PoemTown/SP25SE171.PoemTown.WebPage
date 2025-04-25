@@ -9,7 +9,7 @@ const NavigationTabs = ({ isMine, activeTab, setActiveTab, setIsCreatingPoem, se
         "Bookmark của bạn",
         "Bản nháp của bạn",
         // "Lịch sử chỉnh sửa",
-        "Quản lý Bản Quyền",
+        "Quản lý Quyền Sử Dụng",
         // "Trang trí",
         "Quản lý ví",
         "Đóng góp"
@@ -22,17 +22,17 @@ const NavigationTabs = ({ isMine, activeTab, setActiveTab, setIsCreatingPoem, se
 
     const handleChangeTab = (tab) => {
         if (activeTab === "Thơ của bạn") {
-            if (tab === "Bộ sưu tập của bạn" || tab === "Bookmark của bạn" || tab === "Bản nháp của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Bản Quyền" || tab === "Quản lý ví" || tab === "Bản ghi âm" || tab === "Tiểu sử" ) {
+            if (tab === "Bộ sưu tập của bạn" || tab === "Bookmark của bạn" || tab === "Bản nháp của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Quyền Sử Dụng" || tab === "Quản lý ví" || tab === "Bản ghi âm" || tab === "Tiểu sử" ) {
                 setIsCreatingPoem(false);
             }
         }
         if (activeTab === "Bộ sưu tập của bạn") {
-            if (tab === "Thơ của bạn" || tab === "Bookmark của bạn" || tab === "Bản nháp của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Bản Quyền" || tab === "Quản lý ví" || tab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
+            if (tab === "Thơ của bạn" || tab === "Bookmark của bạn" || tab === "Bản nháp của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Quyền Sử Dụng" || tab === "Quản lý ví" || tab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
                 setIsCreatingCollection(false);
             }
         }
         if (activeTab === "Bản nháp của bạn") {
-            if (tab === "Thơ của bạn" || tab === "Bookmark của bạn" || tab === "Bộ sưu tập của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Bản Quyền" || tab === "Quản lý ví" || tab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
+            if (tab === "Thơ của bạn" || tab === "Bookmark của bạn" || tab === "Bộ sưu tập của bạn" || tab === "Lịch sử chỉnh sửa" || tab === "Quản lý Quyền Sử Dụng" || tab === "Quản lý ví" || tab === "Bản ghi âm" || activeTab === "Tiểu sử" ) {
                 setIsCreatingPoem(false);
             }
         }

@@ -56,7 +56,7 @@ const TemplateDetail = () => {
         "Bookmark của bạn",
         "Bản nháp của bạn",
         "Lịch sử chỉnh sửa",
-        "Quản lý Bản Quyền",
+        "Quản lý Quyền Sử Dụng",
         // "Trang trí",
         "Quản lý ví",
     ];

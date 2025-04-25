@@ -94,7 +94,7 @@ const UserPage = () => {
             "Bookmark của bạn",
             "Bản nháp của bạn",
             "Lịch sử chỉnh sửa",
-            "Quản lý Bản Quyền",
+            "Quản lý Quyền Sử Dụng",
             "Quản lý ví",
             "Đóng góp"
         ];
@@ -338,10 +338,10 @@ const UserPage = () => {
     useEffect(() => {
         localStorage.setItem("activeTab", activeTab);
 
-        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử") {
+        if (activeTab === "Bộ sưu tập của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Quyền Sử Dụng" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử") {
             setIsCreatingPoem(false);
         }
-        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Bản Quyền" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử") {
+        if (activeTab === "Thơ của bạn" || activeTab === "Bookmark của bạn" || activeTab === "Bản nháp của bạn" || activeTab === "Lịch sử chỉnh sửa" || activeTab === "Quản lý Quyền Sử Dụng" || activeTab === "Quản lý ví" || activeTab === "Bản ghi âm" || activeTab === "Tiểu sử") {
             setIsCreatingCollection(false);
         }
 
@@ -418,7 +418,7 @@ const UserPage = () => {
                             <YourDraft isCreatingPoem={isCreatingPoem} setIsCreatingPoem={setIsCreatingPoem} displayName={displayName} avatar={userData.avatar} achievementBorder={achievementBorder} statisticBorder={statisticBorder} />
                         )}
                         {activeTab === "Lịch sử chỉnh sửa" && <p>Tất cả các thay đổi bạn đã thực hiện sẽ được hiển thị tại đây.</p>}
-                        {activeTab === "Quản lý Bản Quyền" && (
+                        {activeTab === "Quản lý Quyền Sử Dụng" && (
                             <UsageRight />
                         )}
                         {/* {activeTab === "Trang trí" &&

@@ -370,7 +370,7 @@ return (
         flexWrap: 'wrap',
         gap: '12px'
       }}>
-        <Title level={4} style={{ margin: 0 }}>Quản lý Bản quyền</Title>
+        <Title level={4} style={{ margin: 0 }}>Quản lý Quyền Sử Dụng</Title>
         <Dropdown.Button
           overlay={menu}
           trigger={["click"]}
