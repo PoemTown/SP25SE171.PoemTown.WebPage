@@ -188,7 +188,7 @@ const PoemManagement = () => {
               updatePoemStatus(poemId, value);
             }}
           >
-            <Option value="0">Bản nháp</Option>
+            <Option value="0" style={{ display: 'none' }}>Bản nháp</Option>
             <Option value="1">Đã đăng</Option>
             <Option value="2">Bị tạm ngưng</Option>
             <Option value="3">Đang chờ duyệt</Option>
