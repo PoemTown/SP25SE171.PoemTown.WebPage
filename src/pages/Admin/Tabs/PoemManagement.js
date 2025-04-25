@@ -273,8 +273,8 @@ const PoemManagement = () => {
     { value: '2', label: 'Lượt like giảm dần' },
     { value: '3', label: 'Bình luận tăng dần' },
     { value: '4', label: 'Bình luận giảm dần' },
-    { value: '5', label: 'Sắp xếp theo a - z' },
-    { value: '6', label: 'Sắp xếp theo z - a' },
+    { value: '5', label: 'Sắp xếp theo thể loại thơ (a - z)' },
+    { value: '6', label: 'Sắp xếp theo thể loại thơ (z - a)' },
   ];
 
   if ((loading && poems.length === 0) || loadingTypes) {
