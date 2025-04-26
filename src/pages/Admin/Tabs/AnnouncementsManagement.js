@@ -50,7 +50,7 @@ const AnnouncementsManagement = () => {
         throw new Error('Không tìm thấy access token');
       }
 
-      const response = await fetch(`https://api-poemtown-staging.nodfeather.win/api/announcements/v1/system?page=${page + 1}&limit=${rowsPerPage}`, {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/announcements/v1/system?page=${page + 1}&limit=${rowsPerPage}`, {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
           'Content-Type': 'application/json'
@@ -78,7 +78,7 @@ const AnnouncementsManagement = () => {
         throw new Error('Không tìm thấy access token');
       }
 
-      const response = await fetch('https://api-poemtown-staging.nodfeather.win/api/announcements/v1/system', {
+      const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/announcements/v1/system`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${accessToken}`,

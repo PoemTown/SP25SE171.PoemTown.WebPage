@@ -9,7 +9,7 @@ const Footer = () => {
   useEffect(() => {
     const fetchContacts = async () => {
       try {
-        const response = await fetch("https://api-poemtown-staging.nodfeather.win/api/system-contacts/v1");
+        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/system-contacts/v1`);
         if (!response.ok) {
           throw new Error("Failed to fetch contact information");
         }

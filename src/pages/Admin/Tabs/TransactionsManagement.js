@@ -33,6 +33,9 @@ const getTransactionType = (type) => {
         case 4: return "Mua bài thơ";
         case 5: return "Rút tiền";
         case 6: return "Quyên góp";
+        case 7: return "Phí hoa hồng"
+        case 8: return "Hoàn tiền"
+        case 9: return "Phí dịch vụ nạp tiền"
         default: return "Không xác định";
     }
 };
