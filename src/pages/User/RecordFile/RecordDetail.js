@@ -225,18 +225,21 @@ const RecordDetail = () => {
                             >
                                 Xóa bản ghi
                             </Button>
-                            <Button
-                                type="primary"
-                                onClick={handleToggleStatus}
-                                disabled={!record.isPublic}
-                                style={{
-                                    background: record.isPublic ? '#7d6b58' : '#b0a499',
-                                    borderColor: 'transparent',
-                                    fontWeight: 500
-                                }}
-                            >
-                                {record.isPublic ? 'Chuyển sang riêng tư' : 'Đang ở chế độ riêng tư'}
-                            </Button>
+                            {record.poem?.isFamousPoet === false && (
+                                <Button
+                                    type="primary"
+                                    onClick={handleToggleStatus}
+                                    disabled={!record.isPublic}
+                                    style={{
+                                        background: record.isPublic ? '#7d6b58' : '#b0a499',
+                                        borderColor: 'transparent',
+                                        fontWeight: 500
+                                    }}
+                                >
+                                    {record.isPublic ? 'Chuyển sang riêng tư' : 'Đang ở chế độ riêng tư'}
+                                </Button>
+                            )}
+
                         </div>
                     )}
 
