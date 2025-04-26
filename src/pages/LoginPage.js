@@ -87,18 +87,18 @@ const LoginPage = () => {
             );
 
             if (response.status === 200) {
-                const { accessToken, refreshToken, role, avatar } = response.data.data;
+                const { accessToken, refreshToken, role, avatar } = response.data?.data;
 
                 localStorage.setItem("accessToken", accessToken);
                 localStorage.setItem("refreshToken", refreshToken);
                 localStorage.setItem("role", JSON.stringify(role));
                 localStorage.setItem("avatar", JSON.stringify(avatar));
-                console.log("Login successful:", response.data.message);
+                console.log("Login successful:", response.data?.message);
 
                 const decodedToken = jwtDecode(accessToken);
                 localStorage.setItem("username", decodedToken.UserName);
                 localStorage.setItem("userId", decodedToken.UserId);
-
+ 
                 if (role.includes("USER")) {
                     window.location.href = "/";
                 } else if (role.includes("ADMIN")) {
@@ -114,8 +114,8 @@ const LoginPage = () => {
             }
         } catch (err) {
             console.error("Login failed:", err.response?.data || err.message);
-            if (err.response.data.statusCode === 401) {
-                switch (err.response.data.errorMessage) {
+            if (err.response?.data?.statusCode === 401) {
+                switch (err.response?.data?.errorMessage) {
                     case "Password is incorrect":
                         message.error("Mật khẩu không chính xác.");
                         break;
