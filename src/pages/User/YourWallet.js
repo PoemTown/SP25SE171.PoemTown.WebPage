@@ -896,15 +896,15 @@ const YourWallet = () => {
               { required: true, message: "Vui lòng nhập số tiền" },
               {
                 type: 'number',
-                min: 50000,
+                min: 1000,
                 max: walletBalance,
-                message: `Số tiền phải từ 50,000 VNĐ`,
+                message: `Số tiền tối thiểu phải từ 1,000 VNĐ`,
               },
             ]}
           >
             <InputNumber
               style={{ width: '100%' }}
-              min={50000}
+              min={1000}
               max={walletBalance}
               step={10000}
               formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
