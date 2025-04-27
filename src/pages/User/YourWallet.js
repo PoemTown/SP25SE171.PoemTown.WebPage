@@ -808,14 +808,21 @@ const YourWallet = () => {
                 min: 20000,
                 message: 'Số tiền tối thiểu là 20,000 VNĐ',
               },
+              
             ]}
           >
             <InputNumber
               style={{ width: '100%' }}
               min={20000}
+              max={1000000000}
               step={10000}
               formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
               parser={value => value.replace(/₫\s?|(,*)/g, '')}
+              onChange={(value) => {
+                if (value > 1000000000) {
+                  depositForm.setFieldsValue({ amount: 1000000000 });
+                }
+              }}
             />
           </Form.Item>
 
