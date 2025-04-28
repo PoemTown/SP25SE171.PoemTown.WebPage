@@ -194,7 +194,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     />
                     <div style={styles.avatarContainer}>
                         <img
-                            src={item.user?.avatar || item.poetSample?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
+                            src={item.isFamousPoet ? item.poetSample?.avatar : item.user?.avatar || `${process.env.PUBLIC_URL}/default_avatar.png`}
                             alt="Tác giả"
                             style={styles.avatar}
                         />
@@ -204,7 +204,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
             <div style={styles.contentRight}>
                 <div style={styles.cardHeader}>
                     <div style={styles.headerLeft}>
-                        <span style={styles.author} onClick={handleNavigate}> {item.user ? item.user?.displayName : item.poetSample?.name || 'Anonymous'}</span>
+                        <span style={styles.author} onClick={handleNavigate}> {item.isFamousPoet ? item.poetSample?.name : item.user?.displayName || 'Anonymous'}</span>
                         <span style={styles.postDate}>– <ClockCircleOutlined style={{ fontSize: "0.9rem" }} />{formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
