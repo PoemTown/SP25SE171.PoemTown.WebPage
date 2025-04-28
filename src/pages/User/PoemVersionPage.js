@@ -46,7 +46,7 @@ const PoemVersionPage = () => {
     const Status = Object.freeze({
         1: "Trả phí",
         3: "Miễn phí",
-        4: "Default",
+        4: "Chưa cấp quyền sử dụng",
         2: "Không sử dụng"
     });
     

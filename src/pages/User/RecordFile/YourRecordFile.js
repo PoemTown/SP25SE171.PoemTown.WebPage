@@ -282,22 +282,32 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                   gap: "40px",
                   minHeight: "200px",
                 }}>
-                  {/* {recordFiles.map((record) => (
-
+                  {recordFiles.length > 0 ? (
                     <RecordListGroupedByPoem
-                      key={record.id}
-                      record={record}
-                      showDeleteConfirm={showDeleteConfirm} 
+                      records={recordFiles}
+                      showDeleteConfirm={showDeleteConfirm}
                       isMine={isMine}
-                      showPurchaseConfirm={showPurchaseConfirm} />
-                  ))} */}
-                  <RecordListGroupedByPoem
-                    //pageSize={pageSize}
-                    records={recordFiles}
-                    showDeleteConfirm={showDeleteConfirm}
-                    isMine={isMine}
-                    showPurchaseConfirm={showPurchaseConfirm}
-                  />
+                      showPurchaseConfirm={showPurchaseConfirm}
+                    />
+                  ) : (
+                    <div style={{
+                      width: "100%",
+                      textAlign: "center",
+                      padding: "40px 20px",
+                      backgroundColor: "#fff",
+                      borderRadius: "8px",
+                      border: "1px dashed #d7ccc8",
+                      color: "#5d4037"
+                    }}>
+                      <FcVideoFile size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
+                      <h3 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>
+                        {isMine ? "Bạn chưa có bản ghi nào" : "Người dùng chưa có bản ghi nào"}
+                      </h3>
+                      <p style={{ margin: 0, fontSize: "14px" }}>
+                        {isMine ? "Hãy tạo bản ghi đầu tiên của bạn" : "Hãy quay lại sau khi người dùng tạo bản ghi"}
+                      </p>
+                    </div>
+                  )}
                 </div>
               )}
             </div>

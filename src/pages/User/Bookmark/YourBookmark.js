@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import CollectionCard from "../../../components/componentHomepage/CollectionCard";
 import PoemCard from "../../../components/componentHomepage/PoemCard";
 import { message } from "antd";
+import { LuBook } from "react-icons/lu";
 
 const YourBookmark = () => {
     const [isBookmarkCollectionTab, setIsBookmarkCollectionTab] = useState(false);
@@ -147,8 +148,8 @@ const YourBookmark = () => {
     }
 
     return (
-        <div style={{display: "flex", gap: "40px", margin: "0", width: "100%" }}>
-            <div style={{width: "100%"}}>
+        <div style={{ display: "flex", gap: "40px", margin: "0", width: "100%" }}>
+            <div style={{ width: "100%" }}>
                 <div>
                     <button style={isBookmarkCollectionTab ? styles.toggleBookmarkPoem : styles.toggleBookmarkPoemActive}
                         onClick={handleChangeToBookmarkPoem}
@@ -163,28 +164,55 @@ const YourBookmark = () => {
                     <hr style={{ border: "2px solid #FFD557", borderRadius: "5px" }} />
                 </div>
                 <div style={{}}>
-                    {data.map((item) => (
-                        <PoemCard
-                            key={item.id}
-                            item={item}
-                            liked={likedPosts[item.id]}
-                            bookmarked={bookmarkedPosts[item.id]}
-                            onBookmark={handleBookmark}
-                            onLike={handleLike}
-                            onHover={setIsHovered}
-                        />
-                    ))}
-                    {collections.map((item) => (
-                        <CollectionCard
-                            key={item.id}
-                            item={item}
-                            onBookmark={handleBookmark}
-                            isBookmarked={bookmarkedCollections[item.id] || false}
-                        />
-                    ))}
+                    {data.length > 0 || collections.length > 0 ? (
+                        <div>
+                            {data.map((item) => (
+                                <PoemCard
+                                    key={item.id}
+                                    item={item}
+                                    liked={likedPosts[item.id]}
+                                    bookmarked={bookmarkedPosts[item.id]}
+                                    onBookmark={handleBookmark}
+                                    onLike={handleLike}
+                                    onHover={setIsHovered}
+                                />
+                            ))}
+                            {collections.map((item) => (
+                                <CollectionCard
+                                    key={item.id}
+                                    item={item}
+                                    onBookmark={handleBookmark}
+                                    isBookmarked={bookmarkedCollections[item.id] || false}
+                                />
+                            ))}
+                        </div>
+                    ) : (
+
+                        <div style={{
+                            width: "100%",
+                            textAlign: "center",
+                            padding: "40px 20px",
+                            backgroundColor: "#fff",
+                            borderRadius: "8px",
+                            border: "1px dashed #d7ccc8",
+                            color: "#5d4037"
+                        }}>
+
+                            <LuBook size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
+                            <h3 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>
+                                Bạn chưa đánh dấu gì cả
+                            </h3>
+                            <p style={{ margin: 0, fontSize: "14px" }}>
+                                Hãy đánh dấu thơ và bộ sưu tập để dễ dàng tìm kiếm
+                            </p>
+                        </div>
+
+                    )}
+
+
                 </div>
             </div >
-          
+
         </div>
 
 

@@ -47,7 +47,7 @@ export default function CreateRecord({ onBack }) {
       });
       if (!response.ok) throw new Error("Lỗi khi fetch poems");
       const result = await response.json();
-      setTotal(result.totalPages || 0);
+      setTotal(result.totalPages * pageSize || 0);
       setPoems(result.data || []);
     } catch (err) {
       console.error("Lỗi khi fetch poems:", err);
@@ -66,7 +66,7 @@ export default function CreateRecord({ onBack }) {
       });
       if (!response.ok) throw new Error("Lỗi khi fetch bought poems");
       const result = await response.json();
-      setTotal(result.totalPages || 0);
+      setTotal(result.totalPages * pageSize || 0);
       setPoems(result.data || []);
     } catch (err) {
       console.error("Lỗi khi fetch bought poems:", err);
@@ -160,7 +160,7 @@ export default function CreateRecord({ onBack }) {
     },
     beforeUpload: (file) => {
       if (!file.type.startsWith("audio/")) {
-        message.error("Chỉ được phép tải lên file audio!");
+        message.error("Chỉ được phép tải lên tệp âm thanh!");
         return false;
       }
       if (isAudioUploading) {
@@ -311,7 +311,9 @@ export default function CreateRecord({ onBack }) {
               },
               showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20"],
-              locale: { items_per_page: '/ trang' }
+              locale: { items_per_page: '/ trang' },
+              showTotal: (total, range) => `${range[0]}-${range[1]} của ${total} mục`
+
             }}
             scroll={{ x: true }}
           />
@@ -363,7 +365,7 @@ export default function CreateRecord({ onBack }) {
             name="audioFile"
             rules={[{
               required: true,
-              message: "Vui lòng tải lên file audio!"
+              message: "Vui lòng tải lên tệp âm thanh!"
             }]}
             valuePropName="fileUrl"
           >
@@ -402,7 +404,7 @@ export default function CreateRecord({ onBack }) {
           )}
 
           {audioUrl && (
-            <div style={{ marginTop: 16 }}> 
+            <div style={{ marginTop: 16 }}>
               <audio
                 controls
                 src={form.getFieldValue('audioFile')}
