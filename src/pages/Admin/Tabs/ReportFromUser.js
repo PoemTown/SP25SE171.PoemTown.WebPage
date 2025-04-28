@@ -54,20 +54,6 @@ const getStatusColor = (status) => {
     }
 };
 
-// const poemType = {
-//     1: "Thơ tự do",
-//     2: "Thơ Lục bát",
-//     3: "Thơ Song thất lục bát",
-//     4: "Thơ Thất ngôn tứ tuyệt",
-//     5: "Thơ Ngũ ngôn tứ tuyệt",
-//     6: "Thơ Thất ngôn bát cú",
-//     7: "Thơ bốn chữ",
-//     8: "Thơ năm chữ",
-//     9: "Thơ sáu chữ",
-//     10: "Thơ bảy chữ",
-//     11: "Thơ tám chữ",
-// }
-
 const pageSizeOptions = [
     { value: 10, label: '10 bản ghi' },
     { value: 25, label: '25 bản ghi' },
@@ -120,7 +106,6 @@ const ReportFromUser = () => {
                 }
             );
             setReports(response.data.data);
-            console.log(response.data.data)
             setPagination({
                 pageNumber: response.data.pageNumber,
                 totalPages: response.data.totalPages,
@@ -280,8 +265,8 @@ const ReportFromUser = () => {
                                 >
                                     <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                     <TableCell>{getReportType(report.type)}</TableCell>
-                                    <TableCell>{report?.reportMessage?.description || "Không có lý do"}</TableCell>
-                                    <TableCell>{report?.reportReason || "Không có mô tảtả"}</TableCell>
+                                    <TableCell>{report?.reportReason || "Không có lý do"}</TableCell>
+                                    <TableCell>{report?.reportMessage?.description || "Không có mô tả"}</TableCell>
                                     <TableCell>
                                         <Chip
                                             label={getReportStatus(report.status)}
@@ -339,12 +324,34 @@ const ReportFromUser = () => {
                             <Typography variant="subtitle1" gutterBottom>
                                 <strong>Loại báo cáo:</strong> {getReportType(selectedReport.type)}
                             </Typography>
-                            <Typography variant="subtitle1" gutterBottom>
-                                <strong>Lý do:</strong> {selectedReport.reportReason || "Không có lý do"}
-                            </Typography>
+                            
+                            {/* Phần thông tin báo cáo được cải thiện */}
+                            <Box sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 1, backgroundColor: '#f9f9f9' }}>
+                                <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
+                                    Thông tin báo cáo
+                                </Typography>
+                                
+                                <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
+                                    <div>
+                                        <Typography component="span" sx={{ fontWeight: 'bold' }}>Lý do báo cáo: </Typography>
+                                        <Typography component="span">
+                                            {selectedReport.reportReason || "Không có lý do cụ thể"}
+                                        </Typography>
+                                    </div>
+                                    
+                                    <div>
+                                        <Typography component="span" sx={{ fontWeight: 'bold' }}>Mô tả chi tiết: </Typography>
+                                        <Typography component="span">
+                                            {selectedReport?.reportMessage?.description || "Không có mô tả chi tiết"}
+                                        </Typography>
+                                    </div>
+                                </Box>
+                            </Box>
+
                             <Typography variant="subtitle1" gutterBottom>
                                 <strong>Người báo cáo:</strong> {selectedReport.reportReportUser?.fullName || "Không có tên"}
                             </Typography>
+
                             {selectedReport.isSystem === true && plagiarismFromPoems.length > 0 ? (
                                 <>
                                     <div style={{ display: "flex", flexDirection: "row", marginTop: "16px" }}>
@@ -436,8 +443,8 @@ const ReportFromUser = () => {
                                                 width: "168px",
                                                 maxWidth: "168px",
                                                 height: "100%",
-                                                objectFit: "cover", // This will prevent stretching
-                                                objectPosition: "center" // Center the image
+                                                objectFit: "cover",
+                                                objectPosition: "center"
                                             }} />
                                         </div>
                                         <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: "5px" }}>

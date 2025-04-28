@@ -24,24 +24,57 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   const [reportPoemId, setReportPoemId] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [collections, setCollections] = useState([]);
+  const [hasCollections, setHasCollections] = useState(false);
+  const [checkingCollections, setCheckingCollections] = useState(false);
 
   const accessToken = localStorage.getItem("accessToken");
   const navigate = useNavigate();
 
-  // Memoize headers to prevent unnecessary recreations
   const requestHeaders = useMemo(() => ({
     "Content-Type": "application/json",
     ...(accessToken && { Authorization: `Bearer ${accessToken}` })
   }), [accessToken]);
 
-  // Memoize API URL to prevent unnecessary changes
   const poemsUrl = useMemo(() => {
     return isMine 
       ? `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=1`
       : `${process.env.REACT_APP_API_BASE_URL}/poems/v1/user/${username}`;
   }, [isMine, username]);
 
-  // Stable fetch function with proper error handling
+  const fetchCollections = useCallback(async () => {
+    if (!accessToken) return;
+
+    setCheckingCollections(true);
+    try {
+      const response = await fetch(
+        `${process.env.REACT_APP_API_BASE_URL}/collections/v1`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch collections");
+      }
+
+      const data = await response.json();
+      if (data.statusCode === 200) {
+        setCollections(data.data);
+        setHasCollections(data.data.length > 0);
+      }
+    } catch (error) {
+      console.error("Error fetching collections:", error);
+      message.error("Không thể tải danh sách bộ sưu tập");
+      setHasCollections(false);
+    } finally {
+      setCheckingCollections(false);
+    }
+  }, [accessToken]);
+
   const fetchPoems = useCallback(async () => {
     if (isMine === null) return;
     
@@ -95,18 +128,35 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     }
   }, [isMine, accessToken, requestHeaders, poemsUrl]);
 
-  // Fetch poems on mount and when dependencies change
   useEffect(() => {
     const controller = new AbortController();
     
     const fetchData = async () => {
       await fetchPoems();
+      if (isMine) {
+        await fetchCollections();
+      }
     };
 
     fetchData();
 
     return () => controller.abort();
-  }, [fetchPoems]);
+  }, [fetchPoems, fetchCollections, isMine]);
+
+  const handleCreatePoemClick = () => {
+    if (!hasCollections) {
+      Modal.info({
+        title: "Thông báo",
+        content: "Bạn chưa có bộ sưu tập nào. Vui lòng tạo bộ sưu tập trước khi sáng tác thơ.",
+        okText: "Đồng ý",
+        onOk() {
+          navigate("/collections");
+        },
+      });
+      return;
+    }
+    setIsCreatingPoem(true);
+  };
 
   const handleCopyLink = (id) => {
     const url = `${window.location.origin}/poem/${id}`;
@@ -313,6 +363,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     );
   };
 
+  if (checkingCollections) {
+    return <div style={{ textAlign: 'center', padding: '20px' }}>Đang kiểm tra bộ sưu tập...</div>;
+  }
+
   if (isCreatingPoem) {
     return (
       <CreatePoemForm 
@@ -338,7 +392,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
         <p>Chưa có bài thơ nào được đăng</p>
         {isMine && (
           <button
-            onClick={() => setIsCreatingPoem(true)}
+            onClick={handleCreatePoemClick}
             style={{
               backgroundColor: "#b0a499",
               color: "#ecf0f1",
@@ -373,7 +427,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     <div style={{ width: "100%", maxWidth: "1200px" }}>
       {isMine && (
         <button
-          onClick={() => setIsCreatingPoem(true)}
+          onClick={handleCreatePoemClick}
           style={{
             backgroundColor: "#b0a499",
             color: "#ecf0f1",
