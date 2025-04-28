@@ -26,16 +26,22 @@ const TemplateManagement = () => {
   const [uploading, setUploading] = useState(false);
   const [form] = Form.useForm();
   const [selectedTemplateId, setSelectedTemplateId] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
-  // Fetch data from API
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`);
-        console.log("API Response:", response.data);
-        if (response.data?.statusCode === 200 && response.data.data) {
-          setItems(response.data.data.map(item => ({
-            id: item.id,
+  // Fetch data function (reusable)
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`
+      );
+      
+      if (response.data?.statusCode === 200 && Array.isArray(response.data.data)) {
+        const validItems = response.data.data
+          .filter(item => item != null)
+          .map(item => ({
+            id: item.id || Date.now().toString(),
             templateName: item.templateName || "Không có tên",
             price: item.price || 0,
             coverImage: item.coverImage || "",
@@ -43,16 +49,25 @@ const TemplateManagement = () => {
             tagName: item.tagName || "Không có tag",
             isBought: item.isBought || false,
             type: item.type || 2
-          })));
-        } else {
-          console.error("Dữ liệu từ API không hợp lệ:", response.data);
-        }
-      } catch (error) {
-        console.error("Error fetching data:", error);
-        message.error("Không thể tải dữ liệu");
+          }));
+        
+        setItems(validItems);
+      } else {
+        console.error("Invalid API response structure:", response.data);
+        message.error("Dữ liệu từ API không hợp lệ");
+        setItems([]);
       }
-    };
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      message.error("Không thể tải dữ liệu");
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  // Initial data fetch
+  useEffect(() => {
     fetchData();
   }, []);
 
@@ -67,13 +82,13 @@ const TemplateManagement = () => {
       message.warning("Không thể chỉnh sửa mẫu DEFAULT");
       return;
     }
+    
     setEditingItem(record);
     setCoverImageUrl(record.coverImage || "");
     form.setFieldsValue({
       templateName: record.templateName || "",
       price: record.price || 0,
       tagName: record.tagName || "",
-      coverImage: record.coverImage || "",
       status: record.status || 2,
     });
     setIsModalVisible(true);
@@ -81,8 +96,8 @@ const TemplateManagement = () => {
 
   // Handle delete item
   const handleDelete = async (id) => {
-    const itemToDelete = items.find(item => item.id === id);
-    if (isDefaultItem(itemToDelete)) {
+    const itemToDelete = items.find(item => item?.id === id);
+    if (!itemToDelete || isDefaultItem(itemToDelete)) {
       message.warning("Không thể xóa mẫu DEFAULT!");
       return;
     }
@@ -94,6 +109,7 @@ const TemplateManagement = () => {
       okType: "danger",
       cancelText: "Hủy",
       onOk: async () => {
+        setActionLoading(true);
         try {
           const response = await axios.delete(
             `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${id}`,
@@ -107,13 +123,15 @@ const TemplateManagement = () => {
 
           if (response.status === 200) {
             message.success("Xóa thành công!");
-            setItems(items.filter(item => item.id !== id));
+            await fetchData(); // Refresh data after delete
           } else {
             message.error("Đã có lỗi xảy ra. Vui lòng thử lại sau!");
           }
         } catch (error) {
           console.error("Lỗi khi xóa:", error);
           message.error("Xóa thất bại!");
+        } finally {
+          setActionLoading(false);
         }
       },
     });
@@ -126,35 +144,37 @@ const TemplateManagement = () => {
       return;
     }
 
+    setActionLoading(true);
     try {
       const values = await form.validateFields();
-      const updatedValues = { ...values, coverImage: coverImageUrl };
+      const updatedValues = { 
+        ...values, 
+        coverImage: coverImageUrl,
+        id: editingItem?.id 
+      };
+
       const accessToken = localStorage.getItem("accessToken");
-
-      if (editingItem) {
-        updatedValues.id = editingItem.id;
-        const response = await axios.put(
-          `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`,
-          updatedValues,
-          {
-            headers: {
-              Authorization: `Bearer ${accessToken}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        if (response.status === 200) {
-          setItems(items.map(item =>
-            item.id === editingItem.id ? { ...item, ...updatedValues } : item
-          ));
-          message.success("Cập nhật thành công!");
-          setIsModalVisible(false);
+      const response = await axios.put(
+        `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`,
+        updatedValues,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+            "Content-Type": "application/json",
+          },
         }
+      );
+
+      if (response.status === 200) {
+        message.success("Cập nhật thành công!");
+        setIsModalVisible(false);
+        await fetchData(); // Refresh data after update
       }
     } catch (error) {
       console.error("Error:", error);
       message.error("Có lỗi xảy ra!");
+    } finally {
+      setActionLoading(false);
     }
   };
 
@@ -173,14 +193,18 @@ const TemplateManagement = () => {
       return;
     }
 
+    setActionLoading(true);
     try {
       const values = await form.validateFields();
-      const newValues = { ...values, coverImage: coverImageUrl };
-      const accessToken = localStorage.getItem("accessToken");
+      const newItem = { 
+        ...values, 
+        coverImage: coverImageUrl
+      };
 
+      const accessToken = localStorage.getItem("accessToken");
       const response = await axios.post(
         `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`,
-        newValues,
+        newItem,
         {
           headers: {
             Authorization: `Bearer ${accessToken}`,
@@ -190,26 +214,32 @@ const TemplateManagement = () => {
       );
 
       if (response.status === 200) {
-        setItems([...items, response.data.data]);
         message.success("Thêm mới thành công!");
         setIsAddModalVisible(false);
+        await fetchData(); // Refresh data after add
       }
     } catch (error) {
       console.error("Error:", error);
       message.error("Thêm mới thất bại!");
+    } finally {
+      setActionLoading(false);
     }
   };
 
   // Handle view details
   const handleViewDetails = async (id) => {
     try {
-      const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${id}`);
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${id}`
+      );
+      
       if (response.data?.statusCode === 200 && response.data.data) {
         setDetailItem(response.data.data);
         setDetailModalVisible(true);
         setSelectedTemplateId(id);
       } else {
-        console.error("Dữ liệu chi tiết không hợp lệ:", response.data);
+        console.error("Invalid detail response:", response.data);
+        message.error("Dữ liệu chi tiết không hợp lệ");
       }
     } catch (error) {
       console.error("Error fetching detail:", error);
@@ -243,9 +273,10 @@ const TemplateManagement = () => {
         }
       );
 
-      if (response.data?.statusCode === 201) {
+      if (response.data?.statusCode === 201 && response.data.data) {
         setCoverImageUrl(response.data.data);
         message.success("Upload ảnh thành công!");
+        return true;
       }
     } catch (error) {
       console.error("Error uploading image:", error);
@@ -266,15 +297,18 @@ const TemplateManagement = () => {
             Thêm mới
           </Button>
         }
+        loading={loading}
       >
-        <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
-          {items.length > 0 ? (
-            items.map((item) => {
+        {items.length > 0 ? (
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
+            {items.map((item) => {
+              if (!item) return null;
+              
               const isDefault = isDefaultItem(item);
               return (
                 <Card
                   key={item.id}
-                  title={item.templateName || "Không có tên"}
+                  title={item.templateName}
                   extra={
                     <>
                       <Tooltip title={isDefault ? "Không thể chỉnh sửa mẫu DEFAULT" : ""}>
@@ -308,22 +342,29 @@ const TemplateManagement = () => {
                         borderRadius: "8px", 
                         marginBottom: "8px" 
                       }}
+                      onError={(e) => {
+                        e.target.src = "https://via.placeholder.com/250x150?text=No+Image";
+                      }}
                     />
                   )}
                   <p>Giá: {item.price} VND</p>
-                  <p>Trạng thái: <Tag color={STATUS_LABELS[item.status]?.color}>{STATUS_LABELS[item.status]?.text}</Tag></p>
+                  <p>Trạng thái: <Tag color={STATUS_LABELS[item.status]?.color}>
+                    {STATUS_LABELS[item.status]?.text}
+                  </Tag></p>
                   <p>Tag: <Tag color={isDefault ? "gold" : "volcano"}>{item.tagName}</Tag></p>
                   <p>Loại: {TYPE_LABELS[item.type] || "Không xác định"}</p>
                   <div style={{ position: "absolute", bottom: 8, right: 8 }}>
-                    <Button type="primary" onClick={() => handleViewDetails(item.id)}>Xem chi tiết</Button>
+                    <Button type="primary" onClick={() => handleViewDetails(item.id)}>
+                      Xem chi tiết
+                    </Button>
                   </div>
                 </Card>
               );
-            })
-          ) : (
-            <p>Không có dữ liệu để hiển thị.</p>
-          )}
-        </div>
+            })}
+          </div>
+        ) : (
+          <p>Không có dữ liệu để hiển thị.</p>
+        )}
       </Card>
 
       {/* Edit Modal */}
@@ -333,8 +374,12 @@ const TemplateManagement = () => {
         onOk={handleOk} 
         onCancel={() => setIsModalVisible(false)}
         okButtonProps={{
-          disabled: !coverImageUrl,
+          disabled: !coverImageUrl || actionLoading,
+          loading: actionLoading,
           title: !coverImageUrl ? "Vui lòng tải lên ảnh bìa trước khi lưu" : undefined
+        }}
+        cancelButtonProps={{
+          disabled: actionLoading
         }}
       >
         <Form form={form} layout="vertical">
@@ -347,7 +392,7 @@ const TemplateManagement = () => {
           <Form.Item name="tagName" label="Tag" rules={[{ required: true, message: "Vui lòng nhập tag!" }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="coverImage" label="Ảnh bìa" rules={[{ required: true, message: "Vui lòng chọn ảnh bìa!" }]}>
+          <Form.Item label="Ảnh bìa" required>
             <Upload
               name="coverImage"
               listType="picture"
@@ -365,6 +410,9 @@ const TemplateManagement = () => {
                 src={coverImageUrl}
                 alt="Cover Preview"
                 style={{ width: "100%", marginTop: 8, borderRadius: 8 }}
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/250x150?text=Image+Error";
+                }}
               />
             )}
           </Form.Item>
@@ -385,8 +433,12 @@ const TemplateManagement = () => {
         onOk={handleAddOk} 
         onCancel={() => setIsAddModalVisible(false)}
         okButtonProps={{
-          disabled: !coverImageUrl,
+          disabled: !coverImageUrl || actionLoading,
+          loading: actionLoading,
           title: !coverImageUrl ? "Vui lòng tải lên ảnh bìa trước khi lưu" : undefined
+        }}
+        cancelButtonProps={{
+          disabled: actionLoading
         }}
       >
         <Form form={form} layout="vertical">
@@ -399,7 +451,7 @@ const TemplateManagement = () => {
           <Form.Item name="tagName" label="Tag" rules={[{ required: true, message: "Vui lòng nhập tag!" }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="coverImage" label="Ảnh bìa" rules={[{ required: true, message: "Vui lòng chọn ảnh bìa!" }]}>
+          <Form.Item label="Ảnh bìa" required>
             <Upload
               name="coverImage"
               listType="picture"
@@ -417,6 +469,9 @@ const TemplateManagement = () => {
                 src={coverImageUrl}
                 alt="Cover Preview"
                 style={{ width: "100%", marginTop: 8, borderRadius: 8 }}
+                onError={(e) => {
+                  e.target.src = "https://via.placeholder.com/250x150?text=Image+Error";
+                }}
               />
             )}
           </Form.Item>
@@ -431,13 +486,15 @@ const TemplateManagement = () => {
       </Modal>
 
       {/* Detail Modal */}
-      <TemplateDetails
-        visible={detailModalVisible}
-        onClose={() => setDetailModalVisible(false)}
-        detailItem={detailItem}
-        id={selectedTemplateId}
-        onSuccess={reloadDetails}
-      />
+      {detailItem && (
+        <TemplateDetails
+          visible={detailModalVisible}
+          onClose={() => setDetailModalVisible(false)}
+          detailItem={detailItem}
+          id={selectedTemplateId}
+          onSuccess={reloadDetails}
+        />
+      )}
     </div>
   );
 };

@@ -18,6 +18,7 @@ const TemplateDetail = () => {
     const [isBought, setIsBought] = useState(false);
     const location = useLocation();
     const { price } = location.state || {};
+    
     // For header (type 1)
     const [headerbackground, setHeaderBackground] = useState(null);
     const [headerColorCode, setHeaderColorCode] = useState("#000");
@@ -57,7 +58,6 @@ const TemplateDetail = () => {
         "Bản nháp của bạn",
         "Lịch sử chỉnh sửa",
         "Quản lý Bản Quyền",
-        // "Trang trí",
         "Quản lý ví",
     ];
 
@@ -75,104 +75,119 @@ const TemplateDetail = () => {
     }, [])
 
     const fetchData = async () => {
-        const requestHeaders = {
-            "Content-Type": "application/json",
-            ...(token && { Authorization: `Bearer ${token}` })
-        };
-        const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates?pageSize=250&allowExceedPageSize=true`;
+        try {
+            const requestHeaders = {
+                "Content-Type": "application/json",
+                ...(token && { Authorization: `Bearer ${token}` })
+            };
+            const apiUrl = `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates?pageSize=250&allowExceedPageSize=true`;
 
-        const response = await fetch(apiUrl, { headers: requestHeaders });
-        const data = await response.json();
-        const foundOne = data.data.find((item) => item.id === masterTemplateId);
-        setIsBought(foundOne.isBought);
-        setTemplates(data.data || null);
+            const response = await fetch(apiUrl, { headers: requestHeaders });
+            if (!response.ok) throw new Error("Failed to fetch templates");
+            
+            const data = await response.json();
+            const foundOne = data.data.find((item) => item.id === masterTemplateId);
+            setIsBought(foundOne?.isBought || false);
+            setTemplates(data.data || []);
+        } catch (error) {
+            console.error("Error fetching templates:", error);
+            message.error("Không thể tải thông tin template");
+        }
     }
 
-
     const fetchTemplateDetail = async () => {
-        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${masterTemplateId}?pageSize=250&allowExceedPageSize=true`);
-        const data = await response.json();
-        console.log(data);
-        setTemplate(data.data);
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${masterTemplateId}?pageSize=250&allowExceedPageSize=true`);
+            if (!response.ok) throw new Error("Failed to fetch template details");
+            
+            const data = await response.json();
+            console.log(data);
+            setTemplate(data.data);
 
+            // Update all template parts
+            updateTemplateParts(data.data);
 
+            const imageUrls = data.data
+                .filter(item => item.image)
+                .map(item => item.image);
+
+            if (imageUrls.length > 0) {
+                await preloadImages(imageUrls);
+            }
+            setImagesLoaded(true);
+        } catch (error) {
+            console.error("Error fetching template details:", error);
+            message.error("Không thể tải chi tiết template");
+        }
+    };
+
+    const updateTemplateParts = (templateData) => {
         // Update header state (type 1)
-        const typeOneTemplate = await data.data.find(item => item.type === 1);
+        const typeOneTemplate = templateData.find(item => item.type === 1);
         if (typeOneTemplate) {
             setHeaderBackground(typeOneTemplate.image);
             setHeaderColorCode(typeOneTemplate.colorCode);
         }
 
         // Update nav state (type 2)
-        const typeTwoTemplate = await data.data.find(item => item.type === 2);
+        const typeTwoTemplate = templateData.find(item => item.type === 2);
         if (typeTwoTemplate) {
             setNavBackground(typeTwoTemplate.image);
             setNavColorCode(typeTwoTemplate.colorCode);
         }
 
         // Update nav border state (type 3)
-        const typeThreeTemplate = await data.data.find(item => item.type === 3);
+        const typeThreeTemplate = templateData.find(item => item.type === 3);
         if (typeThreeTemplate) {
             setNavBorder(typeThreeTemplate.colorCode);
         }
 
         // Update main background state (type 4)
-        const typeFourTemplate = await data.data.find(item => item.type === 4);
+        const typeFourTemplate = templateData.find(item => item.type === 4);
         if (typeFourTemplate) {
             setMainBackground(typeFourTemplate.image);
         }
 
         // Update achievement border state (type 5)
-        const typeFiveTemplate = await data.data.find(item => item.type === 5);
+        const typeFiveTemplate = templateData.find(item => item.type === 5);
         if (typeFiveTemplate) {
             setAchievementBorder(typeFiveTemplate.colorCode);
         }
 
         // Update achievement background and color state (type 6)
-        const typeSixTemplate = await data.data.find(item => item.type === 6);
+        const typeSixTemplate = templateData.find(item => item.type === 6);
         if (typeSixTemplate) {
             setAchievementBackground(typeSixTemplate.image);
             setAchievementColorCode(typeSixTemplate.colorCode);
         }
 
         // Update achievement title background and color state (type 9)
-        const typeNineTemplate = await data.data.find(item => item.type === 9);
+        const typeNineTemplate = templateData.find(item => item.type === 9);
         if (typeNineTemplate) {
             setAchievementTitleBackground(typeNineTemplate.image);
             setAchievementTitleColorCode(typeNineTemplate.colorCode);
         }
 
         // Update statistic border state (type 7)
-        const typeSevenTemplate = await data.data.find(item => item.type === 7);
+        const typeSevenTemplate = templateData.find(item => item.type === 7);
         if (typeSevenTemplate) {
             setStatisticBorder(typeSevenTemplate.colorCode);
         }
 
         // Update statistic background and color state (type 8)
-        const typeEightTemplate = await data.data.find(item => item.type === 8);
+        const typeEightTemplate = templateData.find(item => item.type === 8);
         if (typeEightTemplate) {
             setStatisticBackground(typeEightTemplate.image);
             setStatisticColorCode(typeEightTemplate.colorCode);
         }
 
         // Update statistic title background and color state (type 10)
-        const typeTenTemplate = await data.data.find(item => item.type === 10);
+        const typeTenTemplate = templateData.find(item => item.type === 10);
         if (typeTenTemplate) {
             setStatisticTitleBackground(typeTenTemplate.image);
             setStatisticTitleColorCode(typeTenTemplate.colorCode);
         }
-
-        const imageUrls = data.data
-            .filter(item => item.image)
-            .map(item => item.image);
-
-        // Preload images
-        if (imageUrls.length > 0) {
-            await preloadImages(imageUrls);
-        }
-        setImagesLoaded(true);
     };
-
 
     const preloadImages = (urls) => {
         return Promise.all(
@@ -187,31 +202,59 @@ const TemplateDetail = () => {
         );
     };
 
-    if (!template || !imagesLoaded) return <p>Loading...</p>;
-
     const handleBuyTemplate = async () => {
-        console.log(masterTemplateId)
-        const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-template/${masterTemplateId}/purchase`, {
-            method: "POST",
-            headers: {
-                Authorization: `Bearer ${token}`,
-                "Content-Type": "application/json",
-            },
-        });
-        console.log(response)
-        const data = await response.json();
-        message.success(data.message);
-        setTimeout(() => {
-            navigate(-1);  // Quay lại trang trước
-        }, 2000);
-    }
+        try {
+            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/template/v1/master-template/${masterTemplateId}/purchase`, {
+                method: "POST",
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                    "Content-Type": "application/json",
+                },
+            });
+
+            const data = await response.json();
+            
+            if (!response.ok) {
+                if (data.message) {
+                    message.error(data.message);
+                } else if (response.status === 400) {
+                    message.error("Tài khoản hiện tại đang không đủ!");
+                } else if (response.status === 401) {
+                    message.error("Bạn cần đăng nhập để thực hiện thao tác này");
+                } else if (response.status === 403) {
+                    message.error("Bạn không có quyền thực hiện thao tác này");
+                } else if (response.status === 402) {
+                    message.error("Không đủ tiền trong tài khoản");
+                } else {
+                    message.error("Đã xảy ra lỗi khi mua template");
+                }
+                return;
+            }
+
+            message.success(data.message || "Mua template thành công");
+            setIsBought(true);
+            
+            setTimeout(() => {
+                navigate(-1);
+            }, 2000);
+        } catch (error) {
+            console.error("Error purchasing template:", error);
+            message.error("Đã xảy ra lỗi khi kết nối đến server");
+        }
+    };
 
     const handleBuyClick = () => {
+        if (!token) {
+            message.error("Bạn cần đăng nhập để mua template");
+            return;
+        }
+        
         Modal.confirm({
-          title: `Bạn chắc chắn muốn mua bản thiết kế này với giá ${price.toLocaleString("vi-VN")}₫`,
-          onOk: handleBuyTemplate, // Gọi hàm mua khi người dùng nhấn "OK"
+            title: `Bạn chắc chắn muốn mua bản thiết kế này với giá ${price?.toLocaleString("vi-VN") || '0'}₫?`,
+            onOk: handleBuyTemplate,
+            onCancel: () => {},
         });
-      };
+    };
 
     const buttonStyle = {
         backgroundColor: hover ? "white" : "blue",
@@ -240,24 +283,22 @@ const TemplateDetail = () => {
         transition: "background-color 0.3s ease, color 0.3s ease",
     };
 
-    if (!template) return <p>Loading...</p>;
+    if (!template || !imagesLoaded) return <div style={{ padding: "20px", textAlign: "center" }}>Loading...</div>;
 
     return (
         <div>
             {isLoggedIn ? <Headeruser /> : <Headerdefault />}
             {template.find(item => item.type === 1) ? (
                 <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>
-                    {/* Render the cover image as an img so the full image is shown */}
                     <img
                         src={headerbackground}
                         alt="Cover"
                         style={{
                             width: "100%",
-                            display: "block" // Prevents any unwanted spacing
+                            display: "block"
                         }}
                     />
 
-                    {/* Overlay content on top of the cover image */}
                     <div style={{
                         position: "absolute",
                         top: 0,
@@ -387,7 +428,6 @@ const TemplateDetail = () => {
                 padding: "20px 129px",
                 backgroundImage: `url("${mainBackground}")`,
                 backgroundSize: "cover",
-
             }}>
                 <div style={{
                     flex: 7,
@@ -457,7 +497,6 @@ const TemplateDetail = () => {
                         </a>
                     </div>
 
-                    {/* Thống kê người dùng */}
                     <div
                         style={{
                             backgroundColor: "white",

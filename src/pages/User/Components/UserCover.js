@@ -37,7 +37,18 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const handleReportUser = () => {
         setShowReportModal(true);
     };
+    const formatNumber = (value) => {
+        if (!value) return "";
+        const num = value.toString().replace(/\D/g, ""); 
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ","); 
+    };
 
+    const handleChange = (e) => {
+        const rawValue = e.target.value.replace(/,/g, ""); 
+        if (!isNaN(rawValue)) {
+            setDonateAmount(formatNumber(rawValue));
+        }
+    };
 
     const openFollowersModal = async () => {
         try {
@@ -336,13 +347,11 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 <div style={{ marginBottom: 16 }}>
                     <Text strong>Số tiền (VNĐ):</Text>
                     <Input
-                        type="number"
                         value={donateAmount}
-                        onChange={(e) => setDonateAmount(e.target.value)}
+                        onChange={handleChange}
                         placeholder="Nhập số tiền bạn muốn ủng hộ"
                         style={{ width: "100%", marginTop: 8 }}
-                        min="1000"
-                        step="1000"
+                        inputMode="numeric" 
                     />
                 </div>
                 <div>
