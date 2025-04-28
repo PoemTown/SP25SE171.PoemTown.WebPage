@@ -386,7 +386,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                           objectFit: "cover",
                           transition: "transform 0.3s ease"
                         }}
-                        src={collection.image || "/poetry-placeholder.jpg"}
+                        src={collection.image || "/default_collection.jpg"} 
                         alt="Ảnh bộ sưu tập"
                       />
                       <div style={{

@@ -382,13 +382,19 @@ const RecordDetail = () => {
                                         </div>
 
                                         <div style={{ display: 'flex', gap: '12px' }}>
+                                            <span style={{ color: '#7d6b58', minWidth: '100px' }}>Lượt mua:</span>
+                                            <span style={{ color: '#5d4c3c', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                                                <ShoppingCartOutlined style={{ color: '#7d6b58' }} />
+                                                {record.buyers?.length || 0}
+                                            </span>
+                                        </div>
+                                        <div style={{ display: 'flex', gap: '12px' }}>
                                             <span style={{ color: '#7d6b58', minWidth: '100px' }}>Lượt nghe:</span>
                                             <span style={{ color: '#5d4c3c', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                                 <PlayCircleFilled style={{ color: '#7d6b58' }} />
                                                 {record.playCount || 0}
                                             </span>
                                         </div>
-
                                         {isMine && (
                                             <>
                                                 <Divider style={{ margin: '16px 0', borderColor: '#eeeae4' }} />

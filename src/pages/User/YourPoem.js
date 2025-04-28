@@ -11,6 +11,7 @@ import { IoIosLink } from "react-icons/io";
 import { useNavigate } from "react-router-dom";
 import "./button-hover.css";
 import ReportPoemModal from "../../components/componentHomepage/ReportPoemModal";
+import { LuBook } from "react-icons/lu";
 
 const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, isCreatingPoem }) => {
   const [poems, setPoems] = useState([]);
@@ -37,7 +38,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   }), [accessToken]);
 
   const poemsUrl = useMemo(() => {
-    return isMine 
+    return isMine
       ? `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine?filterOptions.status=1`
       : `${process.env.REACT_APP_API_BASE_URL}/poems/v1/user/${username}`;
   }, [isMine, username]);
@@ -77,27 +78,27 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
   const fetchPoems = useCallback(async () => {
     if (isMine === null) return;
-    
+
     setLoading(true);
     setError(null);
-    
+
     try {
-      const headers = isMine 
-        ? { Authorization: `Bearer ${accessToken}` } 
+      const headers = isMine
+        ? { Authorization: `Bearer ${accessToken}` }
         : requestHeaders;
 
       const response = await fetch(poemsUrl, { headers });
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
       const data = await response.json();
-      
+
       if (data.statusCode === 200) {
         const likedPoemIds = new Set();
         const bookmarkedPoemIds = new Set();
-        
+
         const poemsWithId = data.data.map((poem) => {
           if (poem.like) likedPoemIds.add(poem.id);
           if (poem.targetMark) bookmarkedPoemIds.add(poem.id);
@@ -114,7 +115,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             collection: poem.collection,
           };
         });
-        
+
         setPoems(poemsWithId);
         setLikedPoems(likedPoemIds);
         setBookmarkedPoems(bookmarkedPoemIds);
@@ -130,7 +131,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
   useEffect(() => {
     const controller = new AbortController();
-    
+
     const fetchData = async () => {
       await fetchPoems();
       if (isMine) {
@@ -176,9 +177,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   };
 
   const handleBookmark = async (id) => {
-    if (!accessToken) { 
-      message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); 
-      return; 
+    if (!accessToken) {
+      message.error("Bạn cần đăng nhập để sử dụng chức năng này!");
+      return;
     }
 
     const isBookmarked = bookmarkedPoems.has(id);
@@ -224,7 +225,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
   const handleDeletePoem = async () => {
     if (!poemToDelete) return;
-    
+
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/poems/v1/${poemToDelete}`,
@@ -237,7 +238,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       if (!response.ok) {
         throw new Error("Failed to delete poem");
       }
-      
+
       setPoems((prevPoems) => prevPoems.filter((poem) => poem.id !== poemToDelete));
       message.success("Bài thơ đã được xóa thành công.");
     } catch (error) {
@@ -260,9 +261,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   };
 
   const handleLikePoem = async (id) => {
-    if (!accessToken) { 
-      message.error("Bạn cần đăng nhập để sử dụng chức năng này!"); 
-      return; 
+    if (!accessToken) {
+      message.error("Bạn cần đăng nhập để sử dụng chức năng này!");
+      return;
     }
 
     const isLiked = likedPoems.has(id);
@@ -290,10 +291,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       setPoems((prevPoems) =>
         prevPoems.map((poem) =>
           poem.id === id
-            ? { 
-                ...poem, 
-                likeCount: isLiked ? poem.likeCount - 1 : poem.likeCount + 1 
-              }
+            ? {
+              ...poem,
+              likeCount: isLiked ? poem.likeCount - 1 : poem.likeCount + 1
+            }
             : poem
         )
       );
@@ -330,8 +331,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             color: '#666',
           }}>“</span>
           {displayedLines.map((line, index) => (
-            <p 
-              key={index} 
+            <p
+              key={index}
               style={{
                 whiteSpace: 'pre-wrap',
                 margin: "0 0 0 0",
@@ -369,9 +370,9 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
 
   if (isCreatingPoem) {
     return (
-      <CreatePoemForm 
-        setDrafting={false} 
-        onBack={() => setIsCreatingPoem(false)} 
+      <CreatePoemForm
+        setDrafting={false}
+        onBack={() => setIsCreatingPoem(false)}
         fetchPoems={fetchPoems}
         initialData={null}
       />
@@ -389,8 +390,55 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
   if (poems.length === 0) {
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
-        <p>Chưa có bài thơ nào được đăng</p>
         {isMine && (
+<<<<<<< HEAD
+          <>
+            <button
+              onClick={() => setIsCreatingPoem(true)}
+              style={{
+                backgroundColor: "#b0a499",
+                color: "#ecf0f1",
+                padding: "12px 24px",
+                borderRadius: "30px",
+                border: "none",
+                fontWeight: "600",
+                cursor: "pointer",
+                marginBottom: "25px",
+                boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
+                transition: "all 0.3s ease",
+                display: "flex",
+                alignItems: "center",
+                gap: "8px",
+                fontSize: "0.9em",
+                ':hover': {
+                  transform: "translateY(-2px)",
+                  boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
+                  backgroundColor: "#34495e"
+                }
+              }}
+            >
+              <PlusOutlined />
+              SÁNG TÁC THƠ
+            </button>
+            <div style={{
+              width: "100%",
+              textAlign: "center",
+              padding: "40px 20px",
+              backgroundColor: "#fff",
+              borderRadius: "8px",
+              border: "1px dashed #d7ccc8",
+              color: "#5d4037"
+            }}>
+              <LuBook size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
+              <h3 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>
+                {isMine ? "Bạn chưa có bài thơ nào" : "Người dùng chưa có bài thơ nào"}
+              </h3>
+              <p style={{ margin: 0, fontSize: "14px" }}>
+                {isMine ? "Hãy tạo bản thơ đầu tiên của bạn" : "Hãy quay lại sau khi người dùng tạo bản thơ"}
+              </p>
+            </div>
+          </>
+=======
           <button
             onClick={handleCreatePoemClick}
             style={{
@@ -418,6 +466,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             <PlusOutlined />
             SÁNG TÁC THƠ
           </button>
+>>>>>>> 52550e796fe24425c5330d85c9aaf2f08837e41e
         )}
       </div>
     );
@@ -461,7 +510,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
             const truncatedDescription = poem.description?.length > 80
               ? `${poem.description.substring(0, 80)}...`
               : poem.description;
-            
+
             return (
               <div
                 key={poem.id}
@@ -528,7 +577,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                           {poem.title}
                         </h3>
                         <div style={{ display: "flex", gap: "12px", alignItems: "center" }}>
-                          <button 
+                          <button
                             onClick={() => handleBookmark(poem.id)}
                             style={{
                               background: "none",
@@ -551,8 +600,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             <Dropdown
                               overlay={
                                 <Menu>
-                                  <Menu.Item 
-                                    key="delete" 
+                                  <Menu.Item
+                                    key="delete"
                                     onClick={() => showDeleteModal(poem.id)}
                                     style={{ color: "red" }}
                                   >
@@ -571,8 +620,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             <Dropdown
                               overlay={
                                 <Menu>
-                                  <Menu.Item 
-                                    key="report" 
+                                  <Menu.Item
+                                    key="report"
                                     onClick={() => handleReportPoem(poem.id)}
                                   >
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -580,8 +629,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                                       <div>Báo cáo</div>
                                     </div>
                                   </Menu.Item>
-                                  <Menu.Item 
-                                    key="copylink" 
+                                  <Menu.Item
+                                    key="copylink"
                                     onClick={() => handleCopyLink(poem.id)}
                                   >
                                     <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
@@ -600,7 +649,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                             </Dropdown>
                           )}
                         </div>
-                      </div> 
+                      </div>
                     </div>
                   </div>
 
@@ -616,8 +665,8 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                   {poem.collection && (
                     <p style={{ color: "#444", fontSize: "0.8rem", margin: "5px 0" }}>
                       Tập thơ:{" "}
-                      <span 
-                        style={{ fontWeight: "bold", cursor: "pointer" }} 
+                      <span
+                        style={{ fontWeight: "bold", cursor: "pointer" }}
                         onClick={() => navigate(`/collection/${poem.collection.id}`)}
                       >
                         {poem.collection.collectionName}
@@ -656,7 +705,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                         )}
                         <span style={{ fontSize: "1.4em" }}>{poem.likeCount || 0}</span>
                       </button>
-                      <button 
+                      <button
                         onClick={() => openCommentModal(poem.id)}
                         style={{
                           display: "flex",
@@ -721,10 +770,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
           <Button key="cancel" onClick={() => setIsDeleteModalVisible(false)}>
             Hủy
           </Button>,
-          <Button 
-            key="delete" 
-            type="primary" 
-            danger 
+          <Button
+            key="delete"
+            type="primary"
+            danger
             onClick={handleDeletePoem}
           >
             Xóa

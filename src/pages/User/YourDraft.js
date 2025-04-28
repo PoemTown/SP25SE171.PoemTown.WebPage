@@ -5,6 +5,7 @@ import { MoreOutlined, BookOutlined, ExclamationCircleOutlined } from "@ant-desi
 import { useNavigate } from "react-router-dom";
 import { RiDeleteBinLine } from "react-icons/ri";
 import axios from "axios";
+import { LuBook } from "react-icons/lu";
 const YourDraft = ({ isCreatingPoem, setIsCreatingPoem, displayName, avatar, statisticBorder, achievementBorder }) => {
     const [poems, setPoems] = useState([]);
     const [selectedPoemId, setSelectedPoemId] = useState(null);
@@ -107,97 +108,122 @@ const YourDraft = ({ isCreatingPoem, setIsCreatingPoem, displayName, avatar, sta
             {!isCreatingPoem ? (
                 <>
                     <div style={{ display: "flex", gap: "20px" }}>
-                        <div style={{ flex: 2 }}>
-                            {poems.map((item) => {
-                                const lines = item.content?.split('\n') || [];
-                                const displayedLines = lines.slice(0, 4);
-                                const hasMoreLines = lines.length > 4;
-                                const truncatedDescription = item.description?.length > 102
-                                    ? `${item.description.substring(0, 102)}...`
-                                    : item.description;
-                                console.log(item);
-                                return (
-                                    <div style={styles.poemCard}>
-                                        <div style={styles.poemImageContainer}>
-                                            <img
-                                                src={item.poemImage || "/anhminhhoa.png"}
-                                                alt="anh minh hoa"
-                                                style={styles.poemImage}
-                                                onError={(e) => {
-                                                    console.log("Image failed to load, switching to fallback");
-                                                    e.target.onerror = null;
-                                                    e.target.src = "/anhminhhoa.png";
-                                                }}
-                                            />
-                                        </div>
-                                        <div style={styles.avatarContainer}>
-                                            <img
-                                                src={avatar || "./default_avatar.png"}
-                                                alt="avatar"
-                                                style={styles.avatar}
-                                                onError={(e) => { e.target.src = "./default_avatar.png"; }}
-                                            />
-                                        </div>
-                                        <div style={styles.contentRight}>
-                                            <div style={styles.cardHeader}>
-                                                <div style={styles.headerLeft}>
-                                                    <span style={styles.author} onClick={() => navigate(`/user/${item.user?.userName}`)}>{displayName || 'Anonymous'}</span>
-                                                    <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
+                        {poems.length > 0 ? (
+                            <div style={{ flex: 2 }}>
+
+                                <div>
+                                    {poems.map((item) => {
+                                        const lines = item.content?.split('\n') || [];
+                                        const displayedLines = lines.slice(0, 4);
+                                        const hasMoreLines = lines.length > 4;
+                                        const truncatedDescription = item.description?.length > 102
+                                            ? `${item.description.substring(0, 102)}...`
+                                            : item.description;
+                                        console.log(item);
+                                        return (
+                                            <div style={styles.poemCard}>
+                                                <div style={styles.poemImageContainer}>
+                                                    <img
+                                                        src={item.poemImage || "/anhminhhoa.png"}
+                                                        alt="anh minh hoa"
+                                                        style={styles.poemImage}
+                                                        onError={(e) => {
+                                                            console.log("Image failed to load, switching to fallback");
+                                                            e.target.onerror = null;
+                                                            e.target.src = "/anhminhhoa.png";
+                                                        }}
+                                                    />
                                                 </div>
-                                                <div style={styles.headerRight}>
-                                                    <Dropdown
-                                                        overlay={
-                                                            <Menu>
-                                                                <Menu.Item key="copylink">
-                                                                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }} onClick={() => showDeleteModal(item.id)}>
-                                                                        <RiDeleteBinLine color="red" /> Xóa
-                                                                    </div>
-                                                                </Menu.Item>
-                                                            </Menu>
-                                                        }
-                                                        trigger={["click"]}
-                                                    >
-                                                        <button style={styles.iconButton}>
-                                                            <MoreOutlined />
+                                                <div style={styles.avatarContainer}>
+                                                    <img
+                                                        src={avatar || "./default_avatar.png"}
+                                                        alt="avatar"
+                                                        style={styles.avatar}
+                                                        onError={(e) => { e.target.src = "./default_avatar.png"; }}
+                                                    />
+                                                </div>
+                                                <div style={styles.contentRight}>
+                                                    <div style={styles.cardHeader}>
+                                                        <div style={styles.headerLeft}>
+                                                            <span style={styles.author} onClick={() => navigate(`/user/${item.user?.userName}`)}>{displayName || 'Anonymous'}</span>
+                                                            <span style={styles.postDate}>– {formatDate(item.createdTime)}</span>
+                                                        </div>
+                                                        <div style={styles.headerRight}>
+                                                            <Dropdown
+                                                                overlay={
+                                                                    <Menu>
+                                                                        <Menu.Item key="copylink">
+                                                                            <div style={{ display: "flex", alignItems: "center", gap: "5px" }} onClick={() => showDeleteModal(item.id)}>
+                                                                                <RiDeleteBinLine color="red" /> Xóa
+                                                                            </div>
+                                                                        </Menu.Item>
+                                                                    </Menu>
+                                                                }
+                                                                trigger={["click"]}
+                                                            >
+                                                                <button style={styles.iconButton}>
+                                                                    <MoreOutlined />
+                                                                </button>
+                                                            </Dropdown>
+
+
+                                                        </div>
+                                                    </div>
+                                                    <h3 style={styles.poemTitle}>{item.title}</h3>
+                                                    <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
+                                                    <div style={styles.poemContent}>
+                                                        <div style={styles.poemTextContainer}>
+                                                            <span style={styles.quote}>“</span>
+                                                            {displayedLines.map((line, index) => (
+                                                                <p key={index} style={styles.poemLine}>{line}</p>
+                                                            ))}
+                                                            <p style={styles.poemLine}>
+                                                                {hasMoreLines && <span style={styles.ellipsis}>...</span>}
+                                                                <span style={styles.quoteClose}>”</span>
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                    <div style={styles.footerContainer}>
+                                                        <button
+                                                            style={{
+                                                                ...styles.viewButton,
+                                                                ...(styles.viewButtonHover)
+                                                            }}
+                                                            onMouseEnter={() => setOnHover(true)}
+                                                            onMouseLeave={() => setOnHover(false)}
+                                                            onClick={() => handleContinueEditing(item)}
+                                                        >
+                                                            Tiếp tục sáng tác &gt;
                                                         </button>
-                                                    </Dropdown>
-
-
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <h3 style={styles.poemTitle}>{item.title}</h3>
-                                            <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
-                                            <div style={styles.poemContent}>
-                                                <div style={styles.poemTextContainer}>
-                                                    <span style={styles.quote}>“</span>
-                                                    {displayedLines.map((line, index) => (
-                                                        <p key={index} style={styles.poemLine}>{line}</p>
-                                                    ))}
-                                                    <p style={styles.poemLine}>
-                                                        {hasMoreLines && <span style={styles.ellipsis}>...</span>}
-                                                        <span style={styles.quoteClose}>”</span>
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div style={styles.footerContainer}>
-                                                <button
-                                                    style={{
-                                                        ...styles.viewButton,
-                                                        ...(styles.viewButtonHover)
-                                                    }}
-                                                    onMouseEnter={() => setOnHover(true)}
-                                                    onMouseLeave={() => setOnHover(false)}
-                                                    onClick={() => handleContinueEditing(item)}
-                                                >
-                                                    Tiếp tục sáng tác &gt;
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                )
-                            }
-                            )}
-                        </div>
+                                        )
+                                    }
+                                    )}
+                                </div>
+                            </div>
+                        ) : (
+                            <div style={{
+                                width: "100%",
+                                textAlign: "center",
+                                padding: "40px 20px",
+                                backgroundColor: "#fff",
+                                borderRadius: "8px",
+                                border: "1px dashed #d7ccc8",
+                                color: "#5d4037"
+                            }}>
+                                <LuBook size={48} style={{ marginBottom: "16px", opacity: 0.5 }} />
+                                <h3 style={{ margin: "0 0 8px 0", fontSize: "18px" }}>
+                                    Bạn chưa có bài thơ nào đang tạo
+                                </h3>
+                                <p style={{ margin: 0, fontSize: "14px" }}>
+                                    Hãy tạo cho mình một bài thơ
+                                </p>
+                            </div>
+                        )}
+
+
                     </div>
                 </>
             ) : (

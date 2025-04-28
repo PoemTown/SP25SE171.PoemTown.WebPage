@@ -42,8 +42,8 @@ const PoemRecordGroup = ({
                 />
                 <div style={styles.poemInfo}>
                     <h3 style={styles.poemTitle}>{poem?.title || "Bài thơ đã bị gỡ"}</h3>
-                    <p style={styles.poemAuthor}>Tác giả: {poem?.user?.displayName || ""}</p>
-                </div>Không rõ
+                    <p style={styles.poemAuthor}>Tác giả: {poem?.user?.displayName || "Không có"}</p>
+                </div>
             </div>
 
             {/* Records Collapse */}
