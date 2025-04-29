@@ -6,7 +6,6 @@ import { message, Button, Spin, Modal, Input, Form, Divider } from "antd";
 import { LoadingOutlined, LockOutlined, MailOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useNavigate } from "react-router-dom";
 
-
 const LoginPage = () => {
     const navigate = useNavigate();
     const [formData, setFormData] = useState({ email: "", password: "" });
@@ -29,7 +28,6 @@ const LoginPage = () => {
         const { name, value } = e.target;
         setFormData({ ...formData, [name]: value });
     };
-
 
     const handleForgotPassword = async () => {
         setIsSending(true);
@@ -57,16 +55,12 @@ const LoginPage = () => {
         }
     };
 
-
     const handleEmailVerification = async (email) => {
         try {
-            // Call the API to send OTP for email confirmation
             const response = await axios.post(`${process.env.REACT_APP_API_BASE_URL}/accounts/v1/email/otp`, { email: email });
 
-            // If API call is successful, redirect to confirmation page
             if (response.status === 202) {
                 message.success("Đã gửi email xác nhận, vui lòng kiểm tra hộp thư đến!");
-                // Redirect to the email confirmation page
                 navigate("/confirm-email", { state: { email } });
             } else {
                 message.error("Có lỗi khi gửi yêu cầu xác nhận email. Vui lòng thử lại!");
@@ -78,7 +72,7 @@ const LoginPage = () => {
     };
 
     const handleSubmit = async (e) => {
-        setLoading(true); // Start loading
+        setLoading(true);
 
         try {
             const response = await axios.post(
@@ -109,7 +103,6 @@ const LoginPage = () => {
                     setError("Vai trò không hợp lệ.");
                 }
 
-                // Tạo kết nối tới SignalR
                 createAnnouncementConnection(jwtDecode.UserId);
             }
         } catch (err) {
@@ -120,7 +113,7 @@ const LoginPage = () => {
                         message.error("Mật khẩu không chính xác.");
                         break;
                     case "User not found":
-                        message.error("Người đùng không tồn tại.");
+                        message.error("Người dùng không tồn tại.");
                         break;
                     case "Email is not confirmed":
                         Modal.confirm({
@@ -141,26 +134,29 @@ const LoginPage = () => {
             }
             else {
                 message.error("Đã có lỗi xảy ra, vui lòng thử lại sau !");
-
             }
         } finally {
             setLoading(false);
         }
     };
 
-
     return (
         <Spin spinning={loading} size="large" tip="Đang đăng nhập..." style={{ minHeight: '100vh' }}>
             <div style={styles.loginContainer}>
-                {/* Left Section - Form */}
                 <div style={styles.formWrapper}>
                     <div style={styles.header}>
+                        <div style={styles.logoContainer}>
+                            <img 
+                                src="/logo.png" 
+                                alt="Logo" 
+                                style={styles.logo} 
+                            />
+                        </div>
                         <h1 style={styles.title}>Chào mừng quay lại! 👋</h1>
                         <p style={styles.subtitle}>Vui lòng đăng nhập để tiếp tục</p>
                     </div>
 
                     <Form layout="vertical" onFinish={handleSubmit}>
-                        {/* Email Field */}
                         <Form.Item
                             label="Email"
                             validateStatus={touched.email && !formData.email ? 'error' : ''}
@@ -177,7 +173,6 @@ const LoginPage = () => {
                             />
                         </Form.Item>
 
-                        {/* Password Field */}
                         <Form.Item
                             label="Mật khẩu"
                             validateStatus={touched.password && !formData.password ? 'error' : ''}
@@ -194,7 +189,6 @@ const LoginPage = () => {
                             />
                         </Form.Item>
 
-                        {/* Forgot Password */}
                         <div style={styles.forgotPassword}>
                             <Button
                                 type="link"
@@ -205,7 +199,6 @@ const LoginPage = () => {
                             </Button>
                         </div>
 
-                        {/* Submit Button */}
                         <Form.Item>
                             <Button
                                 type="primary"
@@ -243,20 +236,8 @@ const LoginPage = () => {
                         </Form.Item>
                     </Form>
 
-                    {/* Divider */}
                     <Divider style={styles.divider}>Hoặc tiếp tục với</Divider>
 
-                    {/* Social Login */}
-                    {/* <Button 
-                        icon={<GoogleOutlined />}
-                        size="large"
-                        block
-                        style={styles.socialButton}
-                    >
-                        Đăng nhập với Google
-                    </Button> */}
-
-                    {/* Signup Link */}
                     <div style={styles.footer}>
                         <span style={styles.footerText}>Chưa có tài khoản? </span>
                         <Button
@@ -269,7 +250,6 @@ const LoginPage = () => {
                     </div>
                 </div>
 
-                {/* Right Section - Image */}
                 <div style={{ ...styles.imageSection, backgroundImage: `url('./Login.jpg')`, }} >
                     <div style={styles.imageOverlay} >
                         <h2 style={styles.imageTitle}>Khám phá thế giới mới</h2>
@@ -277,7 +257,6 @@ const LoginPage = () => {
                     </div>
                 </div>
 
-                {/* Forgot Password Modal */}
                 <Modal
                     title="Khôi phục mật khẩu"
                     visible={isForgotPasswordPopupOpen}
@@ -309,6 +288,7 @@ const LoginPage = () => {
         </Spin>
     );
 }
+
 const styles = {
     loginContainer: {
         display: 'flex',
@@ -326,6 +306,16 @@ const styles = {
     header: {
         marginBottom: 40,
         textAlign: 'center',
+    },
+    logoContainer: {
+        display: 'flex',
+        justifyContent: 'center',
+        marginBottom: 20,
+    },
+    logo: {
+        height: 80,
+        width: 'auto',
+        objectFit: 'contain',
     },
     title: {
         fontSize: 28,
@@ -359,11 +349,6 @@ const styles = {
         color: '#666',
         margin: '32px 0',
     },
-    socialButton: {
-        height: 48,
-        fontSize: 16,
-        borderColor: '#d9d9d9',
-    },
     footer: {
         marginTop: 32,
         textAlign: 'center',
@@ -377,7 +362,6 @@ const styles = {
     },
     imageSection: {
         flex: 1,
-        //background: "linear-gradient(135deg, #5c3d2e 0%, #3a241b 100%)",
         position: 'relative',
         backgroundImage: "url('./Login.jpg')",
         backgroundSize: 'cover',
@@ -414,4 +398,5 @@ const styles = {
         },
     },
 };
+
 export default LoginPage;

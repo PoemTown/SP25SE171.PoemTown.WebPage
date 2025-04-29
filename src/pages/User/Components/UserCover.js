@@ -19,7 +19,6 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const [isFollowingsVisible, setIsFollowingsVisible] = useState(false);
     const [showReportModal, setShowReportModal] = useState(false);
 
-
     // Donate modal states
     const [isDonateVisible, setIsDonateVisible] = useState(false);
     const [donateAmount, setDonateAmount] = useState("");
@@ -37,14 +36,15 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
     const handleReportUser = () => {
         setShowReportModal(true);
     };
+
     const formatNumber = (value) => {
         if (!value) return "";
-        const num = value.toString().replace(/\D/g, ""); 
-        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ","); 
+        const num = value.toString().replace(/\D/g, "");
+        return num.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
     };
 
-    const handleChange = (e) => {
-        const rawValue = e.target.value.replace(/,/g, ""); 
+    const handleAmountChange = (e) => {
+        const rawValue = e.target.value.replace(/,/g, "");
         if (!isNaN(rawValue)) {
             setDonateAmount(formatNumber(rawValue));
         }
@@ -129,9 +129,23 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
             return;
         }
 
-        const amountNumber = Number(donateAmount);
-        if (!donateAmount || isNaN(amountNumber) || amountNumber <= 0) {
-            message.error("Vui lòng nhập số tiền hợp lệ (lớn hơn 0).");
+        // Remove commas and convert to number
+        const rawAmount = donateAmount.replace(/,/g, '');
+        const amountNumber = Number(rawAmount);
+        
+        // Validation
+        if (!rawAmount || isNaN(amountNumber)) {
+            message.error("Vui lòng nhập số tiền hợp lệ.");
+            return;
+        }
+
+        if (amountNumber <= 0) {
+            message.error("Số tiền phải lớn hơn 0.");
+            return;
+        }
+
+        if (amountNumber > 100000000) { // Limit to 100 million
+            message.error("Số tiền quá lớn, vui lòng nhập số nhỏ hơn 100,000,000 VNĐ.");
             return;
         }
 
@@ -195,7 +209,6 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 boxSizing: "border-box",
                 display: "flex",
                 alignItems: "center",
-
             }}>
                 <Avatar
                     src={userData.avatar || "./default-avatar.png"}
@@ -342,16 +355,18 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 okText="Gửi ủng hộ"
                 cancelText="Hủy"
                 confirmLoading={isDonating}
-                okButtonProps={{ disabled: !donateAmount || Number(donateAmount) <= 0 }}
+                okButtonProps={{ 
+                    disabled: !donateAmount || Number(donateAmount.replace(/,/g, '')) <= 0 
+                }}
             >
                 <div style={{ marginBottom: 16 }}>
                     <Text strong>Số tiền (VNĐ):</Text>
                     <Input
                         value={donateAmount}
-                        onChange={handleChange}
-                        placeholder="Nhập số tiền bạn muốn ủng hộ"
+                        onChange={handleAmountChange}
+                        placeholder="Nhập số tiền bạn muốn ủng hộ (ví dụ: 50,000)"
                         style={{ width: "100%", marginTop: 8 }}
-                        inputMode="numeric" 
+                        inputMode="numeric"
                     />
                 </div>
                 <div>
@@ -382,7 +397,6 @@ const UserCover = ({ isMine, coverImage, coverColorCode, userData, onFollowSucce
                 }}>
                     <CreateNewChat userData={userData} onClose={() => setShowChat(false)} />
                 </div>
-
             )}
         </div>
     );

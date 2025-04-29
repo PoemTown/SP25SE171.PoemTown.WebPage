@@ -79,7 +79,16 @@ const SignupPage = () => {
             boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)"
           }}
         >
-          <Title level={3} style={{ textAlign: "center", marginBottom: 8 }}>
+          <Row justify="center" style={{ marginBottom: 10 }}>
+            <Col>
+              <img
+                src={`${process.env.PUBLIC_URL}/logo.png`}
+                alt="Logo"
+                style={styles.logo}
+              />
+            </Col>
+          </Row>
+          <Title level={3} style={{ textAlign: "center", marginBottom: 8, marginTop: 0 }}>
             Đăng ký tài khoản
           </Title>
           <Text type="secondary" style={{ display: "block", textAlign: "center", marginBottom: 32 }}>
@@ -310,5 +319,13 @@ const SignupPage = () => {
     </Row>
   );
 };
+
+const styles = {
+  logo: {
+    width: "150px", // Adjust size as needed
+    height: "auto",
+    margin: "0 auto"
+  },
+}
 
 export default SignupPage;

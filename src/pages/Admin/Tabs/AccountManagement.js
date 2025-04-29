@@ -22,7 +22,7 @@ import {
     DialogContent,
     DialogActions
 } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos, Delete } from "@mui/icons-material";
+import { ArrowBackIos, ArrowForwardIos, Delete, Edit } from "@mui/icons-material";
 import axios from "axios";
 import AccountDetail from "../Form/AccountDetail";
 import { message } from "antd";
@@ -171,6 +171,11 @@ const AccountManagement = () => {
         }
     };
 
+    // Open edit dialog
+    const handleEditClick = (account) => {
+        fetchAccountDetail(account.id);
+    };
+
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
             <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
@@ -217,10 +222,7 @@ const AccountManagement = () => {
                         {accounts.map((account, index) => (
                             <TableRow key={account.id} hover>
                                 <TableCell>{(pagination.pageNumber - 1) * pagination.pageSize + index + 1}</TableCell>
-                                <TableCell
-                                    onClick={() => fetchAccountDetail(account.id)}
-                                    sx={{ cursor: "pointer" }}
-                                >
+                                <TableCell>
                                     {account.userName || "Không có tên đăng nhập"}
                                 </TableCell>
                                 <TableCell>{account.fullName || "Không có họ và tên"}</TableCell>
@@ -238,11 +240,16 @@ const AccountManagement = () => {
                                     <Avatar
                                         src={account.avatar || ""}
                                         alt={account.fullName || "Avatar"}
-                                        onClick={() => fetchAccountDetail(account.id)}
-                                        sx={{ cursor: "pointer" }}
                                     />
                                 </TableCell>
                                 <TableCell>
+                                    <IconButton
+                                        color="primary"
+                                        onClick={() => handleEditClick(account)}
+                                        disabled={loading}
+                                    >
+                                        <Edit />
+                                    </IconButton>
                                     <IconButton
                                         color="error"
                                         onClick={() => openDeleteDialog(account)}
