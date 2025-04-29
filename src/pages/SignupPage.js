@@ -3,7 +3,6 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
-
     const [formData, setFormData] = useState({
         username: "",
         email: "",
@@ -68,6 +67,12 @@ const SignupPage = () => {
         <div style={styles.loginContainer}>
             {/* Left Section */}
             <div style={styles.loginFormContainer}>
+                {/* Added Logo Here */}
+                <img 
+                    src="/logo.png" 
+                    alt="Logo" 
+                    style={styles.logo} 
+                />
                 <h1 style={styles.loginTitle}>Bắt đầu ngay nào!</h1>
                 <p style={styles.loginSubtitle}>Nhập thông tin để tạo tài khoản</p>
 
@@ -296,6 +301,11 @@ const styles = {
         alignItems: "center",
         backgroundColor: "#f9f9f9",
     },
+    logo: {
+        width: "150px", // Adjust size as needed
+        height: "auto",
+        marginBottom: "20px",
+    },
     loginTitle: {
         fontSize: "2rem",
         fontWeight: "bold",
@@ -324,8 +334,6 @@ const styles = {
         padding: "10px",
         border: "1px solid #ccc",
         borderRadius: "5px",
-
-
     },
     formCheckbox: {
         display: "flex",
