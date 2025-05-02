@@ -92,7 +92,7 @@ const LoginPage = () => {
                 const decodedToken = jwtDecode(accessToken);
                 localStorage.setItem("username", decodedToken.UserName);
                 localStorage.setItem("userId", decodedToken.UserId);
- 
+
                 if (role.includes("USER")) {
                     window.location.href = "/";
                 } else if (role.includes("ADMIN")) {
@@ -146,14 +146,14 @@ const LoginPage = () => {
                 <div style={styles.formWrapper}>
                     <div style={styles.header}>
                         <div style={styles.logoContainer}>
-                            <img 
-                                src="/logo.png" 
-                                alt="Logo" 
-                                style={styles.logo} 
+                            <img
+                                src="/logo.png"
+                                alt="Logo"
+                                style={styles.logo}
                             />
                         </div>
-                        <h1 style={styles.title}>Chào mừng quay lại! 👋</h1>
-                        <p style={styles.subtitle}>Vui lòng đăng nhập để tiếp tục</p>
+                        <h1 style={styles.title}>Cánh cửa cũ mở chào người xưa trở lại</h1>
+                        <p style={styles.subtitle}>Một bước đăng nhập – ta tiếp chuyện cùng nhau.</p>
                     </div>
 
                     <Form layout="vertical" onFinish={handleSubmit}>

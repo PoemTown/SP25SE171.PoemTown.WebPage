@@ -189,8 +189,8 @@ const Headeruser = ({ userData }) => {
       <nav style={styles.nav}>
         <a href="/latest" style={styles.navLink}>Trang chủ</a>
         <a href="/about-poemtown" style={styles.navLink}>Về PoemTown</a>
-        <a href="/knowledge" style={styles.navLink}>Kiến thức</a>
-        <a href="/poetsamples" style={styles.navLink}>Nhà thơ nổi tiếng</a>
+        <a href="/knowledge" style={styles.navLink}>Tàng thư trí tuệ</a>
+        <a href="/poetsamples" style={styles.navLink}>Thi nhân kiệt xuất</a>
         {roles.includes("ADMIN") && <a style={styles.navLink} onClick={() => navigate("/admin")}>Dành cho quản trị viên</a>}
         {roles.includes("MODERATOR") && <a style={styles.navLink} onClick={() => navigate("/mod")}>Dành cho kiểm duyệt viên</a>}
       </nav>

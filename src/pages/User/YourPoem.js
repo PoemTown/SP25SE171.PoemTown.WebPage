@@ -433,7 +433,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                 {isMine ? "Bạn chưa có bài thơ nào" : "Người dùng chưa có bài thơ nào"}
               </h3>
               <p style={{ margin: 0, fontSize: "14px" }}>
-                {isMine ? "Hãy tạo bản thơ đầu tiên của bạn" : "Hãy quay lại sau khi người dùng tạo bản thơ"}
+                {isMine ? "Bạn có muốn thêu giấc mơ vào vần thơ đầu gió sớm không?" : "Hãy quay lại sau khi người dùng tạo bản thơ"}
               </p>
             </div>
           </>

@@ -143,10 +143,10 @@ const Homepage = () => {
 
 const navTabs = [
   { key: "latest", label: "Mới nhất", href: "#latest" },
-  { key: "trending", label: "Trending", href: "#trending" },
+  { key: "trending", label: "Xu hướng", href: "#trending" },
   { key: "collections", label: "Bộ sưu tập", href: "#collections" },
-  { key: "bookmark", label: "Bookmark", href: "#bookmark" },
-  { key: "audioread", label: "AudioRead", href: "#audioread" },
+  { key: "bookmark", label: "Dấu mơ", href: "#bookmark" },
+  { key: "audioread", label: "Thanh âm kể chuyện", href: "#audioread" },
   // { key: "community", label: "Tuyển tập cộng đồng", href: "#community" },
   { key: "yourpage", label: "Trang của bạn", href: "#yourpage" },
 ];

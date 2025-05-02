@@ -82,7 +82,7 @@ const YourBio = (props) => {
             <div style={{ textAlign: "center", marginBottom: "24px" }}>
                 <Title level={3} style={{ marginBottom: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
                     <Space>
-                        Thông tin cá nhân
+                        Dòng tự sự lặng thầm
                         <FaUserCircle style={{ color: "#1890ff" }} />
                     </Space>
                 </Title>
@@ -116,7 +116,9 @@ const YourBio = (props) => {
                         <Space direction="vertical" size="small">
                             <Paragraph style={{ marginBottom: 0 }}>
                                 <Text strong>Ngày sinh: </Text>
-                                <Text>{userData.dateOfBirth || "Chưa cập nhật"}</Text>
+                                <Text>{userData.dateOfBirth
+                                    ? new Date(userData.dateOfBirth).toLocaleDateString('vi-VN')
+                                    : "Chưa cập nhật"}</Text>
                             </Paragraph>
                             <Paragraph style={{ marginBottom: 0 }}>
                                 <Text strong>Giới tính: </Text>
@@ -205,7 +207,7 @@ const YourBio = (props) => {
                                         icon={<EditOutlined />}
                                         onClick={() => setIsEditing(true)}
                                     >
-                                        Thêm tiểu sử
+                                        Xin người khắc nhẹ vệt mực đời riêng lên trang mới.
                                     </Button>
                                 ) : (
                                     "Người dùng chưa cập nhật tiểu sử"
