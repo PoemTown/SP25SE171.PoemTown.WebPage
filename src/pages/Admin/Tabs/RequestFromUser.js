@@ -200,13 +200,13 @@ const RequestFromUser = () => {
         try {
             showNotification('Đang tải lên ảnh bằng chứng...', 'info');
             const imageUrl = await uploadEvidence(file);
-            
+
             setEditForm(prev => ({
                 ...prev,
                 resolveEvidence: imageUrl,
                 previewEvidence: URL.createObjectURL(file)
             }));
-            
+
             showNotification('Tải lên ảnh thành công!', 'success');
         } catch (error) {
             showNotification('Tải lên ảnh thất bại!', 'error');
@@ -220,7 +220,7 @@ const RequestFromUser = () => {
         setIsSubmitting(true);
         try {
             showNotification('Đang cập nhật yêu cầu...', 'info');
-            
+
             const payload = {
                 id: selectedWithdrawal.id,
                 status: editForm.status,
@@ -290,7 +290,7 @@ const RequestFromUser = () => {
     };
 
     const handleCloseNotification = () => {
-        setNotification(prev => ({...prev, open: false}));
+        setNotification(prev => ({ ...prev, open: false }));
     };
 
     return (
@@ -302,7 +302,7 @@ const RequestFromUser = () => {
                 onClose={handleCloseNotification}
                 anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
             >
-                <Alert 
+                <Alert
                     severity={notification.severity}
                     onClose={handleCloseNotification}
                     sx={{ width: '100%' }}
@@ -367,7 +367,10 @@ const RequestFromUser = () => {
                                         <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                         <TableCell>{withdrawal.id || "Không có mã"}</TableCell>
                                         <TableCell>{withdrawal.amount ? withdrawal.amount.toLocaleString() : "0"} VNĐ</TableCell>
-                                        <TableCell>{getBankType(withdrawal.bankType)}</TableCell>
+                                        <TableCell>
+                                            {/* <img src={withdrawal.bankType?.imageIcon} alt={`${withdrawal.bankType?.bankCode}`} style={{ width: "20px", height: "100%", objectFit: "contain", marginRight: 5 }} /> */}
+                                            {withdrawal.bankType?.bankCode || "Không xác định"}
+                                        </TableCell>
                                         <TableCell>{withdrawal.accountName || "Không xác định"}</TableCell>
                                         <TableCell>{withdrawal.accountNumber || "Không xác định"}</TableCell>
                                         <TableCell>{withdrawal.createdTime ? new Date(withdrawal.createdTime).toLocaleString() : "Không xác định"}</TableCell>
@@ -379,14 +382,14 @@ const RequestFromUser = () => {
                                             />
                                         </TableCell>
                                         <TableCell>
-                                            <IconButton 
+                                            <IconButton
                                                 onClick={() => fetchWithdrawalDetail(withdrawal.id)}
                                                 color="primary"
                                                 size="small"
                                             >
                                                 <Typography variant="body2">Xem</Typography>
                                             </IconButton>
-                                            <IconButton 
+                                            <IconButton
                                                 onClick={() => handleOpenEditDialog(withdrawal)}
                                                 color="secondary"
                                                 size="small"
@@ -401,8 +404,8 @@ const RequestFromUser = () => {
                     </TableContainer>
 
                     <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
-                        <IconButton 
-                            onClick={() => handlePageChange(currentPage - 1)} 
+                        <IconButton
+                            onClick={() => handlePageChange(currentPage - 1)}
                             disabled={currentPage === 1 || loading}
                         >
                             <ArrowBackIos />
@@ -412,8 +415,8 @@ const RequestFromUser = () => {
                             {currentPage} / {totalPages}
                         </Typography>
 
-                        <IconButton 
-                            onClick={() => handlePageChange(currentPage + 1)} 
+                        <IconButton
+                            onClick={() => handlePageChange(currentPage + 1)}
                             disabled={currentPage === totalPages || loading}
                         >
                             <ArrowForwardIos />
@@ -442,8 +445,8 @@ const RequestFromUser = () => {
                                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
                                         <Box>
                                             <Typography variant="body1"><strong>Mã yêu cầu:</strong> {selectedWithdrawal.id || "Không xác định"}</Typography>
-                                            <Typography variant="body1"><strong>Ngân hàng:</strong> {getBankType(selectedWithdrawal.bankType)}</Typography>
-                                            <Typography variant="body1"><strong>Trạng thái:</strong> 
+                                            <Typography variant="body1"><strong>Ngân hàng:</strong> {selectedWithdrawal.bankType?.bankCode} - {selectedWithdrawal.bankType?.bankName}</Typography>
+                                            <Typography variant="body1"><strong>Trạng thái:</strong>
                                                 <Chip
                                                     label={getWithdrawalStatus(selectedWithdrawal.status)}
                                                     color={getStatusColor(selectedWithdrawal.status)}
@@ -492,7 +495,7 @@ const RequestFromUser = () => {
                                             )}
                                             {selectedWithdrawal.resolveEvidence && (
                                                 <Box>
-                                                    <Typography variant="body1"><strong>Bằng chứng xử lý:</strong> 
+                                                    <Typography variant="body1"><strong>Bằng chứng xử lý:</strong>
                                                         <a href={selectedWithdrawal.resolveEvidence} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 8 }}>
                                                             Xem bằng chứng
                                                         </a>
@@ -523,7 +526,7 @@ const RequestFromUser = () => {
                             <Typography variant="subtitle1">
                                 Mã yêu cầu: <strong>{selectedWithdrawal.id}</strong>
                             </Typography>
-                            
+
                             <FormControl fullWidth>
                                 <InputLabel>Trạng thái</InputLabel>
                                 <Select
@@ -576,17 +579,17 @@ const RequestFromUser = () => {
                                 {editForm.previewEvidence && (
                                     <Box sx={{ mt: 2 }}>
                                         <Typography variant="body2">Ảnh đã chọn:</Typography>
-                                        <Box sx={{ 
+                                        <Box sx={{
                                             position: 'relative',
                                             display: 'inline-block',
                                             mt: 1
                                         }}>
-                                            <img 
-                                                src={editForm.previewEvidence} 
-                                                alt="Bằng chứng xử lý" 
-                                                style={{ 
-                                                    maxWidth: '100%', 
-                                                    maxHeight: 200, 
+                                            <img
+                                                src={editForm.previewEvidence}
+                                                alt="Bằng chứng xử lý"
+                                                style={{
+                                                    maxWidth: '100%',
+                                                    maxHeight: 200,
                                                     borderRadius: 1,
                                                     border: '1px solid #ddd'
                                                 }}
@@ -614,16 +617,16 @@ const RequestFromUser = () => {
                     )}
                 </DialogContent>
                 <DialogActions>
-                    <Button 
-                        onClick={() => setOpenEditDialog(false)} 
+                    <Button
+                        onClick={() => setOpenEditDialog(false)}
                         color="primary"
                         disabled={isSubmitting}
                     >
                         Hủy
                     </Button>
-                    <Button 
-                        onClick={handleSubmitEdit} 
-                        color="primary" 
+                    <Button
+                        onClick={handleSubmitEdit}
+                        color="primary"
                         variant="contained"
                         disabled={isSubmitting || uploading}
                     >

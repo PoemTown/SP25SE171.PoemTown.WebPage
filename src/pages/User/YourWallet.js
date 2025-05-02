@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   Card,
   Button,
@@ -20,7 +20,12 @@ import {
   Tooltip,
   Input,
   Select,
-  Skeleton
+  Skeleton,
+  Upload,
+  Divider,
+  Row,
+  Col,
+  Collapse
 } from "antd";
 import {
   WalletOutlined,
@@ -33,6 +38,11 @@ import {
   FileOutlined,
   FormOutlined,
   MoneyCollectOutlined,
+  UploadOutlined,
+  MessageOutlined,
+  EditOutlined,
+  DeleteOutlined,
+  KeyOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -76,19 +86,6 @@ const withdrawalStatusMap = {
   2: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
 };
 
-const bankTypeMap = {
-  1: "Momo",
-  2: "TpBank",
-  3: "BIDV",
-  4: "Agribank",
-  5: "VietinBank",
-  6: "MB Bank",
-  7: "ACB",
-  8: "VPBank",
-  9: "Sacombank",
-  10: "SHB",
-};
-
 const YourWallet = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [walletStatus, setWalletStatus] = useState(null);
@@ -116,6 +113,7 @@ const YourWallet = () => {
   const [orderLoading, setOrderLoading] = useState(false);
   const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [depositModalVisible, setDepositModalVisible] = useState(false);
+  const [accountSettingModalVisible, setAccountSettingModalVisible] = useState(false);
   const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
   const [orderDetailModalVisible, setOrderDetailModalVisible] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
@@ -129,6 +127,373 @@ const YourWallet = () => {
   const [inUseFee, setInUseFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(false);
   const [exampleVisible, setExampleVisible] = useState(false);
+
+  const [feedbackVisible, setFeedbackVisible] = useState(false);
+  const [currentWithdrawalId, setCurrentWithdrawalId] = useState(null);
+  const [fileList, setFileList] = useState([]);
+  const [uploading, setUploading] = useState(false);
+  const [form] = Form.useForm();
+
+  const [currentComplaint, setCurrentComplaint] = useState(null);
+
+  const [editStep, setEditStep] = useState(1);
+  const [editInfoVisible, setEditInfoVisible] = useState(false);
+  const [editImagesVisible, setEditImagesVisible] = useState(false);
+  const [bankTypes, setBankTypes] = useState([]);
+  const [bankTypesLoading, setBankTypesLoading] = useState(false);
+
+  const [userBankAccounts, setUserBankAccounts] = useState([]);
+  const [isEditingAccount, setIsEditingAccount] = useState(false);
+  const [currentAccount, setCurrentAccount] = useState(null);
+  const [loadingUserAccounts, setLoadingUserAccounts] = useState(false);
+  const [accountForm] = Form.useForm();
+
+  const [accountSelectionVisible, setAccountSelectionVisible] = useState(false);
+  const [selectedBankAccount, setSelectedBankAccount] = useState(null);
+
+  const complaintStatusMap = {
+    3: { text: "Đang chờ", color: "gold", icon: <ClockCircleOutlined /> },
+    1: { text: "Đã chấp nhận", color: "green", icon: <CheckCircleOutlined /> },
+    2: { text: "Đã từ chối", color: "red", icon: <CloseCircleOutlined /> },
+  };
+
+  const fetchUserBankAccounts = async () => {
+    setLoadingUserAccounts(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user-bank-types`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+      setUserBankAccounts(response.data.data);
+    } catch (error) {
+      message.error("Không thể tải danh sách tài khoản ngân hàng");
+    } finally {
+      setLoadingUserAccounts(false);
+    }
+  };
+
+  useEffect(() => {
+    if (accountSettingModalVisible || accountSelectionVisible) {
+      fetchUserBankAccounts();
+    }
+  }, [accountSettingModalVisible, accountSelectionVisible]);
+
+  // Add new state variables
+  const [complaints, setComplaints] = useState([]);
+  const [complaintPagination, setComplaintPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  const [complaintLoading, setComplaintLoading] = useState(false);
+
+  const handleAccountSubmit = async (values) => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (isEditingAccount) {
+        // Include ID in both URL and request body
+        await axios.put(
+          `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user-bank-types`,
+          {
+            ...values,
+            id: currentAccount.id // Include ID in request body
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          }
+        );
+        message.success("Cập nhật tài khoản thành công");
+      } else {
+        await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user-bank-types`,
+          values,
+          {
+            headers: {
+              Authorization: `Bearer ${accessToken}`
+            }
+          }
+        );
+        message.success("Thêm tài khoản thành công");
+      }
+      fetchUserBankAccounts();
+      accountForm.resetFields();
+      setIsEditingAccount(false);
+      setCurrentAccount(null);
+    } catch (error) {
+      message.error(error.response?.data?.errorMessage || "Có lỗi xảy ra");
+    }
+  };
+
+  const handleEditAccount = (account) => {
+    setIsEditingAccount(true);
+    setCurrentAccount(account);
+    accountForm.setFieldsValue({
+      bankTypeId: account.bankType?.id, // Access nested bankType.id
+      accountNumber: account.accountNumber,
+      accountName: account.accountName
+    });
+  };
+
+  const handleDeleteAccount = (id) => {
+    Modal.confirm({
+      title: "Xác nhận xóa tài khoản",
+      content: "Bạn có chắc chắn muốn xóa tài khoản này?",
+      okText: "Xóa",
+      cancelText: "Hủy",
+      async onOk() {
+        try {
+          const accessToken = localStorage.getItem("accessToken");
+          await axios.delete(
+            `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user-bank-types/${id}`,
+            {
+              headers: {
+                Authorization: `Bearer ${accessToken}`
+              }
+            }
+          );
+          message.success("Xóa tài khoản thành công");
+          fetchUserBankAccounts();
+        } catch (error) {
+          message.error(error.response?.data?.errorMessage || "Xóa thất bại");
+        }
+      }
+    });
+  };
+
+  const cancelEdit = () => {
+    accountForm.resetFields();
+    setIsEditingAccount(false);
+    setCurrentAccount(null);
+  };
+
+  const accountColumns = [
+    {
+      title: "Ngân hàng",
+      dataIndex: ["bankType", "id"], // Access nested bankType object
+      key: "bankType",
+      render: (id, record) => {
+        const bank = record.bankType || bankTypes.find(b => b.id === id);
+        return bank ? (
+          <Space>
+            {bank.imageIcon && (
+              <img
+                src={bank.imageIcon}
+                alt={bank.bankName}
+                style={{ width: 20, height: 20, objectFit: 'contain' }}
+              />
+            )}
+            {bank.bankCode}
+          </Space>
+        ) : "Không xác định";
+      }
+    },
+    {
+      title: "Số tài khoản",
+      dataIndex: "accountNumber",
+      key: "accountNumber"
+    },
+    {
+      title: "Tên chủ tài khoản",
+      dataIndex: "accountName",
+      key: "accountName"
+    },
+    {
+      title: "Thao tác",
+      key: "actions",
+      render: (_, record) => (
+        <Space>
+          <Button
+            type="link"
+            icon={<EditOutlined />}
+            onClick={() => handleEditAccount(record)}
+          >
+            Sửa
+          </Button>
+          <Button
+            type="link"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDeleteAccount(record.id)}
+          >
+            Xóa
+          </Button>
+        </Space>
+      )
+    }
+  ];
+
+  const AccountSettingModal = () => (
+    <Modal
+      title="Quản lý tài khoản rút tiền"
+      visible={accountSettingModalVisible}
+      onCancel={() => {
+        setAccountSettingModalVisible(false);
+        cancelEdit();
+      }}
+      footer={null}
+      width={800}
+    >
+      <Spin spinning={loadingUserAccounts}>
+        <Table
+          dataSource={userBankAccounts}
+          columns={accountColumns}
+          rowKey="id"
+          pagination={false}
+          scroll={{ y: 300 }}
+          bordered
+        />
+
+        <Divider orientation="center">
+          {isEditingAccount ? "Chỉnh sửa tài khoản" : "Thêm tài khoản mới"}
+        </Divider>
+
+        <Form form={accountForm} onFinish={handleAccountSubmit} layout="vertical">
+          <Form.Item
+            name="bankTypeId"
+            label="Ngân hàng"
+            rules={[{ required: true, message: "Vui lòng chọn ngân hàng" }]}
+          >
+            <Select
+              placeholder="Chọn ngân hàng"
+              loading={bankTypesLoading}
+              showSearch
+              optionFilterProp="children"
+              filterOption={(input, option) =>
+                option.children.toLowerCase().includes(input.toLowerCase())
+              }
+            >
+              {bankTypes.map(bank => (
+                <Select.Option key={bank.id} value={bank.id}>
+                  <Space style={{ display: "flex", alignItems: "center" }}>
+                    {bank.imageIcon && (
+                      <img
+                        src={bank.imageIcon}
+                        alt={bank.bankCode}
+                        style={{ width: 18, height: 18, objectFit: 'contain' }}
+                      />
+                    )}
+                    <div>
+                      <div>{bank.bankCode}</div>
+                    </div>
+                  </Space>
+                </Select.Option>
+              ))}
+            </Select>
+          </Form.Item>
+
+          <Form.Item
+            name="accountNumber"
+            label="Số tài khoản"
+            rules={[
+              { required: true, message: "Vui lòng nhập số tài khoản" },
+              { pattern: /^\d+$/, message: "Số tài khoản chỉ được chứa số" },
+              { min: 8, message: "Tối thiểu 8 ký tự" },
+              { max: 20, message: "Tối đa 20 ký tự" }
+            ]}
+          >
+            <Input placeholder="Nhập số tài khoản" />
+          </Form.Item>
+
+          <Form.Item
+            name="accountName"
+            label="Tên chủ tài khoản"
+            rules={[
+              { required: true, message: "Vui lòng nhập tên chủ tài khoản" },
+              {
+                pattern: /^[a-zA-Z\sÀ-ỹ]+$/,
+                message: "Tên chỉ được chứa chữ cái và dấu cách"
+              }
+            ]}
+          >
+            <Input placeholder="Nhập tên chủ tài khoản" />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button
+                type="primary"
+                htmlType="submit"
+              >
+                {isEditingAccount ? "Cập nhật" : "Thêm mới"}
+              </Button>
+              {isEditingAccount && (
+                <Button onClick={cancelEdit}>Hủy bỏ</Button>
+              )}
+            </Space>
+          </Form.Item>
+        </Form>
+      </Spin>
+    </Modal>
+  );
+
+  // Add fetch function
+  const fetchComplaints = async (pageNumber = 1, pageSize = 10) => {
+    setComplaintLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/mine`,
+        {
+          params: {
+            pageNumber,
+            pageSize
+          },
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+
+      if (response.data.statusCode === 200) {
+        setComplaints(response.data.data);
+        setComplaintPagination({
+          current: response.data.pageNumber,
+          pageSize: response.data.pageSize,
+          total: response.data.totalRecords,
+        });
+      }
+    } catch (error) {
+      message.error("Lỗi khi tải danh sách phản hồi");
+    } finally {
+      setComplaintLoading(false);
+    }
+  };
+
+  const fetchBankTypes = async () => {
+    setBankTypesLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`
+          }
+        }
+      );
+      setBankTypes(response.data.data);
+    } catch (error) {
+      message.error("Không thể tải danh sách ngân hàng");
+    } finally {
+      setBankTypesLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchBankTypes();
+  }, []);
+
+  // Add to useEffect
+  useEffect(() => {
+    fetchComplaints();
+  }, []);
 
   useEffect(() => {
     if (depositModalVisible) {
@@ -178,6 +543,175 @@ const YourWallet = () => {
       align: 'right'
     }
   ];
+
+  const handleImageUpload = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          }
+        }
+      );
+      return response.data.data; // Assuming the response contains the image URL
+    } catch (error) {
+      message.error('Tải ảnh lên thất bại');
+      throw error;
+    }
+  };
+
+
+  const FeedbackModal = () => {
+    const handleSubmit = async (values) => {
+      try {
+        setUploading(true);
+
+        // Upload all images first
+        const imageUrls = await Promise.all(
+          fileList.map(file => handleImageUpload(file.originFileObj))
+        );
+
+        await axios.post(
+          `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentWithdrawalId}`,
+          {
+            title: values.title,
+            description: values.description,
+            images: imageUrls
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+            }
+          }
+        );
+
+        message.success('Gửi phản hồi thành công!');
+        form.resetFields();
+        setFileList([]);
+        setFeedbackVisible(false);
+      } catch (error) {
+        message.error(error.response.data.errorMessage);
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    return (
+      <Modal
+        title="Phản hồi về giao dịch rút tiền"
+        visible={feedbackVisible}
+        onCancel={() => setFeedbackVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Form form={form} onFinish={handleSubmit} layout="vertical">
+          <Form.Item
+            name="title"
+            label="Tiêu đề phản hồi"
+            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+          >
+            <Input placeholder="Nhập tiêu đề phản hồi" />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Mô tả chi tiết"
+            rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
+          >
+            <Input.TextArea rows={4} placeholder="Mô tả vấn đề bạn gặp phải" />
+          </Form.Item>
+
+          <Form.Item
+            label="Ảnh minh chứng"
+            extra="Hãy tải ảnh về vấn đề bạn đang gặp và cần giải quyết (định dạng JPG, PNG)"
+          >
+            <Upload
+              multiple
+              maxCount={5}
+              fileList={fileList}
+              onChange={({ fileList }) => setFileList(fileList)}
+              beforeUpload={() => false} // Prevent auto upload
+              accept="image/png, image/jpeg"
+            >
+              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+            </Upload>
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={uploading}
+              style={{ float: 'right' }}
+            >
+              Gửi phản hồi
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    );
+  };
+
+  const AccountSelectionModal = () => (
+    <Modal
+      title="Chọn tài khoản rút tiền"
+      visible={accountSelectionVisible}
+      onCancel={() => setAccountSelectionVisible(false)}
+      footer={null}
+      width={600}
+    >
+      <List
+        itemLayout="horizontal"
+        dataSource={[...userBankAccounts, { id: 'other', bankType: { bankCode: 'Khác' } }]}
+        renderItem={(account) => (
+          <List.Item
+            actions={[
+              <Button
+                type="primary"
+                onClick={() => {
+                  if (account.id === 'other') {
+                    setSelectedBankAccount(null);
+                    withdrawForm.resetFields();
+                  } else {
+                    setSelectedBankAccount(account);
+                    withdrawForm.setFieldsValue({
+                      bankType: account.bankType.id,
+                      accountNumber: account.accountNumber,
+                      accountName: account.accountName
+                    });
+                  }
+                  setAccountSelectionVisible(false);
+                  setWithdrawModalVisible(true);
+                }}
+              >
+                Chọn
+              </Button>
+            ]}
+          >
+            <List.Item.Meta
+              avatar={account.id !== 'other' && account.bankType?.imageIcon && (
+                <img
+                  src={account.bankType.imageIcon}
+                  alt={account.bankType.bankCode}
+                  style={{ width: 32, height: 32 }}
+                />
+              )}
+              title={account.id === 'other' ? 'Khác' : account.bankType?.bankCode}
+              description={account.id === 'other'
+                ? "Nhập thông tin tài khoản mới"
+                : `${account.accountName} - ${account.accountNumber}`}
+            />
+          </List.Item>
+        )}
+      />
+    </Modal>
+  );
 
   // Fetch wallet info
   const fetchWalletInfo = async () => {
@@ -414,8 +948,12 @@ const YourWallet = () => {
     setDepositModalVisible(true);
   };
 
+  const handleAccountSetting = () => {
+    setAccountSettingModalVisible(true);
+  }
+
   const handleWithdraw = () => {
-    setWithdrawModalVisible(true);
+    setAccountSelectionVisible(true);
   };
 
   const handleDepositOk = async () => {
@@ -491,7 +1029,7 @@ const YourWallet = () => {
           },
           body: JSON.stringify({
             amount: values.amount,
-            bankType: values.bankType,
+            bankTypeId: values.bankType,
             description: values.description || "Yêu cầu rút tiền từ ví",
             accountName: values.accountName,
             accountNumber: values.accountNumber
@@ -502,7 +1040,7 @@ const YourWallet = () => {
       const result = await response.json();
 
       if (result?.statusCode === 201) {
-        message.success(result.message || "Yêu cầu rút tiền thành công!");
+        message.success("Yêu cầu rút tiền đã được gửi thành công!");
         fetchWalletInfo();
         fetchWithdrawals();
         setWithdrawModalVisible(false);
@@ -681,6 +1219,11 @@ const YourWallet = () => {
     },
   ];
 
+  const showFeedbackModal = (withdrawalId) => {
+    setCurrentWithdrawalId(withdrawalId);
+    setFeedbackVisible(true);
+  };
+
   const withdrawalColumns = [
     {
       title: "Thời gian tạo",
@@ -698,7 +1241,24 @@ const YourWallet = () => {
       title: "Ngân hàng",
       dataIndex: "bankType",
       key: "bankType",
-      render: (type) => bankTypeMap[type] || `Ngân hàng ${type}`,
+      render: (bankTypeId) => {
+        return bankTypeId?.bankCode ? (
+          <Space>
+            {bankTypeId.imageIcon && (
+              <img
+                src={bankTypeId.imageIcon}
+                alt={bankTypeId.bankCode}
+                style={{
+                  width: 20,
+                  height: 20,
+                  objectFit: 'contain'
+                }}
+              />
+            )}
+            {bankTypeId.bankCode}
+          </Space>
+        ) : "Không xác định";
+      }
     },
     {
       title: "Số tài khoản",
@@ -733,59 +1293,459 @@ const YourWallet = () => {
       title: "Thao tác",
       key: "action",
       render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => {
-            Modal.info({
-              title: `Chi tiết yêu cầu rút tiền #${record.id}`,
-              width: 800,
-              content: (
-                <div>
-                  <Descriptions bordered column={1} style={{ marginBottom: 16 }}>
-                    <Descriptions.Item label="Phản hồi chi tiết">
-                      {record.resolveDescription || "Chưa có phản hồi"}
-                    </Descriptions.Item>
-                  </Descriptions>
+        <Space style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 0 }}>
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              Modal.info({
+                title: `Chi tiết yêu cầu rút tiền #${record.id}`,
+                width: 800,
+                content: (
+                  <div>
+                    <Descriptions bordered column={1} style={{ marginBottom: 16 }}>
+                      <Descriptions.Item label="Phản hồi chi tiết">
+                        {record.resolveDescription || "Chưa có phản hồi"}
+                      </Descriptions.Item>
+                    </Descriptions>
 
-                  <Descriptions bordered column={1}>
-                    <Descriptions.Item label="Bằng chứng">
-                      {record.resolveEvidence ? (
-                        /\.(jpg|jpeg|png|gif)$/i.test(record.resolveEvidence) ? (
-                          <Image
-                            width="100%"
-                            src={record.resolveEvidence}
-                            preview={{
-                              src: record.resolveEvidence,
-                            }}
-                          />
+                    <Descriptions bordered column={1}>
+                      <Descriptions.Item label="Bằng chứng">
+                        {record.resolveEvidence ? (
+                          /\.(jpg|jpeg|png|gif)$/i.test(record.resolveEvidence) ? (
+                            <Image
+                              width="100%"
+                              src={record.resolveEvidence}
+                              preview={{
+                                src: record.resolveEvidence,
+                              }}
+                            />
+                          ) : (
+                            <Button
+                              type="link"
+                              icon={<FileOutlined />}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                window.open(record.resolveEvidence, '_blank');
+                              }}
+                            >
+                              Xem file đính kèm
+                            </Button>
+                          )
                         ) : (
-                          <Button
-                            type="link"
-                            icon={<FileOutlined />}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              window.open(record.resolveEvidence, '_blank');
-                            }}
-                          >
-                            Xem file đính kèm
-                          </Button>
-                        )
-                      ) : (
-                        "Không có bằng chứng"
-                      )}
-                    </Descriptions.Item>
-                  </Descriptions>
-                </div>
-              ),
-            });
-          }}
-        >
-          Xem chi tiết
-        </Button>
+                          "Không có bằng chứng"
+                        )}
+                      </Descriptions.Item>
+                    </Descriptions>
+                  </div>
+                ),
+              });
+            }}
+          >
+            Xem chi tiết
+          </Button>
+          <Button
+            type="link"
+            icon={<MessageOutlined />}
+            onClick={() => showFeedbackModal(record.id)}
+          >
+            Phản hồi
+          </Button>
+        </Space>
       ),
     },
   ];
+
+  const complaintColumns = [
+    {
+      title: "Thời gian tạo",
+      dataIndex: "createdTime",
+      key: "createdTime",
+      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
+    },
+    {
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const statusInfo = complaintStatusMap[status] || {
+          text: "Không xác định",
+          color: "default"
+        };
+        return (
+          <Tag color={statusInfo.color}>
+            {statusInfo.icon}
+            {statusInfo.text}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_, record) => (
+        <Space style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 0
+        }}>
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => showComplaintDetail(record)}
+          >
+            Xem chi tiết
+          </Button>
+          {record.status === 3 && (
+            <Button
+              type="link"
+              color="yellow"
+              variant="link"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setCurrentComplaint(record);
+                setEditInfoVisible(true);
+                setEditStep(1);
+              }}
+            >
+              Chỉnh sửa
+            </Button>
+          )}
+          {record.status === 3 && (
+            <Button
+              type="link"
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteComplaint(record.id)}
+              danger
+            >
+              Xóa
+            </Button>
+          )}
+        </Space>
+      ),
+    },
+  ];
+
+  const handleDeleteComplaint = async (complaintId) => {
+    Modal.confirm({
+      title: 'Xác nhận xóa phản hồi',
+      content: 'Bạn có chắc chắn muốn xóa phản hồi này?',
+      okText: 'Xóa',
+      cancelText: 'Hủy',
+      okButtonProps: { danger: true },
+      async onOk() {
+        try {
+          await axios.delete(
+            `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${complaintId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+              }
+            }
+          );
+
+          message.success('Đã xóa phản hồi thành công');
+          fetchComplaints(complaintPagination.current, complaintPagination.pageSize);
+        } catch (error) {
+          message.error(error.response?.data?.errorMessage || 'Xóa phản hồi thất bại');
+        }
+      }
+    });
+  };
+
+  const showComplaintDetail = (complaint) => {
+    Modal.info({
+      title: `Chi tiết phản hồi #${complaint.id}`,
+      width: 800,
+      content: (
+        <div>
+          <Descriptions bordered column={1}>
+            <Descriptions.Item label="Tiêu đề">
+              {complaint.title}
+            </Descriptions.Item>
+            <Descriptions.Item label="Mô tả">
+              {complaint.description}
+            </Descriptions.Item>
+            <Descriptions.Item label="Phản hồi từ hệ thống">
+              {complaint.resolveDescription || "Chưa có phản hồi"}
+            </Descriptions.Item>
+          </Descriptions>
+
+          <Collapse ghost defaultActiveKey={[]}>
+            {/* Complaint Images */}
+            {complaint.complaintImages?.length > 0 && (
+              <Collapse.Panel
+                header={`Ảnh đính kèm (${complaint.complaintImages.length})`}
+                key="1"
+              >
+                <Image.PreviewGroup>
+                  <Row gutter={[16, 16]}>
+                    {complaint.complaintImages?.map((img, idx) => (
+                      <Col span={8} key={`complaint-${idx}`}>
+                        <Image
+                          src={img.image}
+                          style={{
+                            borderRadius: 8,
+                            border: '1px solid #f0f0f0',
+                            padding: 4
+                          }}
+                          alt={`Ảnh phản hồi ${idx + 1}`}
+                        />
+                      </Col>
+                    ))}
+                  </Row>
+                </Image.PreviewGroup>
+              </Collapse.Panel>
+            )}
+
+            {/* Resolve Images */}
+            {complaint.resolveImages?.length > 0 && (
+              <Collapse.Panel
+                header={`Ảnh giải quyết (${complaint.resolveImages.length})`}
+                key="2"
+              >
+                <Image.PreviewGroup>
+                  <Row gutter={[16, 16]}>
+                    {complaint.resolveImages?.map((img, idx) => (
+                      <Col span={8} key={`resolve-${idx}`}>
+                        <Image
+                          src={img.image}
+                          style={{
+                            borderRadius: 8,
+                            border: '1px solid #f0f0f0',
+                            padding: 4
+                          }}
+                          alt={`Ảnh phản hồi hệ thống ${idx + 1}`}
+                        />
+                        <div style={{ textAlign: 'center', marginTop: 4 }}>
+                          <Tag color="blue">Phản hồi từ hệ thống</Tag>
+                        </div>
+                      </Col>
+                    ))}
+                  </Row>
+                </Image.PreviewGroup>
+              </Collapse.Panel>
+            )}
+          </Collapse>
+        </div>
+      ),
+    });
+  };
+
+  const EditInfoModal = () => {
+    const [form] = Form.useForm();
+
+    useEffect(() => {
+      if (currentComplaint) {
+        form.setFieldsValue({
+          title: currentComplaint.title,
+          description: currentComplaint.description
+        });
+      }
+    }, [currentComplaint]);
+
+    const handleEditInfo = async (values) => {
+      try {
+        setUploading(true);
+        await axios.put(
+          `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1`,
+          {
+            id: currentComplaint.id,
+            title: values.title,
+            description: values.description
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+            }
+          }
+        );
+
+        message.success('Cập nhật thông tin thành công!');
+        setEditInfoVisible(false);
+        setEditImagesVisible(true);
+      } catch (error) {
+        message.error(error.response?.data?.errorMessage || 'Cập nhật thất bại');
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    return (
+      <Modal
+        title="Chỉnh sửa thông tin phản hồi (Bước 1/2)"
+        visible={editInfoVisible}
+        onCancel={() => setEditInfoVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Form form={form} onFinish={handleEditInfo} layout="vertical">
+          <Form.Item
+            name="title"
+            label="Tiêu đề phản hồi"
+            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Mô tả chi tiết"
+            rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
+          >
+            <Input.TextArea rows={4} />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={uploading}
+              style={{ float: 'right' }}
+            >
+              Lưu và tiếp tục
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    );
+  };
+
+  const EditImagesModal = () => {
+    const [fileList, setFileList] = useState([]);
+    const [deleting, setDeleting] = useState(false);
+
+    useEffect(() => {
+      if (currentComplaint) {
+        setFileList(currentComplaint.complaintImages.map(img => ({
+          uid: img.id,
+          name: `image_${img.id}`,
+          status: 'done',
+          url: img.image
+        })));
+      }
+    }, [currentComplaint]);
+
+    const handleImageUpdate = async () => {
+      try {
+        setUploading(true);
+
+        // Add new images
+        const newImages = fileList
+          .filter(file => file.originFileObj)
+          .map(file => file.originFileObj);
+
+        const uploadedUrls = await Promise.all(
+          newImages.map(file => handleImageUpload(file))
+        );
+
+        await Promise.all(
+          uploadedUrls.map(url =>
+            axios.post(
+              `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentComplaint.id}/image`,
+              null,
+              {
+                params: { image: url },
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+                }
+              }
+            )
+          )
+        );
+
+        // Remove deleted images
+        const originalIds = currentComplaint.complaintImages.map(img => img.id);
+        const currentIds = fileList.map(file => file.uid);
+        const deletedIds = originalIds.filter(id => !currentIds.includes(id));
+
+        await Promise.all(
+          deletedIds.map(id =>
+            axios.delete(
+              `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentComplaint.id}/image`,
+              {
+                params: { withdrawalComplaintImageId: id },
+                headers: {
+                  Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+                }
+              }
+            )
+          )
+        );
+
+        message.success('Cập nhật ảnh thành công!');
+        setEditImagesVisible(false);
+        fetchComplaints();
+      } catch (error) {
+        message.error(error.response?.data?.errorMessage || 'Cập nhật ảnh thất bại');
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    return (
+      <Modal
+        title="Quản lý ảnh đính kèm (Bước 2/2)"
+        visible={editImagesVisible}
+        onCancel={() => setEditImagesVisible(false)}
+        footer={[
+          <Button key="back" onClick={() => setEditImagesVisible(false)}>
+            Đóng
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={uploading}
+            onClick={handleImageUpdate}
+          >
+            Lưu thay đổi
+          </Button>,
+        ]}
+        width={800}
+      >
+        <Upload
+          multiple
+          maxCount={5}
+          fileList={fileList}
+          onChange={({ fileList }) => setFileList(fileList)}
+          beforeUpload={() => false}
+          accept="image/png, image/jpeg"
+          onRemove={(file) => {
+            if (file.url) {
+              setFileList(fileList.filter(f => f.uid !== file.uid));
+            }
+            return true;
+          }}
+        >
+          <Button icon={<UploadOutlined />}>Thêm ảnh mới</Button>
+        </Upload>
+
+        <Divider />
+
+        <Text strong>Ảnh hiện tại:</Text>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          {fileList.map(file => (
+            <Col span={6} key={file.uid}>
+              <Image
+                src={file.url}
+                style={{
+                  borderRadius: 8,
+                  border: '1px solid #d9d9d9',
+                  padding: 4
+                }}
+              />
+            </Col>
+          ))}
+        </Row>
+      </Modal>
+    );
+  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -836,6 +1796,15 @@ const YourWallet = () => {
               >
                 Nạp tiền
               </Button>
+              <Button
+                type="primary"
+                icon={<KeyOutlined />}
+                size="large"
+                onClick={handleAccountSetting}
+                style={{ marginTop: 16 }}
+              >
+                Thiết lập tài khoản rút tiền
+              </Button>
             </Space>
           </div>
         </Space>
@@ -852,7 +1821,7 @@ const YourWallet = () => {
         cancelText="Hủy bỏ"
       >
         <Typography.Text type="" style={{ display: 'block', fontSize: 13, marginBottom: 10 }}>
-          Ghi chú: Khi nạp tiền, hệ thống sẽ thu phí dịch vụ là <span style={{color: "#5cb85c", fontWeight: "bold"}}>{loadingFee ?
+          Ghi chú: Khi nạp tiền, hệ thống sẽ thu phí dịch vụ là <span style={{ color: "#5cb85c", fontWeight: "bold" }}>{loadingFee ?
             <Skeleton.Input active size="small" style={{ width: 30 }} />
             : inUseFee}%</span>.{' '}
           <a onClick={() => setExampleVisible(true)}>Xem thêm</a>
@@ -974,7 +1943,10 @@ const YourWallet = () => {
         visible={withdrawModalVisible}
         onOk={handleWithdrawSubmit}
         confirmLoading={withdrawConfirmLoading}
-        onCancel={handleWithdrawCancel}
+        onCancel={() => {
+          setWithdrawModalVisible(false);
+          setSelectedBankAccount(null);
+        }}
         okText="Xác nhận rút tiền"
         cancelText="Hủy bỏ"
       >
@@ -1007,10 +1979,27 @@ const YourWallet = () => {
             label="Ngân hàng"
             rules={[{ required: true, message: "Vui lòng chọn ngân hàng" }]}
           >
-            <Select placeholder="Chọn ngân hàng">
-              {Object.entries(bankTypeMap).map(([value, label]) => (
-                <Option key={value} value={parseInt(value)}>
-                  {label}
+            <Select
+              placeholder="Chọn ngân hàng"
+              loading={bankTypesLoading}
+              disabled={!!selectedBankAccount}
+            >
+              {bankTypes.map(bank => (
+                <Option key={bank.id} value={bank.id}>
+                  <Space>
+                    {bank.imageIcon && (
+                      <img
+                        src={bank.imageIcon}
+                        alt={bank.bankCode}
+                        style={{
+                          width: 20,
+                          height: 20,
+                          objectFit: 'contain'
+                        }}
+                      />
+                    )}
+                    {bank.bankCode}
+                  </Space>
                 </Option>
               ))}
             </Select>
@@ -1020,24 +2009,30 @@ const YourWallet = () => {
             name="accountNumber"
             label="Số tài khoản"
             rules={[
-              { required: true, message: "Vui lòng nhập số tài khoản" },
+              { required: !selectedBankAccount, message: "Vui lòng nhập số tài khoản" },
               { pattern: /^[0-9]+$/, message: "Số tài khoản chỉ được chứa số" },
               { min: 8, message: "Số tài khoản tối thiểu 8 ký tự" },
               { max: 20, message: "Số tài khoản tối đa 20 ký tự" },
             ]}
           >
-            <Input placeholder="Nhập số tài khoản ngân hàng" />
+            <Input
+              placeholder="Nhập số tài khoản ngân hàng"
+              disabled={!!selectedBankAccount}
+            />
           </Form.Item>
 
           <Form.Item
             name="accountName"
             label="Tên chủ tài khoản"
             rules={[
-              { required: true, message: "Vui lòng nhập tên chủ tài khoản" },
+              { required: !selectedBankAccount, message: "Vui lòng nhập tên chủ tài khoản" },
               { pattern: /^[a-zA-Z\sÀ-ỹ]+$/, message: "Tên chỉ được chứa chữ cái và dấu cách" },
             ]}
           >
-            <Input placeholder="Nhập tên chủ tài khoản (VIETTEL)" />
+            <Input
+              placeholder="Nhập tên chủ tài khoản (VIETTEL)"
+              disabled={!!selectedBankAccount}
+            />
           </Form.Item>
 
           <Form.Item
@@ -1195,7 +2190,37 @@ const YourWallet = () => {
             onChange={handleWithdrawalTableChange}
           />
         </Tabs.TabPane>
+        <Tabs.TabPane
+          tab={
+            <span>
+              <MessageOutlined />
+              Phản hồi rút tiền
+            </span>
+          }
+          key="4"
+        >
+          <Table
+            columns={complaintColumns}
+            dataSource={complaints}
+            rowKey="id"
+            loading={complaintLoading}
+            pagination={{
+              ...complaintPagination,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+            }}
+            onChange={(pagination) => {
+              setComplaintPagination(pagination);
+              fetchComplaints(pagination.current, pagination.pageSize);
+            }}
+          />
+        </Tabs.TabPane>
       </Tabs>
+      <FeedbackModal />
+      <EditInfoModal />
+      <EditImagesModal />
+      <AccountSettingModal />
+      <AccountSelectionModal />
     </div>
   );
 };

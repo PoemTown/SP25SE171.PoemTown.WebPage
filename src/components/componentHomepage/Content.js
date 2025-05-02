@@ -411,10 +411,14 @@ const Content = ({ activeTab }) => {
 
   const formatDate = isoString => {
     const d = new Date(isoString);
-    const dd = String(d.getDate()).padStart(2, "0");
-    const mm = String(d.getMonth() + 1).padStart(2, "0");
-    const yyyy = d.getFullYear();
-    return `${dd}/${mm}/${yyyy}`;  // e.g. "30/04/2025"
+
+    console.log("UTC time:", d.toUTCString());
+
+    const dd = String(d.getUTCDate()).padStart(2, "0");
+    const mm = String(d.getUTCMonth() + 1).padStart(2, "0");
+    const yyyy = d.getUTCFullYear();
+
+    return `${dd}/${mm}/${yyyy}`;   // "31/05/2025"
   };
 
   return (
@@ -442,7 +446,7 @@ const Content = ({ activeTab }) => {
           )}
         </div>
       )}
-      <div style={{display: "flex", flexDirection: "row"}}>
+      <div style={{ display: "flex", flexDirection: "row" }}>
         <div>
           <h2 style={styles.contentTitle}>{title}</h2>
         </div>

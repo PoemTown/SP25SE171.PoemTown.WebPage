@@ -28,8 +28,10 @@ import ContactsManagement from "./Tabs/ContactsManagement";
 import ContentsManagement from "./Tabs/ContentsManagement"; 
 import DailyMessagesManagement from "./Tabs/DailyMessagesManagement";
 import AnnouncementsManagement from "./Tabs/AnnouncementsManagement";
-import { ControlOutlined } from "@ant-design/icons";
+import { BankOutlined, ControlOutlined, MessageOutlined } from "@ant-design/icons";
 import DepositCommissionFeeManagement from "./Tabs/DepositCommissionFeeManagement";
+import ComplaintsManagement from "./Tabs/ComplaintsManagement";
+import BanksManagement from "./Tabs/BankManagement";
 
 const drawerWidth = 260;
 
@@ -78,6 +80,7 @@ const AdminPage = () => {
                 { key: "poetsamples", icon: <CollectionsBookmark />, text: "Nhà thơ nổi tiếng" },
                 { key: "templates", icon: <Description />, text: "Mẫu trang trí" },
                 { key: "contents", icon: <Article />, text: "Nội dung" },
+                { key: "banks", icon: <BankOutlined />, text: "Ngân hàng" },
             ]
         },
         { 
@@ -92,7 +95,8 @@ const AdminPage = () => {
             title: "Phản hồi", 
             items: [
                 { key: "reports", icon: <RateReview />, text: "Báo cáo từ người dùng" },
-                { key: "requests", icon: <RequestQuote />, text: "Yêu cầu từ người dùng" },
+                { key: "requests", icon: <RequestQuote />, text: "Yêu cầu rút tiền" },
+                { key: "complaints", icon: <MessageOutlined />, text: "Phản hồi rút tiền" },
             ]
         }
     ];
@@ -115,7 +119,9 @@ const AdminPage = () => {
             "announcements": "Quản lý thông báo",
             "contacts": "Quản lý liên hệ",
             "reports": "Quản lý báo cáo",
-            "requests": "Quản lý yêu cầu"
+            "requests": "Quản lý yêu cầu",
+            "complaints": "Quản lý phản hồi về rút tiền",
+            "banks": "Quản lý ngân hàng"
         };
         return pageTitles[key] || key;
     };
@@ -388,6 +394,8 @@ const AdminPage = () => {
                         {currentPage === "dailymessages" && <DailyMessagesManagement />} 
                         {currentPage === "announcements" && <AnnouncementsManagement />} 
                         {currentPage === "contacts" && <ContactsManagement />}
+                        {currentPage === "complaints" && <ComplaintsManagement />}
+                        {currentPage === "banks" && <BanksManagement />}
                     </Box>
                 </Box>
             </Box>
