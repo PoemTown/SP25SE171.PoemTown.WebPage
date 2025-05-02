@@ -1,12 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Button, Spin, Card, Typography, Divider, Modal, Input, message, notification, Tag } from "antd";
+import { Button, Spin, Card, Typography, Divider, Modal, Input, message, notification, Tag, Space } from "antd";
 import { LeftOutlined, LockFilled, PlayCircleFilled, ShoppingCartOutlined } from "@ant-design/icons";
 import AudioPlayer from "./AudioPlayer";
 import Headeruser from "../../../components/Headeruser";
 import Headerdefault from "../../../components/Headerdefault";
-
+import { CiEdit } from "react-icons/ci";
 const { Title, Text } = Typography;
 
 const RecordDetail = () => {
@@ -18,11 +18,13 @@ const RecordDetail = () => {
     const accessToken = localStorage.getItem("accessToken");
     const location = useLocation();
     const priceRef = useRef(null);
+    const nameRef = useRef(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
 
     const [isMine, setIsMine] = useState(
         location.state?.isMine ?? false
     );
+
     useEffect(() => {
         const fetchRecord = async () => {
             try {
@@ -53,7 +55,7 @@ const RecordDetail = () => {
     if (loading) {
         return <Spin size="large" style={{ display: 'block', margin: '20% auto' }} />;
     }
-
+    
     const handleToggleStatus = async () => {
         if (!record.isPublic) {
             message.info("Không thể chuyển từ chế độ riêng tư sang công khai");
@@ -75,8 +77,9 @@ const RecordDetail = () => {
             ),
             onOk: async () => {
                 const price = priceRef.current?.input.value;
-                if (!price || price < 0) {
-                    message.error("Vui lòng nhập giá hợp lệ");
+                if (!price || price < 10000) {
+                    message.error("Vui lòng nhập giá nhỏ nhất là 10.000đ");
+
                     return;
                 }
 
@@ -102,6 +105,67 @@ const RecordDetail = () => {
             }
         });
     };
+
+    const handleEdit = async () => {
+        Modal.confirm({
+            title: "Chỉnh sửa bản ghi âm",
+            content: (
+                <Space direction="vertical" style={{ width: '100%' }}>
+                    <Input
+                        ref={nameRef}
+                        placeholder="Name"
+                        defaultValue={record.fileName}
+                    />
+                    {!record.isPublic && (
+                        <Input
+                            type="number"
+                            min={0}
+                            ref={priceRef}
+                            defaultValue={record.price}
+                            onKeyDown={e => ['e', 'E', '-', '+'].includes(e.key) && e.preventDefault()}
+                        />
+                    )}
+                </Space>
+            ),
+            onOk: async () => {
+                const name = nameRef.current.input.value?.trim();
+                const priceValue = record.isPublic ? 0 : parseFloat(priceRef.current.input.value);
+                if (record.isPublic === false && !priceValue || priceValue < 10000 ) {
+                    message.error("Vui lòng nhập giá nhỏ nhất là 10.000đ");
+                    return;
+                }
+                if (!name) {
+                    message.error("Vui lòng nhập tên");
+                    return;
+                }
+                console.log(record.id)
+                try {
+                    const response = await fetch(
+                        `${process.env.REACT_APP_API_BASE_URL}/record-files/v1`,
+                        {
+                            method: "PUT",
+                            headers: {
+                                "Content-Type": "application/json",
+                                Authorization: `Bearer ${accessToken}`,
+                            },
+                            body: JSON.stringify({
+                                id: record.id,
+                                fileName: name,
+                                price: priceValue
+                            }),
+                        }
+                    );
+                    window.location.reload();
+                    message.success("Đã thay đổi thành công");
+                } catch (error) {
+                    console.error("Update status error:", error);
+                    message.error("Cập nhật trạng thái thất bại");
+                }
+            }
+        });
+    };
+
+
     const showDeleteConfirm = () => {
         Modal.confirm({
             title: "Xác nhận xóa bản ghi",
@@ -206,7 +270,7 @@ const RecordDetail = () => {
                         opacity: 0.15
                     }} />
 
-                    {isMine && (
+                    {currentUser === record.owner?.userName && (
                         <div style={{
                             padding: '20px 32px',
                             background: '#f8f5f0',
@@ -354,15 +418,24 @@ const RecordDetail = () => {
                                     borderRadius: '16px',
                                     padding: '24px'
                                 }}>
-                                    <h3 style={{
-                                        fontSize: '1.1rem',
-                                        color: '#7d6b58',
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1px',
-                                        marginBottom: '24px'
-                                    }}>
-                                        Thông tin bản ghi
-                                    </h3>
+                                    <div style={{ display: "flex", justifyContent: "space-between" }}>
+                                        <h3 style={{
+                                            fontSize: '1.1rem',
+                                            color: '#7d6b58',
+                                            textTransform: 'uppercase',
+                                            letterSpacing: '1px',
+                                            marginBottom: '24px'
+                                        }}>
+                                            Thông tin bản ghi
+                                        </h3>
+
+                                        {currentUser === record.owner?.userName && (
+                                            <div style={{ cursor: "pointer" }} onClick={handleEdit}>
+                                                <CiEdit size={20} />
+                                            </div>
+                                        )}
+                                    </div>
+
 
                                     <div style={{ display: 'grid', gap: '16px' }}>
                                         <div style={{ display: 'flex', gap: '12px' }}>
@@ -512,6 +585,9 @@ const RecordDetail = () => {
             </div>
         </>
     );
+
+
+
 };
 
 export default RecordDetail;

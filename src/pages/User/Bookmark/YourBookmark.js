@@ -203,7 +203,8 @@ const YourBookmark = () => {
                                 Bạn chưa đánh dấu gì cả
                             </h3>
                             <p style={{ margin: 0, fontSize: "14px" }}>
-                                Hãy đánh dấu thơ và bộ sưu tập để dễ dàng tìm kiếm
+                                Ghi dấu vần thơ và miền lưu giữ,
+                                Để mai này tìm lại chẳng hề xa.
                             </p>
                         </div>
 

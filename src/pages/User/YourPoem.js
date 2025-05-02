@@ -391,7 +391,6 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
     return (
       <div style={{ textAlign: 'center', padding: '40px' }}>
         {isMine && (
-<<<<<<< HEAD
           <>
             <button
               onClick={() => setIsCreatingPoem(true)}
@@ -434,39 +433,10 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
                 {isMine ? "Bạn chưa có bài thơ nào" : "Người dùng chưa có bài thơ nào"}
               </h3>
               <p style={{ margin: 0, fontSize: "14px" }}>
-                {isMine ? "Hãy tạo bản thơ đầu tiên của bạn" : "Hãy quay lại sau khi người dùng tạo bản thơ"}
+                {isMine ? "Bạn có muốn thêu giấc mơ vào vần thơ đầu gió sớm không?" : "Hãy quay lại sau khi người dùng tạo bản thơ"}
               </p>
             </div>
           </>
-=======
-          <button
-            onClick={handleCreatePoemClick}
-            style={{
-              backgroundColor: "#b0a499",
-              color: "#ecf0f1",
-              padding: "12px 24px",
-              borderRadius: "30px",
-              border: "none",
-              fontWeight: "600",
-              cursor: "pointer",
-              marginTop: "20px",
-              boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)",
-              transition: "all 0.3s ease",
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              margin: "0 auto",
-              ':hover': {
-                transform: "translateY(-2px)",
-                boxShadow: "0 6px 8px rgba(0, 0, 0, 0.15)",
-                backgroundColor: "#34495e"
-              }
-            }}
-          >
-            <PlusOutlined />
-            SÁNG TÁC THƠ
-          </button>
->>>>>>> 52550e796fe24425c5330d85c9aaf2f08837e41e
         )}
       </div>
     );

@@ -467,7 +467,7 @@ const Content = ({ activeTab }) => {
             <div style={styles.error}>Lỗi: {errorFamousPoets}</div>
           )}
           <Card
-            title={<Title level={2} style={{ fontWeight: 'bold', fontSize: '1rem' }}>Các nhà thơ nổi tiếng 🎓</Title>}
+            title={<Title level={2} style={{ fontWeight: 'bold', fontSize: '1rem' }}>Vầng sáng giữa trời thơ 🎓</Title>}
             bordered={false}
             style={styles.famousContainerCard}
           >

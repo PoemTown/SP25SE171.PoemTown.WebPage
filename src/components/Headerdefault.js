@@ -23,8 +23,8 @@ const Headerdefault = () => {
         <a href="/about-poemtown" style={styles.navLink}>
           Về PoemTown
         </a>
-        <a href="/knowledge" style={styles.navLink} onClick={() => navigate("/knowledge")}>Kiến thức </a>
-        <a href="/poetsamples" style={styles.navLink}>Nhà thơ nổi tiếng</a>
+        <a href="/knowledge" style={styles.navLink} onClick={() => navigate("/knowledge")}>Tàng thư trí tuệ</a>
+        <a href="/poetsamples" style={styles.navLink}>Thi nhân kiệt xuất</a>
       </nav>
       <div style={styles.buttons}>
         <button style={styles.loginButton} onClick={handleLogin}>

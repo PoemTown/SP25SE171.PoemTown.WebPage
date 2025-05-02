@@ -304,7 +304,7 @@ export default function YourRecordFile({ statisticBorder, achievementBorder, isM
                         {isMine ? "Bạn chưa có bản ghi nào" : "Người dùng chưa có bản ghi nào"}
                       </h3>
                       <p style={{ margin: 0, fontSize: "14px" }}>
-                        {isMine ? "Hãy tạo bản ghi đầu tiên của bạn" : "Hãy quay lại sau khi người dùng tạo bản ghi"}
+                        {isMine ? "Hãy khắc dấu âm thanh đầu tiên vào không gian tĩnh lặng." : "Hãy quay lại sau khi người dùng tạo bản ghi"}
                       </p>
                     </div>
                   )}
