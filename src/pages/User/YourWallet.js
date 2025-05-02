@@ -19,7 +19,8 @@ import {
   List,
   Tooltip,
   Input,
-  Select
+  Select,
+  Skeleton
 } from "antd";
 import {
   WalletOutlined,
@@ -34,6 +35,7 @@ import {
   MoneyCollectOutlined,
 } from "@ant-design/icons";
 import dayjs from "dayjs";
+import axios from "axios";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -45,7 +47,7 @@ const transactionTypeMap = {
   4: "Bài thơ",
   5: "Rút tiền",
   6: "Ủng hộ",
-  7: "Tiền hoa hồng", 
+  7: "Tiền hoa hồng",
   8: "Hoàn tiền",
   9: "Phí dịch vụ nạp tiền"
 };
@@ -124,6 +126,58 @@ const YourWallet = () => {
   const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(false);
   const [depositForm] = Form.useForm();
   const [withdrawForm] = Form.useForm();
+  const [inUseFee, setInUseFee] = useState(0);
+  const [loadingFee, setLoadingFee] = useState(false);
+  const [exampleVisible, setExampleVisible] = useState(false);
+
+  useEffect(() => {
+    if (depositModalVisible) {
+      const fetchCommissionFee = async () => {
+        try {
+          setLoadingFee(true);
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/deposit-commission-settings/v1/in-use`
+          );
+          setInUseFee(response.data.data.amountPercentage);
+        } catch (error) {
+          message.error('Không thể tải thông tin phí dịch vụ');
+        } finally {
+          setLoadingFee(false);
+        }
+      };
+      fetchCommissionFee();
+    }
+  }, [depositModalVisible]);
+
+  const exampleAmounts = [10000, 20000, 50000, 100000, 200000, 500000];
+  const dataSource = exampleAmounts.map(amount => ({
+    key: amount,
+    amount: amount.toLocaleString(),
+    fee: inUseFee,
+    received: Math.floor(amount * (1 - inUseFee / 100)).toLocaleString()
+  }));
+
+
+  const columns = [
+    {
+      title: 'Tiền Nạp (VNĐ)',
+      dataIndex: 'amount',
+      key: 'amount',
+      align: 'right'
+    },
+    {
+      title: 'Phí dịch vụ (%)',
+      dataIndex: 'fee',
+      key: 'fee',
+      align: 'center'
+    },
+    {
+      title: 'Tiền nhận được (VNĐ)',
+      dataIndex: 'received',
+      key: 'received',
+      align: 'right'
+    }
+  ];
 
   // Fetch wallet info
   const fetchWalletInfo = async () => {
@@ -421,7 +475,7 @@ const YourWallet = () => {
       setWithdrawConfirmLoading(true);
 
       const accessToken = localStorage.getItem("accessToken");
-      
+
       if (!walletId) {
         message.error("Không tìm thấy thông tin ví");
         return;
@@ -693,7 +747,7 @@ const YourWallet = () => {
                       {record.resolveDescription || "Chưa có phản hồi"}
                     </Descriptions.Item>
                   </Descriptions>
-                  
+
                   <Descriptions bordered column={1}>
                     <Descriptions.Item label="Bằng chứng">
                       {record.resolveEvidence ? (
@@ -797,6 +851,12 @@ const YourWallet = () => {
         okText="Xác nhận nạp tiền"
         cancelText="Hủy bỏ"
       >
+        <Typography.Text type="" style={{ display: 'block', fontSize: 13, marginBottom: 10 }}>
+          Ghi chú: Khi nạp tiền, hệ thống sẽ thu phí dịch vụ là <span style={{color: "#5cb85c", fontWeight: "bold"}}>{loadingFee ?
+            <Skeleton.Input active size="small" style={{ width: 30 }} />
+            : inUseFee}%</span>.{' '}
+          <a onClick={() => setExampleVisible(true)}>Xem thêm</a>
+        </Typography.Text>
         <Form form={depositForm} layout="vertical">
           <Form.Item
             name="amount"
@@ -808,7 +868,7 @@ const YourWallet = () => {
                 min: 20000,
                 message: 'Số tiền tối thiểu là 20,000 VNĐ',
               },
-              
+
             ]}
           >
             <InputNumber
@@ -884,7 +944,30 @@ const YourWallet = () => {
           </Form.Item>
         </Form>
       </Modal>
-
+      <Modal
+        title="Ví dụ tính phí dịch vụ"
+        visible={exampleVisible}
+        onCancel={() => setExampleVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Table
+          dataSource={dataSource}
+          columns={columns}
+          pagination={false}
+          bordered
+          size="small"
+          summary={() => (
+            <Table.Summary.Row>
+              <Table.Summary.Cell index={0} colSpan={3}>
+                <Typography.Text type="secondary">
+                  Công thức tính: Tiền nhận được = Tiền nạp × (1 - {inUseFee}%)
+                </Typography.Text>
+              </Table.Summary.Cell>
+            </Table.Summary.Row>
+          )}
+        />
+      </Modal>
       {/* Modal rút tiền */}
       <Modal
         title="Rút tiền từ ví"

@@ -28,6 +28,8 @@ import ContactsManagement from "./Tabs/ContactsManagement";
 import ContentsManagement from "./Tabs/ContentsManagement"; 
 import DailyMessagesManagement from "./Tabs/DailyMessagesManagement";
 import AnnouncementsManagement from "./Tabs/AnnouncementsManagement";
+import { ControlOutlined } from "@ant-design/icons";
+import DepositCommissionFeeManagement from "./Tabs/DepositCommissionFeeManagement";
 
 const drawerWidth = 260;
 
@@ -64,6 +66,7 @@ const AdminPage = () => {
                 { key: "moderators", icon: <Gavel />, text: "Quản trị viên" },
                 { key: "transactions", icon: <MonetizationOn />, text: "Giao dịch" },
                 { key: "orders", icon: <ShoppingCart />, text: "Đơn hàng" },
+                { key: "commissionfee", icon: <ControlOutlined />, text: "Phí nạp tiền"}
             ]
         },
         { 
@@ -101,6 +104,7 @@ const AdminPage = () => {
             "moderators": "Quản lý quản trị viên",
             "transactions": "Quản lý giao dịch",
             "orders": "Quản lý đơn hàng",
+            "commissionfee": "Quản lý phí nạp tiền",
             "poems": "Quản lý bài thơ",
             "poemtypes": "Quản lý thể loại thơ",
             "titlesamples": "Quản lý mẫu danh hiệu",
@@ -372,6 +376,7 @@ const AdminPage = () => {
                         {currentPage === "templates" && <TemplateManagement />}
                         {currentPage === "dashboard" && <DashboardPage />}
                         {currentPage === "moderators" && <ModeratorManager />}
+                        {currentPage === "commissionfee" && <DepositCommissionFeeManagement />}
                         {currentPage === "poems" && <PoemManagement />}
                         {currentPage === "reports" && <ReportFromUser />}
                         {currentPage === "requests" && <RequestFromUser />}
