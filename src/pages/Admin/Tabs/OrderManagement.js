@@ -23,7 +23,7 @@ import {
     MenuItem,
     Chip
 } from "@mui/material";
-import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
+import { ArrowBackIos, ArrowForwardIos, Visibility } from "@mui/icons-material";
 import axios from "axios";
 
 const getOrderType = (type) => {
@@ -66,13 +66,14 @@ const pageSizeOptions = [
 
 const OrderManagement = () => {
     const [orders, setOrders] = useState([]);
-    const [currentPage, setCurrentPage] = useState(1); // Using 1-based index for API
+    const [currentPage, setCurrentPage] = useState(1);
     const [selectedOrder, setSelectedOrder] = useState(null);
     const [loading, setLoading] = useState(false);
     const [openDialog, setOpenDialog] = useState(false);
     const [pageSize, setPageSize] = useState(25);
     const [totalRecords, setTotalRecords] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+    const [detailLoading, setDetailLoading] = useState(false);
 
     useEffect(() => {
         fetchOrders();
@@ -104,7 +105,7 @@ const OrderManagement = () => {
     };
 
     const fetchOrderDetail = async (id) => {
-        setLoading(true);
+        setDetailLoading(true);
         try {
             const response = await axios.get(
                 `${process.env.REACT_APP_API_BASE_URL}/orders/v1/detail/${id}`,
@@ -119,19 +120,23 @@ const OrderManagement = () => {
         } catch (err) {
             console.error("Không thể tải chi tiết đơn hàng:", err);
         } finally {
-            setLoading(false);
+            setDetailLoading(false);
         }
     };
 
     const handlePageSizeChange = (event) => {
         setPageSize(event.target.value);
-        setCurrentPage(1); // Reset to first page when changing page size
+        setCurrentPage(1);
     };
 
     const handlePageChange = (newPage) => {
         if (newPage >= 1 && newPage <= totalPages) {
             setCurrentPage(newPage);
         }
+    };
+
+    const handleViewClick = (orderId) => {
+        fetchOrderDetail(orderId);
     };
 
     return (
@@ -180,16 +185,12 @@ const OrderManagement = () => {
                                 <TableCell><strong>Thời gian tạo</strong></TableCell>
                                 <TableCell><strong>Trạng thái</strong></TableCell>
                                 <TableCell><strong>Khách hàng</strong></TableCell>
+                                <TableCell><strong>Thao tác</strong></TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {orders.map((order, index) => (
-                                <TableRow
-                                    key={order.id}
-                                    hover
-                                    onClick={() => fetchOrderDetail(order.id)}
-                                    sx={{ cursor: "pointer" }}
-                                >
+                                <TableRow key={order.id} hover>
                                     <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                     <TableCell>{order.orderCode || "Không có mã"}</TableCell>
                                     <TableCell>{getOrderType(order.type)}</TableCell>
@@ -208,6 +209,20 @@ const OrderManagement = () => {
                                             <Typography>{order.user?.fullName || "Không có tên"}</Typography>
                                             <Typography variant="body2" color="text.secondary">{order.user?.email || "Không có email"}</Typography>
                                         </Box>
+                                    </TableCell>
+                                    <TableCell>
+                                        <IconButton 
+                                            onClick={() => handleViewClick(order.id)}
+                                            color="primary"
+                                            title="Xem chi tiết"
+                                            disabled={detailLoading}
+                                        >
+                                            {detailLoading && selectedOrder?.id === order.id ? (
+                                                <CircularProgress size={24} />
+                                            ) : (
+                                                <Visibility />
+                                            )}
+                                        </IconButton>
                                     </TableCell>
                                 </TableRow>
                             ))}
@@ -243,7 +258,7 @@ const OrderManagement = () => {
             <Dialog open={openDialog} onClose={() => setOpenDialog(false)} fullWidth maxWidth="md">
                 <DialogTitle>Chi tiết đơn hàng</DialogTitle>
                 <DialogContent sx={{ p: 3, bgcolor: "#f5f5f5" }}>
-                    {loading ? (
+                    {detailLoading ? (
                         <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
                             <CircularProgress />
                         </Box>
