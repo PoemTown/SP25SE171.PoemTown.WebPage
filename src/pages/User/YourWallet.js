@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   Button,
@@ -17,7 +17,6 @@ import {
   Badge,
   Spin,
   List,
-  Tooltip,
   Input,
   Select,
   Skeleton,
@@ -29,7 +28,6 @@ import {
 } from "antd";
 import {
   WalletOutlined,
-  ShoppingOutlined,
   PlusCircleOutlined,
   EyeOutlined,
   ClockCircleOutlined,
@@ -51,29 +49,17 @@ const { Title, Text } = Typography;
 const { Option } = Select;
 
 const transactionTypeMap = {
-  1: "Nạp tiền",
-  2: "Giao dịch mẫu",
-  3: "Tệp ghi âm",
-  4: "Bài thơ",
-  5: "Rút tiền",
-  6: "Ủng hộ",
-  7: "Tiền hoa hồng",
-  8: "Hoàn tiền",
-  9: "Phí dịch vụ nạp tiền"
-};
-
-const orderTypeMap = {
-  1: { text: "Nạp tiền ví", icon: <WalletOutlined /> },
-  2: { text: "Mẫu giao dịch", icon: <FormOutlined /> },
+  1: { text: "Nạp tiền", icon: <WalletOutlined /> },
+  2: { text: "Giao dịch mẫu", icon: <FormOutlined /> },
   3: { text: "Tệp ghi âm", icon: <FileOutlined /> },
   4: { text: "Bài thơ", icon: <FormOutlined /> },
+  5: { text: "Rút tiền", icon: <MoneyCollectOutlined /> },
+  6: { text: "Ủng hộ", icon: <WalletOutlined /> },
+  7: { text: "Tiền hoa hồng", icon: <WalletOutlined /> },
+  8: { text: "Hoàn tiền", icon: <WalletOutlined /> },
+  9: { text: "Phí dịch vụ nạp tiền", icon: <WalletOutlined /> }
 };
 
-const orderStatusMap = {
-  1: { text: "Chờ thanh toán", color: "orange", icon: <ClockCircleOutlined /> },
-  2: { text: "Đã thanh toán", color: "green", icon: <CheckCircleOutlined /> },
-  3: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
-};
 const transactionStatusMap = {
   1: { text: "Chờ thanh toán", color: "orange", icon: <ClockCircleOutlined /> },
   2: { text: "Đã thanh toán", color: "green", icon: <CheckCircleOutlined /> },
@@ -86,32 +72,24 @@ const withdrawalStatusMap = {
   2: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
 };
 
+const complaintStatusMap = {
+  3: { text: "Đang chờ", color: "gold", icon: <ClockCircleOutlined /> },
+  1: { text: "Đã chấp nhận", color: "green", icon: <CheckCircleOutlined /> },
+  2: { text: "Đã từ chối", color: "red", icon: <CloseCircleOutlined /> },
+};
+
 const YourWallet = () => {
+  // State management
   const [walletBalance, setWalletBalance] = useState(0);
   const [walletStatus, setWalletStatus] = useState(null);
   const [walletId, setWalletId] = useState(null);
-  const [transactions, setTransactions] = useState([]);
-  const [orders, setOrders] = useState([]);
-  const [withdrawals, setWithdrawals] = useState([]);
-  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [allTransactions, setAllTransactions] = useState([]);
   const [pagination, setPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
-  const [orderPagination, setOrderPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
-  const [withdrawalPagination, setWithdrawalPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
   const [loading, setLoading] = useState(false);
-  const [orderLoading, setOrderLoading] = useState(false);
-  const [withdrawalLoading, setWithdrawalLoading] = useState(false);
   const [depositModalVisible, setDepositModalVisible] = useState(false);
   const [accountSettingModalVisible, setAccountSettingModalVisible] = useState(false);
   const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
@@ -119,6 +97,9 @@ const YourWallet = () => {
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [orderDetail, setOrderDetail] = useState(null);
   const [orderDetailLoading, setOrderDetailLoading] = useState(false);
+  const [transactionDetail, setTransactionDetail] = useState(null);
+  const [transactionDetailModalVisible, setTransactionDetailModalVisible] = useState(false);
+  const [transactionDetailLoading, setTransactionDetailLoading] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [withdrawConfirmLoading, setWithdrawConfirmLoading] = useState(false);
   const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(false);
@@ -127,34 +108,258 @@ const YourWallet = () => {
   const [inUseFee, setInUseFee] = useState(0);
   const [loadingFee, setLoadingFee] = useState(false);
   const [exampleVisible, setExampleVisible] = useState(false);
-
   const [feedbackVisible, setFeedbackVisible] = useState(false);
   const [currentWithdrawalId, setCurrentWithdrawalId] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [uploading, setUploading] = useState(false);
   const [form] = Form.useForm();
-
   const [currentComplaint, setCurrentComplaint] = useState(null);
-
   const [editStep, setEditStep] = useState(1);
   const [editInfoVisible, setEditInfoVisible] = useState(false);
   const [editImagesVisible, setEditImagesVisible] = useState(false);
   const [bankTypes, setBankTypes] = useState([]);
   const [bankTypesLoading, setBankTypesLoading] = useState(false);
-
   const [userBankAccounts, setUserBankAccounts] = useState([]);
   const [isEditingAccount, setIsEditingAccount] = useState(false);
   const [currentAccount, setCurrentAccount] = useState(null);
   const [loadingUserAccounts, setLoadingUserAccounts] = useState(false);
   const [accountForm] = Form.useForm();
-
   const [accountSelectionVisible, setAccountSelectionVisible] = useState(false);
   const [selectedBankAccount, setSelectedBankAccount] = useState(null);
+  const [paymentMethods, setPaymentMethods] = useState([]);
+  const [complaints, setComplaints] = useState([]);
+  const [complaintPagination, setComplaintPagination] = useState({
+    current: 1,
+    pageSize: 10,
+    total: 0,
+  });
+  const [complaintLoading, setComplaintLoading] = useState(false);
 
-  const complaintStatusMap = {
-    3: { text: "Đang chờ", color: "gold", icon: <ClockCircleOutlined /> },
-    1: { text: "Đã chấp nhận", color: "green", icon: <CheckCircleOutlined /> },
-    2: { text: "Đã từ chối", color: "red", icon: <CloseCircleOutlined /> },
+  // Fetch data functions
+  const fetchWalletInfo = async () => {
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      if (!accessToken) {
+        message.error("Vui lòng đăng nhập để sử dụng ví");
+        return;
+      }
+
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/mine`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const result = response.data;
+      if (result && typeof result.walletBalance !== 'undefined') {
+        setWalletBalance(result.walletBalance);
+        setWalletStatus(result.walletStatus);
+        setWalletId(result.id);
+      } else {
+        message.error("Dữ liệu ví không hợp lệ");
+        setWalletBalance(0);
+        setWalletStatus(null);
+        setWalletId(null);
+      }
+    } catch (error) {
+      console.error("Error fetching wallet info:", error);
+      message.error("Lỗi khi lấy thông tin ví");
+      setWalletBalance(0);
+      setWalletStatus(null);
+      setWalletId(null);
+    }
+  };
+
+  const fetchAllTransactions = async (pageNumber = 1, pageSize = 10) => {
+    setLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      
+      // Fetch transactions
+      const transactionsResponse = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/transactions/v1/mine`,
+        {
+          params: { pageNumber, pageSize },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      
+      // Fetch orders
+      const ordersResponse = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/orders/v1`,
+        {
+          params: { pageNumber, pageSize },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      
+      // Fetch withdrawals
+      const withdrawalsResponse = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-forms/v1/mine`,
+        {
+          params: { pageNumber, pageSize },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      // Combine all data
+      const combinedData = [
+        ...(transactionsResponse.data.data?.map(t => ({ ...t, recordType: 'transaction' })) || []),
+        ...(ordersResponse.data.data?.map(o => ({ ...o, recordType: 'order' })) || []),
+        ...(withdrawalsResponse.data.data?.map(w => ({ ...w, recordType: 'withdrawal' })) || [])
+      ].sort((a, b) => new Date(b.createdTime || b.orderDate) - new Date(a.createdTime || a.orderDate));
+
+      setAllTransactions(combinedData);
+      setPagination({
+        current: pageNumber,
+        pageSize,
+        total: (transactionsResponse.data.totalRecords || 0) + 
+               (ordersResponse.data.totalRecords || 0) + 
+               (withdrawalsResponse.data.totalRecords || 0),
+      });
+    } catch (error) {
+      console.error("Fetch error:", error);
+      message.error("Lỗi khi lấy lịch sử giao dịch");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const fetchOrderDetail = async (orderId) => {
+    setOrderDetailLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/orders/v1/detail/${orderId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      
+      if (response.data.statusCode === 200) {
+        setOrderDetail(response.data.data);
+      } else {
+        message.error(response.data.message || "Không thể lấy chi tiết đơn hàng");
+      }
+    } catch (error) {
+      console.error("Fetch order detail error:", error);
+      message.error("Lỗi khi lấy chi tiết đơn hàng");
+    } finally {
+      setOrderDetailLoading(false);
+    }
+  };
+
+  const fetchTransactionDetail = async (transactionId) => {
+    setTransactionDetailLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/transactions/v1/user/${transactionId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (response.data.statusCode === 200) {
+        setTransactionDetail(response.data.data);
+      } else {
+        message.error(response.data.message || "Không thể lấy chi tiết giao dịch");
+      }
+    } catch (error) {
+      console.error("Fetch transaction detail error:", error);
+      message.error("Lỗi khi lấy chi tiết giao dịch");
+    } finally {
+      setTransactionDetailLoading(false);
+    }
+  };
+
+  const fetchPaymentMethods = async () => {
+    setPaymentMethodsLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/payment-gateways/v1`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      
+      if (response.data.statusCode === 200) {
+        const activeMethods = response.data.data.filter(method => !method.isSuspended);
+        setPaymentMethods(activeMethods);
+      } else {
+        message.error("Không thể lấy danh sách phương thức thanh toán");
+      }
+    } catch (error) {
+      console.error("Fetch payment methods error:", error);
+      message.error("Lỗi khi lấy danh sách phương thức thanh toán");
+    } finally {
+      setPaymentMethodsLoading(false);
+    }
+  };
+
+  const fetchComplaints = async (pageNumber = 1, pageSize = 10) => {
+    setComplaintLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/mine`,
+        {
+          params: { pageNumber, pageSize },
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      if (response.data.statusCode === 200) {
+        setComplaints(response.data.data);
+        setComplaintPagination({
+          current: response.data.pageNumber,
+          pageSize: response.data.pageSize,
+          total: response.data.totalRecords,
+        });
+      }
+    } catch (error) {
+      message.error("Lỗi khi tải danh sách phản hồi");
+    } finally {
+      setComplaintLoading(false);
+    }
+  };
+
+  const fetchBankTypes = async () => {
+    setBankTypesLoading(true);
+    try {
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.get(
+        `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user`,
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      setBankTypes(response.data.data);
+    } catch (error) {
+      message.error("Không thể tải danh sách ngân hàng");
+    } finally {
+      setBankTypesLoading(false);
+    }
   };
 
   const fetchUserBankAccounts = async () => {
@@ -165,8 +370,8 @@ const YourWallet = () => {
         `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user-bank-types`,
         {
           headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
+            Authorization: `Bearer ${accessToken}`,
+          },
         }
       );
       setUserBankAccounts(response.data.data);
@@ -177,36 +382,160 @@ const YourWallet = () => {
     }
   };
 
-  useEffect(() => {
-    if (accountSettingModalVisible || accountSelectionVisible) {
-      fetchUserBankAccounts();
-    }
-  }, [accountSettingModalVisible, accountSelectionVisible]);
+  // Handle functions
+  const handleTableChange = (pagination) => {
+    setPagination(pagination);
+    fetchAllTransactions(pagination.current, pagination.pageSize);
+  };
 
-  // Add new state variables
-  const [complaints, setComplaints] = useState([]);
-  const [complaintPagination, setComplaintPagination] = useState({
-    current: 1,
-    pageSize: 10,
-    total: 0,
-  });
-  const [complaintLoading, setComplaintLoading] = useState(false);
+  const handleDeposit = () => {
+    setDepositModalVisible(true);
+  };
+
+  const handleAccountSetting = () => {
+    setAccountSettingModalVisible(true);
+  };
+
+  const handleWithdraw = () => {
+    setAccountSelectionVisible(true);
+  };
+
+  const handleDepositOk = async () => {
+    try {
+      const values = await depositForm.validateFields();
+      setConfirmLoading(true);
+
+      const accessToken = localStorage.getItem("accessToken");
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/deposit`,
+        {
+          amount: values.amount,
+          paymentGatewayId: values.paymentMethod,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const result = response.data;
+
+      if (result?.paymentUrl) {
+        message.success("Đang chuyển hướng đến cổng thanh toán...");
+        setTimeout(() => {
+          window.location.href = result.paymentUrl;
+        }, 1000);
+      } else if (result?.isSuccess) {
+        message.success(result.message || "Nạp tiền thành công!");
+        fetchWalletInfo();
+        fetchAllTransactions();
+        setDepositModalVisible(false);
+        depositForm.resetFields();
+      } else {
+        message.error(result.message || "Nạp tiền thất bại");
+      }
+    } catch (error) {
+      console.error("Deposit error:", error);
+      message.error(error.response?.data?.message || "Có lỗi xảy ra khi nạp tiền");
+    } finally {
+      setConfirmLoading(false);
+    }
+  };
+
+  const handleDepositCancel = () => {
+    depositForm.resetFields();
+    setDepositModalVisible(false);
+  };
+
+  const handleWithdrawSubmit = async () => {
+    try {
+      const values = await withdrawForm.validateFields();
+      setWithdrawConfirmLoading(true);
+
+      const accessToken = localStorage.getItem("accessToken");
+
+      if (!walletId) {
+        message.error("Không tìm thấy thông tin ví");
+        return;
+      }
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/withdrawal-form?userEWalletId=${walletId}`,
+        {
+          amount: values.amount,
+          bankTypeId: values.bankType,
+          description: values.description || "Yêu cầu rút tiền từ ví",
+          accountName: values.accountName,
+          accountNumber: values.accountNumber
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+
+      const result = response.data;
+
+      if (result?.statusCode === 201) {
+        message.success("Yêu cầu rút tiền đã được gửi thành công!");
+        fetchWalletInfo();
+        fetchAllTransactions();
+        setWithdrawModalVisible(false);
+        withdrawForm.resetFields();
+      } else {
+        message.error(result.message || "Rút tiền thất bại");
+      }
+    } catch (error) {
+      console.error("Withdraw error:", error);
+      message.error(error.response?.data?.message || "Có lỗi xảy ra khi rút tiền");
+    } finally {
+      setWithdrawConfirmLoading(false);
+    }
+  };
+
+  const handleWithdrawCancel = () => {
+    withdrawForm.resetFields();
+    setWithdrawModalVisible(false);
+  };
+
+  const handleViewOrderDetail = async (order) => {
+    setSelectedOrder(order);
+    setOrderDetailModalVisible(true);
+    await fetchOrderDetail(order.id);
+  };
+
+  const handleViewTransactionDetail = async (transactionId) => {
+    setTransactionDetailModalVisible(true);
+    await fetchTransactionDetail(transactionId);
+  };
+
+  const handleOrderDetailClose = () => {
+    setOrderDetailModalVisible(false);
+    setSelectedOrder(null);
+    setOrderDetail(null);
+  };
+
+  const handleTransactionDetailClose = () => {
+    setTransactionDetailModalVisible(false);
+    setTransactionDetail(null);
+  };
 
   const handleAccountSubmit = async (values) => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       if (isEditingAccount) {
-        // Include ID in both URL and request body
         await axios.put(
           `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user-bank-types`,
           {
             ...values,
-            id: currentAccount.id // Include ID in request body
+            id: currentAccount.id
           },
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`
-            }
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
         );
         message.success("Cập nhật tài khoản thành công");
@@ -216,8 +545,8 @@ const YourWallet = () => {
           values,
           {
             headers: {
-              Authorization: `Bearer ${accessToken}`
-            }
+              Authorization: `Bearer ${accessToken}`,
+            },
           }
         );
         message.success("Thêm tài khoản thành công");
@@ -235,7 +564,7 @@ const YourWallet = () => {
     setIsEditingAccount(true);
     setCurrentAccount(account);
     accountForm.setFieldsValue({
-      bankTypeId: account.bankType?.id, // Access nested bankType.id
+      bankTypeId: account.bankType?.id,
       accountNumber: account.accountNumber,
       accountName: account.accountName
     });
@@ -254,8 +583,8 @@ const YourWallet = () => {
             `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user-bank-types/${id}`,
             {
               headers: {
-                Authorization: `Bearer ${accessToken}`
-              }
+                Authorization: `Bearer ${accessToken}`,
+              },
             }
           );
           message.success("Xóa tài khoản thành công");
@@ -267,16 +596,559 @@ const YourWallet = () => {
     });
   };
 
-  const cancelEdit = () => {
-    accountForm.resetFields();
-    setIsEditingAccount(false);
-    setCurrentAccount(null);
+  const handleImageUpload = async (file) => {
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/image`,
+        formData,
+        {
+          headers: {
+            'Content-Type': 'multipart/form-data',
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          }
+        }
+      );
+      return response.data.data;
+    } catch (error) {
+      message.error('Tải ảnh lên thất bại');
+      throw error;
+    }
   };
+
+  const handleSubmitFeedback = async (values) => {
+    try {
+      setUploading(true);
+
+      const imageUrls = await Promise.all(
+        fileList.map(file => handleImageUpload(file.originFileObj))
+      );
+
+      await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentWithdrawalId}`,
+        {
+          title: values.title,
+          description: values.description,
+          images: imageUrls
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          }
+        }
+      );
+
+      message.success('Gửi phản hồi thành công!');
+      form.resetFields();
+      setFileList([]);
+      setFeedbackVisible(false);
+      fetchComplaints();
+    } catch (error) {
+      message.error(error.response?.data?.errorMessage || 'Gửi phản hồi thất bại');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleDeleteComplaint = async (complaintId) => {
+    Modal.confirm({
+      title: 'Xác nhận xóa phản hồi',
+      content: 'Bạn có chắc chắn muốn xóa phản hồi này?',
+      okText: 'Xóa',
+      cancelText: 'Hủy',
+      okButtonProps: { danger: true },
+      async onOk() {
+        try {
+          await axios.delete(
+            `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${complaintId}`,
+            {
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+              }
+            }
+          );
+
+          message.success('Đã xóa phản hồi thành công');
+          fetchComplaints(complaintPagination.current, complaintPagination.pageSize);
+        } catch (error) {
+          message.error(error.response?.data?.errorMessage || 'Xóa phản hồi thất bại');
+        }
+      }
+    });
+  };
+
+  const handleEditComplaintInfo = async (values) => {
+    try {
+      setUploading(true);
+      await axios.put(
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1`,
+        {
+          id: currentComplaint.id,
+          title: values.title,
+          description: values.description
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+          }
+        }
+      );
+
+      message.success('Cập nhật thông tin thành công!');
+      setEditInfoVisible(false);
+      setEditImagesVisible(true);
+    } catch (error) {
+      message.error(error.response?.data?.errorMessage || 'Cập nhật thất bại');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleUpdateComplaintImages = async () => {
+    try {
+      setUploading(true);
+
+      // Add new images
+      const newImages = fileList
+        .filter(file => file.originFileObj)
+        .map(file => file.originFileObj);
+
+      const uploadedUrls = await Promise.all(
+        newImages.map(file => handleImageUpload(file))
+      );
+
+      await Promise.all(
+        uploadedUrls.map(url =>
+          axios.post(
+            `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentComplaint.id}/image`,
+            null,
+            {
+              params: { image: url },
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+              }
+            }
+          )
+        )
+      );
+
+      // Remove deleted images
+      const originalIds = currentComplaint.complaintImages.map(img => img.id);
+      const currentIds = fileList.map(file => file.uid);
+      const deletedIds = originalIds.filter(id => !currentIds.includes(id));
+
+      await Promise.all(
+        deletedIds.map(id =>
+          axios.delete(
+            `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentComplaint.id}/image`,
+            {
+              params: { withdrawalComplaintImageId: id },
+              headers: {
+                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
+              }
+            }
+          )
+        )
+      );
+
+      message.success('Cập nhật ảnh thành công!');
+      setEditImagesVisible(false);
+      fetchComplaints();
+    } catch (error) {
+      message.error(error.response?.data?.errorMessage || 'Cập nhật ảnh thất bại');
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  // Render functions
+  const renderOrderItems = () => {
+    if (!orderDetail?.orderDetails?.length) return "Không có chi tiết sản phẩm";
+
+    return (
+      <List
+        itemLayout="vertical"
+        dataSource={orderDetail.orderDetails}
+        renderItem={(item, index) => (
+          <List.Item key={index}>
+            <Descriptions bordered size="small" column={1}>
+              <Descriptions.Item label="Số lượng">{item.itemQuantity}</Descriptions.Item>
+              <Descriptions.Item label="Đơn giá">₫{item.itemPrice?.toLocaleString()}</Descriptions.Item>
+              <Descriptions.Item label="Thành tiền">
+                <Text strong>₫{(item.itemPrice * item.itemQuantity)?.toLocaleString()}</Text>
+              </Descriptions.Item>
+              {item.recordFile && (
+                <>
+                  <Descriptions.Item label="Loại sản phẩm">Tệp ghi âm</Descriptions.Item>
+                  <Descriptions.Item label="Tên file">{item.recordFile.name}</Descriptions.Item>
+                  <Descriptions.Item label="Mô tả">{item.recordFile.description}</Descriptions.Item>
+                </>
+              )}
+              {item.masterTemplate && (
+                <>
+                  <Descriptions.Item label="Loại sản phẩm">Mẫu giao dịch</Descriptions.Item>
+                  <Descriptions.Item label="Tên mẫu">{item.masterTemplate.name}</Descriptions.Item>
+                  <Descriptions.Item label="Mô tả">{item.masterTemplate.description}</Descriptions.Item>
+                </>
+              )}
+            </Descriptions>
+          </List.Item>
+        )}
+      />
+    );
+  };
+
+  const combinedColumns = [
+    {
+      title: "Thời gian",
+      dataIndex: "createdTime",
+      key: "createdTime",
+      render: (text, record) => {
+        if (record.recordType === 'order') return dayjs(record.orderDate).format("DD/MM/YYYY HH:mm");
+        return dayjs(text).format("DD/MM/YYYY HH:mm");
+      },
+      sorter: (a, b) => {
+        const dateA = new Date(a.createdTime || a.orderDate);
+        const dateB = new Date(b.createdTime || b.orderDate);
+        return dateA - dateB;
+      },
+    },
+    {
+      title: "Loại giao dịch",
+      dataIndex: "type",
+      key: "type",
+      render: (type, record) => {
+        if (record.recordType === 'withdrawal') {
+          return (
+            <Space>
+              <MoneyCollectOutlined />
+              Rút tiền
+            </Space>
+          );
+        }
+        return (
+          <Space>
+            {transactionTypeMap[type]?.icon || <WalletOutlined />}
+            {transactionTypeMap[type]?.text || "Không rõ"}
+          </Space>
+        );
+      },
+    },
+    {
+      title: "Mô tả",
+      dataIndex: "description",
+      key: "description",
+      render: (text, record) => {
+        if (record.recordType === 'order') return record.orderDescription;
+        if (record.recordType === 'withdrawal') return "Yêu cầu rút tiền";
+        return text;
+      }
+    },
+    {
+      title: "Mã giao dịch",
+      dataIndex: "transactionCode",
+      key: "transactionCode",
+      render: (text, record) => {
+        if (record.recordType === 'order') return record.orderCode;
+        if (record.recordType === 'withdrawal') return `WDR-${record.id}`;
+        return text;
+      }
+    },
+    {
+      title: "Số tiền",
+      dataIndex: "amount",
+      key: "amount",
+      render: (amount, record) => {
+        if (record.recordType === 'withdrawal') return `-₫${amount?.toLocaleString()}`;
+        if (record.recordType === 'transaction') {
+          const sign = record.isAddToWallet ? "+" : "-";
+          return `${sign}₫${amount?.toLocaleString()}`;
+        }
+        return `₫${amount?.toLocaleString()}`;
+      },
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status, record) => {
+        let statusInfo;
+        
+        if (record.recordType === 'withdrawal') {
+          statusInfo = withdrawalStatusMap[status];
+        } else {
+          statusInfo = transactionStatusMap[status];
+        }
+
+        if (!statusInfo) {
+          return <Tag color="default">Không xác định</Tag>;
+        }
+
+        return (
+          <Tag color={statusInfo.color}>
+            {statusInfo.icon}
+            {statusInfo.text}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_, record) => {
+        if (record.recordType === 'order') {
+          return (
+            <Button
+              type="link"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewOrderDetail(record)}
+            >
+              Chi tiết
+            </Button>
+          );
+        }
+        
+        if (record.recordType === 'withdrawal') {
+          return (
+            <Space>
+              <Button
+                type="link"
+                icon={<EyeOutlined />}
+                onClick={() => {
+                  Modal.info({
+                    title: `Chi tiết yêu cầu rút tiền #${record.id}`,
+                    width: 800,
+                    content: (
+                      <div>
+                        <Descriptions bordered column={1} style={{ marginBottom: 16 }}>
+                          <Descriptions.Item label="Phản hồi chi tiết">
+                            {record.resolveDescription || "Chưa có phản hồi"}
+                          </Descriptions.Item>
+                        </Descriptions>
+
+                        <Descriptions bordered column={1}>
+                          <Descriptions.Item label="Bằng chứng">
+                            {record.resolveEvidence ? (
+                              /\.(jpg|jpeg|png|gif)$/i.test(record.resolveEvidence) ? (
+                                <Image
+                                  width="100%"
+                                  src={record.resolveEvidence}
+                                  preview={{
+                                    src: record.resolveEvidence,
+                                  }}
+                                />
+                              ) : (
+                                <Button
+                                  type="link"
+                                  icon={<FileOutlined />}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    window.open(record.resolveEvidence, '_blank');
+                                  }}
+                                >
+                                  Xem file đính kèm
+                                </Button>
+                              )
+                            ) : (
+                              "Không có bằng chứng"
+                            )}
+                          </Descriptions.Item>
+                        </Descriptions>
+                      </div>
+                    ),
+                  });
+                }}
+              >
+                Xem
+              </Button>
+              {record.status === 3 && (
+                <Button
+                  type="link"
+                  icon={<MessageOutlined />}
+                  onClick={() => {
+                    setCurrentWithdrawalId(record.id);
+                    setFeedbackVisible(true);
+                  }}
+                >
+                  Phản hồi
+                </Button>
+              )}
+            </Space>
+          );
+        }
+        
+        if (record.recordType === 'transaction') {
+          return (
+            <Button
+              type="link"
+              icon={<EyeOutlined />}
+              onClick={() => handleViewTransactionDetail(record.id)}
+            >
+              Chi tiết
+            </Button>
+          );
+        }
+        
+        return null;
+      },
+    },
+  ];
+
+  const complaintColumns = [
+    {
+      title: "Thời gian tạo",
+      dataIndex: "createdTime",
+      key: "createdTime",
+      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
+    },
+    {
+      title: "Tiêu đề",
+      dataIndex: "title",
+      key: "title",
+    },
+    {
+      title: "Trạng thái",
+      dataIndex: "status",
+      key: "status",
+      render: (status) => {
+        const statusInfo = complaintStatusMap[status] || {
+          text: "Không xác định",
+          color: "default"
+        };
+        return (
+          <Tag color={statusInfo.color}>
+            {statusInfo.icon}
+            {statusInfo.text}
+          </Tag>
+        );
+      },
+    },
+    {
+      title: "Thao tác",
+      key: "action",
+      render: (_, record) => (
+        <Space style={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "flex-start",
+          gap: 0
+        }}>
+          <Button
+            type="link"
+            icon={<EyeOutlined />}
+            onClick={() => {
+              Modal.info({
+                title: `Chi tiết phản hồi #${record.id}`,
+                width: 800,
+                content: (
+                  <div>
+                    <Descriptions bordered column={1}>
+                      <Descriptions.Item label="Tiêu đề">
+                        {record.title}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Mô tả">
+                        {record.description}
+                      </Descriptions.Item>
+                      <Descriptions.Item label="Phản hồi từ hệ thống">
+                        {record.resolveDescription || "Chưa có phản hồi"}
+                      </Descriptions.Item>
+                    </Descriptions>
+
+                    <Collapse ghost defaultActiveKey={[]}>
+                      {record.complaintImages?.length > 0 && (
+                        <Collapse.Panel
+                          header={`Ảnh đính kèm (${record.complaintImages.length})`}
+                          key="1"
+                        >
+                          <Image.PreviewGroup>
+                            <Row gutter={[16, 16]}>
+                              {record.complaintImages?.map((img, idx) => (
+                                <Col span={8} key={`complaint-${idx}`}>
+                                  <Image
+                                    src={img.image}
+                                    style={{
+                                      borderRadius: 8,
+                                      border: '1px solid #f0f0f0',
+                                      padding: 4
+                                    }}
+                                    alt={`Ảnh phản hồi ${idx + 1}`}
+                                  />
+                                </Col>
+                              ))}
+                            </Row>
+                          </Image.PreviewGroup>
+                        </Collapse.Panel>
+                      )}
+
+                      {record.resolveImages?.length > 0 && (
+                        <Collapse.Panel
+                          header={`Ảnh giải quyết (${record.resolveImages.length})`}
+                          key="2"
+                        >
+                          <Image.PreviewGroup>
+                            <Row gutter={[16, 16]}>
+                              {record.resolveImages?.map((img, idx) => (
+                                <Col span={8} key={`resolve-${idx}`}>
+                                  <Image
+                                    src={img.image}
+                                    style={{
+                                      borderRadius: 8,
+                                      border: '1px solid #f0f0f0',
+                                      padding: 4
+                                    }}
+                                    alt={`Ảnh phản hồi hệ thống ${idx + 1}`}
+                                  />
+                                  <div style={{ textAlign: 'center', marginTop: 4 }}>
+                                    <Tag color="blue">Phản hồi từ hệ thống</Tag>
+                                  </div>
+                                </Col>
+                              ))}
+                            </Row>
+                          </Image.PreviewGroup>
+                        </Collapse.Panel>
+                      )}
+                    </Collapse>
+                  </div>
+                ),
+              });
+            }}
+          >
+            Xem chi tiết
+          </Button>
+          {record.status === 3 && (
+            <Button
+              type="link"
+              icon={<EditOutlined />}
+              onClick={() => {
+                setCurrentComplaint(record);
+                setEditInfoVisible(true);
+                setEditStep(1);
+              }}
+            >
+              Chỉnh sửa
+            </Button>
+          )}
+          {record.status === 3 && (
+            <Button
+              type="link"
+              icon={<DeleteOutlined />}
+              onClick={() => handleDeleteComplaint(record.id)}
+              danger
+            >
+              Xóa
+            </Button>
+          )}
+        </Space>
+      ),
+    },
+  ];
 
   const accountColumns = [
     {
       title: "Ngân hàng",
-      dataIndex: ["bankType", "id"], // Access nested bankType object
+      dataIndex: ["bankType", "id"],
       key: "bankType",
       render: (id, record) => {
         const bank = record.bankType || bankTypes.find(b => b.id === id);
@@ -329,13 +1201,194 @@ const YourWallet = () => {
     }
   ];
 
+  // Modal components
+  const FeedbackModal = () => (
+    <Modal
+      title="Phản hồi về giao dịch rút tiền"
+      visible={feedbackVisible}
+      onCancel={() => setFeedbackVisible(false)}
+      footer={null}
+      width={600}
+    >
+      <Form form={form} onFinish={handleSubmitFeedback} layout="vertical">
+        <Form.Item
+          name="title"
+          label="Tiêu đề phản hồi"
+          rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+        >
+          <Input placeholder="Nhập tiêu đề phản hồi" />
+        </Form.Item>
+
+        <Form.Item
+          name="description"
+          label="Mô tả chi tiết"
+          rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
+        >
+          <Input.TextArea rows={4} placeholder="Mô tả vấn đề bạn gặp phải" />
+        </Form.Item>
+
+        <Form.Item
+          label="Ảnh minh chứng"
+          extra="Hãy tải ảnh về vấn đề bạn đang gặp và cần giải quyết (định dạng JPG, PNG)"
+        >
+          <Upload
+            multiple
+            maxCount={5}
+            fileList={fileList}
+            onChange={({ fileList }) => setFileList(fileList)}
+            beforeUpload={() => false}
+            accept="image/png, image/jpeg"
+          >
+            <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
+          </Upload>
+        </Form.Item>
+
+        <Form.Item>
+          <Button
+            type="primary"
+            htmlType="submit"
+            loading={uploading}
+            style={{ float: 'right' }}
+          >
+            Gửi phản hồi
+          </Button>
+        </Form.Item>
+      </Form>
+    </Modal>
+  );
+
+  const EditInfoModal = () => {
+    const [form] = Form.useForm();
+
+    useEffect(() => {
+      if (currentComplaint) {
+        form.setFieldsValue({
+          title: currentComplaint.title,
+          description: currentComplaint.description
+        });
+      }
+    }, [currentComplaint]);
+
+    return (
+      <Modal
+        title="Chỉnh sửa thông tin phản hồi (Bước 1/2)"
+        visible={editInfoVisible}
+        onCancel={() => setEditInfoVisible(false)}
+        footer={null}
+        width={600}
+      >
+        <Form form={form} onFinish={handleEditComplaintInfo} layout="vertical">
+          <Form.Item
+            name="title"
+            label="Tiêu đề phản hồi"
+            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
+          >
+            <Input />
+          </Form.Item>
+
+          <Form.Item
+            name="description"
+            label="Mô tả chi tiết"
+            rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
+          >
+            <Input.TextArea rows={4} />
+          </Form.Item>
+
+          <Form.Item>
+            <Button
+              type="primary"
+              htmlType="submit"
+              loading={uploading}
+              style={{ float: 'right' }}
+            >
+              Lưu và tiếp tục
+            </Button>
+          </Form.Item>
+        </Form>
+      </Modal>
+    );
+  };
+
+  const EditImagesModal = () => {
+    const [fileList, setFileList] = useState([]);
+
+    useEffect(() => {
+      if (currentComplaint) {
+        setFileList(currentComplaint.complaintImages.map(img => ({
+          uid: img.id,
+          name: `image_${img.id}`,
+          status: 'done',
+          url: img.image
+        })));
+      }
+    }, [currentComplaint]);
+
+    return (
+      <Modal
+        title="Quản lý ảnh đính kèm (Bước 2/2)"
+        visible={editImagesVisible}
+        onCancel={() => setEditImagesVisible(false)}
+        footer={[
+          <Button key="back" onClick={() => setEditImagesVisible(false)}>
+            Đóng
+          </Button>,
+          <Button
+            key="submit"
+            type="primary"
+            loading={uploading}
+            onClick={handleUpdateComplaintImages}
+          >
+            Lưu thay đổi
+          </Button>,
+        ]}
+        width={800}
+      >
+        <Upload
+          multiple
+          maxCount={5}
+          fileList={fileList}
+          onChange={({ fileList }) => setFileList(fileList)}
+          beforeUpload={() => false}
+          accept="image/png, image/jpeg"
+          onRemove={(file) => {
+            if (file.url) {
+              setFileList(fileList.filter(f => f.uid !== file.uid));
+            }
+            return true;
+          }}
+        >
+          <Button icon={<UploadOutlined />}>Thêm ảnh mới</Button>
+        </Upload>
+
+        <Divider />
+
+        <Text strong>Ảnh hiện tại:</Text>
+        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
+          {fileList.map(file => (
+            <Col span={6} key={file.uid}>
+              <Image
+                src={file.url}
+                style={{
+                  borderRadius: 8,
+                  border: '1px solid #d9d9d9',
+                  padding: 4
+                }}
+              />
+            </Col>
+          ))}
+        </Row>
+      </Modal>
+    );
+  };
+
   const AccountSettingModal = () => (
     <Modal
       title="Quản lý tài khoản rút tiền"
       visible={accountSettingModalVisible}
       onCancel={() => {
         setAccountSettingModalVisible(false);
-        cancelEdit();
+        setIsEditingAccount(false);
+        accountForm.resetFields();
       }}
       footer={null}
       width={800}
@@ -424,7 +1477,10 @@ const YourWallet = () => {
                 {isEditingAccount ? "Cập nhật" : "Thêm mới"}
               </Button>
               {isEditingAccount && (
-                <Button onClick={cancelEdit}>Hủy bỏ</Button>
+                <Button onClick={() => {
+                  setIsEditingAccount(false);
+                  accountForm.resetFields();
+                }}>Hủy bỏ</Button>
               )}
             </Space>
           </Form.Item>
@@ -432,231 +1488,6 @@ const YourWallet = () => {
       </Spin>
     </Modal>
   );
-
-  // Add fetch function
-  const fetchComplaints = async (pageNumber = 1, pageSize = 10) => {
-    setComplaintLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/mine`,
-        {
-          params: {
-            pageNumber,
-            pageSize
-          },
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
-
-      if (response.data.statusCode === 200) {
-        setComplaints(response.data.data);
-        setComplaintPagination({
-          current: response.data.pageNumber,
-          pageSize: response.data.pageSize,
-          total: response.data.totalRecords,
-        });
-      }
-    } catch (error) {
-      message.error("Lỗi khi tải danh sách phản hồi");
-    } finally {
-      setComplaintLoading(false);
-    }
-  };
-
-  const fetchBankTypes = async () => {
-    setBankTypesLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/bank-types/v1/user`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`
-          }
-        }
-      );
-      setBankTypes(response.data.data);
-    } catch (error) {
-      message.error("Không thể tải danh sách ngân hàng");
-    } finally {
-      setBankTypesLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchBankTypes();
-  }, []);
-
-  // Add to useEffect
-  useEffect(() => {
-    fetchComplaints();
-  }, []);
-
-  useEffect(() => {
-    if (depositModalVisible) {
-      const fetchCommissionFee = async () => {
-        try {
-          setLoadingFee(true);
-          const response = await axios.get(
-            `${process.env.REACT_APP_API_BASE_URL}/deposit-commission-settings/v1/in-use`
-          );
-          setInUseFee(response.data.data.amountPercentage);
-        } catch (error) {
-          message.error('Không thể tải thông tin phí dịch vụ');
-        } finally {
-          setLoadingFee(false);
-        }
-      };
-      fetchCommissionFee();
-    }
-  }, [depositModalVisible]);
-
-  const exampleAmounts = [10000, 20000, 50000, 100000, 200000, 500000];
-  const dataSource = exampleAmounts.map(amount => ({
-    key: amount,
-    amount: amount.toLocaleString(),
-    fee: inUseFee,
-    received: Math.floor(amount * (1 - inUseFee / 100)).toLocaleString()
-  }));
-
-
-  const columns = [
-    {
-      title: 'Tiền Nạp (VNĐ)',
-      dataIndex: 'amount',
-      key: 'amount',
-      align: 'right'
-    },
-    {
-      title: 'Phí dịch vụ (%)',
-      dataIndex: 'fee',
-      key: 'fee',
-      align: 'center'
-    },
-    {
-      title: 'Tiền nhận được (VNĐ)',
-      dataIndex: 'received',
-      key: 'received',
-      align: 'right'
-    }
-  ];
-
-  const handleImageUpload = async (file) => {
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-
-      const response = await axios.post(
-        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/image`,
-        formData,
-        {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-            Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-          }
-        }
-      );
-      return response.data.data; // Assuming the response contains the image URL
-    } catch (error) {
-      message.error('Tải ảnh lên thất bại');
-      throw error;
-    }
-  };
-
-
-  const FeedbackModal = () => {
-    const handleSubmit = async (values) => {
-      try {
-        setUploading(true);
-
-        // Upload all images first
-        const imageUrls = await Promise.all(
-          fileList.map(file => handleImageUpload(file.originFileObj))
-        );
-
-        await axios.post(
-          `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentWithdrawalId}`,
-          {
-            title: values.title,
-            description: values.description,
-            images: imageUrls
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-            }
-          }
-        );
-
-        message.success('Gửi phản hồi thành công!');
-        form.resetFields();
-        setFileList([]);
-        setFeedbackVisible(false);
-      } catch (error) {
-        message.error(error.response.data.errorMessage);
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    return (
-      <Modal
-        title="Phản hồi về giao dịch rút tiền"
-        visible={feedbackVisible}
-        onCancel={() => setFeedbackVisible(false)}
-        footer={null}
-        width={600}
-      >
-        <Form form={form} onFinish={handleSubmit} layout="vertical">
-          <Form.Item
-            name="title"
-            label="Tiêu đề phản hồi"
-            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
-          >
-            <Input placeholder="Nhập tiêu đề phản hồi" />
-          </Form.Item>
-
-          <Form.Item
-            name="description"
-            label="Mô tả chi tiết"
-            rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
-          >
-            <Input.TextArea rows={4} placeholder="Mô tả vấn đề bạn gặp phải" />
-          </Form.Item>
-
-          <Form.Item
-            label="Ảnh minh chứng"
-            extra="Hãy tải ảnh về vấn đề bạn đang gặp và cần giải quyết (định dạng JPG, PNG)"
-          >
-            <Upload
-              multiple
-              maxCount={5}
-              fileList={fileList}
-              onChange={({ fileList }) => setFileList(fileList)}
-              beforeUpload={() => false} // Prevent auto upload
-              accept="image/png, image/jpeg"
-            >
-              <Button icon={<UploadOutlined />}>Chọn ảnh</Button>
-            </Upload>
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={uploading}
-              style={{ float: 'right' }}
-            >
-              Gửi phản hồi
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    );
-  };
 
   const AccountSelectionModal = () => (
     <Modal
@@ -713,1039 +1544,330 @@ const YourWallet = () => {
     </Modal>
   );
 
-  // Fetch wallet info
-  const fetchWalletInfo = async () => {
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      if (!accessToken) {
-        message.error("Vui lòng đăng nhập để sử dụng ví");
-        return;
-      }
+  const TransactionDetailModal = () => (
+    <Modal
+      title="Chi tiết giao dịch"
+      visible={transactionDetailModalVisible}
+      onCancel={handleTransactionDetailClose}
+      footer={[
+        <Button key="close" onClick={handleTransactionDetailClose}>
+          Đóng
+        </Button>,
+      ]}
+      width={800}
+    >
+      <Spin spinning={transactionDetailLoading}>
+        {transactionDetail ? (
+          <Descriptions bordered column={1}>
+            {/* Basic Transaction Info */}
+            <Descriptions.Item label="Mã giao dịch">
+              <Text strong>{transactionDetail.transactionCode}</Text>
+            </Descriptions.Item>
+            <Descriptions.Item label="Loại giao dịch">
+              <Space>
+                {transactionTypeMap[transactionDetail.type]?.icon || <WalletOutlined />}
+                {transactionTypeMap[transactionDetail.type]?.text || "Không rõ"}
+              </Space>
+            </Descriptions.Item>
+            <Descriptions.Item label="Mô tả">{transactionDetail.description}</Descriptions.Item>
+            <Descriptions.Item label="Trạng thái">
+              <Tag color={transactionStatusMap[transactionDetail.status]?.color || "default"}>
+                {transactionStatusMap[transactionDetail.status]?.icon}
+                {transactionStatusMap[transactionDetail.status]?.text || "Không xác định"}
+              </Tag>
+            </Descriptions.Item>
+  
+            {/* Amount Information */}
+            <Descriptions.Item label="Số tiền">
+              <Text strong type={transactionDetail.isAddToWallet ? "success" : "danger"}>
+                {transactionDetail.isAddToWallet ? "+" : "-"}₫{transactionDetail.amount?.toLocaleString()}
+              </Text>
+            </Descriptions.Item>
+            {transactionDetail.discountAmount > 0 && (
+              <Descriptions.Item label="Giảm giá">
+                ₫{transactionDetail.discountAmount?.toLocaleString()}
+              </Descriptions.Item>
+            )}
+            <Descriptions.Item label="Số dư sau giao dịch">
+              ₫{transactionDetail.balance?.toLocaleString()}
+            </Descriptions.Item>
+  
+            {/* Timeline Information */}
+            <Descriptions.Item label="Thời gian tạo">
+              {dayjs(transactionDetail.createdTime).format("DD/MM/YYYY HH:mm")}
+            </Descriptions.Item>
+            {transactionDetail.paidDate && (
+              <Descriptions.Item label="Thời gian thanh toán">
+                {dayjs(transactionDetail.paidDate).format("DD/MM/YYYY HH:mm")}
+              </Descriptions.Item>
+            )}
+            {transactionDetail.cancelledDate && (
+              <Descriptions.Item label="Thời gian hủy">
+                {dayjs(transactionDetail.cancelledDate).format("DD/MM/YYYY HH:mm")}
+              </Descriptions.Item>
+            )}
+  
+            {/* User Information */}
+            {transactionDetail.user && (
+              <Descriptions.Item label="Người gửi">
+                <Space>
+                  {transactionDetail.user.avatar && (
+                    <Image
+                      src={transactionDetail.user.avatar}
+                      width={40}
+                      preview={false}
+                      style={{ borderRadius: '50%' }}
+                    />
+                  )}
+                  <div>
+                    <div>{transactionDetail.user.displayName || transactionDetail.user.fullName}</div>
+                    <div style={{ fontSize: 12, color: '#888' }}>
+                      {transactionDetail.user.email || transactionDetail.user.phoneNumber}
+                    </div>
+                  </div>
+                </Space>
+              </Descriptions.Item>
+            )}
+            
+            {transactionDetail.receiveUser && (
+              <Descriptions.Item label="Người nhận">
+                <Space>
+                  {transactionDetail.receiveUser.avatar && (
+                    <Image
+                      src={transactionDetail.receiveUser.avatar}
+                      width={40}
+                      preview={false}
+                      style={{ borderRadius: '50%' }}
+                    />
+                  )}
+                  <div>
+                    <div>{transactionDetail.receiveUser.displayName || transactionDetail.receiveUser.fullName}</div>
+                    <div style={{ fontSize: 12, color: '#888' }}>
+                      {transactionDetail.receiveUser.email || transactionDetail.receiveUser.phoneNumber}
+                    </div>
+                  </div>
+                </Space>
+              </Descriptions.Item>
+            )}
+  
+            {/* Payment Gateway */}
+            {transactionDetail.paymentGateway && (
+              <Descriptions.Item label="Cổng thanh toán">
+                <Space>
+                  {transactionDetail.paymentGateway.imageIcon && (
+                    <Image
+                      src={transactionDetail.paymentGateway.imageIcon}
+                      width={30}
+                      preview={false}
+                    />
+                  )}
+                  <div>
+                    {transactionDetail.paymentGateway.name}
+                    {transactionDetail.paymentGateway.isSuspended && (
+                      <Tag color="error" style={{ marginLeft: 8 }}>Đã ngừng hoạt động</Tag>
+                    )}
+                  </div>
+                </Space>
+              </Descriptions.Item>
+            )}
+  
+            {/* Order Information */}
+            {transactionDetail.order && (
+              <>
+                <Descriptions.Item label="Thông tin đơn hàng">
+                  <Space direction="vertical">
+                    <div>
+                      <Text strong>Mã đơn hàng: </Text>
+                      {transactionDetail.order.orderCode}
+                    </div>
+                    <div>
+                      <Text strong>Mô tả: </Text>
+                      {transactionDetail.order.orderDescription}
+                    </div>
+                    <div>
+                      <Text strong>Số lượng: </Text>
+                      {transactionDetail.order.itemQuantity}
+                    </div>
+                    <div>
+                      <Text strong>Giá: </Text>
+                      ₫{transactionDetail.order.itemPrice?.toLocaleString()}
+                    </div>
+                  </Space>
+                </Descriptions.Item>
+  
+                {/* Poem Version */}
+                {transactionDetail.order.saleVersion && (
+                  <Descriptions.Item label="Phiên bản thơ">
+                    <Space direction="vertical">
+                      <div>
+                        <Text strong>Tên thơ: </Text>
+                        {transactionDetail.order.saleVersion.poem.title}
+                      </div>
+                      <div>
+                        <Text strong>Giá: </Text>
+                        ₫{transactionDetail.order.saleVersion.price?.toLocaleString()}
+                      </div>
+                      <div>
+                        <Text strong>Thời lượng: </Text>
+                        {transactionDetail.order.saleVersion.durationTime} phút
+                      </div>
+                      <div>
+                        <Text strong>Hoa hồng: </Text>
+                        {transactionDetail.order.saleVersion.commissionPercentage}%
+                      </div>
+                    </Space>
+                  </Descriptions.Item>
+                )}
+  
+                {/* Record File */}
+                {transactionDetail.order.recordFile && (
+                  <Descriptions.Item label="File ghi âm">
+                    {transactionDetail.order.recordFile.fileName}
+                  </Descriptions.Item>
+                )}
+  
+                {/* Template */}
+                {transactionDetail.order.masterTemplate && (
+                  <Descriptions.Item label="Template">
+                    {transactionDetail.order.masterTemplate.templateName}
+                  </Descriptions.Item>
+                )}
+              </>
+            )}
+  
+            {/* Withdrawal Information */}
+            {transactionDetail.withdrawalForm && (
+              <>
+                <Descriptions.Item label="Thông tin rút tiền">
+                  <Space direction="vertical">
+                    <div>
+                      <Text strong>Số tiền: </Text>
+                      ₫{transactionDetail.withdrawalForm.amount?.toLocaleString()}
+                    </div>
+                    <div>
+                      <Text strong>Mô tả: </Text>
+                      {transactionDetail.withdrawalForm.description}
+                    </div>
+                    {transactionDetail.withdrawalForm.resolveDescription && (
+                      <div>
+                        <Text strong>Mô tả giải quyết: </Text>
+                        {transactionDetail.withdrawalForm.resolveDescription}
+                      </div>
+                    )}
+                    <div>
+                      <Text strong>Ngày tạo: </Text>
+                      {dayjs(transactionDetail.withdrawalForm.createdTime).format("DD/MM/YYYY HH:mm")}
+                    </div>
+                  </Space>
+                </Descriptions.Item>
+  
+                {/* Bank Information */}
+                {transactionDetail.withdrawalForm.bankType && (
+                  <Descriptions.Item label="Ngân hàng">
+                    <Space>
+                      {transactionDetail.withdrawalForm.bankType.imageIcon && (
+                        <Image
+                          src={transactionDetail.withdrawalForm.bankType.imageIcon}
+                          width={30}
+                          preview={false}
+                        />
+                      )}
+                      <div>
+                        {transactionDetail.withdrawalForm.bankType.bankName}
+                        <div style={{ fontSize: 12, color: '#888' }}>
+                          {transactionDetail.withdrawalForm.bankType.bankCode}
+                        </div>
+                      </div>
+                    </Space>
+                  </Descriptions.Item>
+                )}
+  
+                {/* User Bank Account */}
+                {transactionDetail.withdrawalForm.userBankType && (
+                  <Descriptions.Item label="Tài khoản ngân hàng">
+                    <Space direction="vertical">
+                      <div>
+                        <Text strong>Tên tài khoản: </Text>
+                        {transactionDetail.withdrawalForm.userBankType.accountName}
+                      </div>
+                      <div>
+                        <Text strong>Số tài khoản: </Text>
+                        {transactionDetail.withdrawalForm.userBankType.accountNumber}
+                      </div>
+                    </Space>
+                  </Descriptions.Item>
+                )}
+              </>
+            )}
+          </Descriptions>
+        ) : (
+          <div>Không tìm thấy thông tin giao dịch</div>
+        )}
+      </Spin>
+    </Modal>
+  );
+  const exampleAmounts = [10000, 20000, 50000, 100000, 200000, 500000];
+  const dataSource = exampleAmounts.map(amount => ({
+    key: amount,
+    amount: amount.toLocaleString(),
+    fee: inUseFee,
+    received: Math.floor(amount * (1 - inUseFee / 100)).toLocaleString()
+  }));
 
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/mine`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const result = await response.json();
-
-      if (result && typeof result.walletBalance !== 'undefined') {
-        setWalletBalance(result.walletBalance);
-        setWalletStatus(result.walletStatus);
-        setWalletId(result.id);
-
-        console.log('Wallet info fetched:', {
-          balance: result.walletBalance,
-          status: result.walletStatus,
-          id: result.id
-        });
-      } else {
-        message.error("Dữ liệu ví không hợp lệ");
-        setWalletBalance(0);
-        setWalletStatus(null);
-        setWalletId(null);
-      }
-    } catch (error) {
-      console.error("Error fetching wallet info:", error);
-      message.error("Lỗi khi lấy thông tin ví");
-      setWalletBalance(0);
-      setWalletStatus(null);
-      setWalletId(null);
+  const columns = [
+    {
+      title: 'Tiền Nạp (VNĐ)',
+      dataIndex: 'amount',
+      key: 'amount',
+      align: 'right'
+    },
+    {
+      title: 'Phí dịch vụ (%)',
+      dataIndex: 'fee',
+      key: 'fee',
+      align: 'center'
+    },
+    {
+      title: 'Tiền nhận được (VNĐ)',
+      dataIndex: 'received',
+      key: 'received',
+      align: 'right'
     }
-  };
+  ];
 
-  // Fetch transactions
-  const fetchTransactions = async (pageNumber = 1, pageSize = 10) => {
-    setLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/transactions/v1/mine?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
+  // Effects
+  useEffect(() => {
+    if (depositModalVisible) {
+      const fetchCommissionFee = async () => {
+        try {
+          setLoadingFee(true);
+          const response = await axios.get(
+            `${process.env.REACT_APP_API_BASE_URL}/deposit-commission-settings/v1/in-use`
+          );
+          setInUseFee(response.data.data.amountPercentage);
+        } catch (error) {
+          message.error('Không thể tải thông tin phí dịch vụ');
+        } finally {
+          setLoadingFee(false);
         }
-      );
-      const result = await response.json();
-      if (result.statusCode === 200) {
-        setTransactions(result.data);
-        setPagination({
-          current: result.pageNumber,
-          pageSize: result.pageSize,
-          total: result.totalRecords,
-        });
-      } else {
-        message.error("Không thể lấy lịch sử giao dịch");
-      }
-    } catch (error) {
-      console.error("Fetch transaction error:", error);
-      message.error("Lỗi khi lấy lịch sử giao dịch");
-    } finally {
-      setLoading(false);
+      };
+      fetchCommissionFee();
     }
-  };
+  }, [depositModalVisible]);
 
-  // Fetch orders
-  const fetchOrders = async (pageNumber = 1, pageSize = 10) => {
-    setOrderLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/orders/v1?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const result = await response.json();
-      if (result.statusCode === 200) {
-        setOrders(result.data);
-        setOrderPagination({
-          current: result.pageNumber,
-          pageSize: result.pageSize,
-          total: result.totalRecords,
-        });
-      } else {
-        message.error("Không thể lấy danh sách đơn hàng");
-      }
-    } catch (error) {
-      console.error("Fetch orders error:", error);
-      message.error("Lỗi khi lấy danh sách đơn hàng");
-    } finally {
-      setOrderLoading(false);
+  useEffect(() => {
+    if (accountSettingModalVisible || accountSelectionVisible) {
+      fetchUserBankAccounts();
     }
-  };
-
-  // Fetch withdrawals
-  const fetchWithdrawals = async (pageNumber = 1, pageSize = 10) => {
-    setWithdrawalLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-forms/v1/mine?pageNumber=${pageNumber}&pageSize=${pageSize}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const result = await response.json();
-      if (result.statusCode === 200) {
-        setWithdrawals(result.data);
-        setWithdrawalPagination({
-          current: result.pageNumber,
-          pageSize: result.pageSize,
-          total: result.totalRecords,
-        });
-      } else {
-        message.error(result.message || "Không thể lấy lịch sử rút tiền");
-      }
-    } catch (error) {
-      console.error("Fetch withdrawals error:", error);
-      message.error("Lỗi khi lấy lịch sử rút tiền");
-    } finally {
-      setWithdrawalLoading(false);
-    }
-  };
-
-  // Fetch order detail
-  const fetchOrderDetail = async (orderId) => {
-    setOrderDetailLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/orders/v1/detail/${orderId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const result = await response.json();
-      if (result.statusCode === 200) {
-        setOrderDetail(result.data);
-      } else {
-        message.error(result.message || "Không thể lấy chi tiết đơn hàng");
-      }
-    } catch (error) {
-      console.error("Fetch order detail error:", error);
-      message.error("Lỗi khi lấy chi tiết đơn hàng");
-    } finally {
-      setOrderDetailLoading(false);
-    }
-  };
-
-  // Fetch payment methods
-  const fetchPaymentMethods = async () => {
-    setPaymentMethodsLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/payment-gateways/v1`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-      const result = await response.json();
-      if (result.statusCode === 200) {
-        const activeMethods = result.data.filter(method => !method.isSuspended);
-        setPaymentMethods(activeMethods);
-      } else {
-        message.error("Không thể lấy danh sách phương thức thanh toán");
-      }
-    } catch (error) {
-      console.error("Fetch payment methods error:", error);
-      message.error("Lỗi khi lấy danh sách phương thức thanh toán");
-    } finally {
-      setPaymentMethodsLoading(false);
-    }
-  };
+  }, [accountSettingModalVisible, accountSelectionVisible]);
 
   useEffect(() => {
     fetchWalletInfo();
-    fetchTransactions(pagination.current, pagination.pageSize);
+    fetchAllTransactions(pagination.current, pagination.pageSize);
     fetchPaymentMethods();
-    fetchOrders(orderPagination.current, orderPagination.pageSize);
-    fetchWithdrawals(withdrawalPagination.current, withdrawalPagination.pageSize);
+    fetchComplaints();
+    fetchBankTypes();
   }, []);
-
-  const handleTableChange = (pagination) => {
-    setPagination({
-      ...pagination,
-    });
-    fetchTransactions(pagination.current, pagination.pageSize);
-  };
-
-  const handleOrderTableChange = (pagination) => {
-    setOrderPagination({
-      ...pagination,
-    });
-    fetchOrders(pagination.current, pagination.pageSize);
-  };
-
-  const handleWithdrawalTableChange = (pagination) => {
-    setWithdrawalPagination({
-      ...pagination,
-    });
-    fetchWithdrawals(pagination.current, pagination.pageSize);
-  };
-
-  const handleDeposit = () => {
-    setDepositModalVisible(true);
-  };
-
-  const handleAccountSetting = () => {
-    setAccountSettingModalVisible(true);
-  }
-
-  const handleWithdraw = () => {
-    setAccountSelectionVisible(true);
-  };
-
-  const handleDepositOk = async () => {
-    try {
-      const values = await depositForm.validateFields();
-      setConfirmLoading(true);
-
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/deposit`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: values.amount,
-            paymentGatewayId: values.paymentMethod,
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (result?.paymentUrl) {
-        message.success("Đang chuyển hướng đến cổng thanh toán...");
-        setTimeout(() => {
-          window.location.href = result.paymentUrl;
-        }, 1000);
-      } else if (result?.isSuccess) {
-        message.success(result.message || "Nạp tiền thành công!");
-        fetchWalletInfo();
-        fetchTransactions();
-        fetchOrders();
-        setDepositModalVisible(false);
-        depositForm.resetFields();
-      } else {
-        message.error(result.message || "Nạp tiền thất bại");
-      }
-    } catch (error) {
-      console.error("Deposit error:", error);
-      message.error("Có lỗi xảy ra khi nạp tiền");
-    } finally {
-      setConfirmLoading(false);
-    }
-  };
-
-  const handleDepositCancel = () => {
-    depositForm.resetFields();
-    setDepositModalVisible(false);
-  };
-
-  const handleWithdrawSubmit = async () => {
-    try {
-      const values = await withdrawForm.validateFields();
-      setWithdrawConfirmLoading(true);
-
-      const accessToken = localStorage.getItem("accessToken");
-
-      if (!walletId) {
-        message.error("Không tìm thấy thông tin ví");
-        return;
-      }
-
-      const response = await fetch(
-        `${process.env.REACT_APP_API_BASE_URL}/user-ewallets/v1/withdrawal-form?userEWalletId=${walletId}`,
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            amount: values.amount,
-            bankTypeId: values.bankType,
-            description: values.description || "Yêu cầu rút tiền từ ví",
-            accountName: values.accountName,
-            accountNumber: values.accountNumber
-          }),
-        }
-      );
-
-      const result = await response.json();
-
-      if (result?.statusCode === 201) {
-        message.success("Yêu cầu rút tiền đã được gửi thành công!");
-        fetchWalletInfo();
-        fetchWithdrawals();
-        setWithdrawModalVisible(false);
-        withdrawForm.resetFields();
-      } else {
-        message.error(result.message || "Rút tiền thất bại");
-      }
-    } catch (error) {
-      console.error("Withdraw error:", error);
-      message.error("Có lỗi xảy ra khi rút tiền");
-    } finally {
-      setWithdrawConfirmLoading(false);
-    }
-  };
-
-  const handleWithdrawCancel = () => {
-    withdrawForm.resetFields();
-    setWithdrawModalVisible(false);
-  };
-
-  const handleViewOrderDetail = async (order) => {
-    setSelectedOrder(order);
-    setOrderDetailModalVisible(true);
-    await fetchOrderDetail(order.id);
-  };
-
-  const handleOrderDetailClose = () => {
-    setOrderDetailModalVisible(false);
-    setSelectedOrder(null);
-    setOrderDetail(null);
-  };
-
-  const renderOrderItems = () => {
-    if (!orderDetail?.orderDetails?.length) return "Không có chi tiết sản phẩm";
-
-    return (
-      <List
-        itemLayout="vertical"
-        dataSource={orderDetail.orderDetails}
-        renderItem={(item, index) => (
-          <List.Item key={index}>
-            <Descriptions bordered size="small" column={1}>
-              <Descriptions.Item label="Số lượng">{item.itemQuantity}</Descriptions.Item>
-              <Descriptions.Item label="Đơn giá">₫{item.itemPrice?.toLocaleString()}</Descriptions.Item>
-              <Descriptions.Item label="Thành tiền">
-                <Text strong>₫{(item.itemPrice * item.itemQuantity)?.toLocaleString()}</Text>
-              </Descriptions.Item>
-              {item.recordFile && (
-                <>
-                  <Descriptions.Item label="Loại sản phẩm">Tệp ghi âm</Descriptions.Item>
-                  <Descriptions.Item label="Tên file">{item.recordFile.name}</Descriptions.Item>
-                  <Descriptions.Item label="Mô tả">{item.recordFile.description}</Descriptions.Item>
-                </>
-              )}
-              {item.masterTemplate && (
-                <>
-                  <Descriptions.Item label="Loại sản phẩm">Mẫu giao dịch</Descriptions.Item>
-                  <Descriptions.Item label="Tên mẫu">{item.masterTemplate.name}</Descriptions.Item>
-                  <Descriptions.Item label="Mô tả">{item.masterTemplate.description}</Descriptions.Item>
-                </>
-              )}
-            </Descriptions>
-          </List.Item>
-        )}
-      />
-    );
-  };
-
-  const transactionColumns = [
-    {
-      title: "Thời gian",
-      dataIndex: "createdTime",
-      key: "createdTime",
-      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
-    },
-    {
-      title: "Loại giao dịch",
-      dataIndex: "type",
-      key: "type",
-      render: (type) => transactionTypeMap[type] || "Không rõ",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const color = transactionStatusMap[status]?.color || "default";
-        const text = transactionStatusMap[status]?.text || "Không xác định";
-
-        return <span style={{ color }}>{text}</span>;
-      },
-    },
-    {
-      title: "Mô tả",
-      dataIndex: "description",
-      key: "description",
-    },
-    {
-      title: "Mã giao dịch",
-      dataIndex: "transactionCode",
-      key: "transactionCode",
-    },
-    {
-      title: "Số tiền",
-      dataIndex: "amount",
-      key: "amount",
-      render: (_, record) => {
-        const { amount, isAddToWallet } = record;
-
-        if (amount == null) return "";
-
-        const sign = isAddToWallet === true ? "+" : isAddToWallet === false ? "-" : "";
-        return `${sign}₫${amount.toLocaleString()}`;
-      },
-    },
-    {
-      title: "Số dư còn lại",
-      dataIndex: "balance",
-      key: "balance",
-      render: (balance) => `₫${balance?.toLocaleString()}`,
-    },
-  ];
-
-  const orderColumns = [
-    {
-      title: "Mã đơn hàng",
-      dataIndex: "orderCode",
-      key: "orderCode",
-      render: (text) => <Text strong>{text}</Text>,
-    },
-    {
-      title: "Loại đơn hàng",
-      dataIndex: "type",
-      key: "type",
-      render: (type) => (
-        <Space>
-          {orderTypeMap[type]?.icon}
-          {orderTypeMap[type]?.text || "Không rõ"}
-        </Space>
-      ),
-    },
-    {
-      title: "Mô tả",
-      dataIndex: "orderDescription",
-      key: "orderDescription",
-    },
-    {
-      title: "Số tiền",
-      dataIndex: "amount",
-      key: "amount",
-      render: (amount) => amount > 0 ? `₫${amount?.toLocaleString()}` : "Miễn phí",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const color = orderStatusMap[status]?.color || "default";
-        const text = orderStatusMap[status]?.text || "Không xác định";
-
-        return <span style={{ color }}>{text}</span>;
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_, record) => (
-        <Button
-          type="link"
-          icon={<EyeOutlined />}
-          onClick={() => handleViewOrderDetail(record)}
-        >
-          Chi tiết
-        </Button>
-      ),
-    },
-  ];
-
-  const showFeedbackModal = (withdrawalId) => {
-    setCurrentWithdrawalId(withdrawalId);
-    setFeedbackVisible(true);
-  };
-
-  const withdrawalColumns = [
-    {
-      title: "Thời gian tạo",
-      dataIndex: "createdTime",
-      key: "createdTime",
-      render: (text) => text ? dayjs(text).format("DD/MM/YYYY HH:mm") : "N/A",
-    },
-    {
-      title: "Số tiền",
-      dataIndex: "amount",
-      key: "amount",
-      render: (amount) => `-₫${amount?.toLocaleString() || '0'}`,
-    },
-    {
-      title: "Ngân hàng",
-      dataIndex: "bankType",
-      key: "bankType",
-      render: (bankTypeId) => {
-        return bankTypeId?.bankCode ? (
-          <Space>
-            {bankTypeId.imageIcon && (
-              <img
-                src={bankTypeId.imageIcon}
-                alt={bankTypeId.bankCode}
-                style={{
-                  width: 20,
-                  height: 20,
-                  objectFit: 'contain'
-                }}
-              />
-            )}
-            {bankTypeId.bankCode}
-          </Space>
-        ) : "Không xác định";
-      }
-    },
-    {
-      title: "Số tài khoản",
-      dataIndex: "accountNumber",
-      key: "accountNumber",
-    },
-    {
-      title: "Tên tài khoản",
-      dataIndex: "accountName",
-      key: "accountName",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const statusInfo = withdrawalStatusMap[status] || {
-          text: "Không xác định",
-          color: "default"
-        };
-        return (
-          <Tag color={statusInfo.color}>
-            {statusInfo.icon && (
-              <span style={{ marginRight: 4 }}>{statusInfo.icon}</span>
-            )}
-            {statusInfo.text}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_, record) => (
-        <Space style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", gap: 0 }}>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => {
-              Modal.info({
-                title: `Chi tiết yêu cầu rút tiền #${record.id}`,
-                width: 800,
-                content: (
-                  <div>
-                    <Descriptions bordered column={1} style={{ marginBottom: 16 }}>
-                      <Descriptions.Item label="Phản hồi chi tiết">
-                        {record.resolveDescription || "Chưa có phản hồi"}
-                      </Descriptions.Item>
-                    </Descriptions>
-
-                    <Descriptions bordered column={1}>
-                      <Descriptions.Item label="Bằng chứng">
-                        {record.resolveEvidence ? (
-                          /\.(jpg|jpeg|png|gif)$/i.test(record.resolveEvidence) ? (
-                            <Image
-                              width="100%"
-                              src={record.resolveEvidence}
-                              preview={{
-                                src: record.resolveEvidence,
-                              }}
-                            />
-                          ) : (
-                            <Button
-                              type="link"
-                              icon={<FileOutlined />}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                window.open(record.resolveEvidence, '_blank');
-                              }}
-                            >
-                              Xem file đính kèm
-                            </Button>
-                          )
-                        ) : (
-                          "Không có bằng chứng"
-                        )}
-                      </Descriptions.Item>
-                    </Descriptions>
-                  </div>
-                ),
-              });
-            }}
-          >
-            Xem chi tiết
-          </Button>
-          <Button
-            type="link"
-            icon={<MessageOutlined />}
-            onClick={() => showFeedbackModal(record.id)}
-          >
-            Phản hồi
-          </Button>
-        </Space>
-      ),
-    },
-  ];
-
-  const complaintColumns = [
-    {
-      title: "Thời gian tạo",
-      dataIndex: "createdTime",
-      key: "createdTime",
-      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
-    },
-    {
-      title: "Tiêu đề",
-      dataIndex: "title",
-      key: "title",
-    },
-    {
-      title: "Trạng thái",
-      dataIndex: "status",
-      key: "status",
-      render: (status) => {
-        const statusInfo = complaintStatusMap[status] || {
-          text: "Không xác định",
-          color: "default"
-        };
-        return (
-          <Tag color={statusInfo.color}>
-            {statusInfo.icon}
-            {statusInfo.text}
-          </Tag>
-        );
-      },
-    },
-    {
-      title: "Thao tác",
-      key: "action",
-      render: (_, record) => (
-        <Space style={{
-          display: "flex",
-          flexDirection: "column",
-          alignItems: "flex-start",
-          gap: 0
-        }}>
-          <Button
-            type="link"
-            icon={<EyeOutlined />}
-            onClick={() => showComplaintDetail(record)}
-          >
-            Xem chi tiết
-          </Button>
-          {record.status === 3 && (
-            <Button
-              type="link"
-              color="yellow"
-              variant="link"
-              icon={<EditOutlined />}
-              onClick={() => {
-                setCurrentComplaint(record);
-                setEditInfoVisible(true);
-                setEditStep(1);
-              }}
-            >
-              Chỉnh sửa
-            </Button>
-          )}
-          {record.status === 3 && (
-            <Button
-              type="link"
-              icon={<DeleteOutlined />}
-              onClick={() => handleDeleteComplaint(record.id)}
-              danger
-            >
-              Xóa
-            </Button>
-          )}
-        </Space>
-      ),
-    },
-  ];
-
-  const handleDeleteComplaint = async (complaintId) => {
-    Modal.confirm({
-      title: 'Xác nhận xóa phản hồi',
-      content: 'Bạn có chắc chắn muốn xóa phản hồi này?',
-      okText: 'Xóa',
-      cancelText: 'Hủy',
-      okButtonProps: { danger: true },
-      async onOk() {
-        try {
-          await axios.delete(
-            `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${complaintId}`,
-            {
-              headers: {
-                Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-              }
-            }
-          );
-
-          message.success('Đã xóa phản hồi thành công');
-          fetchComplaints(complaintPagination.current, complaintPagination.pageSize);
-        } catch (error) {
-          message.error(error.response?.data?.errorMessage || 'Xóa phản hồi thất bại');
-        }
-      }
-    });
-  };
-
-  const showComplaintDetail = (complaint) => {
-    Modal.info({
-      title: `Chi tiết phản hồi #${complaint.id}`,
-      width: 800,
-      content: (
-        <div>
-          <Descriptions bordered column={1}>
-            <Descriptions.Item label="Tiêu đề">
-              {complaint.title}
-            </Descriptions.Item>
-            <Descriptions.Item label="Mô tả">
-              {complaint.description}
-            </Descriptions.Item>
-            <Descriptions.Item label="Phản hồi từ hệ thống">
-              {complaint.resolveDescription || "Chưa có phản hồi"}
-            </Descriptions.Item>
-          </Descriptions>
-
-          <Collapse ghost defaultActiveKey={[]}>
-            {/* Complaint Images */}
-            {complaint.complaintImages?.length > 0 && (
-              <Collapse.Panel
-                header={`Ảnh đính kèm (${complaint.complaintImages.length})`}
-                key="1"
-              >
-                <Image.PreviewGroup>
-                  <Row gutter={[16, 16]}>
-                    {complaint.complaintImages?.map((img, idx) => (
-                      <Col span={8} key={`complaint-${idx}`}>
-                        <Image
-                          src={img.image}
-                          style={{
-                            borderRadius: 8,
-                            border: '1px solid #f0f0f0',
-                            padding: 4
-                          }}
-                          alt={`Ảnh phản hồi ${idx + 1}`}
-                        />
-                      </Col>
-                    ))}
-                  </Row>
-                </Image.PreviewGroup>
-              </Collapse.Panel>
-            )}
-
-            {/* Resolve Images */}
-            {complaint.resolveImages?.length > 0 && (
-              <Collapse.Panel
-                header={`Ảnh giải quyết (${complaint.resolveImages.length})`}
-                key="2"
-              >
-                <Image.PreviewGroup>
-                  <Row gutter={[16, 16]}>
-                    {complaint.resolveImages?.map((img, idx) => (
-                      <Col span={8} key={`resolve-${idx}`}>
-                        <Image
-                          src={img.image}
-                          style={{
-                            borderRadius: 8,
-                            border: '1px solid #f0f0f0',
-                            padding: 4
-                          }}
-                          alt={`Ảnh phản hồi hệ thống ${idx + 1}`}
-                        />
-                        <div style={{ textAlign: 'center', marginTop: 4 }}>
-                          <Tag color="blue">Phản hồi từ hệ thống</Tag>
-                        </div>
-                      </Col>
-                    ))}
-                  </Row>
-                </Image.PreviewGroup>
-              </Collapse.Panel>
-            )}
-          </Collapse>
-        </div>
-      ),
-    });
-  };
-
-  const EditInfoModal = () => {
-    const [form] = Form.useForm();
-
-    useEffect(() => {
-      if (currentComplaint) {
-        form.setFieldsValue({
-          title: currentComplaint.title,
-          description: currentComplaint.description
-        });
-      }
-    }, [currentComplaint]);
-
-    const handleEditInfo = async (values) => {
-      try {
-        setUploading(true);
-        await axios.put(
-          `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1`,
-          {
-            id: currentComplaint.id,
-            title: values.title,
-            description: values.description
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-            }
-          }
-        );
-
-        message.success('Cập nhật thông tin thành công!');
-        setEditInfoVisible(false);
-        setEditImagesVisible(true);
-      } catch (error) {
-        message.error(error.response?.data?.errorMessage || 'Cập nhật thất bại');
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    return (
-      <Modal
-        title="Chỉnh sửa thông tin phản hồi (Bước 1/2)"
-        visible={editInfoVisible}
-        onCancel={() => setEditInfoVisible(false)}
-        footer={null}
-        width={600}
-      >
-        <Form form={form} onFinish={handleEditInfo} layout="vertical">
-          <Form.Item
-            name="title"
-            label="Tiêu đề phản hồi"
-            rules={[{ required: true, message: 'Vui lòng nhập tiêu đề' }]}
-          >
-            <Input />
-          </Form.Item>
-
-          <Form.Item
-            name="description"
-            label="Mô tả chi tiết"
-            rules={[{ required: true, message: 'Vui lòng nhập mô tả' }]}
-          >
-            <Input.TextArea rows={4} />
-          </Form.Item>
-
-          <Form.Item>
-            <Button
-              type="primary"
-              htmlType="submit"
-              loading={uploading}
-              style={{ float: 'right' }}
-            >
-              Lưu và tiếp tục
-            </Button>
-          </Form.Item>
-        </Form>
-      </Modal>
-    );
-  };
-
-  const EditImagesModal = () => {
-    const [fileList, setFileList] = useState([]);
-    const [deleting, setDeleting] = useState(false);
-
-    useEffect(() => {
-      if (currentComplaint) {
-        setFileList(currentComplaint.complaintImages.map(img => ({
-          uid: img.id,
-          name: `image_${img.id}`,
-          status: 'done',
-          url: img.image
-        })));
-      }
-    }, [currentComplaint]);
-
-    const handleImageUpdate = async () => {
-      try {
-        setUploading(true);
-
-        // Add new images
-        const newImages = fileList
-          .filter(file => file.originFileObj)
-          .map(file => file.originFileObj);
-
-        const uploadedUrls = await Promise.all(
-          newImages.map(file => handleImageUpload(file))
-        );
-
-        await Promise.all(
-          uploadedUrls.map(url =>
-            axios.post(
-              `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentComplaint.id}/image`,
-              null,
-              {
-                params: { image: url },
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-                }
-              }
-            )
-          )
-        );
-
-        // Remove deleted images
-        const originalIds = currentComplaint.complaintImages.map(img => img.id);
-        const currentIds = fileList.map(file => file.uid);
-        const deletedIds = originalIds.filter(id => !currentIds.includes(id));
-
-        await Promise.all(
-          deletedIds.map(id =>
-            axios.delete(
-              `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/${currentComplaint.id}/image`,
-              {
-                params: { withdrawalComplaintImageId: id },
-                headers: {
-                  Authorization: `Bearer ${localStorage.getItem("accessToken")}`
-                }
-              }
-            )
-          )
-        );
-
-        message.success('Cập nhật ảnh thành công!');
-        setEditImagesVisible(false);
-        fetchComplaints();
-      } catch (error) {
-        message.error(error.response?.data?.errorMessage || 'Cập nhật ảnh thất bại');
-      } finally {
-        setUploading(false);
-      }
-    };
-
-    return (
-      <Modal
-        title="Quản lý ảnh đính kèm (Bước 2/2)"
-        visible={editImagesVisible}
-        onCancel={() => setEditImagesVisible(false)}
-        footer={[
-          <Button key="back" onClick={() => setEditImagesVisible(false)}>
-            Đóng
-          </Button>,
-          <Button
-            key="submit"
-            type="primary"
-            loading={uploading}
-            onClick={handleImageUpdate}
-          >
-            Lưu thay đổi
-          </Button>,
-        ]}
-        width={800}
-      >
-        <Upload
-          multiple
-          maxCount={5}
-          fileList={fileList}
-          onChange={({ fileList }) => setFileList(fileList)}
-          beforeUpload={() => false}
-          accept="image/png, image/jpeg"
-          onRemove={(file) => {
-            if (file.url) {
-              setFileList(fileList.filter(f => f.uid !== file.uid));
-            }
-            return true;
-          }}
-        >
-          <Button icon={<UploadOutlined />}>Thêm ảnh mới</Button>
-        </Upload>
-
-        <Divider />
-
-        <Text strong>Ảnh hiện tại:</Text>
-        <Row gutter={[16, 16]} style={{ marginTop: 16 }}>
-          {fileList.map(file => (
-            <Col span={6} key={file.uid}>
-              <Image
-                src={file.url}
-                style={{
-                  borderRadius: 8,
-                  border: '1px solid #d9d9d9',
-                  padding: 4
-                }}
-              />
-            </Col>
-          ))}
-        </Row>
-      </Modal>
-    );
-  };
 
   return (
     <div className="max-w-4xl mx-auto p-6">
@@ -1810,6 +1932,57 @@ const YourWallet = () => {
         </Space>
       </Card>
 
+      <Tabs defaultActiveKey="1">
+        <Tabs.TabPane
+          tab={
+            <span>
+              <WalletOutlined />
+              Giao dịch
+            </span>
+          }
+          key="1"
+        >
+          <Table
+            columns={combinedColumns}
+            dataSource={allTransactions}
+            rowKey={(record) => `${record.recordType}-${record.id}`}
+            loading={loading}
+            pagination={{
+              ...pagination,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20", "50"],
+            }}
+            onChange={handleTableChange}
+          />
+        </Tabs.TabPane>
+
+        <Tabs.TabPane
+          tab={
+            <span>
+              <MessageOutlined />
+              Phản hồi rút tiền
+            </span>
+          }
+          key="2"
+        >
+          <Table
+            columns={complaintColumns}
+            dataSource={complaints}
+            rowKey="id"
+            loading={complaintLoading}
+            pagination={{
+              ...complaintPagination,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "20"],
+            }}
+            onChange={(pagination) => {
+              setComplaintPagination(pagination);
+              fetchComplaints(pagination.current, pagination.pageSize);
+            }}
+          />
+        </Tabs.TabPane>
+      </Tabs>
+
       {/* Modal nạp tiền */}
       <Modal
         title="Nạp tiền vào ví"
@@ -1837,7 +2010,6 @@ const YourWallet = () => {
                 min: 20000,
                 message: 'Số tiền tối thiểu là 20,000 VNĐ',
               },
-
             ]}
           >
             <InputNumber
@@ -1913,6 +2085,8 @@ const YourWallet = () => {
           </Form.Item>
         </Form>
       </Modal>
+
+      {/* Modal ví dụ phí dịch vụ */}
       <Modal
         title="Ví dụ tính phí dịch vụ"
         visible={exampleVisible}
@@ -1937,6 +2111,7 @@ const YourWallet = () => {
           )}
         />
       </Modal>
+
       {/* Modal rút tiền */}
       <Modal
         title="Rút tiền từ ví"
@@ -2030,7 +2205,7 @@ const YourWallet = () => {
             ]}
           >
             <Input
-              placeholder="Nhập tên chủ tài khoản (VIETTEL)"
+              placeholder="Nhập tên chủ tài khoản "
               disabled={!!selectedBankAccount}
             />
           </Form.Item>
@@ -2070,8 +2245,8 @@ const YourWallet = () => {
               </Descriptions.Item>
               <Descriptions.Item label="Loại đơn hàng">
                 <Space>
-                  {orderTypeMap[orderDetail.type]?.icon}
-                  {orderTypeMap[orderDetail.type]?.text || "Không rõ"}
+                  {transactionTypeMap[orderDetail.type]?.icon}
+                  {transactionTypeMap[orderDetail.type]?.text || "Không rõ"}
                 </Space>
               </Descriptions.Item>
               <Descriptions.Item label="Mô tả">
@@ -2079,11 +2254,11 @@ const YourWallet = () => {
               </Descriptions.Item>
               <Descriptions.Item label="Trạng thái">
                 <Badge
-                  color={orderStatusMap[orderDetail.status]?.color}
+                  color={transactionStatusMap[orderDetail.status]?.color}
                   text={
                     <Space>
-                      {orderStatusMap[orderDetail.status]?.icon}
-                      {orderStatusMap[orderDetail.status]?.text || "Không xác định"}
+                      {transactionStatusMap[orderDetail.status]?.icon}
+                      {transactionStatusMap[orderDetail.status]?.text || "Không xác định"}
                     </Space>
                   }
                 />
@@ -2121,101 +2296,10 @@ const YourWallet = () => {
         </Spin>
       </Modal>
 
-      <Tabs defaultActiveKey="1" type="card">
-        <Tabs.TabPane
-          tab={
-            <span>
-              <WalletOutlined />
-              Giao dịch
-            </span>
-          }
-          key="1"
-        >
-          <Table
-            columns={transactionColumns}
-            dataSource={transactions}
-            rowKey="id"
-            loading={loading}
-            pagination={{
-              ...pagination,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20", "50"],
-            }}
-            onChange={handleTableChange}
-          />
-        </Tabs.TabPane>
+      {/* Modal chi tiết giao dịch */}
+      <TransactionDetailModal />
 
-        <Tabs.TabPane
-          tab={
-            <span>
-              <ShoppingOutlined />
-              Danh sách đơn hàng
-            </span>
-          }
-          key="2"
-        >
-          <Table
-            columns={orderColumns}
-            dataSource={orders}
-            rowKey="id"
-            loading={orderLoading}
-            pagination={{
-              ...orderPagination,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
-            }}
-            onChange={handleOrderTableChange}
-          />
-        </Tabs.TabPane>
-
-        <Tabs.TabPane
-          tab={
-            <span>
-              <MoneyCollectOutlined />
-              Lịch sử rút tiền
-            </span>
-          }
-          key="3"
-        >
-          <Table
-            columns={withdrawalColumns}
-            dataSource={withdrawals}
-            rowKey="id"
-            loading={withdrawalLoading}
-            pagination={{
-              ...withdrawalPagination,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
-            }}
-            onChange={handleWithdrawalTableChange}
-          />
-        </Tabs.TabPane>
-        <Tabs.TabPane
-          tab={
-            <span>
-              <MessageOutlined />
-              Phản hồi rút tiền
-            </span>
-          }
-          key="4"
-        >
-          <Table
-            columns={complaintColumns}
-            dataSource={complaints}
-            rowKey="id"
-            loading={complaintLoading}
-            pagination={{
-              ...complaintPagination,
-              showSizeChanger: true,
-              pageSizeOptions: ["5", "10", "20"],
-            }}
-            onChange={(pagination) => {
-              setComplaintPagination(pagination);
-              fetchComplaints(pagination.current, pagination.pageSize);
-            }}
-          />
-        </Tabs.TabPane>
-      </Tabs>
+      {/* Các modal khác */}
       <FeedbackModal />
       <EditInfoModal />
       <EditImagesModal />
