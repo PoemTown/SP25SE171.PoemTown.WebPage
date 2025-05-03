@@ -44,7 +44,14 @@ const PoemDetail = () => {
     const [isAudioUploading, setIsAudioUploading] = useState(false);
     const [form] = Form.useForm();
     const navigate = useNavigate();
+    const [roles, setRoles] = useState([]);
 
+    useEffect(() => {
+        const storedRoles = JSON.parse(localStorage.getItem("role")) || [];
+        setRoles(storedRoles);
+    }, [roles]);
+
+    const deletePermission = roles?.includes("ADMIN") || roles?.includes("MODERATOR");
 
     const requestHeaders = {
         "Content-Type": "application/json",
@@ -543,13 +550,24 @@ const PoemDetail = () => {
         }
 
         try {
-            const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${commentId}`, {
-                method: "DELETE",
-                headers: {
-                    "Content-Type": "application/json",
-                    Authorization: `Bearer ${accessToken}`
-                }
-            });
+            let response;
+            if (deletePermission) {
+                response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/admin/${commentId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                });
+            } else {
+                response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${commentId}`, {
+                    method: "DELETE",
+                    headers: {
+                        "Content-Type": "application/json",
+                        Authorization: `Bearer ${accessToken}`
+                    }
+                });
+            }
 
             if (response.ok) {
                 setReplyTexts(prev => ({ ...prev, [commentId]: "" }));
@@ -568,7 +586,7 @@ const PoemDetail = () => {
                 const newTree = buildCommentTree(data.data);
                 setCommentTree(newTree);
             }
-            message.success("Đăng bình luận thành công");
+            message.success("Xóa bình luận thành công");
         } catch (error) {
             console.error("Lỗi khi xóa bình luận:", error);
             message.error("Đã xảy ra lỗi khi xóa bình luận");
@@ -1154,6 +1172,7 @@ const PoemDetail = () => {
                                                 }}
                                                 onTextChange={handleReplyChange}
                                                 isMine={comment.isMine}
+                                                deletePermission={deletePermission}
                                                 onDelete={handleDeleteComment}
                                             />
                                         ))}
