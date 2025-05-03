@@ -1,5 +1,5 @@
 import { Dropdown, Menu } from "antd";
-import React from "react";
+import React, { useEffect } from "react";
 import { FaUserPlus } from "react-icons/fa6";
 import { IoIosMore } from "react-icons/io";
 import { MdReport } from "react-icons/md";
@@ -26,6 +26,7 @@ const Comment = React.memo(({
     onCancelReply,
     onTextChange,
     isMine,
+    deletePermission,
     onDelete // Add this new prop
 }) => {
     // Create dynamic menu based on comment ID
@@ -56,6 +57,17 @@ const Comment = React.memo(({
                     <FaUserPlus color="#666" size={16} /><div> Theo dõi người dùng </div>
                 </div>
             </Menu.Item>
+            {deletePermission ?
+                <Menu.Item
+                    key="delete"
+                    onClick={() => onDelete(comment.id)}
+                >
+                    <div style={{ display: "flex", alignItems: "center", gap: "5px" }}>
+                        <RiDeleteBinFill color="red" size={16} />
+                        <div>Xóa</div>
+                    </div>
+                </Menu.Item> :
+                <></>}
         </Menu>
     );
 
@@ -167,6 +179,7 @@ const Comment = React.memo(({
                 onSubmitReply={onSubmitReply}
                 onCancelReply={onCancelReply}
                 onTextChange={onTextChange}
+                deletePermission={deletePermission}
                 isMine={reply.authorCommentId === currentUserId} // Add this line
                 onDelete={onDelete}
             />
