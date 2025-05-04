@@ -66,12 +66,6 @@ const transactionStatusMap = {
   3: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
 };
 
-const withdrawalStatusMap = {
-  3: { text: "Chờ xử lý", color: "orange", icon: <ClockCircleOutlined /> },
-  1: { text: "Đã xử lý", color: "green", icon: <CheckCircleOutlined /> },
-  2: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
-};
-
 const complaintStatusMap = {
   3: { text: "Đang chờ", color: "gold", icon: <ClockCircleOutlined /> },
   1: { text: "Đã chấp nhận", color: "green", icon: <CheckCircleOutlined /> },
@@ -83,23 +77,20 @@ const YourWallet = () => {
   const [walletBalance, setWalletBalance] = useState(0);
   const [walletStatus, setWalletStatus] = useState(null);
   const [walletId, setWalletId] = useState(null);
-  const [allTransactions, setAllTransactions] = useState([]);
-  const [pagination, setPagination] = useState({
+  const [transactions, setTransactions] = useState([]);
+  const [transactionsLoading, setTransactionsLoading] = useState(false);
+  const [transactionsPagination, setTransactionsPagination] = useState({
     current: 1,
     pageSize: 10,
     total: 0,
   });
+  const [transactionDetailModalVisible, setTransactionDetailModalVisible] = useState(false);
+  const [transactionDetail, setTransactionDetail] = useState(null);
+  const [transactionDetailLoading, setTransactionDetailLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [depositModalVisible, setDepositModalVisible] = useState(false);
   const [accountSettingModalVisible, setAccountSettingModalVisible] = useState(false);
   const [withdrawModalVisible, setWithdrawModalVisible] = useState(false);
-  const [orderDetailModalVisible, setOrderDetailModalVisible] = useState(false);
-  const [selectedOrder, setSelectedOrder] = useState(null);
-  const [orderDetail, setOrderDetail] = useState(null);
-  const [orderDetailLoading, setOrderDetailLoading] = useState(false);
-  const [transactionDetail, setTransactionDetail] = useState(null);
-  const [transactionDetailModalVisible, setTransactionDetailModalVisible] = useState(false);
-  const [transactionDetailLoading, setTransactionDetailLoading] = useState(false);
   const [confirmLoading, setConfirmLoading] = useState(false);
   const [withdrawConfirmLoading, setWithdrawConfirmLoading] = useState(false);
   const [paymentMethodsLoading, setPaymentMethodsLoading] = useState(false);
@@ -173,13 +164,12 @@ const YourWallet = () => {
     }
   };
 
-  const fetchAllTransactions = async (pageNumber = 1, pageSize = 10) => {
-    setLoading(true);
+  const fetchTransactions = async (pageNumber = 1, pageSize = 10) => {
+    setTransactionsLoading(true);
     try {
       const accessToken = localStorage.getItem("accessToken");
       
-      // Fetch transactions
-      const transactionsResponse = await axios.get(
+      const response = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/transactions/v1/mine`,
         {
           params: { pageNumber, pageSize },
@@ -188,75 +178,23 @@ const YourWallet = () => {
           },
         }
       );
-      
-      // Fetch orders
-      const ordersResponse = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/orders/v1`,
-        {
-          params: { pageNumber, pageSize },
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      
-      // Fetch withdrawals
-      const withdrawalsResponse = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-forms/v1/mine`,
-        {
-          params: { pageNumber, pageSize },
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
 
-      // Combine all data
-      const combinedData = [
-        ...(transactionsResponse.data.data?.map(t => ({ ...t, recordType: 'transaction' })) || []),
-        ...(ordersResponse.data.data?.map(o => ({ ...o, recordType: 'order' })) || []),
-        ...(withdrawalsResponse.data.data?.map(w => ({ ...w, recordType: 'withdrawal' })) || [])
-      ].sort((a, b) => new Date(b.createdTime || b.orderDate) - new Date(a.createdTime || a.orderDate));
-
-      setAllTransactions(combinedData);
-      setPagination({
-        current: pageNumber,
-        pageSize,
-        total: (transactionsResponse.data.totalRecords || 0) + 
-               (ordersResponse.data.totalRecords || 0) + 
-               (withdrawalsResponse.data.totalRecords || 0),
-      });
-    } catch (error) {
-      console.error("Fetch error:", error);
-      message.error("Lỗi khi lấy lịch sử giao dịch");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const fetchOrderDetail = async (orderId) => {
-    setOrderDetailLoading(true);
-    try {
-      const accessToken = localStorage.getItem("accessToken");
-      const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/orders/v1/detail/${orderId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        }
-      );
-      
-      if (response.data.statusCode === 200) {
-        setOrderDetail(response.data.data);
+      const result = response.data;
+      if (result.statusCode === 200) {
+        setTransactions(result.data);
+        setTransactionsPagination({
+          current: result.pageNumber,
+          pageSize: result.pageSize,
+          total: result.totalRecords,
+        });
       } else {
-        message.error(response.data.message || "Không thể lấy chi tiết đơn hàng");
+        message.error(result.message || "Không thể lấy lịch sử giao dịch");
       }
     } catch (error) {
-      console.error("Fetch order detail error:", error);
-      message.error("Lỗi khi lấy chi tiết đơn hàng");
+      console.error("Fetch transactions error:", error);
+      message.error("Lỗi khi lấy lịch sử giao dịch");
     } finally {
-      setOrderDetailLoading(false);
+      setTransactionsLoading(false);
     }
   };
 
@@ -298,7 +236,7 @@ const YourWallet = () => {
           },
         }
       );
-      
+
       if (response.data.statusCode === 200) {
         const activeMethods = response.data.data.filter(method => !method.isSuspended);
         setPaymentMethods(activeMethods);
@@ -383,9 +321,9 @@ const YourWallet = () => {
   };
 
   // Handle functions
-  const handleTableChange = (pagination) => {
-    setPagination(pagination);
-    fetchAllTransactions(pagination.current, pagination.pageSize);
+  const handleTransactionsTableChange = (pagination) => {
+    setTransactionsPagination(pagination);
+    fetchTransactions(pagination.current, pagination.pageSize);
   };
 
   const handleDeposit = () => {
@@ -429,7 +367,7 @@ const YourWallet = () => {
       } else if (result?.isSuccess) {
         message.success(result.message || "Nạp tiền thành công!");
         fetchWalletInfo();
-        fetchAllTransactions();
+        fetchTransactions();
         setDepositModalVisible(false);
         depositForm.resetFields();
       } else {
@@ -481,7 +419,7 @@ const YourWallet = () => {
       if (result?.statusCode === 201) {
         message.success("Yêu cầu rút tiền đã được gửi thành công!");
         fetchWalletInfo();
-        fetchAllTransactions();
+        fetchTransactions();
         setWithdrawModalVisible(false);
         withdrawForm.resetFields();
       } else {
@@ -498,28 +436,6 @@ const YourWallet = () => {
   const handleWithdrawCancel = () => {
     withdrawForm.resetFields();
     setWithdrawModalVisible(false);
-  };
-
-  const handleViewOrderDetail = async (order) => {
-    setSelectedOrder(order);
-    setOrderDetailModalVisible(true);
-    await fetchOrderDetail(order.id);
-  };
-
-  const handleViewTransactionDetail = async (transactionId) => {
-    setTransactionDetailModalVisible(true);
-    await fetchTransactionDetail(transactionId);
-  };
-
-  const handleOrderDetailClose = () => {
-    setOrderDetailModalVisible(false);
-    setSelectedOrder(null);
-    setOrderDetail(null);
-  };
-
-  const handleTransactionDetailClose = () => {
-    setTransactionDetailModalVisible(false);
-    setTransactionDetail(null);
   };
 
   const handleAccountSubmit = async (values) => {
@@ -764,128 +680,59 @@ const YourWallet = () => {
   };
 
   // Render functions
-  const renderOrderItems = () => {
-    if (!orderDetail?.orderDetails?.length) return "Không có chi tiết sản phẩm";
-
-    return (
-      <List
-        itemLayout="vertical"
-        dataSource={orderDetail.orderDetails}
-        renderItem={(item, index) => (
-          <List.Item key={index}>
-            <Descriptions bordered size="small" column={1}>
-              <Descriptions.Item label="Số lượng">{item.itemQuantity}</Descriptions.Item>
-              <Descriptions.Item label="Đơn giá">₫{item.itemPrice?.toLocaleString()}</Descriptions.Item>
-              <Descriptions.Item label="Thành tiền">
-                <Text strong>₫{(item.itemPrice * item.itemQuantity)?.toLocaleString()}</Text>
-              </Descriptions.Item>
-              {item.recordFile && (
-                <>
-                  <Descriptions.Item label="Loại sản phẩm">Tệp ghi âm</Descriptions.Item>
-                  <Descriptions.Item label="Tên file">{item.recordFile.name}</Descriptions.Item>
-                  <Descriptions.Item label="Mô tả">{item.recordFile.description}</Descriptions.Item>
-                </>
-              )}
-              {item.masterTemplate && (
-                <>
-                  <Descriptions.Item label="Loại sản phẩm">Mẫu giao dịch</Descriptions.Item>
-                  <Descriptions.Item label="Tên mẫu">{item.masterTemplate.name}</Descriptions.Item>
-                  <Descriptions.Item label="Mô tả">{item.masterTemplate.description}</Descriptions.Item>
-                </>
-              )}
-            </Descriptions>
-          </List.Item>
-        )}
-      />
-    );
-  };
-
-  const combinedColumns = [
+  const transactionColumns = [
     {
       title: "Thời gian",
       dataIndex: "createdTime",
       key: "createdTime",
-      render: (text, record) => {
-        if (record.recordType === 'order') return dayjs(record.orderDate).format("DD/MM/YYYY HH:mm");
-        return dayjs(text).format("DD/MM/YYYY HH:mm");
-      },
-      sorter: (a, b) => {
-        const dateA = new Date(a.createdTime || a.orderDate);
-        const dateB = new Date(b.createdTime || b.orderDate);
-        return dateA - dateB;
-      },
+      render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
+      sorter: (a, b) => new Date(a.createdTime) - new Date(b.createdTime),
     },
     {
       title: "Loại giao dịch",
       dataIndex: "type",
       key: "type",
-      render: (type, record) => {
-        if (record.recordType === 'withdrawal') {
-          return (
-            <Space>
-              <MoneyCollectOutlined />
-              Rút tiền
-            </Space>
-          );
-        }
-        return (
-          <Space>
-            {transactionTypeMap[type]?.icon || <WalletOutlined />}
-            {transactionTypeMap[type]?.text || "Không rõ"}
-          </Space>
-        );
-      },
+      render: (type) => (
+        <Space>
+          {transactionTypeMap[type]?.icon || <WalletOutlined />}
+          {transactionTypeMap[type]?.text || "Không rõ"}
+        </Space>
+      ),
     },
     {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
-      render: (text, record) => {
-        if (record.recordType === 'order') return record.orderDescription;
-        if (record.recordType === 'withdrawal') return "Yêu cầu rút tiền";
-        return text;
-      }
     },
     {
       title: "Mã giao dịch",
       dataIndex: "transactionCode",
       key: "transactionCode",
-      render: (text, record) => {
-        if (record.recordType === 'order') return record.orderCode;
-        if (record.recordType === 'withdrawal') return `WDR-${record.id}`;
-        return text;
-      }
     },
     {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
       render: (amount, record) => {
-        if (record.recordType === 'withdrawal') return `-₫${amount?.toLocaleString()}`;
-        if (record.recordType === 'transaction') {
-          const sign = record.isAddToWallet ? "+" : "-";
-          return `${sign}₫${amount?.toLocaleString()}`;
-        }
-        return `₫${amount?.toLocaleString()}`;
+        const sign = record.isAddToWallet ? "+" : "-";
+        return `${sign}₫${amount?.toLocaleString()}`;
       },
+    },
+    {
+      title: "Số dư",
+      dataIndex: "balance",
+      key: "balance",
+      render: (balance) => `₫${balance?.toLocaleString()}`,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
-      render: (status, record) => {
-        let statusInfo;
-        
-        if (record.recordType === 'withdrawal') {
-          statusInfo = withdrawalStatusMap[status];
-        } else {
-          statusInfo = transactionStatusMap[status];
-        }
-
-        if (!statusInfo) {
-          return <Tag color="default">Không xác định</Tag>;
-        }
-
+      render: (status) => {
+        const statusInfo = transactionStatusMap[status] || {
+          text: "Không xác định",
+          color: "default"
+        };
         return (
           <Tag color={statusInfo.color}>
             {statusInfo.icon}
@@ -897,103 +744,19 @@ const YourWallet = () => {
     {
       title: "Thao tác",
       key: "action",
-      render: (_, record) => {
-        if (record.recordType === 'order') {
-          return (
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => handleViewOrderDetail(record)}
-            >
-              Chi tiết
-            </Button>
-          );
-        }
-        
-        if (record.recordType === 'withdrawal') {
-          return (
-            <Space>
-              <Button
-                type="link"
-                icon={<EyeOutlined />}
-                onClick={() => {
-                  Modal.info({
-                    title: `Chi tiết yêu cầu rút tiền #${record.id}`,
-                    width: 800,
-                    content: (
-                      <div>
-                        <Descriptions bordered column={1} style={{ marginBottom: 16 }}>
-                          <Descriptions.Item label="Phản hồi chi tiết">
-                            {record.resolveDescription || "Chưa có phản hồi"}
-                          </Descriptions.Item>
-                        </Descriptions>
-
-                        <Descriptions bordered column={1}>
-                          <Descriptions.Item label="Bằng chứng">
-                            {record.resolveEvidence ? (
-                              /\.(jpg|jpeg|png|gif)$/i.test(record.resolveEvidence) ? (
-                                <Image
-                                  width="100%"
-                                  src={record.resolveEvidence}
-                                  preview={{
-                                    src: record.resolveEvidence,
-                                  }}
-                                />
-                              ) : (
-                                <Button
-                                  type="link"
-                                  icon={<FileOutlined />}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    window.open(record.resolveEvidence, '_blank');
-                                  }}
-                                >
-                                  Xem file đính kèm
-                                </Button>
-                              )
-                            ) : (
-                              "Không có bằng chứng"
-                            )}
-                          </Descriptions.Item>
-                        </Descriptions>
-                      </div>
-                    ),
-                  });
-                }}
-              >
-                Xem
-              </Button>
-              {record.status === 3 && (
-                <Button
-                  type="link"
-                  icon={<MessageOutlined />}
-                  onClick={() => {
-                    setCurrentWithdrawalId(record.id);
-                    setFeedbackVisible(true);
-                  }}
-                >
-                  Phản hồi
-                </Button>
-              )}
-            </Space>
-          );
-        }
-        
-        if (record.recordType === 'transaction') {
-          return (
-            <Button
-              type="link"
-              icon={<EyeOutlined />}
-              onClick={() => handleViewTransactionDetail(record.id)}
-            >
-              Chi tiết
-            </Button>
-          );
-        }
-        
-        return null;
-      },
-    },
+      render: (_, record) => (
+        <Button
+          type="link"
+          icon={<EyeOutlined />}
+          onClick={() => {
+            setTransactionDetailModalVisible(true);
+            fetchTransactionDetail(record.id);
+          }}
+        >
+          Chi tiết
+        </Button>
+      ),
+    }
   ];
 
   const complaintColumns = [
@@ -1544,268 +1307,329 @@ const YourWallet = () => {
     </Modal>
   );
 
-  const TransactionDetailModal = () => (
-    <Modal
-      title="Chi tiết giao dịch"
-      visible={transactionDetailModalVisible}
-      onCancel={handleTransactionDetailClose}
-      footer={[
-        <Button key="close" onClick={handleTransactionDetailClose}>
-          Đóng
-        </Button>,
-      ]}
-      width={800}
-    >
-      <Spin spinning={transactionDetailLoading}>
-        {transactionDetail ? (
-          <Descriptions bordered column={1}>
-            {/* Basic Transaction Info */}
-            <Descriptions.Item label="Mã giao dịch">
-              <Text strong>{transactionDetail.transactionCode}</Text>
-            </Descriptions.Item>
-            <Descriptions.Item label="Loại giao dịch">
-              <Space>
-                {transactionTypeMap[transactionDetail.type]?.icon || <WalletOutlined />}
-                {transactionTypeMap[transactionDetail.type]?.text || "Không rõ"}
-              </Space>
-            </Descriptions.Item>
-            <Descriptions.Item label="Mô tả">{transactionDetail.description}</Descriptions.Item>
-            <Descriptions.Item label="Trạng thái">
-              <Tag color={transactionStatusMap[transactionDetail.status]?.color || "default"}>
-                {transactionStatusMap[transactionDetail.status]?.icon}
-                {transactionStatusMap[transactionDetail.status]?.text || "Không xác định"}
-              </Tag>
-            </Descriptions.Item>
+  const TransactionDetailModal = () => {
+    const renderOrderDetails = (order) => {
+      if (!order) return null;
   
-            {/* Amount Information */}
-            <Descriptions.Item label="Số tiền">
-              <Text strong type={transactionDetail.isAddToWallet ? "success" : "danger"}>
-                {transactionDetail.isAddToWallet ? "+" : "-"}₫{transactionDetail.amount?.toLocaleString()}
-              </Text>
-            </Descriptions.Item>
-            {transactionDetail.discountAmount > 0 && (
-              <Descriptions.Item label="Giảm giá">
-                ₫{transactionDetail.discountAmount?.toLocaleString()}
-              </Descriptions.Item>
-            )}
-            <Descriptions.Item label="Số dư sau giao dịch">
-              ₫{transactionDetail.balance?.toLocaleString()}
-            </Descriptions.Item>
+      return (
+        <>
+          <Descriptions.Item label="Thông tin đơn hàng">
+            <Space direction="vertical">
+              <div>
+                <Text strong>Mã đơn hàng: </Text>
+                {order.orderCode || 'N/A'}
+              </div>
+              <div>
+                <Text strong>Loại đơn hàng: </Text>
+                {order.type === 1 ? 'Mua thơ' : 
+                 order.type === 2 ? 'Mua template' : 
+                 order.type === 3 ? 'Mua file ghi âm' : 'Khác'}
+              </div>
+              <div>
+                <Text strong>Trạng thái: </Text>
+                <Tag color={
+                  order.status === 1 ? 'orange' :
+                  order.status === 2 ? 'green' :
+                  order.status === 3 ? 'red' : 'default'
+                }>
+                  {order.status === 1 ? 'Chờ xử lý' :
+                   order.status === 2 ? 'Hoàn thành' :
+                   order.status === 3 ? 'Đã hủy' : 'Không xác định'}
+                </Tag>
+              </div>
+              <div>
+                <Text strong>Mô tả: </Text>
+                {order.orderDescription || 'Không có mô tả'}
+              </div>
+              <div>
+                <Text strong>Tổng tiền: </Text>
+                ₫{order.amount?.toLocaleString() || '0'}
+              </div>
+            </Space>
+          </Descriptions.Item>
   
-            {/* Timeline Information */}
-            <Descriptions.Item label="Thời gian tạo">
-              {dayjs(transactionDetail.createdTime).format("DD/MM/YYYY HH:mm")}
-            </Descriptions.Item>
-            {transactionDetail.paidDate && (
-              <Descriptions.Item label="Thời gian thanh toán">
-                {dayjs(transactionDetail.paidDate).format("DD/MM/YYYY HH:mm")}
-              </Descriptions.Item>
-            )}
-            {transactionDetail.cancelledDate && (
-              <Descriptions.Item label="Thời gian hủy">
-                {dayjs(transactionDetail.cancelledDate).format("DD/MM/YYYY HH:mm")}
-              </Descriptions.Item>
-            )}
+          {/* Order Details */}
+          {order.orderDetails?.map((detail, index) => (
+            <Descriptions.Item key={index} label={`Chi tiết sản phẩm ${index + 1}`}>
+              <Space direction="vertical">
+                <div>
+                  <Text strong>Giá đơn vị: </Text>
+                  ₫{detail.itemPrice?.toLocaleString() || '0'}
+                </div>
+                <div>
+                  <Text strong>Số lượng: </Text>
+                  {detail.itemQuantity || '1'}
+                </div>
+                <div>
+                  <Text strong>Thành tiền: </Text>
+                  ₫{(detail.itemPrice * (detail.itemQuantity || 1))?.toLocaleString() || '0'}
+                </div>
   
-            {/* User Information */}
-            {transactionDetail.user && (
-              <Descriptions.Item label="Người gửi">
-                <Space>
-                  {transactionDetail.user.avatar && (
-                    <Image
-                      src={transactionDetail.user.avatar}
-                      width={40}
-                      preview={false}
-                      style={{ borderRadius: '50%' }}
-                    />
-                  )}
-                  <div>
-                    <div>{transactionDetail.user.displayName || transactionDetail.user.fullName}</div>
-                    <div style={{ fontSize: 12, color: '#888' }}>
-                      {transactionDetail.user.email || transactionDetail.user.phoneNumber}
-                    </div>
-                  </div>
-                </Space>
-              </Descriptions.Item>
-            )}
-            
-            {transactionDetail.receiveUser && (
-              <Descriptions.Item label="Người nhận">
-                <Space>
-                  {transactionDetail.receiveUser.avatar && (
-                    <Image
-                      src={transactionDetail.receiveUser.avatar}
-                      width={40}
-                      preview={false}
-                      style={{ borderRadius: '50%' }}
-                    />
-                  )}
-                  <div>
-                    <div>{transactionDetail.receiveUser.displayName || transactionDetail.receiveUser.fullName}</div>
-                    <div style={{ fontSize: 12, color: '#888' }}>
-                      {transactionDetail.receiveUser.email || transactionDetail.receiveUser.phoneNumber}
-                    </div>
-                  </div>
-                </Space>
-              </Descriptions.Item>
-            )}
-  
-            {/* Payment Gateway */}
-            {transactionDetail.paymentGateway && (
-              <Descriptions.Item label="Cổng thanh toán">
-                <Space>
-                  {transactionDetail.paymentGateway.imageIcon && (
-                    <Image
-                      src={transactionDetail.paymentGateway.imageIcon}
-                      width={30}
-                      preview={false}
-                    />
-                  )}
-                  <div>
-                    {transactionDetail.paymentGateway.name}
-                    {transactionDetail.paymentGateway.isSuspended && (
-                      <Tag color="error" style={{ marginLeft: 8 }}>Đã ngừng hoạt động</Tag>
-                    )}
-                  </div>
-                </Space>
-              </Descriptions.Item>
-            )}
-  
-            {/* Order Information */}
-            {transactionDetail.order && (
-              <>
-                <Descriptions.Item label="Thông tin đơn hàng">
-                  <Space direction="vertical">
+                {/* Template Details */}
+                {detail.masterTemplate && (
+                  <>
                     <div>
-                      <Text strong>Mã đơn hàng: </Text>
-                      {transactionDetail.order.orderCode}
+                      <Text strong>Tên template: </Text>
+                      {detail.masterTemplate.templateName || 'N/A'}
                     </div>
+                  </>
+                )}
+  
+                {/* Sale Version Details */}
+                {detail.saleVersion && (
+                  <>
                     <div>
-                      <Text strong>Mô tả: </Text>
-                      {transactionDetail.order.orderDescription}
-                    </div>
-                    <div>
-                      <Text strong>Số lượng: </Text>
-                      {transactionDetail.order.itemQuantity}
+                      <Text strong>Tên thơ: </Text>
+                      {detail.saleVersion.poem?.title || 'N/A'}
                     </div>
                     <div>
                       <Text strong>Giá: </Text>
-                      ₫{transactionDetail.order.itemPrice?.toLocaleString()}
+                      ₫{detail.saleVersion.price?.toLocaleString() || '0'}
                     </div>
-                  </Space>
+                    <div>
+                      <Text strong>Thời lượng: </Text>
+                      {detail.saleVersion.durationTime || '0'} phút
+                    </div>
+                    <div>
+                      <Text strong>Hoa hồng: </Text>
+                      {detail.saleVersion.commissionPercentage || '0'}%
+                    </div>
+                  </>
+                )}
+  
+                {/* Record File Details */}
+                {detail.recordFile && (
+                  <>
+                    <div>
+                      <Text strong>Tên file: </Text>
+                      {detail.recordFile.fileName || 'N/A'}
+                    </div>
+                  </>
+                )}
+              </Space>
+            </Descriptions.Item>
+          ))}
+        </>
+      );
+    };
+  
+    return (
+      <Modal
+        title="Chi tiết giao dịch"
+        visible={transactionDetailModalVisible}
+        onCancel={() => {
+          setTransactionDetailModalVisible(false);
+          setTransactionDetail(null);
+        }}
+        footer={[
+          <Button key="close" onClick={() => {
+            setTransactionDetailModalVisible(false);
+            setTransactionDetail(null);
+          }}>
+            Đóng
+          </Button>,
+        ]}
+        width={800}
+      >
+        <Spin spinning={transactionDetailLoading}>
+          {transactionDetail ? (
+            <Descriptions bordered column={1}>
+              {/* Basic Transaction Info */}
+              <Descriptions.Item label="Mã giao dịch">
+                <Text strong>{transactionDetail.transactionCode || 'N/A'}</Text>
+              </Descriptions.Item>
+              <Descriptions.Item label="Loại giao dịch">
+                <Space>
+                  {transactionTypeMap[transactionDetail.type]?.icon || <WalletOutlined />}
+                  {transactionTypeMap[transactionDetail.type]?.text || "Không rõ"}
+                </Space>
+              </Descriptions.Item>
+              <Descriptions.Item label="Mô tả">{transactionDetail.description || 'N/A'}</Descriptions.Item>
+              <Descriptions.Item label="Trạng thái">
+                <Tag color={transactionStatusMap[transactionDetail.status]?.color || "default"}>
+                  {transactionStatusMap[transactionDetail.status]?.icon}
+                  {transactionStatusMap[transactionDetail.status]?.text || "Không xác định"}
+                </Tag>
+              </Descriptions.Item>
+  
+              {/* Amount Information */}
+              <Descriptions.Item label="Số tiền">
+                <Text strong type={transactionDetail.isAddToWallet ? "success" : "danger"}>
+                  {transactionDetail.isAddToWallet ? "+" : "-"}₫{transactionDetail.amount?.toLocaleString() || '0'}
+                </Text>
+              </Descriptions.Item>
+              {transactionDetail.discountAmount > 0 && (
+                <Descriptions.Item label="Giảm giá">
+                  ₫{transactionDetail.discountAmount?.toLocaleString() || '0'}
                 </Descriptions.Item>
+              )}
+              <Descriptions.Item label="Số dư sau giao dịch">
+                ₫{transactionDetail.balance?.toLocaleString() || '0'}
+              </Descriptions.Item>
   
-                {/* Poem Version */}
-                {transactionDetail.order.saleVersion && (
-                  <Descriptions.Item label="Phiên bản thơ">
-                    <Space direction="vertical">
-                      <div>
-                        <Text strong>Tên thơ: </Text>
-                        {transactionDetail.order.saleVersion.poem.title}
-                      </div>
-                      <div>
-                        <Text strong>Giá: </Text>
-                        ₫{transactionDetail.order.saleVersion.price?.toLocaleString()}
-                      </div>
-                      <div>
-                        <Text strong>Thời lượng: </Text>
-                        {transactionDetail.order.saleVersion.durationTime} phút
-                      </div>
-                      <div>
-                        <Text strong>Hoa hồng: </Text>
-                        {transactionDetail.order.saleVersion.commissionPercentage}%
-                      </div>
-                    </Space>
-                  </Descriptions.Item>
-                )}
+              {/* Timeline Information */}
+              <Descriptions.Item label="Thời gian tạo">
+                {dayjs(transactionDetail.createdTime).format("DD/MM/YYYY HH:mm")}
+              </Descriptions.Item>
+              {transactionDetail.paidDate && (
+                <Descriptions.Item label="Thời gian thanh toán">
+                  {dayjs(transactionDetail.paidDate).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+              )}
+              {transactionDetail.cancelledDate && (
+                <Descriptions.Item label="Thời gian hủy">
+                  {dayjs(transactionDetail.cancelledDate).format("DD/MM/YYYY HH:mm")}
+                </Descriptions.Item>
+              )}
   
-                {/* Record File */}
-                {transactionDetail.order.recordFile && (
-                  <Descriptions.Item label="File ghi âm">
-                    {transactionDetail.order.recordFile.fileName}
-                  </Descriptions.Item>
-                )}
-  
-                {/* Template */}
-                {transactionDetail.order.masterTemplate && (
-                  <Descriptions.Item label="Template">
-                    {transactionDetail.order.masterTemplate.templateName}
-                  </Descriptions.Item>
-                )}
-              </>
-            )}
-  
-            {/* Withdrawal Information */}
-            {transactionDetail.withdrawalForm && (
-              <>
-                <Descriptions.Item label="Thông tin rút tiền">
-                  <Space direction="vertical">
-                    <div>
-                      <Text strong>Số tiền: </Text>
-                      ₫{transactionDetail.withdrawalForm.amount?.toLocaleString()}
-                    </div>
-                    <div>
-                      <Text strong>Mô tả: </Text>
-                      {transactionDetail.withdrawalForm.description}
-                    </div>
-                    {transactionDetail.withdrawalForm.resolveDescription && (
-                      <div>
-                        <Text strong>Mô tả giải quyết: </Text>
-                        {transactionDetail.withdrawalForm.resolveDescription}
-                      </div>
+              {/* User Information */}
+              {transactionDetail.user && (
+                <Descriptions.Item label="Người gửi">
+                  <Space>
+                    {transactionDetail.user.avatar && (
+                      <Image
+                        src={transactionDetail.user.avatar}
+                        width={50}
+                        height={50}
+                        preview={false}
+                        style={{
+                          borderRadius: '50%',
+                          objectFit: 'cover'
+                        }}
+                      />
                     )}
                     <div>
-                      <Text strong>Ngày tạo: </Text>
-                      {dayjs(transactionDetail.withdrawalForm.createdTime).format("DD/MM/YYYY HH:mm")}
+                      <div>{transactionDetail.user.displayName || transactionDetail.user.fullName || 'N/A'}</div>
+                      <div style={{ fontSize: 12, color: '#888' }}>
+                        {transactionDetail.user.email || transactionDetail.user.phoneNumber || 'N/A'}
+                      </div>
                     </div>
                   </Space>
                 </Descriptions.Item>
+              )}
   
-                {/* Bank Information */}
-                {transactionDetail.withdrawalForm.bankType && (
-                  <Descriptions.Item label="Ngân hàng">
-                    <Space>
-                      {transactionDetail.withdrawalForm.bankType.imageIcon && (
-                        <Image
-                          src={transactionDetail.withdrawalForm.bankType.imageIcon}
-                          width={30}
-                          preview={false}
-                        />
-                      )}
-                      <div>
-                        {transactionDetail.withdrawalForm.bankType.bankName}
-                        <div style={{ fontSize: 12, color: '#888' }}>
-                          {transactionDetail.withdrawalForm.bankType.bankCode}
-                        </div>
+              {transactionDetail.receiveUser && (
+                <Descriptions.Item label="Người nhận">
+                  <Space>
+                    {transactionDetail.receiveUser.avatar && (
+                      <Image
+                        src={transactionDetail.receiveUser.avatar}
+                        width={50}
+                        height={50}
+                        preview={false}
+                        style={{
+                          borderRadius: '50%',
+                          objectFit: 'cover'
+                        }}
+                      />
+                    )}
+                    <div>
+                      <div>{transactionDetail.receiveUser.displayName || transactionDetail.receiveUser.fullName || 'N/A'}</div>
+                      <div style={{ fontSize: 12, color: '#888' }}>
+                        {transactionDetail.receiveUser.email || transactionDetail.receiveUser.phoneNumber || 'N/A'}
                       </div>
-                    </Space>
-                  </Descriptions.Item>
-                )}
+                    </div>
+                  </Space>
+                </Descriptions.Item>
+              )}
   
-                {/* User Bank Account */}
-                {transactionDetail.withdrawalForm.userBankType && (
-                  <Descriptions.Item label="Tài khoản ngân hàng">
+              {/* Payment Gateway */}
+              {transactionDetail.paymentGateway && (
+                <Descriptions.Item label="Cổng thanh toán">
+                  <Space>
+                    {transactionDetail.paymentGateway.imageIcon && (
+                      <Image
+                        src={transactionDetail.paymentGateway.imageIcon}
+                        width={30}
+                        preview={false}
+                      />
+                    )}
+                    <div>
+                      {transactionDetail.paymentGateway.name}
+                      {transactionDetail.paymentGateway.isSuspended && (
+                        <Tag color="error" style={{ marginLeft: 8 }}>Đã ngừng hoạt động</Tag>
+                      )}
+                    </div>
+                  </Space>
+                </Descriptions.Item>
+              )}
+  
+              {/* Order Information */}
+              {renderOrderDetails(transactionDetail.order)}
+  
+              {/* Withdrawal Information */}
+              {transactionDetail.withdrawalForm && (
+                <>
+                  <Descriptions.Item label="Thông tin rút tiền">
                     <Space direction="vertical">
                       <div>
-                        <Text strong>Tên tài khoản: </Text>
-                        {transactionDetail.withdrawalForm.userBankType.accountName}
+                        <Text strong>Số tiền: </Text>
+                        ₫{transactionDetail.withdrawalForm.amount?.toLocaleString() || '0'}
                       </div>
                       <div>
-                        <Text strong>Số tài khoản: </Text>
-                        {transactionDetail.withdrawalForm.userBankType.accountNumber}
+                        <Text strong>Mô tả: </Text>
+                        {transactionDetail.withdrawalForm.description || 'N/A'}
+                      </div>
+                      {transactionDetail.withdrawalForm.resolveDescription && (
+                        <div>
+                          <Text strong>Mô tả giải quyết: </Text>
+                          {transactionDetail.withdrawalForm.resolveDescription}
+                        </div>
+                      )}
+                      <div>
+                        <Text strong>Ngày tạo: </Text>
+                        {dayjs(transactionDetail.withdrawalForm.createdTime).format("DD/MM/YYYY HH:mm")}
                       </div>
                     </Space>
                   </Descriptions.Item>
-                )}
-              </>
-            )}
-          </Descriptions>
-        ) : (
-          <div>Không tìm thấy thông tin giao dịch</div>
-        )}
-      </Spin>
-    </Modal>
-  );
+  
+                  {/* Bank Information */}
+                  {transactionDetail.withdrawalForm.bankType && (
+                    <Descriptions.Item label="Ngân hàng">
+                      <Space>
+                        {transactionDetail.withdrawalForm.bankType.imageIcon && (
+                          <Image
+                            src={transactionDetail.withdrawalForm.bankType.imageIcon}
+                            width={30}
+                            preview={false}
+                          />
+                        )}
+                        <div>
+                          {transactionDetail.withdrawalForm.bankType.bankName}
+                          <div style={{ fontSize: 12, color: '#888' }}>
+                            {transactionDetail.withdrawalForm.bankType.bankCode}
+                          </div>
+                        </div>
+                      </Space>
+                    </Descriptions.Item>
+                  )}
+  
+                  {/* User Bank Account */}
+                  {transactionDetail.withdrawalForm.userBankType && (
+                    <Descriptions.Item label="Tài khoản ngân hàng">
+                      <Space direction="vertical">
+                        <div>
+                          <Text strong>Tên tài khoản: </Text>
+                          {transactionDetail.withdrawalForm.userBankType.accountName}
+                        </div>
+                        <div>
+                          <Text strong>Số tài khoản: </Text>
+                          {transactionDetail.withdrawalForm.userBankType.accountNumber}
+                        </div>
+                      </Space>
+                    </Descriptions.Item>
+                  )}
+                </>
+              )}
+            </Descriptions>
+          ) : (
+            <div>Không tìm thấy thông tin giao dịch</div>
+          )}
+        </Spin>
+      </Modal>
+    );
+  };
+
   const exampleAmounts = [10000, 20000, 50000, 100000, 200000, 500000];
   const dataSource = exampleAmounts.map(amount => ({
     key: amount,
@@ -1863,7 +1687,7 @@ const YourWallet = () => {
 
   useEffect(() => {
     fetchWalletInfo();
-    fetchAllTransactions(pagination.current, pagination.pageSize);
+    fetchTransactions();
     fetchPaymentMethods();
     fetchComplaints();
     fetchBankTypes();
@@ -1943,16 +1767,16 @@ const YourWallet = () => {
           key="1"
         >
           <Table
-            columns={combinedColumns}
-            dataSource={allTransactions}
-            rowKey={(record) => `${record.recordType}-${record.id}`}
-            loading={loading}
+            columns={transactionColumns}
+            dataSource={transactions}
+            rowKey="id"
+            loading={transactionsLoading}
             pagination={{
-              ...pagination,
+              ...transactionsPagination,
               showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
             }}
-            onChange={handleTableChange}
+            onChange={handleTransactionsTableChange}
           />
         </Tabs.TabPane>
 
@@ -2225,86 +2049,13 @@ const YourWallet = () => {
         </Form>
       </Modal>
 
-      {/* Modal chi tiết đơn hàng */}
-      <Modal
-        title={`Chi tiết đơn hàng ${selectedOrder?.orderCode || ''}`}
-        visible={orderDetailModalVisible}
-        onCancel={handleOrderDetailClose}
-        footer={[
-          <Button key="close" onClick={handleOrderDetailClose}>
-            Đóng
-          </Button>,
-        ]}
-        width={800}
-      >
-        <Spin spinning={orderDetailLoading}>
-          {orderDetail ? (
-            <Descriptions bordered column={1}>
-              <Descriptions.Item label="Mã đơn hàng">
-                <Text strong>{orderDetail.orderCode}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Loại đơn hàng">
-                <Space>
-                  {transactionTypeMap[orderDetail.type]?.icon}
-                  {transactionTypeMap[orderDetail.type]?.text || "Không rõ"}
-                </Space>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mô tả">
-                {orderDetail.orderDescription}
-              </Descriptions.Item>
-              <Descriptions.Item label="Trạng thái">
-                <Badge
-                  color={transactionStatusMap[orderDetail.status]?.color}
-                  text={
-                    <Space>
-                      {transactionStatusMap[orderDetail.status]?.icon}
-                      {transactionStatusMap[orderDetail.status]?.text || "Không xác định"}
-                    </Space>
-                  }
-                />
-              </Descriptions.Item>
-              <Descriptions.Item label="Ngày tạo đơn">
-                {dayjs(orderDetail.orderDate).format("DD/MM/YYYY HH:mm")}
-              </Descriptions.Item>
-              {orderDetail.paidDate && (
-                <Descriptions.Item label="Ngày thanh toán">
-                  {dayjs(orderDetail.paidDate).format("DD/MM/YYYY HH:mm")}
-                </Descriptions.Item>
-              )}
-              {orderDetail.cancelledDate && (
-                <Descriptions.Item label="Ngày hủy">
-                  {dayjs(orderDetail.cancelledDate).format("DD/MM/YYYY HH:mm")}
-                </Descriptions.Item>
-              )}
-              <Descriptions.Item label="Tổng tiền">
-                <Text strong type="success">
-                  {orderDetail.amount > 0
-                    ? `₫${orderDetail.amount?.toLocaleString()}`
-                    : "Miễn phí"}
-                </Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Mã token">
-                <Text code>{orderDetail.orderToken}</Text>
-              </Descriptions.Item>
-              <Descriptions.Item label="Chi tiết sản phẩm">
-                {renderOrderItems()}
-              </Descriptions.Item>
-            </Descriptions>
-          ) : (
-            <div>Không tìm thấy thông tin đơn hàng</div>
-          )}
-        </Spin>
-      </Modal>
-
-      {/* Modal chi tiết giao dịch */}
-      <TransactionDetailModal />
-
       {/* Các modal khác */}
       <FeedbackModal />
       <EditInfoModal />
       <EditImagesModal />
       <AccountSettingModal />
       <AccountSelectionModal />
+      <TransactionDetailModal />
     </div>
   );
 };
