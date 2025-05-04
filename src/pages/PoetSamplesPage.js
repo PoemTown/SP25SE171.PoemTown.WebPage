@@ -69,7 +69,7 @@ const PoetSamplesPage = () => {
             const queryParams = new URLSearchParams();
 
             if (searchQuery) {
-                queryParams.append('filterOptions.name', searchQuery); // Thay đổi từ 'name' thành 'filterOptions.name'
+                queryParams.append('filterOptions.name', searchQuery);
             }
 
             queryParams.append('pageNumber', pagination.current);
@@ -79,7 +79,6 @@ const PoetSamplesPage = () => {
                 `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1?${queryParams.toString()}`
             );
 
-            // Phần còn lại giữ nguyên
             if (response.data.statusCode === 200) {
                 setPoets(response.data.data);
                 setPagination(prev => ({
@@ -118,10 +117,9 @@ const PoetSamplesPage = () => {
 
     const navigate = useNavigate();
 
-    const formatDate = (dateString) => {
-        if (!dateString) return 'Không rõ';
-        const options = { year: 'numeric', month: 'short', day: 'numeric' };
-        return new Date(dateString).toLocaleDateString('vi-VN', options);
+    const formatYears = (yearOfBirth, yearOfDeath) => {
+        if (!yearOfBirth) return 'Không rõ';
+        return yearOfDeath ? `${yearOfBirth} - ${yearOfDeath}` : `${yearOfBirth} - Nay`;
     };
 
     const isLoggedIn = !!localStorage.getItem('accessToken');
@@ -429,7 +427,7 @@ const PoetSamplesPage = () => {
                                                             color: '#666'
                                                         }}>
                                                             <CalendarOutlined style={{ marginRight: '8px', color: '#1890ff' }} />
-                                                            <Text>{formatDate(poet.dateOfBirth)}</Text>
+                                                            <Text>{formatYears(poet.yearOfBirth, poet.yearOfDeath)}</Text>
                                                         </div>
 
                                                         <Paragraph
@@ -442,7 +440,6 @@ const PoetSamplesPage = () => {
                                                                 marginBottom: '16px',
                                                                 minHeight: '72px',
                                                                 textAlign: "justify",
-
                                                             }}
                                                         >
                                                             {poet.bio || 'Chưa có tiểu sử'}
@@ -493,7 +490,6 @@ const PoetSamplesPage = () => {
                         </>
                     )}
                 </div>
-
             </div>
             <Footer />
         </div>

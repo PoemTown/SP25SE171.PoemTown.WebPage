@@ -5,7 +5,6 @@ import {
   Button,
   Form,
   Input,
-  DatePicker,
   Select,
   Upload,
   message,
@@ -236,7 +235,6 @@ const PoetSamplesManagement = () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
 
-      // Tạo query string với nhiều titleSampleIds
       const queryParams = new URLSearchParams();
       titleSampleIds.forEach(id => queryParams.append('titleSampleIds', id));
 
@@ -269,7 +267,6 @@ const PoetSamplesManagement = () => {
     try {
       const accessToken = localStorage.getItem('accessToken');
 
-      // Tạo query string với nhiều titleSampleIds
       const queryString = titleSampleIds
         .map(id => `titleSampleIds=${encodeURIComponent(id)}`)
         .join('&');
@@ -302,12 +299,11 @@ const PoetSamplesManagement = () => {
       setLoading(true);
       const values = await form.validateFields();
 
-      const formattedDate = values.dateOfBirth ? dayjs(values.dateOfBirth).format('YYYY-MM-DD') : null;
-
       const requestBody = {
         name: values.name,
         bio: values.bio,
-        dateOfBirth: formattedDate,
+        yearOfBirth: values.yearOfBirth,
+        yearOfDeath: values.yearOfDeath,
         gender: values.gender,
         avatar: values.avatar || '',
         titleSampleIds: values.titleSampleIds || []
@@ -349,12 +345,11 @@ const PoetSamplesManagement = () => {
     setCurrentPoet(poet);
     setIsEditModalVisible(true);
 
-    const formattedDate = poet.dateOfBirth ? dayjs(poet.dateOfBirth) : null;
-
     editForm.setFieldsValue({
       name: poet.name,
       bio: poet.bio,
-      dateOfBirth: formattedDate,
+      yearOfBirth: poet.yearOfBirth,
+      yearOfDeath: poet.yearOfDeath,
       gender: poet.gender,
       avatar: poet.avatar || '',
       titleSampleIds: poet.titleSamples?.map(sample => sample.id) || []
@@ -370,13 +365,12 @@ const PoetSamplesManagement = () => {
       setLoading(true);
       const values = await editForm.validateFields();
 
-      const formattedDate = values.dateOfBirth ? dayjs(values.dateOfBirth).format('YYYY-MM-DD') : null;
-
       const requestBody = {
         id: currentPoet.id,
         name: values.name,
         bio: values.bio,
-        dateOfBirth: formattedDate,
+        yearOfBirth: values.yearOfBirth,
+        yearOfDeath: values.yearOfDeath,
         gender: values.gender,
         avatar: values.avatar || '',
       };
@@ -674,7 +668,7 @@ const PoetSamplesManagement = () => {
                 }}>
                   <CalendarOutlined style={{ marginRight: '4px' }} />
                   <Text type="secondary" style={{ fontSize: '12px' }}>
-                    {poet.dateOfBirth ? dayjs(poet.dateOfBirth).format('DD/MM/YYYY') : 'Không rõ'}
+                    {poet.yearOfBirth ? `${poet.yearOfBirth} - ${poet.yearOfDeath || 'Nay'}` : 'Không rõ'}
                   </Text>
                 </div>
               </div>
@@ -742,13 +736,12 @@ const PoetSamplesManagement = () => {
                             />
                             <div>
                               <p><strong>Giới tính:</strong> {poet.gender}</p>
-                              <p><strong>Ngày sinh:</strong> {poet.dateOfBirth ? dayjs(poet.dateOfBirth).format('DD/MM/YYYY') : 'Không rõ'}</p>
+                              <p><strong>Năm sinh - năm mất:</strong> {poet.yearOfBirth ? `${poet.yearOfBirth} - ${poet.yearOfDeath || 'Nay'}` : 'Không rõ'}</p>
                               {poet.titleSamples && poet.titleSamples.length > 0 && (
                                 <div>
                                   <p><strong>Chuyên môn:</strong></p>
                                   <div style={{ display: 'flex', flexWrap: 'wrap', gap: '12px', marginTop: '8px' }}>
                                     {poet.titleSamples.map(sample => {
-                                      // Ánh xạ tên chuyên môn với icon và màu sắc tương ứng
                                       const getStyle = (name) => {
                                         const styles = {
                                           'Chuyên gia thơ 8 chữ': { icon: <StarFilled style={{ fontSize: '16px' }} />, color: 'gold' },
@@ -761,8 +754,6 @@ const PoetSamplesManagement = () => {
                                           'Cảm xúc': { icon: <FireFilled style={{ fontSize: '16px' }} />, color: 'orange' },
                                           'Chuyên gia tâm lý': { icon: <CrownFilled style={{ fontSize: '16px' }} />, color: 'cyan' }
                                         };
-                                        
-                                        // Mặc định nếu không tìm thấy
                                         return styles[name] || { icon: <StarFilled style={{ fontSize: '16px' }} />, color: 'gray' };
                                       };
                                       
@@ -906,24 +897,39 @@ const PoetSamplesManagement = () => {
             </Col>
           </Row>
 
-          <Form.Item
-            name="dateOfBirth"
-            label={<Text strong>Ngày sinh</Text>}
-            rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
-          >
-            <DatePicker
-              style={{ width: '100%' }}
-              size="large"
-              disabledDate={current => current && current > dayjs()}
-            />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="yearOfBirth"
+                label={<Text strong>Năm sinh</Text>}
+                rules={[{ required: true, message: 'Vui lòng nhập năm sinh!' }]}
+              >
+                <Input 
+                  type="number" 
+                  placeholder="Nhập năm sinh" 
+                  size="large" 
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="yearOfDeath"
+                label={<Text strong>Năm mất</Text>}
+              >
+                <Input 
+                  type="number" 
+                  placeholder="Nhập năm mất (nếu có)" 
+                  size="large" 
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item
             name="bio"
             label={<Text strong>Tiểu sử</Text>}
             rules={[
               { required: true, message: 'Vui lòng nhập tiểu sử!' },
-              
             ]}
           >
             <TextArea
@@ -1043,17 +1049,33 @@ const PoetSamplesManagement = () => {
             </Col>
           </Row>
 
-          <Form.Item
-            name="dateOfBirth"
-            label={<Text strong>Ngày sinh</Text>}
-            rules={[{ required: true, message: 'Vui lòng chọn ngày sinh!' }]}
-          >
-            <DatePicker
-              style={{ width: '100%' }}
-              size="large"
-              disabledDate={current => current && current > dayjs()}
-            />
-          </Form.Item>
+          <Row gutter={16}>
+            <Col span={12}>
+              <Form.Item
+                name="yearOfBirth"
+                label={<Text strong>Năm sinh</Text>}
+                rules={[{ required: true, message: 'Vui lòng nhập năm sinh!' }]}
+              >
+                <Input 
+                  type="number" 
+                  placeholder="Nhập năm sinh" 
+                  size="large" 
+                />
+              </Form.Item>
+            </Col>
+            <Col span={12}>
+              <Form.Item
+                name="yearOfDeath"
+                label={<Text strong>Năm mất</Text>}
+              >
+                <Input 
+                  type="number" 
+                  placeholder="Nhập năm mất (nếu có)" 
+                  size="large" 
+                />
+              </Form.Item>
+            </Col>
+          </Row>
 
           <Form.Item
             name="bio"
