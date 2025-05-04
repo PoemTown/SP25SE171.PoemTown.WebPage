@@ -32,13 +32,9 @@ import { ArrowBackIos, ArrowForwardIos, Edit, CloudUpload } from "@mui/icons-mat
 import axios from "axios";
 
 // Utility functions
-const getBankType = (type) => {
-    switch (type) {
-        case 1: return "Momo";
-        case 2: return "Vietcombank";
-        case 3: return "Techcombank";
-        default: return "Khác";
-    }
+const getBankType = (bankType) => {
+    if (!bankType || !bankType.bankName) return "Khác";
+    return `${bankType.bankName} (${bankType.bankCode})`;
 };
 
 const getWithdrawalStatus = (status) => {
@@ -368,8 +364,9 @@ const RequestFromUser = () => {
                                         <TableCell>{withdrawal.id || "Không có mã"}</TableCell>
                                         <TableCell>{withdrawal.amount ? withdrawal.amount.toLocaleString() : "0"} VNĐ</TableCell>
                                         <TableCell>
-                                            {/* <img src={withdrawal.bankType?.imageIcon} alt={`${withdrawal.bankType?.bankCode}`} style={{ width: "20px", height: "100%", objectFit: "contain", marginRight: 5 }} /> */}
-                                            {withdrawal.bankType?.bankCode || "Không xác định"}
+                                            {withdrawal.bankType ? (
+                                                getBankType(withdrawal.bankType)
+                                            ) : "Không xác định"}
                                         </TableCell>
                                         <TableCell>{withdrawal.accountName || "Không xác định"}</TableCell>
                                         <TableCell>{withdrawal.accountNumber || "Không xác định"}</TableCell>
@@ -445,7 +442,26 @@ const RequestFromUser = () => {
                                     <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 2 }}>
                                         <Box>
                                             <Typography variant="body1"><strong>Mã yêu cầu:</strong> {selectedWithdrawal.id || "Không xác định"}</Typography>
-                                            <Typography variant="body1"><strong>Ngân hàng:</strong> {selectedWithdrawal.bankType?.bankCode} - {selectedWithdrawal.bankType?.bankName}</Typography>
+                                            <Typography variant="body1">
+                                                <strong>Ngân hàng:</strong> 
+                                                {selectedWithdrawal.bankType ? (
+                                                    <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', ml: 1 }}>
+                                                        {selectedWithdrawal.bankType.imageIcon && (
+                                                            <img 
+                                                                src={selectedWithdrawal.bankType.imageIcon} 
+                                                                alt={selectedWithdrawal.bankType.bankCode} 
+                                                                style={{ 
+                                                                    width: "20px", 
+                                                                    height: "20px", 
+                                                                    objectFit: "contain", 
+                                                                    marginRight: 5 
+                                                                }} 
+                                                            />
+                                                        )}
+                                                        {getBankType(selectedWithdrawal.bankType)}
+                                                    </Box>
+                                                ) : "Không xác định"}
+                                            </Typography>
                                             <Typography variant="body1"><strong>Trạng thái:</strong>
                                                 <Chip
                                                     label={getWithdrawalStatus(selectedWithdrawal.status)}
