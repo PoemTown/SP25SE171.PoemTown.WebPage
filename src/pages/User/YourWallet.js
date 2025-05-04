@@ -693,6 +693,7 @@ const YourWallet = () => {
       title: "Thời gian",
       dataIndex: "createdTime",
       key: "createdTime",
+      width: 150,
       render: (text) => dayjs(text).format("DD/MM/YYYY HH:mm"),
       sorter: (a, b) => new Date(a.createdTime) - new Date(b.createdTime),
     },
@@ -700,6 +701,7 @@ const YourWallet = () => {
       title: "Loại giao dịch",
       dataIndex: "type",
       key: "type",
+      width: 160,
       render: (type) => (
         <Space>
           {transactionTypeMap[type]?.icon || <WalletOutlined />}
@@ -711,16 +713,20 @@ const YourWallet = () => {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
+      width: 200, 
+      ellipsis: true, 
     },
-    {
-      title: "Mã giao dịch",
-      dataIndex: "transactionCode",
-      key: "transactionCode",
-    },
+    // {
+    //   title: "Mã giao dịch",
+    //   dataIndex: "transactionCode",
+    //   key: "transactionCode",
+    //   width: 180,
+    // },
     {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
+      width: 140, 
       render: (amount, record) => {
         const sign = record.isAddToWallet ? "+" : "-";
         return `${sign}₫${amount?.toLocaleString()}`;
@@ -730,12 +736,14 @@ const YourWallet = () => {
       title: "Số dư",
       dataIndex: "balance",
       key: "balance",
+      width: 140,
       render: (balance) => `₫${balance?.toLocaleString()}`,
     },
     {
       title: "Trạng thái",
       dataIndex: "status",
       key: "status",
+      width: 140,
       render: (status) => {
         const statusInfo = transactionStatusMap[status] || {
           text: "Không xác định",
@@ -752,8 +760,9 @@ const YourWallet = () => {
     {
       title: "Thao tác",
       key: "action",
-      render: (_, record) =>
-      (
+      fixed: "right",
+      width: 100,
+      render: (_, record) => (
         <Button
           type="link"
           icon={<EyeOutlined />}
@@ -764,10 +773,10 @@ const YourWallet = () => {
         >
           Chi tiết
         </Button>
-      )
-      ,
+      ),
     }
   ];
+  
 
   const complaintColumns = [
     {
