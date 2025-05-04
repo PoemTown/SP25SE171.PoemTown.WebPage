@@ -47,12 +47,21 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 1: return { label: "Pending", color: "warning" };
-      case 2: return { label: "Paid", color: "success" };
-      case 3: return { label: "Cancelled", color: "error" };
-      default: return { label: "Không xác định", color: "default" };
+      case 1:
+        return { label: "Đang chờ", color: "warning" };
+      case 2:
+        return { label: "Đã thanh toán", color: "success" };
+      case 3:
+        return { label: "Đã hủy", color: "error" };
+      case 4:
+        return { label: "Hoàn tiền", color: "info" };
+      case 5:
+        return { label: "Đã chuyển khoản", color: "success" }; 
+      default:
+        return { label: "Không xác định", color: "default" };
     }
   };
+  
 
   const formatDate = (dateString) => {
     if (!dateString) return "Không xác định";
@@ -111,7 +120,7 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
                   <Box>
                     <Typography variant="body1"><strong>Tên thơ:</strong> {detail.saleVersion.poem?.title || 'N/A'}</Typography>
                     <Typography variant="body1"><strong>Giá:</strong> {detail.saleVersion.price?.toLocaleString() || '0'} VNĐ</Typography>
-                    <Typography variant="body1"><strong>Thời lượng:</strong> {detail.saleVersion.durationTime || '0'} phút</Typography>
+                    <Typography variant="body1"><strong>Thời lượng:</strong> {detail.saleVersion.durationTime || '0'} năm</Typography>
                     <Typography variant="body1"><strong>Hoa hồng:</strong> {detail.saleVersion.commissionPercentage || '0'}%</Typography>
                   </Box>
                 )}
