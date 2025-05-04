@@ -1,23 +1,15 @@
 import React from "react";
 import PropTypes from "prop-types";
 
-const BiographyTab = ({ poet, formatDate }) => {
-    // Format date with safety checks
-    const formatDateLocal = (dateString) => {
-        if (!dateString) return "Chưa rõ";
-        try {
-            const date = new Date(dateString);
-            if (isNaN(date.getTime())) return "Chưa rõ";
-
-            const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
-            return date.toLocaleDateString('vi-VN', options);
-        } catch {
-            return "Chưa rõ";
-        }
-    };
-
+const BiographyTab = ({ poet }) => {
     // Safe data getter with fallbacks
     const getPoetData = (field) => poet?.[field] || (field === 'bio' ? "Đang cập nhật tiểu sử..." : "Chưa rõ");
+
+    // Format years with safety checks
+    const formatYears = (birthYear, deathYear) => {
+        if (!birthYear) return "Chưa rõ";
+        return deathYear ? `${birthYear} - ${deathYear}` : `${birthYear} - Nay`;
+    };
 
     // Gender translation with emoji
     const renderGender = () => {
@@ -56,8 +48,8 @@ const BiographyTab = ({ poet, formatDate }) => {
                             <div className="info-item">
                                 <span className="icon">📅</span>
                                 <div>
-                                    <div className="label">Ngày sinh</div>
-                                    <div className="value">{formatDate ? formatDate(poet?.dateOfBirth) : formatDateLocal(poet?.dateOfBirth)}</div>
+                                    <div className="label">Năm sinh - Năm mất</div>
+                                    <div className="value">{formatYears(poet?.yearOfBirth, poet?.yearOfDeath)}</div>
                                 </div>
                             </div>
 
@@ -96,12 +88,8 @@ const BiographyTab = ({ poet, formatDate }) => {
                                 <p key={i}>{para}</p>
                             ))}
                         </div>
-
-
                     </div>
                 </div>
-
-
             </div>
 
             {/* CSS Styles */}
@@ -266,86 +254,11 @@ const BiographyTab = ({ poet, formatDate }) => {
                     font-size: 1.1rem;
                     line-height: 1.8;
                     color: #444;
-
                 }
                 
                 .bio-content p {
                     margin-bottom: 15px;
-                     text-align: justify;
-
-                }
-                
-                .literary-style {
-                    margin-top: 40px;
-                    padding-top: 30px;
-                    border-top: 1px dashed #ddd;
-                }
-                
-                .literary-style h3 {
-                    font-size: 1.4rem;
-                    margin: 0 0 15px 0;
-                    display: flex;
-                    align-items: center;
-                }
-                
-                .style-tags {
-                    display: flex;
-                    flex-wrap: wrap;
-                    gap: 10px;
-                }
-                
-                .tag {
-                    background: #f0f2f5;
-                    padding: 5px 15px;
-                    border-radius: 20px;
-                    font-size: 0.9rem;
-                    color: #555;
-                }
-                
-                .works-preview {
-                    margin: 60px 0;
-                }
-                
-                .works-preview h2 {
-                    font-size: 1.8rem;
-                    margin: 0 0 30px 0;
-                    display: flex;
-                    align-items: center;
-                }
-                
-                .works-grid {
-                    display: grid;
-                    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                    gap: 30px;
-                }
-                
-                .work-item {
-                    background: white;
-                    border-radius: 8px;
-                    overflow: hidden;
-                    box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-                    transition: transform 0.3s ease;
-                }
-                
-                .work-item:hover {
-                    transform: translateY(-5px);
-                }
-                
-                .work-cover {
-                    height: 180px;
-                    background-size: cover;
-                    background-position: center;
-                }
-                
-                .work-item h3 {
-                    margin: 15px 15px 5px;
-                    font-size: 1.2rem;
-                }
-                
-                .work-item p {
-                    margin: 0 15px 15px;
-                    font-size: 0.9rem;
-                    color: #666;
+                    text-align: justify;
                 }
                 
                 @media (max-width: 768px) {
@@ -367,10 +280,6 @@ const BiographyTab = ({ poet, formatDate }) => {
                     .poet-title {
                         font-size: 2rem;
                     }
-                    
-                    .works-grid {
-                        grid-template-columns: 1fr;
-                    }
                 }
             `}</style>
         </div>
@@ -381,20 +290,21 @@ BiographyTab.propTypes = {
     poet: PropTypes.shape({
         name: PropTypes.string,
         avatar: PropTypes.string,
-        dateOfBirth: PropTypes.string,
+        yearOfBirth: PropTypes.string,
+        yearOfDeath: PropTypes.string,
         gender: PropTypes.string,
         address: PropTypes.string,
         bio: PropTypes.string,
         style: PropTypes.string
-    }),
-    formatDate: PropTypes.func
+    })
 };
 
 BiographyTab.defaultProps = {
     poet: {
         name: "Nhà thơ",
         avatar: "",
-        dateOfBirth: "",
+        yearOfBirth: "",
+        yearOfDeath: "",
         gender: "",
         address: "",
         bio: "Đang cập nhật tiểu sử...",
