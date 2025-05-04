@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  Box, 
-  Typography, 
-  Table, 
-  TableBody, 
-  TableCell, 
-  TableContainer, 
-  TableHead, 
-  TableRow, 
+import {
+  Box,
+  Typography,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
   Paper,
   CircularProgress,
   Alert,
@@ -162,7 +162,7 @@ const AnnouncementsManagement = () => {
           Tạo mới
         </Button>
       </Box>
-      
+
       {announcements.length === 0 ? (
         <Alert severity="info" sx={{ mt: 2 }}>
           Không có thông báo nào.
@@ -181,7 +181,10 @@ const AnnouncementsManagement = () => {
               <TableBody>
                 {announcements.map((announcement) => (
                   <TableRow key={announcement.id}>
-                    <TableCell>{announcement.title}</TableCell>
+                    <TableCell style={{
+                      textAlign: "justify",
+
+                    }}>{announcement.title}</TableCell>
                     <TableCell sx={{ maxWidth: '300px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {announcement.content}
                     </TableCell>
@@ -232,9 +235,9 @@ const AnnouncementsManagement = () => {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenCreateDialog(false)}>Hủy</Button>
-          <Button 
-            onClick={handleCreateAnnouncement} 
-            color="primary" 
+          <Button
+            onClick={handleCreateAnnouncement}
+            color="primary"
             variant="contained"
             disabled={!newAnnouncement.title || !newAnnouncement.content}
           >

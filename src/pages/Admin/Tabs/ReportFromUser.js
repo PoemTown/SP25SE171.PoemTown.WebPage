@@ -265,7 +265,7 @@ const ReportFromUser = () => {
                                 >
                                     <TableCell>{(currentPage - 1) * pageSize + index + 1}</TableCell>
                                     <TableCell>{getReportType(report.type)}</TableCell>
-                                    <TableCell>{report?.reportReason || "Không có lý do"}</TableCell>
+                                    <TableCell style={{}}>{report?.reportReason || "Không có lý do"}</TableCell>
                                     <TableCell>{report?.reportMessage?.description || "Không có mô tả"}</TableCell>
                                     <TableCell>
                                         <Chip

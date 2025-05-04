@@ -188,7 +188,7 @@ const PoemsTab = ({ collections, poetId }) => {
                 </div>
             ) : (
                 <Spin spinning={loading}>
-                    <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "20px", marginTop: "20px" }}>
                         {poems.length > 0 ? (
                             poems.map((poem) => (
                                 <PoemCard

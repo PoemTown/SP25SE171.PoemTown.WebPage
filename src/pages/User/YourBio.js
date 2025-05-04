@@ -184,7 +184,9 @@ const YourBio = (props) => {
                                 <div
                                     className="bio-content"
                                     dangerouslySetInnerHTML={{ __html: bio }}
-                                    style={{ lineHeight: 1.6 }}
+                                    style={{
+                                        lineHeight: 1.6, textAlign: "justify",
+                                    }}
                                 />
                                 {isMine && (
                                     <Button

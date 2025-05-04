@@ -174,7 +174,11 @@ const KnowledgePage = () => {
                                     overflow: 'hidden'
                                 }}
                             >
-                                <Paragraph style={{ margin: 0, paddingLeft: 20 }}>
+                                <Paragraph style={{
+                                    margin: 0, paddingLeft: 20,
+                                    textAlign: "justify",
+
+                                }}>
                                     {type.description.split('\n').map((line, index) => (
                                         <span key={index}>
                                             {line}

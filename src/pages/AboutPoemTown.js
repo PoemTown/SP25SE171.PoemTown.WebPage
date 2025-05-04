@@ -145,7 +145,9 @@ const AboutPoemTown = () => {
                             <div style={{ 
                                 lineHeight: '1.7',
                                 fontSize: '1.1rem',
-                                color: '#444'
+                                color: '#444',
+                                textAlign: "justify",
+
                             }}>
                                 {renderContent(content.content)}
                             </div>

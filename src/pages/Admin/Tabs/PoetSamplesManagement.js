@@ -680,7 +680,7 @@ const PoetSamplesManagement = () => {
               </div>
 
               <div style={{
-                height: '72px',
+                height: '80px',
                 marginBottom: '12px',
                 overflow: 'hidden',
                 position: 'relative'
@@ -695,7 +695,8 @@ const PoetSamplesManagement = () => {
                     WebkitBoxOrient: 'vertical',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
-                    margin: 0
+                    margin: 0,
+                    textAlign: "justify",
                   }}
                 >
                   {poet.bio || 'Chưa có thông tin tiểu sử'}

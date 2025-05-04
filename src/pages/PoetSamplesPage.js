@@ -30,7 +30,7 @@ import axios from 'axios';
 import Headeruser from '../components/Headeruser';
 import Headerdefault from '../components/Headerdefault';
 import { useNavigate } from 'react-router-dom';
-import Footer  from '../components/Footer'
+import Footer from '../components/Footer'
 const { Title, Text, Paragraph } = Typography;
 
 const PoetSamplesPage = () => {
@@ -67,18 +67,18 @@ const PoetSamplesPage = () => {
         try {
             setLoading(true);
             const queryParams = new URLSearchParams();
-    
+
             if (searchQuery) {
                 queryParams.append('filterOptions.name', searchQuery); // Thay đổi từ 'name' thành 'filterOptions.name'
             }
-    
+
             queryParams.append('pageNumber', pagination.current);
             queryParams.append('pageSize', pagination.pageSize);
-    
+
             const response = await axios.get(
                 `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1?${queryParams.toString()}`
             );
-    
+
             // Phần còn lại giữ nguyên
             if (response.data.statusCode === 200) {
                 setPoets(response.data.data);
@@ -382,7 +382,7 @@ const PoetSamplesPage = () => {
                                                                         left: '12px',
                                                                         right: '12px',
                                                                         display: 'flex',
-                                                                        gap: '10px', 
+                                                                        gap: '10px',
                                                                         overflowX: 'auto',
                                                                         paddingBottom: '8px',
                                                                         scrollbarWidth: 'none',
@@ -392,12 +392,12 @@ const PoetSamplesPage = () => {
                                                                             <Tooltip key={index} title={badge.tooltip}>
                                                                                 <Tag icon={badge.icon} color={badge.color} style={{
                                                                                     borderRadius: '20px',
-                                                                                    padding: '6px 14px', 
+                                                                                    padding: '6px 14px',
                                                                                     fontWeight: 600,
                                                                                     margin: 0,
                                                                                     flexShrink: 0,
                                                                                     whiteSpace: 'nowrap',
-                                                                                    fontSize: '14px' 
+                                                                                    fontSize: '14px'
                                                                                 }}>
                                                                                 </Tag>
                                                                             </Tooltip>
@@ -440,7 +440,9 @@ const PoetSamplesPage = () => {
                                                             }}
                                                             style={{
                                                                 marginBottom: '16px',
-                                                                minHeight: '72px'
+                                                                minHeight: '72px',
+                                                                textAlign: "justify",
+
                                                             }}
                                                         >
                                                             {poet.bio || 'Chưa có tiểu sử'}
@@ -491,7 +493,7 @@ const PoetSamplesPage = () => {
                         </>
                     )}
                 </div>
-                
+
             </div>
             <Footer />
         </div>

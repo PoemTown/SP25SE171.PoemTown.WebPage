@@ -247,7 +247,7 @@ const RecordDetail = () => {
                     }}
                 >
                     <LeftOutlined style={{ marginRight: '8px' }} />
-                    Trở về trang trước
+                    Trở về trang trước 
                 </Button>
 
                 <div style={{
