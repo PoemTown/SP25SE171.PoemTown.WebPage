@@ -24,7 +24,7 @@ const ComplaintsManagement = () => {
         setLoading(true);
         try {
             const accessToken = localStorage.getItem("accessToken");
-            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1`, {
+            const response = await axios.get(`${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1?sortOptions=2`, {
                 headers: { Authorization: `Bearer ${accessToken}` },
                 params: { pageNumber: page, pageSize }
             });

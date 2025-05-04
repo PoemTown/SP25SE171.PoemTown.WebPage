@@ -22,6 +22,7 @@ const AchievementAndStatistic = ({
       display: "flex",
       flexDirection: "column",
       gap: "28px",
+      minWidth: "280px",
       width: "100%",
       fontFamily: "'Inter', sans-serif",
       position: "relative",

@@ -168,7 +168,7 @@ const YourWallet = () => {
     setTransactionsLoading(true);
     try {
       const accessToken = localStorage.getItem("accessToken");
-      
+
       const response = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/transactions/v1/mine`,
         {
@@ -180,6 +180,7 @@ const YourWallet = () => {
       );
 
       const result = response.data;
+      console.log(response.data)
       if (result.statusCode === 200) {
         setTransactions(result.data);
         setTransactionsPagination({
@@ -256,7 +257,7 @@ const YourWallet = () => {
     try {
       const accessToken = localStorage.getItem("accessToken");
       const response = await axios.get(
-        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/mine`,
+        `${process.env.REACT_APP_API_BASE_URL}/withdrawal-complaints/v1/mine?sortOptions=2`,
         {
           params: { pageNumber, pageSize },
           headers: {
@@ -562,7 +563,13 @@ const YourWallet = () => {
       setFeedbackVisible(false);
       fetchComplaints();
     } catch (error) {
-      message.error(error.response?.data?.errorMessage || 'Gửi phản hồi thất bại');
+      message.error({
+        content: `${error.response?.data?.errorMessage || 'Gửi phản hồi thất bại'}`,
+        style: {
+          zIndex: 100002,
+          position: 'relative',
+        }
+      });
     } finally {
       setUploading(false);
     }
@@ -622,7 +629,7 @@ const YourWallet = () => {
     }
   };
 
-  const handleUpdateComplaintImages = async () => {
+  const handleUpdateComplaintImages = async (fileList) => {
     try {
       setUploading(true);
 
@@ -630,10 +637,11 @@ const YourWallet = () => {
       const newImages = fileList
         .filter(file => file.originFileObj)
         .map(file => file.originFileObj);
-
+      console.log("newImage", newImages)
       const uploadedUrls = await Promise.all(
         newImages.map(file => handleImageUpload(file))
       );
+      console.log("upload url", uploadedUrls)
 
       await Promise.all(
         uploadedUrls.map(url =>
@@ -744,7 +752,8 @@ const YourWallet = () => {
     {
       title: "Thao tác",
       key: "action",
-      render: (_, record) => (
+      render: (_, record) =>
+      (
         <Button
           type="link"
           icon={<EyeOutlined />}
@@ -755,7 +764,8 @@ const YourWallet = () => {
         >
           Chi tiết
         </Button>
-      ),
+      )
+      ,
     }
   ];
 
@@ -971,6 +981,7 @@ const YourWallet = () => {
       visible={feedbackVisible}
       onCancel={() => setFeedbackVisible(false)}
       footer={null}
+      zIndex={2000}
       width={600}
     >
       <Form form={form} onFinish={handleSubmitFeedback} layout="vertical">
@@ -1099,7 +1110,7 @@ const YourWallet = () => {
             key="submit"
             type="primary"
             loading={uploading}
-            onClick={handleUpdateComplaintImages}
+            onClick={() => handleUpdateComplaintImages(fileList)}
           >
             Lưu thay đổi
           </Button>,
@@ -1110,19 +1121,16 @@ const YourWallet = () => {
           multiple
           maxCount={5}
           fileList={fileList}
-          onChange={({ fileList }) => setFileList(fileList)}
+          onChange={({ fileList: newFileList }) => setFileList(newFileList)}
           beforeUpload={() => false}
           accept="image/png, image/jpeg"
           onRemove={(file) => {
-            if (file.url) {
-              setFileList(fileList.filter(f => f.uid !== file.uid));
-            }
+            setFileList(fileList.filter(f => f.uid !== file.uid));
             return true;
           }}
         >
           <Button icon={<UploadOutlined />}>Thêm ảnh mới</Button>
         </Upload>
-
         <Divider />
 
         <Text strong>Ảnh hiện tại:</Text>
@@ -1179,7 +1187,6 @@ const YourWallet = () => {
             <Select
               placeholder="Chọn ngân hàng"
               loading={bankTypesLoading}
-              showSearch
               optionFilterProp="children"
               filterOption={(input, option) =>
                 option.children.toLowerCase().includes(input.toLowerCase())
@@ -1310,7 +1317,7 @@ const YourWallet = () => {
   const TransactionDetailModal = () => {
     const renderOrderDetails = (order) => {
       if (!order) return null;
-  
+
       return (
         <>
           <Descriptions.Item label="Thông tin đơn hàng">
@@ -1321,20 +1328,20 @@ const YourWallet = () => {
               </div>
               <div>
                 <Text strong>Loại đơn hàng: </Text>
-                {order.type === 1 ? 'Mua thơ' : 
-                 order.type === 2 ? 'Mua template' : 
-                 order.type === 3 ? 'Mua file ghi âm' : 'Khác'}
+                {order.type === 1 ? 'Mua thơ' :
+                  order.type === 2 ? 'Mua template' :
+                    order.type === 3 ? 'Mua file ghi âm' : 'Khác'}
               </div>
               <div>
                 <Text strong>Trạng thái: </Text>
                 <Tag color={
                   order.status === 1 ? 'orange' :
-                  order.status === 2 ? 'green' :
-                  order.status === 3 ? 'red' : 'default'
+                    order.status === 2 ? 'green' :
+                      order.status === 3 ? 'red' : 'default'
                 }>
                   {order.status === 1 ? 'Chờ xử lý' :
-                   order.status === 2 ? 'Hoàn thành' :
-                   order.status === 3 ? 'Đã hủy' : 'Không xác định'}
+                    order.status === 2 ? 'Hoàn thành' :
+                      order.status === 3 ? 'Đã hủy' : 'Không xác định'}
                 </Tag>
               </div>
               <div>
@@ -1347,7 +1354,7 @@ const YourWallet = () => {
               </div>
             </Space>
           </Descriptions.Item>
-  
+
           {/* Order Details */}
           {order.orderDetails?.map((detail, index) => (
             <Descriptions.Item key={index} label={`Chi tiết sản phẩm ${index + 1}`}>
@@ -1364,7 +1371,7 @@ const YourWallet = () => {
                   <Text strong>Thành tiền: </Text>
                   ₫{(detail.itemPrice * (detail.itemQuantity || 1))?.toLocaleString() || '0'}
                 </div>
-  
+
                 {/* Template Details */}
                 {detail.masterTemplate && (
                   <>
@@ -1374,7 +1381,7 @@ const YourWallet = () => {
                     </div>
                   </>
                 )}
-  
+
                 {/* Sale Version Details */}
                 {detail.saleVersion && (
                   <>
@@ -1396,7 +1403,7 @@ const YourWallet = () => {
                     </div>
                   </>
                 )}
-  
+
                 {/* Record File Details */}
                 {detail.recordFile && (
                   <>
@@ -1412,7 +1419,7 @@ const YourWallet = () => {
         </>
       );
     };
-  
+
     return (
       <Modal
         title="Chi tiết giao dịch"
@@ -1428,6 +1435,18 @@ const YourWallet = () => {
           }}>
             Đóng
           </Button>,
+          (transactionDetail?.type === 5 && (transactionDetail?.status === 3 || transactionDetail?.status === 2)) || (transactionDetail?.type === 8 && (transactionDetail?.status === 3 || transactionDetail?.status === 2)) ?
+            <Button
+              type="link"
+              icon={<MessageOutlined />}
+              onClick={() => {
+                setCurrentWithdrawalId(transactionDetail?.withdrawalForm?.id);
+                setFeedbackVisible(true);
+              }}
+            >
+              Phản hồi
+            </Button>
+            : <></>
         ]}
         width={800}
       >
@@ -1451,7 +1470,7 @@ const YourWallet = () => {
                   {transactionStatusMap[transactionDetail.status]?.text || "Không xác định"}
                 </Tag>
               </Descriptions.Item>
-  
+
               {/* Amount Information */}
               <Descriptions.Item label="Số tiền">
                 <Text strong type={transactionDetail.isAddToWallet ? "success" : "danger"}>
@@ -1466,7 +1485,7 @@ const YourWallet = () => {
               <Descriptions.Item label="Số dư sau giao dịch">
                 ₫{transactionDetail.balance?.toLocaleString() || '0'}
               </Descriptions.Item>
-  
+
               {/* Timeline Information */}
               <Descriptions.Item label="Thời gian tạo">
                 {dayjs(transactionDetail.createdTime).format("DD/MM/YYYY HH:mm")}
@@ -1481,7 +1500,7 @@ const YourWallet = () => {
                   {dayjs(transactionDetail.cancelledDate).format("DD/MM/YYYY HH:mm")}
                 </Descriptions.Item>
               )}
-  
+
               {/* User Information */}
               {transactionDetail.user && (
                 <Descriptions.Item label="Người gửi">
@@ -1507,7 +1526,7 @@ const YourWallet = () => {
                   </Space>
                 </Descriptions.Item>
               )}
-  
+
               {transactionDetail.receiveUser && (
                 <Descriptions.Item label="Người nhận">
                   <Space>
@@ -1532,7 +1551,7 @@ const YourWallet = () => {
                   </Space>
                 </Descriptions.Item>
               )}
-  
+
               {/* Payment Gateway */}
               {transactionDetail.paymentGateway && (
                 <Descriptions.Item label="Cổng thanh toán">
@@ -1553,10 +1572,10 @@ const YourWallet = () => {
                   </Space>
                 </Descriptions.Item>
               )}
-  
+
               {/* Order Information */}
               {renderOrderDetails(transactionDetail.order)}
-  
+
               {/* Withdrawal Information */}
               {transactionDetail.withdrawalForm && (
                 <>
@@ -1582,7 +1601,7 @@ const YourWallet = () => {
                       </div>
                     </Space>
                   </Descriptions.Item>
-  
+
                   {/* Bank Information */}
                   {transactionDetail.withdrawalForm.bankType && (
                     <Descriptions.Item label="Ngân hàng">
@@ -1603,7 +1622,7 @@ const YourWallet = () => {
                       </Space>
                     </Descriptions.Item>
                   )}
-  
+
                   {/* User Bank Account */}
                   {transactionDetail.withdrawalForm.userBankType && (
                     <Descriptions.Item label="Tài khoản ngân hàng">
@@ -1775,6 +1794,9 @@ const YourWallet = () => {
               ...transactionsPagination,
               showSizeChanger: true,
               pageSizeOptions: ["5", "10", "20", "50"],
+            }}
+            style={{
+              overflow: "scroll"
             }}
             onChange={handleTransactionsTableChange}
           />
