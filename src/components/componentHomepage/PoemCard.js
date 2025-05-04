@@ -467,7 +467,9 @@ const styles = {
         WebkitLineClamp: 2,             // 👈 số dòng muốn hiển thị
         WebkitBoxOrient: "vertical",
         overflow: "hidden",
-        textOverflow: "ellipsis"
+        textOverflow: "ellipsis",
+        textAlign: "justify",
+
     },
 
     poemCollection: {

@@ -586,7 +586,9 @@ const PoemManagement = () => {
                         display: '-webkit-box',
                         WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
-                        minHeight: '63px'
+                        minHeight: '63px',
+                        textAlign: "justify",
+
                       }}
                     >
                       {poem.description || 'Không có mô tả'}

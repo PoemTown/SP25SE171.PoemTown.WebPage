@@ -510,6 +510,7 @@ const YourCollection = ({ isCreatingCollection, setIsCreatingCollection, avatar,
                         color: "#34495e",
                         fontSize: "0.9em",
                         lineHeight: "1.5",
+                        textAlign: "justify",
                         minHeight: "54px",
                         '@media (max-width: 768px)': {
                           fontSize: "0.85em"

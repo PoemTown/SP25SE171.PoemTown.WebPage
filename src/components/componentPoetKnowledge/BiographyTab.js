@@ -8,7 +8,7 @@ const BiographyTab = ({ poet, formatDate }) => {
         try {
             const date = new Date(dateString);
             if (isNaN(date.getTime())) return "Chưa rõ";
-            
+
             const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
             return date.toLocaleDateString('vi-VN', options);
         } catch {
@@ -31,7 +31,7 @@ const BiographyTab = ({ poet, formatDate }) => {
     return (
         <div className="poet-biography">
             {/* Hero Banner with poet name */}
-            <div className="hero-banner" style={{ 
+            <div className="hero-banner" style={{
                 backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.6), rgba(0, 0, 0, 0.6)), url('https://images.unsplash.com/photo-1500382017468-9049fed747ef?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80')`
             }}>
                 <h1 className="poet-title">{getPoetData('name')}</h1>
@@ -44,14 +44,14 @@ const BiographyTab = ({ poet, formatDate }) => {
                     {/* Avatar Card */}
                     <div className="avatar-card">
                         <div className="avatar-wrapper">
-                            <img 
-                                src={getPoetData('avatar') || '/default-poet-avatar.jpg'} 
+                            <img
+                                src={getPoetData('avatar') || '/default-poet-avatar.jpg'}
                                 alt={`Chân dung ${getPoetData('name')}`}
                                 onError={(e) => e.target.src = '/default-poet-avatar.jpg'}
                             />
                             <div className="avatar-border"></div>
                         </div>
-                        
+
                         <div className="quick-info">
                             <div className="info-item">
                                 <span className="icon">📅</span>
@@ -60,7 +60,7 @@ const BiographyTab = ({ poet, formatDate }) => {
                                     <div className="value">{formatDate ? formatDate(poet?.dateOfBirth) : formatDateLocal(poet?.dateOfBirth)}</div>
                                 </div>
                             </div>
-                            
+
                             <div className="info-item">
                                 <span className="icon">👤</span>
                                 <div>
@@ -68,7 +68,7 @@ const BiographyTab = ({ poet, formatDate }) => {
                                     <div className="value">{renderGender()}</div>
                                 </div>
                             </div>
-                            
+
                             {poet?.address && (
                                 <div className="info-item">
                                     <span className="icon">📍</span>
@@ -90,18 +90,18 @@ const BiographyTab = ({ poet, formatDate }) => {
                             </h2>
                             <div className="divider"></div>
                         </div>
-                        
+
                         <div className="bio-content">
                             {getPoetData('bio').split('\n').map((para, i) => (
                                 <p key={i}>{para}</p>
                             ))}
                         </div>
-                        
-                      
+
+
                     </div>
                 </div>
 
-              
+
             </div>
 
             {/* CSS Styles */}
@@ -266,10 +266,13 @@ const BiographyTab = ({ poet, formatDate }) => {
                     font-size: 1.1rem;
                     line-height: 1.8;
                     color: #444;
+
                 }
                 
                 .bio-content p {
                     margin-bottom: 15px;
+                     text-align: justify;
+
                 }
                 
                 .literary-style {

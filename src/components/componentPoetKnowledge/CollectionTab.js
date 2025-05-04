@@ -170,7 +170,7 @@ const CollectionTab = ({ poet }) => {
                                 BỘ SƯU TẬP MỚI
                             </button>
                         )}
-                        <div style={{ maxWidth: "1200px", margin: "0 40px" }}>
+                        <div style={{ maxWidth: "1200px", margin: "0 40px", marginTop: "20px" }}>
                             {collections.map((item) => (
                                 <CollectionCard
                                     key={item.id}

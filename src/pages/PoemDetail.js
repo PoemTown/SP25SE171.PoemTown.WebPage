@@ -48,8 +48,11 @@ const PoemDetail = () => {
 
     useEffect(() => {
         const storedRoles = JSON.parse(localStorage.getItem("role")) || [];
-        setRoles(storedRoles);
-    }, [roles]);
+        // chỉ set khi khác nhau về giá trị
+        if (JSON.stringify(storedRoles) !== JSON.stringify(roles)) {
+          setRoles(storedRoles);
+        }
+      }, [roles]);
 
     const deletePermission = roles?.includes("ADMIN") || roles?.includes("MODERATOR");
 
@@ -156,37 +159,47 @@ const PoemDetail = () => {
     }, [poem]);
 
     useEffect(() => {
+        let isMounted = true;
         const fetchPoem = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poems/v1/${id}/detail`, {
                     headers: requestHeaders
                 });
                 const data = await response.json();
-                setPoem(data.data);
-                console.log(data.data)
-                // Assume the API returns a property indicating if the poem is bookmarked
-                setBookmarked(data.data.targetMark || false);
+                if (isMounted) { // Chỉ cập nhật state nếu component vẫn mounted
+                    setPoem(data.data);
+                    setBookmarked(data.data.targetMark || false);
+                }
             } catch (error) {
                 console.error("Error fetching poem:", error);
             }
         };
         fetchPoem();
+        return () => {
+            isMounted = false;
+        };
     }, [id, accessToken]);
 
     useEffect(() => {
+        let isMounted = true;
         const fetchComment = async () => {
             try {
                 const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/comments/v1/${id}?pageSize=100&allowExceedPageSize=true`, {
                     headers: requestHeaders
                 });
                 const data = await response.json();
-                setComments(data.data);
+                if (isMounted) {
+                    setComments(data.data);
+                }
             } catch (error) {
                 console.error("Error fetching poem:", error);
             }
         }
         fetchComment();
-    }, [])
+        return () => {
+            isMounted = false;
+        };
+    }, [id, accessToken])
 
     // Check if user is logged in
     useEffect(() => {
@@ -717,13 +730,6 @@ const PoemDetail = () => {
             message.error(error.response?.data?.errorMessage || 'Lỗi khi tạo bản ghi');
         }
     };
-
-    // Trong phần return, thêm Modal
-    {
-
-        console.log('Modal state:', showCreateRecordModal);
-
-    }
 
 
     const formatDuration = (seconds) => {

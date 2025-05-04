@@ -50,7 +50,7 @@ const PoemTypeManagement = () => {
   const [editingType, setEditingType] = useState({
     id: '',
     name: '',
-    guideLine:'',
+    guideLine: '',
     description: '',
     color: '#3f51b5'
   });
@@ -86,13 +86,13 @@ const PoemTypeManagement = () => {
     try {
       setLoading(true);
       const response = await fetch(`${process.env.REACT_APP_API_BASE_URL}/poem-types/v1`);
-      
+
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      
+
       const data = await response.json();
-      
+
       if (data.statusCode === 200) {
         setPoemTypes(Array.isArray(data.data) ? data.data.filter(item => item !== null) : []);
       } else {
@@ -159,7 +159,7 @@ const PoemTypeManagement = () => {
     setEditingType({
       id: '',
       name: '',
-      guideLine:'',
+      guideLine: '',
       description: '',
       color: '#3f51b5'
     });
@@ -210,7 +210,7 @@ const PoemTypeManagement = () => {
       }
 
       setIsCreating(true);
-      
+
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         throw new Error('Không tìm thấy access token. Vui lòng đăng nhập lại.');
@@ -236,7 +236,7 @@ const PoemTypeManagement = () => {
         message: 'Tạo thể loại thơ mới thành công',
         severity: 'success'
       });
-      
+
       handleCloseCreateDialog();
       await fetchPoemTypes(); // Fetch lại dữ liệu sau khi tạo mới
     } catch (error) {
@@ -263,7 +263,7 @@ const PoemTypeManagement = () => {
       }
 
       setIsEditing(true);
-      
+
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         throw new Error('Không tìm thấy access token. Vui lòng đăng nhập lại.');
@@ -295,7 +295,7 @@ const PoemTypeManagement = () => {
         message: 'Cập nhật thể loại thành công',
         severity: 'success'
       });
-      
+
       handleCloseEditDialog();
       handleCloseViewDialog();
       await fetchPoemTypes(); // Fetch lại dữ liệu sau khi chỉnh sửa
@@ -322,7 +322,7 @@ const PoemTypeManagement = () => {
 
     try {
       setIsDeleting(true);
-      
+
       const accessToken = localStorage.getItem('accessToken');
       if (!accessToken) {
         throw new Error('Không tìm thấy access token. Vui lòng đăng nhập lại.');
@@ -349,7 +349,7 @@ const PoemTypeManagement = () => {
         message: `Đã xóa thành công thể loại "${selectedType.name}"`,
         severity: 'success'
       });
-      
+
       handleCloseDeleteDialog();
       handleCloseViewDialog();
       await fetchPoemTypes(); // Fetch lại dữ liệu sau khi xóa
@@ -384,8 +384,8 @@ const PoemTypeManagement = () => {
         <Typography variant="h4" component="h1">
           Quản lý thể loại thơ
         </Typography>
-        <Button 
-          variant="contained" 
+        <Button
+          variant="contained"
           startIcon={<Add />}
           onClick={handleOpenCreateDialog}
         >
@@ -422,13 +422,15 @@ const PoemTypeManagement = () => {
                       <Typography fontWeight="medium">{type?.name || 'N/A'}</Typography>
                     </TableCell>
                     <TableCell>
-                      <Typography 
-                        sx={{ 
+                      <Typography
+                        sx={{
                           display: '-webkit-box',
                           WebkitLineClamp: 2,
                           WebkitBoxOrient: 'vertical',
                           overflow: 'hidden',
-                          textOverflow: 'ellipsis'
+                          textOverflow: 'ellipsis',
+                          textAlign: "justify",
+
                         }}
                       >
                         {type?.guideLine || 'Không có mô tả'}
@@ -436,21 +438,21 @@ const PoemTypeManagement = () => {
                     </TableCell>
                     <TableCell>
                       {type?.color ? (
-                        <Chip 
-                          label={type.color} 
-                          sx={{ 
-                            backgroundColor: type.color, 
+                        <Chip
+                          label={type.color}
+                          sx={{
+                            backgroundColor: type.color,
                             color: 'white',
                             width: 100
-                          }} 
+                          }}
                         />
                       ) : (
                         <Chip label="N/A" />
                       )}
                     </TableCell>
                     <TableCell>
-                      <Button 
-                        variant="outlined" 
+                      <Button
+                        variant="outlined"
                         size="small"
                         onClick={() => handleOpenViewDialog(type)}
                         disabled={!type}
@@ -485,12 +487,12 @@ const PoemTypeManagement = () => {
             <DialogTitle>
               <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Box display="flex" alignItems="center">
-                  <Box 
-                    width={16} 
-                    height={16} 
-                    bgcolor={selectedType.color} 
-                    mr={2} 
-                    borderRadius="50%" 
+                  <Box
+                    width={16}
+                    height={16}
+                    bgcolor={selectedType.color}
+                    mr={2}
+                    borderRadius="50%"
                   />
                   {selectedType.name}
                 </Box>
@@ -517,27 +519,40 @@ const PoemTypeManagement = () => {
                 <strong>ID:</strong> {selectedType.id}
               </DialogContentText>
               <DialogContentText paragraph>
-                <strong>Màu sắc:</strong> 
-                <Chip 
-                  label={selectedType.color} 
-                  sx={{ 
-                    backgroundColor: selectedType.color, 
+                <strong>Màu sắc:</strong>
+                <Chip
+                  label={selectedType.color}
+                  sx={{
+                    backgroundColor: selectedType.color,
                     color: 'white',
                     ml: 1
-                  }} 
+                  }}
                 />
               </DialogContentText>
               <DialogContentText>
                 <strong>Cách làm:</strong>
               </DialogContentText>
               <Paper elevation={0} sx={{ p: 2, mt: 1, bgcolor: 'grey.100' }}>
-                <Typography>{selectedType.guideLine || "Chưa có"}</Typography>
+                <Typography style={{
+                  textAlign: "justify"
+                }}>{selectedType.guideLine || "Chưa có"}</Typography>
               </Paper>
-              <DialogContentText sx={{ mt: 2}}>
+              <DialogContentText sx={{ mt: 2 }}>
                 <strong>Mô tả:</strong>
               </DialogContentText>
               <Paper elevation={0} sx={{ p: 2, mt: 1, bgcolor: 'grey.100' }}>
-                <Typography>{selectedType.description}</Typography>
+                <Typography style={{
+                  textAlign: "justify"
+                }}>
+                  {selectedType.description
+                    ? selectedType.description.split('\n').map((line, index) => (
+                      <React.Fragment key={index}>
+                        {line}
+                        <br />
+                      </React.Fragment>
+                    ))
+                    : 'Không có mô tả'}
+                </Typography>
               </Paper>
             </DialogContent>
             <DialogActions>
@@ -555,20 +570,20 @@ const PoemTypeManagement = () => {
             Bạn có chắc chắn muốn xóa thể loại <strong>"{selectedType?.name}"</strong>?
           </DialogContentText>
           <Box mt={2} display="flex" alignItems="center">
-            <Box 
-              width={16} 
-              height={16} 
-              bgcolor={selectedType?.color} 
-              mr={1} 
-              borderRadius="50%" 
+            <Box
+              width={16}
+              height={16}
+              bgcolor={selectedType?.color}
+              mr={1}
+              borderRadius="50%"
             />
-            <Chip 
-              label={selectedType?.color} 
+            <Chip
+              label={selectedType?.color}
               size="small"
-              sx={{ 
-                backgroundColor: selectedType?.color, 
+              sx={{
+                backgroundColor: selectedType?.color,
                 color: 'white',
-              }} 
+              }}
             />
           </Box>
           <Typography variant="body2" color="textSecondary" mt={2}>
@@ -579,8 +594,8 @@ const PoemTypeManagement = () => {
           <Button onClick={handleCloseDeleteDialog} disabled={isDeleting}>
             Hủy bỏ
           </Button>
-          <Button 
-            onClick={handleDelete} 
+          <Button
+            onClick={handleDelete}
             color="error"
             variant="contained"
             startIcon={isDeleting ? <CircularProgress size={24} color="inherit" /> : <Delete />}
@@ -678,7 +693,7 @@ const PoemTypeManagement = () => {
                     height={30}
                     bgcolor={color}
                     borderRadius="50%"
-                    sx={{ 
+                    sx={{
                       cursor: isCreating ? 'not-allowed' : 'pointer',
                       opacity: isCreating ? 0.5 : 1
                     }}
@@ -693,8 +708,8 @@ const PoemTypeManagement = () => {
           <Button onClick={handleCloseCreateDialog} disabled={isCreating}>
             Hủy bỏ
           </Button>
-          <Button 
-            onClick={handleCreate} 
+          <Button
+            onClick={handleCreate}
             color="primary"
             variant="contained"
             startIcon={isCreating ? <CircularProgress size={24} color="inherit" /> : <Add />}
@@ -792,7 +807,7 @@ const PoemTypeManagement = () => {
                     height={30}
                     bgcolor={color}
                     borderRadius="50%"
-                    sx={{ 
+                    sx={{
                       cursor: isEditing ? 'not-allowed' : 'pointer',
                       opacity: isEditing ? 0.5 : 1
                     }}
@@ -807,8 +822,8 @@ const PoemTypeManagement = () => {
           <Button onClick={handleCloseEditDialog} disabled={isEditing}>
             Hủy bỏ
           </Button>
-          <Button 
-            onClick={handleEdit} 
+          <Button
+            onClick={handleEdit}
             color="primary"
             variant="contained"
             startIcon={isEditing ? <CircularProgress size={24} color="inherit" /> : <Edit />}
@@ -826,8 +841,8 @@ const PoemTypeManagement = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
       >
-        <Alert 
-          onClose={handleCloseSnackbar} 
+        <Alert
+          onClose={handleCloseSnackbar}
           severity={snackbar.severity}
           sx={{ width: '100%' }}
         >

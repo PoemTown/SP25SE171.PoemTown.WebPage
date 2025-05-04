@@ -420,7 +420,9 @@ const CollectionDetail = () => {
                     margin: 0,
                     color: "#4e342e",
                     fontSize: '15px',
-                    lineHeight: '1.6'
+                    lineHeight: '1.6',
+                    textAlign: "justify",
+
                   }}>
                     {collectionDetails.collectionDescription || "Chưa có mô tả"}
                   </p>
