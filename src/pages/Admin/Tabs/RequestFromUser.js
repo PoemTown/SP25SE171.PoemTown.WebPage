@@ -29,6 +29,7 @@ import {
     Alert
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Edit, CloudUpload } from "@mui/icons-material";
+import { EyeOutlined, EyeInvisibleOutlined } from '@ant-design/icons';
 import axios from "axios";
 
 // Utility functions
@@ -81,6 +82,7 @@ const RequestFromUser = () => {
     const [pageSize, setPageSize] = useState(25);
     const [totalRecords, setTotalRecords] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+    const [showImage, setShowImage] = useState(true);
     const [editForm, setEditForm] = useState({
         status: 3,
         resolveDescription: "",
@@ -443,19 +445,19 @@ const RequestFromUser = () => {
                                         <Box>
                                             <Typography variant="body1"><strong>Mã yêu cầu:</strong> {selectedWithdrawal.id || "Không xác định"}</Typography>
                                             <Typography variant="body1">
-                                                <strong>Ngân hàng:</strong> 
+                                                <strong>Ngân hàng:</strong>
                                                 {selectedWithdrawal.bankType ? (
                                                     <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', ml: 1 }}>
                                                         {selectedWithdrawal.bankType.imageIcon && (
-                                                            <img 
-                                                                src={selectedWithdrawal.bankType.imageIcon} 
-                                                                alt={selectedWithdrawal.bankType.bankCode} 
-                                                                style={{ 
-                                                                    width: "20px", 
-                                                                    height: "20px", 
-                                                                    objectFit: "contain", 
-                                                                    marginRight: 5 
-                                                                }} 
+                                                            <img
+                                                                src={selectedWithdrawal.bankType.imageIcon}
+                                                                alt={selectedWithdrawal.bankType.bankCode}
+                                                                style={{
+                                                                    width: "20px",
+                                                                    height: "20px",
+                                                                    objectFit: "contain",
+                                                                    marginRight: 5
+                                                                }}
                                                             />
                                                         )}
                                                         {getBankType(selectedWithdrawal.bankType)}
@@ -511,10 +513,31 @@ const RequestFromUser = () => {
                                             )}
                                             {selectedWithdrawal.resolveEvidence && (
                                                 <Box>
-                                                    <Typography variant="body1"><strong>Bằng chứng xử lý:</strong>
-                                                        <a href={selectedWithdrawal.resolveEvidence} target="_blank" rel="noopener noreferrer" style={{ marginLeft: 8 }}>
-                                                            Xem bằng chứng
-                                                        </a>
+                                                    <Typography variant="body1">
+                                                        <div style={{ display: 'flex', alignItems: 'center' }}>
+                                                            <strong>Bằng chứng xử lý:</strong>
+
+                                                            {selectedWithdrawal.resolveEvidence && (
+                                                                <>
+                                                                    <span
+                                                                        style={{ cursor: 'pointer', marginLeft: 8 }}
+                                                                        onClick={() => setShowImage(!showImage)}
+                                                                    >
+                                                                        {showImage ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                                                                    </span>
+                                                                </>
+                                                            )}
+                                                        </div>
+
+                                                        {showImage && selectedWithdrawal.resolveEvidence && (
+                                                            <div style={{ marginTop: 8 }}>
+                                                                <img
+                                                                    src={selectedWithdrawal.resolveEvidence}
+                                                                    alt="Bằng chứng xử lý"
+                                                                    style={{ maxWidth: "60%", height: "auto", borderRadius: 4 }}
+                                                                />
+                                                            </div>
+                                                        )}
                                                     </Typography>
                                                 </Box>
                                             )}

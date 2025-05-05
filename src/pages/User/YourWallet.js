@@ -43,6 +43,7 @@ import {
   EditOutlined,
   DeleteOutlined,
   KeyOutlined,
+  EyeInvisibleOutlined
 } from "@ant-design/icons";
 import dayjs from "dayjs";
 import axios from "axios";
@@ -76,6 +77,18 @@ const complaintStatusMap = {
   2: { text: "Đã từ chối", color: "red", icon: <CloseCircleOutlined /> },
 };
 
+const getWithdrawalFormStatus = (status) => {
+  switch (status) {
+    case 1:
+      return <Tag color="success">Đã giải quyết</Tag>;
+    case 2:
+      return <Tag color="error">Đã từ chối</Tag>;
+    case 3:
+      return <Tag color="processing">Đang xử lý</Tag>;
+    default:
+      return <Tag color="default">Không xác định</Tag>;
+  }
+};
 const YourWallet = () => {
   // State management
   const [walletBalance, setWalletBalance] = useState(0);
@@ -129,6 +142,7 @@ const YourWallet = () => {
     total: 0,
   });
   const [complaintLoading, setComplaintLoading] = useState(false);
+  const [showEvidence, setShowEvidence] = useState(true);
 
   // Fetch data functions
   const fetchWalletInfo = async () => {
@@ -733,8 +747,8 @@ const YourWallet = () => {
       width: 140,
       render: (amount, record) => {
         const sign = record.isAddToWallet != null
-        ? (record.isAddToWallet ? "+" : "-")
-        : "";
+          ? (record.isAddToWallet ? "+" : "-")
+          : "";
         return `${sign}₫${amount?.toLocaleString()}`;
       },
     },
@@ -1603,19 +1617,57 @@ const YourWallet = () => {
                         ₫{transactionDetail.withdrawalForm.amount?.toLocaleString() || '0'}
                       </div>
                       <div>
+                        <Text strong>Trạng thái: </Text>
+                        {getWithdrawalFormStatus(transactionDetail.withdrawalForm.status)}
+                      </div>
+                      <div>
                         <Text strong>Mô tả: </Text>
                         {transactionDetail.withdrawalForm.description || 'N/A'}
                       </div>
-                      {transactionDetail.withdrawalForm.resolveDescription && (
-                        <div>
-                          <Text strong>Mô tả giải quyết: </Text>
-                          {transactionDetail.withdrawalForm.resolveDescription}
-                        </div>
-                      )}
                       <div>
                         <Text strong>Ngày tạo: </Text>
                         {dayjs(transactionDetail.withdrawalForm.createdTime).format("DD/MM/YYYY HH:mm")}
                       </div>
+                      <br />
+                      {transactionDetail.withdrawalForm.accountName && (
+                        <div>
+                          <Text strong>Chủ tài khoản: </Text>
+                          {transactionDetail.withdrawalForm.accountName}
+                        </div>
+                      )}
+                      {transactionDetail.withdrawalForm.accountNumber && (
+                        <div>
+                          <Text strong>Số tài khoản: </Text>
+                          {transactionDetail.withdrawalForm.accountNumber}
+                        </div>
+                      )}
+                      {transactionDetail.withdrawalForm.resolveDescription && (
+                        <div>
+                          <Text strong>Phản hồi giải quyết: </Text>
+                          {transactionDetail.withdrawalForm.resolveDescription}
+                        </div>
+                      )}
+                      {transactionDetail.withdrawalForm.resolveEvidence && (
+                        <div>
+                          <Text strong>Hình ảnh chuyển khoản:</Text>
+                          <span
+                            style={{ marginLeft: 8, cursor: 'pointer' }}
+                            onClick={() => setShowEvidence(!showEvidence)}
+                          >
+                            {showEvidence ? <EyeInvisibleOutlined /> : <EyeOutlined />}
+                          </span>
+
+                          {showEvidence && (
+                            <div style={{ marginTop: 8 }}>
+                              <img
+                                src={transactionDetail.withdrawalForm.resolveEvidence}
+                                alt="Hình ảnh chuyển khoản"
+                                style={{ maxWidth: "50%", borderRadius: 4 }}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </Space>
                   </Descriptions.Item>
 
@@ -1869,7 +1921,7 @@ const YourWallet = () => {
             rules={[
               { required: true, message: "Vui lòng nhập số tiền" },
               {
-                type: 'number', 
+                type: 'number',
                 min: 20000,
                 message: 'Số tiền tối thiểu là 20,000 VNĐ',
               },
