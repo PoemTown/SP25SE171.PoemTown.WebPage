@@ -72,7 +72,7 @@ const ModeratorManagement = () => {
     const fetchAccounts = async () => {
         try {
             const response = await axios.get(
-                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts?filterOptions.roleId=6dda6b38-5b7e-4d7d-433b-08dd629662fc`,
+                `${process.env.REACT_APP_API_BASE_URL}/accounts/v1/accounts?filterOptions.roleId=9F44E2D3-3773-4CE7-86FB-6B72CBB65D7A`,
                 {
                     headers: {
                         Authorization: `Bearer ${localStorage.getItem("accessToken")}`,

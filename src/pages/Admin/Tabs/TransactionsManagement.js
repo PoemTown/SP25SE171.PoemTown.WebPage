@@ -17,7 +17,7 @@ import {
   DialogActions,
   Button,
   CircularProgress,
-  Card, 
+  Card,
   CardContent,
   TextField,
   MenuItem,
@@ -25,9 +25,12 @@ import {
 } from "@mui/material";
 import { ArrowBackIos, ArrowForwardIos, Visibility } from "@mui/icons-material";
 import axios from "axios";
-
+import VisibilityIcon from '@mui/icons-material/Visibility';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 // TransactionDetailModal component
 const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
+  const [showEvidence, setShowEvidence] = useState(true);
+
   if (!transaction) return null;
 
   const getTransactionType = (type) => {
@@ -56,12 +59,25 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
       case 4:
         return { label: "Hoàn tiền", color: "info" };
       case 5:
-        return { label: "Đã chuyển khoản", color: "success" }; 
+        return { label: "Đã chuyển khoản", color: "success" };
       default:
         return { label: "Không xác định", color: "default" };
     }
   };
-  
+
+  const getWithdrawalFormStatusLabel = (status) => {
+    switch (status) {
+      case 1:
+        return { label: "Đã chấp nhận", color: "success" };
+      case 2:
+        return { label: "Đã từ chối", color: "error" };
+      case 3:
+        return { label: "Đang chờ", color: "warning" };
+      default:
+        return { label: "Không xác định", color: "default" };
+    }
+  };
+
 
   const formatDate = (dateString) => {
     if (!dateString) return "Không xác định";
@@ -79,15 +95,15 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
           <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
             <Box>
               <Typography variant="body1"><strong>Mã đơn hàng:</strong> {order.orderCode || 'N/A'}</Typography>
-              <Typography variant="body1"><strong>Loại đơn hàng:</strong> {order.type === 1 ? 'Mua thơ' : 
-                order.type === 2 ? 'Mua template' : 
-                order.type === 3 ? 'Mua file ghi âm' : 'Khác'}</Typography>
+              <Typography variant="body1"><strong>Loại đơn hàng:</strong> {order.type === 1 ? 'Mua thơ' :
+                order.type === 2 ? 'Mua template' :
+                  order.type === 3 ? 'Mua file ghi âm' : 'Khác'}</Typography>
               <Typography variant="body1"><strong>Mô tả:</strong> {order.orderDescription || 'Không có mô tả'}</Typography>
             </Box>
             <Box>
               <Typography variant="body1"><strong>Tổng tiền:</strong> {order.amount?.toLocaleString() || '0'} VNĐ</Typography>
-              <Typography variant="body1"><strong>Trạng thái:</strong> 
-                <Chip 
+              <Typography variant="body1"><strong>Trạng thái:</strong>
+                <Chip
                   label={getStatusLabel(order.status).label}
                   color={getStatusLabel(order.status).color}
                   size="small"
@@ -155,7 +171,7 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
                   <Typography variant="h5" sx={{ fontWeight: "bold" }}>
                     Thông tin giao dịch
                   </Typography>
-                  <Chip 
+                  <Chip
                     label={getStatusLabel(transaction.status).label}
                     color={getStatusLabel(transaction.status).color}
                     variant="outlined"
@@ -169,9 +185,9 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
                     <Typography variant="body1"><strong>Mô tả:</strong> {transaction.description || "Không có mô tả"}</Typography>
                   </Box>
                   <Box>
-                    <Typography variant="body1"><strong>Số tiền:</strong> 
-                      <span style={{ 
-                        color: transaction.isAddToWallet ? "#2e7d32" : "#d32f2f", 
+                    <Typography variant="body1"><strong>Số tiền:</strong>
+                      <span style={{
+                        color: transaction.isAddToWallet ? "#2e7d32" : "#d32f2f",
                         fontWeight: "bold",
                         marginLeft: "4px"
                       }}>
@@ -222,10 +238,10 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
                   <Box sx={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 2 }}>
                     <Box>
                       <Typography variant="body1"><strong>Số tiền rút:</strong> {transaction.withdrawalForm.amount?.toLocaleString() || "0"} VNĐ</Typography>
-                      <Typography variant="body1"><strong>Trạng thái:</strong> 
-                        <Chip 
-                          label={getStatusLabel(transaction.withdrawalForm.status).label}
-                          color={getStatusLabel(transaction.withdrawalForm.status).color}
+                      <Typography variant="body1"><strong>Trạng thái:</strong>
+                        <Chip
+                          label={getWithdrawalFormStatusLabel(transaction.withdrawalForm.status).label}
+                          color={getWithdrawalFormStatusLabel(transaction.withdrawalForm.status).color}
                           size="small"
                           sx={{ ml: 1 }}
                         />
@@ -234,12 +250,50 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
                     <Box>
                       {transaction.withdrawalForm.bankType && (
                         <>
-                          <Typography variant="body1"><strong>Ngân hàng:</strong> {transaction.withdrawalForm.bankType.name || "Không có"}</Typography>
+
+                          <Typography variant="body1">
+                            <strong>Ngân hàng:</strong>{" "}
+                            {transaction.withdrawalForm.bankType.imageIcon && (
+                              <img
+                                src={transaction.withdrawalForm.bankType.imageIcon}
+                                alt={transaction.withdrawalForm.bankType.bankName || "Bank logo"}
+                                style={{ width: 20, height: 20, verticalAlign: "middle", marginRight: 6 }}
+                              />
+                            )}
+                            {transaction.withdrawalForm.bankType.bankName || "Không có"}
+                          </Typography>
                           <Typography variant="body1"><strong>Số tài khoản:</strong> {transaction.withdrawalForm.accountNumber || "Không có"}</Typography>
                           <Typography variant="body1"><strong>Tên chủ tài khoản:</strong> {transaction.withdrawalForm.accountName || "Không có"}</Typography>
+                          <Typography variant="body1">
+                            <strong>Mô tả:</strong> {transaction.withdrawalForm.description || "Không có"}
+                          </Typography>
                         </>
                       )}
                     </Box>
+                    <Typography variant="body1">
+                      <strong>Phản hồi xử lý:</strong> {transaction.withdrawalForm.resolveDescription || "Không có"}
+                    </Typography>
+
+                    {transaction.withdrawalForm.resolveEvidence && (
+                      <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                          <Typography variant="body1" gutterBottom>
+                            <strong>Hình ảnh chuyển khoản:</strong>
+                          </Typography>
+                          <IconButton onClick={() => setShowEvidence((prev) => !prev)} size="small">
+                            {showEvidence ? <VisibilityIcon /> : <VisibilityOffIcon />}
+                          </IconButton>
+                        </div>
+
+                        {showEvidence && (
+                          <img
+                            src={transaction.withdrawalForm.resolveEvidence}
+                            alt="Hình ảnh chuyển khoản"
+                            style={{ maxWidth: "50%", height: "auto", borderRadius: 4 }}
+                          />
+                        )}
+                      </div>
+                    )}
                   </Box>
                 </CardContent>
               </Card>
@@ -361,9 +415,13 @@ const TransactionsManagement = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 1: return { label: "Pending", color: "warning" };
-      case 2: return { label: "Paid", color: "success" };
-      case 3: return { label: "Cancelled", color: "error" };
+      case 1: return { label: "Chờ thanh toán", color: "warning" };
+      case 2: return { label: "Đã thanh toán", color: "success" };
+      case 3: return { label: "Đã hủy", color: "error" };
+      case 4:
+        return { label: "Đã hoàn tiền", color: "error" };
+      case 5:
+        return { label: "Đã chuyển khoản", color: "success" };
       default: return { label: "Không xác định", color: "default" };
     }
   };
@@ -378,7 +436,7 @@ const TransactionsManagement = () => {
         <Typography variant="subtitle1">
           Tổng số giao dịch: {totalRecords}
         </Typography>
-        
+
         <TextField
           select
           label="Số bản ghi mỗi trang"
@@ -433,14 +491,14 @@ const TransactionsManagement = () => {
                     <Avatar src={transaction.user?.avatar || ""} alt={transaction.user?.fullName || "Avatar"} />
                   </TableCell>
                   <TableCell>
-                    <Chip 
+                    <Chip
                       label={getStatusLabel(transaction.status).label}
                       color={getStatusLabel(transaction.status).color}
                       size="small"
                     />
                   </TableCell>
                   <TableCell>
-                    <IconButton 
+                    <IconButton
                       onClick={() => handleViewClick(transaction.id)}
                       color="primary"
                       title="Xem chi tiết"
@@ -463,8 +521,8 @@ const TransactionsManagement = () => {
       )}
 
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", mt: 2 }}>
-        <IconButton 
-          onClick={() => handlePageChange(currentPage - 1)} 
+        <IconButton
+          onClick={() => handlePageChange(currentPage - 1)}
           disabled={currentPage === 1 || loading}
         >
           <ArrowBackIos />
@@ -474,8 +532,8 @@ const TransactionsManagement = () => {
           {currentPage} / {totalPages}
         </Typography>
 
-        <IconButton 
-          onClick={() => handlePageChange(currentPage + 1)} 
+        <IconButton
+          onClick={() => handlePageChange(currentPage + 1)}
           disabled={currentPage === totalPages || loading}
         >
           <ArrowForwardIos />
