@@ -96,7 +96,7 @@ const fetchData = async (period, setData, url) => {
         const result = await fetchWithAuth(url, period);
         if (result.statusCode === 200) {
             const transformedData = result.data.samples.map(sample => ({
-                name: sample.period || poemTypeMapping[sample.type] || `Type ${sample.type}`,
+                name: sample.period || poemTypeMapping[sample.type] || `${sample.type}`,
                 Value: sample.totalSamples || sample.totalSamples || sample.totalPoems
             }));
             setData(transformedData);
