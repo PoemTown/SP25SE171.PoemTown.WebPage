@@ -11,7 +11,7 @@ const AchievementAndStatistic = ({
   statisticBackground,
   statisticBackgroundColorCode,
   achievementBackgroundColorCode,
-  statisticTitleBackground,
+  statisticTitleBackground, 
   achievementBackground,
   achievementTitleBackground,
   achievementTitleColorCode,
