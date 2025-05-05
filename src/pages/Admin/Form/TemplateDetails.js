@@ -507,6 +507,8 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
                 title="Thêm sản phẩm"
                 visible={addModalVisible}
                 onCancel={() => setAddModalVisible(false)}
+                okText="Xác nhận"
+                cancelText="Hủy"
                 onOk={handleAddSubmit}
                 confirmLoading={submitting}
             >
@@ -522,7 +524,7 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
                 </Select>
                 {newItem.type === 4 ? <></> : (
                     <>
-                        <p><strong>Màu sắc:</strong></p>
+                        <p><strong>{newItem.type === 3 || newItem.type === 5 || newItem.type === 7 ? "Màu viền" : "Màu chữ"}:</strong></p>
                         <ColorPicker
                             value={newItem.colorCode}
                             onChange={(color) => setNewItem({ ...newItem, colorCode: color.toHexString() })}
@@ -537,7 +539,7 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
                             <img
                                 src={newItem.image}
                                 alt="Hình ảnh đã upload"
-                                style={{ width: "100%", height: 150, objectFit: "cover", borderRadius: 8, marginBottom: 8 }}
+                                style={{ width: "100%", height: "100%", objectFit: "contain", borderRadius: 8, marginBottom: 8 }}
                             />
                         ) : (
                             <p>Chưa có hình ảnh.</p>
@@ -564,6 +566,8 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
                 onCancel={() => setEditModalVisible(false)}
                 onOk={handleEditSubmit}
                 confirmLoading={submitting}
+                okText="Xác nhận"
+                cancelText="Hủy"
             >
                 <p><strong>Loại:</strong></p>
                 <Select
@@ -577,7 +581,7 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
                 </Select>
                 {newItem.type === 4 ? <></> : (
                     <>
-                        <p><strong>Màu sắc:</strong></p>
+                        <p><strong>{newItem.type === 3 || newItem.type === 5 || newItem.type === 7 ? "Màu viền" : "Màu chữ"}:</strong></p>
                         <ColorPicker
                             value={newItem.colorCode}
                             onChange={(color) => setNewItem({ ...newItem, colorCode: color.toHexString() })}
@@ -618,6 +622,8 @@ const TemplateDetails = ({ visible, onClose, detailItem, onEdit, id, onSuccess }
                 width="90%"
                 zIndex={9999}
                 key={detailItem ? detailItem.length : 0}
+                cancelText="Hủy"
+                okButtonProps={{ style: { display: 'none' } }}
             >
                 {headerBackground ? (
                     <div style={{ width: "100%", position: "relative", boxSizing: "border-box" }}>

@@ -5,9 +5,9 @@ import axios from "axios";
 import TemplateDetails from "../Form/TemplateDetails";
 
 const STATUS_LABELS = {
-  1: { text: "Active", color: "green" },
-  2: { text: "Inactive", color: "gray" },
-  3: { text: "Out of Stock", color: "red" }
+  1: { text: "Khả dụng", color: "green" },
+  2: { text: "Không khả dụng", color: "gray" },
+  3: { text: "Hết hàng", color: "red" }
 };
 
 const TYPE_LABELS = {
@@ -36,7 +36,7 @@ const TemplateManagement = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates`
       );
-      
+
       if (response.data?.statusCode === 200 && Array.isArray(response.data.data)) {
         const validItems = response.data.data
           .filter(item => item != null)
@@ -50,7 +50,7 @@ const TemplateManagement = () => {
             isBought: item.isBought || false,
             type: item.type || 2
           }));
-        
+
         setItems(validItems);
       } else {
         console.error("Invalid API response structure:", response.data);
@@ -82,7 +82,7 @@ const TemplateManagement = () => {
       message.warning("Không thể chỉnh sửa mẫu DEFAULT");
       return;
     }
-    
+
     setEditingItem(record);
     setCoverImageUrl(record.coverImage || "");
     form.setFieldsValue({
@@ -147,10 +147,10 @@ const TemplateManagement = () => {
     setActionLoading(true);
     try {
       const values = await form.validateFields();
-      const updatedValues = { 
-        ...values, 
+      const updatedValues = {
+        ...values,
         coverImage: coverImageUrl,
-        id: editingItem?.id 
+        id: editingItem?.id
       };
 
       const accessToken = localStorage.getItem("accessToken");
@@ -196,8 +196,8 @@ const TemplateManagement = () => {
     setActionLoading(true);
     try {
       const values = await form.validateFields();
-      const newItem = { 
-        ...values, 
+      const newItem = {
+        ...values,
         coverImage: coverImageUrl
       };
 
@@ -232,7 +232,7 @@ const TemplateManagement = () => {
       const response = await axios.get(
         `${process.env.REACT_APP_API_BASE_URL}/template/v1/master-templates/${id}`
       );
-      
+
       if (response.data?.statusCode === 200 && response.data.data) {
         setDetailItem(response.data.data);
         setDetailModalVisible(true);
@@ -303,7 +303,7 @@ const TemplateManagement = () => {
           <div style={{ display: "flex", flexWrap: "wrap", gap: 16, justifyContent: "center" }}>
             {items.map((item) => {
               if (!item) return null;
-              
+
               const isDefault = isDefaultItem(item);
               return (
                 <Card
@@ -312,18 +312,18 @@ const TemplateManagement = () => {
                   extra={
                     <>
                       <Tooltip title={isDefault ? "Không thể chỉnh sửa mẫu DEFAULT" : ""}>
-                        <Button 
-                          icon={<EditOutlined />} 
-                          onClick={() => handleEdit(item)} 
-                          style={{ marginRight: 8 }} 
+                        <Button
+                          icon={<EditOutlined />}
+                          onClick={() => handleEdit(item)}
+                          style={{ marginRight: 8 }}
                           disabled={isDefault}
                         />
                       </Tooltip>
                       <Tooltip title={isDefault ? "Không thể xóa mẫu DEFAULT" : ""}>
-                        <Button 
-                          icon={<DeleteOutlined />} 
-                          onClick={() => handleDelete(item.id)} 
-                          danger 
+                        <Button
+                          icon={<DeleteOutlined />}
+                          onClick={() => handleDelete(item.id)}
+                          danger
                           disabled={isDefault}
                         />
                       </Tooltip>
@@ -335,12 +335,12 @@ const TemplateManagement = () => {
                     <img
                       src={item.coverImage}
                       alt="Cover"
-                      style={{ 
-                        width: "100%", 
-                        height: "150px", 
-                        objectFit: "cover", 
-                        borderRadius: "8px", 
-                        marginBottom: "8px" 
+                      style={{
+                        width: "100%",
+                        height: "150px",
+                        objectFit: "cover",
+                        borderRadius: "8px",
+                        marginBottom: "8px"
                       }}
                       onError={(e) => {
                         e.target.src = "https://via.placeholder.com/250x150?text=No+Image";
@@ -368,10 +368,10 @@ const TemplateManagement = () => {
       </Card>
 
       {/* Edit Modal */}
-      <Modal 
-        title="Chỉnh sửa sản phẩm" 
-        visible={isModalVisible} 
-        onOk={handleOk} 
+      <Modal
+        title="Chỉnh sửa sản phẩm"
+        visible={isModalVisible}
+        onOk={handleOk}
         onCancel={() => setIsModalVisible(false)}
         okButtonProps={{
           disabled: !coverImageUrl || actionLoading,
@@ -381,6 +381,8 @@ const TemplateManagement = () => {
         cancelButtonProps={{
           disabled: actionLoading
         }}
+        okText="Xác nhận"
+        cancelText="Hủy"
       >
         <Form form={form} layout="vertical">
           <Form.Item name="templateName" label="Tên sản phẩm" rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}>
@@ -418,19 +420,19 @@ const TemplateManagement = () => {
           </Form.Item>
           <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}>
             <Select>
-              <Select.Option value={1}>Active</Select.Option>
-              <Select.Option value={2}>Inactive</Select.Option>
-              <Select.Option value={3}>Out of Stock</Select.Option>
+              <Select.Option value={1}>Khả dụng</Select.Option>
+              <Select.Option value={2}>Không khả dụng</Select.Option>
+              <Select.Option value={3}>Hết hàng</Select.Option>
             </Select>
           </Form.Item>
         </Form>
       </Modal>
 
       {/* Add Modal */}
-      <Modal 
-        title="Thêm mới sản phẩm" 
-        visible={isAddModalVisible} 
-        onOk={handleAddOk} 
+      <Modal
+        title="Thêm mới sản phẩm"
+        visible={isAddModalVisible}
+        onOk={handleAddOk}
         onCancel={() => setIsAddModalVisible(false)}
         okButtonProps={{
           disabled: !coverImageUrl || actionLoading,
@@ -440,8 +442,14 @@ const TemplateManagement = () => {
         cancelButtonProps={{
           disabled: actionLoading
         }}
+        okText="Xác nhận"
+        cancelText="Hủy"
       >
-        <Form form={form} layout="vertical">
+        <Form form={form} layout="vertical"
+          initialValues={{
+            status: 2 // Default value for the "status" field
+          }}
+        >
           <Form.Item name="templateName" label="Tên sản phẩm" rules={[{ required: true, message: "Vui lòng nhập tên sản phẩm!" }]}>
             <Input />
           </Form.Item>
@@ -477,9 +485,9 @@ const TemplateManagement = () => {
           </Form.Item>
           <Form.Item name="status" label="Trạng thái" rules={[{ required: true, message: "Vui lòng chọn trạng thái!" }]}>
             <Select>
-              <Select.Option value={1}>Active</Select.Option>
-              <Select.Option value={2}>Inactive</Select.Option>
-              <Select.Option value={3}>Out of Stock</Select.Option>
+              <Select.Option value={1}>Khả dụng</Select.Option>
+              <Select.Option value={2}>Không khả dụng</Select.Option>
+              <Select.Option value={3}>Hết hàng</Select.Option>
             </Select>
           </Form.Item>
         </Form>
