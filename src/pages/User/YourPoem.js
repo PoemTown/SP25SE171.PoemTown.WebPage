@@ -243,7 +243,7 @@ const YourPoem = ({ isMine, displayName, avatar, username, setIsCreatingPoem, is
       message.success("Bài thơ đã được xóa thành công.");
     } catch (error) {
       console.error("Error deleting poem:", error);
-      message.error("Có lỗi xảy ra khi xóa bài thơ.");
+      message.error(error?.response?.data?.errorMessage || "Có lỗi xảy ra khi xóa bài thơ.");
     } finally {
       setIsDeleteModalVisible(false);
       setPoemToDelete(null);
