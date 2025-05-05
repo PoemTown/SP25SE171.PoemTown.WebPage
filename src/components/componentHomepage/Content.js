@@ -89,7 +89,7 @@ const Content = ({ activeTab }) => {
       setErrorFP(null);
       try {
         const res = await fetch(
-          `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1`,
+          `${process.env.REACT_APP_API_BASE_URL}/poet-samples/v1/live-board`,
         );
         if (!res.ok) throw new Error('Không lấy được danh sách');
         const json = await res.json();
@@ -505,7 +505,8 @@ const Content = ({ activeTab }) => {
                           {poet.name}
                         </Typography.Title>
                         <Typography.Text style={styles.slideMeta}>
-                          {new Date(poet.dateOfBirth).toLocaleDateString()} &bull; {poet.gender === 'Male' ? 'Nam' : 'Nữ'}
+                          {/* {new Date(poet.dateOfBirth).toLocaleDateString()} &bull; {poet.gender === 'Male' ? 'Nam' : 'Nữ'} */}
+                          {`${poet.yearOfBirth == null ? "Chưa rõ" : poet.yearOfBirth} - ${poet.yearOfDeath == null ? "Chưa rõ" : poet.yearOfDeath }`} &bull; {poet.gender === 'Male' ? 'Nam' : 'Nữ'}
                         </Typography.Text>
                         <Typography.Paragraph
                           ellipsis={{ rows: 3 }}
