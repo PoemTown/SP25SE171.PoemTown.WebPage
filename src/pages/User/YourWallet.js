@@ -1869,7 +1869,7 @@ const YourWallet = () => {
             rules={[
               { required: true, message: "Vui lòng nhập số tiền" },
               {
-                type: 'number',
+                type: 'number', 
                 min: 20000,
                 message: 'Số tiền tối thiểu là 20,000 VNĐ',
               },

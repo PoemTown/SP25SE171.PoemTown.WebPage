@@ -574,7 +574,7 @@ const TemplateDetail = () => {
                                     position: "relative",
                                     paddingBottom: "6px"
                                 }}>
-                                    Thành tựu cá nhân
+                                    Thành tựu thi nhân
                                     <span style={{
                                         position: "absolute",
                                         bottom: 0,
@@ -692,7 +692,7 @@ const TemplateDetail = () => {
 
                         {/* Statistics Section - Modern Data Visualization */}
                         <div
-                            style={{
+                            style={{ 
                                 borderRadius: "20px",
                                 border: `1px solid ${statisticBorder || "rgba(126, 87, 194, 0.1)"}`,
                                 background: statisticBackground || "linear-gradient(145deg, rgba(248, 245, 255, 0.95), rgba(238, 230, 255, 0.95))",
