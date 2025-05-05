@@ -713,8 +713,8 @@ const YourWallet = () => {
       title: "Mô tả",
       dataIndex: "description",
       key: "description",
-      width: 200, 
-      ellipsis: true, 
+      width: 200,
+      ellipsis: true,
     },
     // {
     //   title: "Mã giao dịch",
@@ -726,9 +726,11 @@ const YourWallet = () => {
       title: "Số tiền",
       dataIndex: "amount",
       key: "amount",
-      width: 140, 
+      width: 140,
       render: (amount, record) => {
-        const sign = record.isAddToWallet ? "+" : "-";
+        const sign = record.isAddToWallet != null
+        ? (record.isAddToWallet ? "+" : "-")
+        : "";
         return `${sign}₫${amount?.toLocaleString()}`;
       },
     },
@@ -776,7 +778,7 @@ const YourWallet = () => {
       ),
     }
   ];
-  
+
 
   const complaintColumns = [
     {
@@ -1483,7 +1485,9 @@ const YourWallet = () => {
               {/* Amount Information */}
               <Descriptions.Item label="Số tiền">
                 <Text strong type={transactionDetail.isAddToWallet ? "success" : "danger"}>
-                  {transactionDetail.isAddToWallet ? "+" : "-"}₫{transactionDetail.amount?.toLocaleString() || '0'}
+                  {transactionDetail.isAddToWallet != null
+                    ? (transactionDetail.isAddToWallet ? "+" : "-")
+                    : ""}₫{transactionDetail.amount?.toLocaleString() || '0'}
                 </Text>
               </Descriptions.Item>
               {transactionDetail.discountAmount > 0 && (
