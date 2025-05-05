@@ -213,7 +213,7 @@ const UsageRight = () => {
 
   async function fetchPoems(page, size) {
     const baseUrl = `${process.env.REACT_APP_API_BASE_URL}/poems/v1/mine`;
-    const url = `${baseUrl}?pageNumber=${page}&pageSize=${size}`;
+    const url = `${baseUrl}?pageNumber=${page}&pageSize=${size}&filterOptions.status=1`;
     await fetchPoemsData(url);
   }
 
@@ -386,7 +386,7 @@ const UsageRight = () => {
         </Dropdown.Button>
       </div>
       {poems.length > 0 ? (
-        <div>
+        <div> 
           <Row gutter={[16, 16]}>
             {poems.map(poem => (
               <Col key={poem?.id} xs={24} sm={12} md={8} lg={6} xl={6}>
