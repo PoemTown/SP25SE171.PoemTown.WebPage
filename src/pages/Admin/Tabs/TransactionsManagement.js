@@ -361,9 +361,13 @@ const TransactionsManagement = () => {
 
   const getStatusLabel = (status) => {
     switch (status) {
-      case 1: return { label: "Pending", color: "warning" };
-      case 2: return { label: "Paid", color: "success" };
-      case 3: return { label: "Cancelled", color: "error" };
+      case 1: return { label: "Chờ thanh toán", color: "warning" };
+      case 2: return { label: "Đã thanh toán", color: "success" };
+      case 3: return { label: "Đã hủy", color: "error" };
+      case 4:
+        return { label: "Đã hoàn tiền", color: "error" };
+      case 5:
+        return { label: "Đã chuyển khoản", color: "success" }; 
       default: return { label: "Không xác định", color: "default" };
     }
   };

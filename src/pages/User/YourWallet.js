@@ -33,6 +33,8 @@ import {
   ClockCircleOutlined,
   CheckCircleOutlined,
   CloseCircleOutlined,
+  RollbackOutlined,
+  SwapOutlined,
   FileOutlined,
   FormOutlined,
   MoneyCollectOutlined,
@@ -64,6 +66,8 @@ const transactionStatusMap = {
   1: { text: "Chờ thanh toán", color: "orange", icon: <ClockCircleOutlined /> },
   2: { text: "Đã thanh toán", color: "green", icon: <CheckCircleOutlined /> },
   3: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
+  4: { text: "Đã hoàn tiền", color: "blue", icon: <RollbackOutlined /> },
+  5: { text: "Đã chuyển khoản", color: "purple", icon: <SwapOutlined /> },
 };
 
 const complaintStatusMap = {
