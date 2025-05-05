@@ -142,10 +142,11 @@ const PoetSamplesPage = () => {
             'Tình yêu': { icon: <CrownFilled />, color: 'pink' },
             'Sứ giả hòa bình': { icon: <StarFilled />, color: 'blue' },
             'Cảm xúc': { icon: <FireFilled />, color: 'orange' },
-            'Chuyên gia tâm lý': { icon: <CrownFilled />, color: 'cyan' }
+            'Chuyên gia tâm lý': { icon: <CrownFilled />, color: 'cyan' },
+            '_default': { icon: <StarFilled />, color: 'brown' }
         };
-
-        return titleConfigs[titleName] || null;
+    
+        return titleConfigs[titleName] || titleConfigs['_default'];
     };
 
     const getPoetBadges = (poet) => {
