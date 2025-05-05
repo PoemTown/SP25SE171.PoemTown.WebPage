@@ -728,7 +728,9 @@ const YourWallet = () => {
       key: "amount",
       width: 140,
       render: (amount, record) => {
-        const sign = record.isAddToWallet ? "+" : "-";
+        const sign = record.isAddToWallet != null
+        ? (transactionDetail.isAddToWallet ? "+" : "-")
+        : "";
         return `${sign}₫${amount?.toLocaleString()}`;
       },
     },
