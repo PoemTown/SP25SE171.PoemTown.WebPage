@@ -732,7 +732,7 @@ const UserOnline = () => {
                         color="#0088FE"
                     />
                 </Col>
-                <Col xs={24} sm={12} lg={6}>
+                <Col xs={24} sm={12} lg={7}>
                     <KPIBox
                         title="Tổng giá trị giao dịch"
                         value={transactionData.totals.totalAmount}
