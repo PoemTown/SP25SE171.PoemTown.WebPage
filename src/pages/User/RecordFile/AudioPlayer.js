@@ -138,7 +138,8 @@ const styles = {
     position: "absolute",
     top: "-10px",
     right: "10px",
-    backgroundColor: "#1890ff",
+    background: `linear-gradient(135deg, #7d6b58, #5d4c3c)`,
+
     color: "#fff",
     padding: "4px 12px",
     borderRadius: "20px",
