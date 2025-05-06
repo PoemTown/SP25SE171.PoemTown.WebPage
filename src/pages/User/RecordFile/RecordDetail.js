@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import axios from "axios";
-import { Button, Spin, Card, Typography, Divider, Modal, Input, message, notification, Tag, Space } from "antd";
+import { Button, Spin, Card, Typography, Divider, Modal, Input, message, notification, Tag, Space, InputNumber } from "antd";
 import { LeftOutlined, LockFilled, PlayCircleFilled, ShoppingCartOutlined } from "@ant-design/icons";
 import AudioPlayer from "./AudioPlayer";
 import Headeruser from "../../../components/Headeruser";
@@ -20,7 +20,6 @@ const RecordDetail = () => {
     const priceRef = useRef(null);
     const nameRef = useRef(null);
     const [isLoggedIn, setIsLoggedIn] = useState(false);
-
     const [isMine, setIsMine] = useState(
         location.state?.isMine ?? false
     );
@@ -77,8 +76,8 @@ const RecordDetail = () => {
             ),
             onOk: async () => {
                 const price = priceRef.current?.input.value;
-                if (!price || price < 10000) {
-                    message.error("Vui lòng nhập giá nhỏ nhất là 10.000đ");
+                if (!price || price < 10000 || price > 100000000) {
+                    message.error("Vui lòng nhập giá nhỏ nhất là 10.000đ và bé hơn 100.000.000đ");
 
                     return;
                 }
@@ -130,8 +129,9 @@ const RecordDetail = () => {
             onOk: async () => {
                 const name = nameRef.current.input.value?.trim();
                 const priceValue = record.isPublic ? 0 : parseFloat(priceRef.current.input.value);
-                if (record.isPublic === false && !priceValue || priceValue < 10000 ) {
-                    message.error("Vui lòng nhập giá nhỏ nhất là 10.000đ");
+                if (record.isPublic === false && !priceValue || priceValue < 10000 || priceValue > 100000000) {
+                    message.error("Vui lòng nhập giá nhỏ nhất là 10.000đ và bé hơn 100.000.000đ");
+
                     return;
                 }
                 if (!name) {
@@ -247,7 +247,7 @@ const RecordDetail = () => {
                     }}
                 >
                     <LeftOutlined style={{ marginRight: '8px' }} />
-                    Trở về trang trước 
+                    Trở về trang trước
                 </Button>
 
                 <div style={{

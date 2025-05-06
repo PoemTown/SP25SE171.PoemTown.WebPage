@@ -54,7 +54,8 @@ const Shop = () => {
 
     const templateStatus = {
         1: "Còn khả dụng",
-        2: "Không còn khả dụng"
+        2: "Không khả dụng",
+        3: "Hết hàng"
     }
 
     const sortOptions = {
