@@ -75,7 +75,7 @@ const ProfilePage = () => {
       'phoneNumber',
       'displayName'
     ];
-
+  
     const fieldLabels = {
       fullName: 'Tên đầy đủ',
       address: 'Địa chỉ',
@@ -83,21 +83,22 @@ const ProfilePage = () => {
       phoneNumber: 'Số điện thoại',
       displayName: 'Tên hiển thị'
     };
-
+  
     const missingFields = requiredFields.filter(field => !formData[field]?.trim());
-
+  
     if (missingFields.length > 0) {
       const missingLabels = missingFields.map(field => fieldLabels[field] || field);
       message.error(`Vui lòng điền đầy đủ thông tin vào các trường: ${missingLabels.join(', ')}`);
       return;
     }
+    
     const updatedData = {
       ...formData,
       avatar: sessionStorage.getItem("profileImage") || formData.avatar,
     };
-
+  
     localStorage.setItem("username", updatedData.userName);
-
+  
     try {
       const response = await fetch(
         `${process.env.REACT_APP_API_BASE_URL}/users/v1/mine/profile`,
@@ -110,8 +111,7 @@ const ProfilePage = () => {
           body: JSON.stringify(updatedData),
         }
       );
-
-
+  
       const data = await response.json();
       if (data.statusCode === 400) {
         switch (data.errorMessage) {
@@ -124,11 +124,14 @@ const ProfilePage = () => {
         setUser(data.data);
         setIsEditing(false);
         message.success("Cập nhật thông tin cá nhân thành công!");
-
+  
+        // Lưu avatar mới vào localStorage với key avatar2
+        const newAvatar = sessionStorage.getItem("profileImage") || data.data.avatar;
+        if (newAvatar) {
+          localStorage.setItem("avatar2", newAvatar);
+        }
+  
         sessionStorage.removeItem("profileImage");
-        // setTimeout(() => {
-        //   window.location.reload();
-        // }, 1000);
         fetchUserProfile();
       }
     } catch (error) {

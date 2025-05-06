@@ -40,10 +40,11 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
       case 3: return "Mua bản ghi âm";
       case 4: return "Mua bài thơ";
       case 5: return "Rút tiền";
-      case 6: return "Quyên góp";
+      case 6: return "Ủng hộ";
       case 7: return "Phí hoa hồng";
       case 8: return "Hoàn tiền";
       case 9: return "Phí dịch vụ nạp tiền";
+      case 10: return "Nhận ủng hộ";
       default: return "Không xác định";
     }
   };
@@ -226,7 +227,24 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
                 </Box>
               </CardContent>
             </Card>
-
+            {transaction.type === 6 || transaction.type === 10 ? (
+              <Card sx={{ mb: 2, boxShadow: 3 }}>
+                <CardContent>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>{transaction.type === 10 ? "Thông tin người gửi" : "Thông tin người nhận" }</Typography>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+                    <Avatar
+                      src={transaction.receiveUser?.avatar || ""}
+                      alt={transaction.receiveUser?.fullName || "Avatar"}
+                      sx={{ width: 80, height: 80, border: "2px solid #795548" }}
+                    />
+                    <Box>
+                      <Typography variant="body1"><strong>Tên đầy đủ:</strong> {transaction.receiveUser?.fullName || "Không có"}</Typography>
+                      <Typography variant="body1"><strong>Tên hiển thị:</strong> {transaction.receiveUser?.displayName || "Không có"}</Typography>
+                    </Box>
+                  </Box>
+                </CardContent>
+              </Card>
+            ) : (<></>)}
             {/* Order Information */}
             {renderOrderDetails(transaction.order)}
 
@@ -405,10 +423,11 @@ const TransactionsManagement = () => {
       case 3: return "Mua bản ghi âm";
       case 4: return "Mua bài thơ";
       case 5: return "Rút tiền";
-      case 6: return "Quyên góp";
+      case 6: return "Ủng hộ";
       case 7: return "Phí hoa hồng";
       case 8: return "Hoàn tiền";
       case 9: return "Phí dịch vụ nạp tiền";
+      case 10: return "Nhận ủng hộ";
       default: return "Không xác định";
     }
   };

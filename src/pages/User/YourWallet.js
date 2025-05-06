@@ -60,11 +60,12 @@ const transactionTypeMap = {
   6: { text: "Ủng hộ", icon: <WalletOutlined /> },
   7: { text: "Tiền hoa hồng", icon: <WalletOutlined /> },
   8: { text: "Hoàn tiền", icon: <WalletOutlined /> },
-  9: { text: "Phí dịch vụ nạp tiền", icon: <WalletOutlined /> }
+  9: { text: "Phí dịch vụ nạp tiền", icon: <WalletOutlined /> },
+  10: { text: "Nhận ủng hộ", icon: <WalletOutlined /> }
 };
 
 const transactionStatusMap = {
-  1: { text: "Chờ thanh toán", color: "orange", icon: <ClockCircleOutlined /> },
+  1: { text: "Đang xử lý", color: "orange", icon: <ClockCircleOutlined /> },
   2: { text: "Đã thanh toán", color: "green", icon: <CheckCircleOutlined /> },
   3: { text: "Đã hủy", color: "red", icon: <CloseCircleOutlined /> },
   4: { text: "Đã hoàn tiền", color: "blue", icon: <RollbackOutlined /> },
@@ -232,6 +233,7 @@ const YourWallet = () => {
 
       if (response.data.statusCode === 200) {
         setTransactionDetail(response.data.data);
+        console.log("ád", response.data.data);
       } else {
         message.error(response.data.message || "Không thể lấy chi tiết giao dịch");
       }
@@ -1464,7 +1466,7 @@ const YourWallet = () => {
           }}>
             Đóng
           </Button>,
-          (transactionDetail?.type === 5 && (transactionDetail?.status === 3 || transactionDetail?.status === 2)) || (transactionDetail?.type === 8 && (transactionDetail?.status === 3 || transactionDetail?.status === 2)) ?
+          (transactionDetail?.type === 5 && (transactionDetail?.status === 4 || transactionDetail?.status === 5)) || (transactionDetail?.type === 8 && (transactionDetail?.status === 4 || transactionDetail?.status === 5)) ?
             <Button
               type="link"
               icon={<MessageOutlined />}
