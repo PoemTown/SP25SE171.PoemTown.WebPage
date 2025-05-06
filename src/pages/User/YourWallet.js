@@ -57,7 +57,8 @@ const transactionTypeMap = {
   6: { text: "Ủng hộ", icon: <WalletOutlined /> },
   7: { text: "Tiền hoa hồng", icon: <WalletOutlined /> },
   8: { text: "Hoàn tiền", icon: <WalletOutlined /> },
-  9: { text: "Phí dịch vụ nạp tiền", icon: <WalletOutlined /> }
+  9: { text: "Phí dịch vụ nạp tiền", icon: <WalletOutlined /> },
+  10: { text: "Nhận ủng hộ", icon: <WalletOutlined /> }
 };
 
 const transactionStatusMap = {
