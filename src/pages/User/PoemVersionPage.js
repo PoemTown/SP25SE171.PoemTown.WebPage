@@ -41,20 +41,46 @@ const PoemVersionPage = () => {
     const [isModalVisible, setIsModalVisible] = useState(false);
     const [form] = Form.useForm();
     const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [backgroundImage, setBackgroundImage] = useState(null);
 
     const accessToken = localStorage.getItem("accessToken");
+    const userName = localStorage.getItem("username");
+
     const Status = Object.freeze({
         1: "Trả phí",
         3: "Miễn phí",
         4: "Chưa cấp quyền sử dụng",
         2: "Không sử dụng"
     });
-    
+
     useEffect(() => {
         fetchVersions();
+        fetchData();
         setIsLoggedIn(!!accessToken);
     }, [poemId]);
+    const fetchData = async () => {
+        try {
+            const response = await fetch(
+                `${process.env.REACT_APP_API_BASE_URL}/users/v1/profile/online/${userName}`,
+                { method: "GET", headers: accessToken ? { Authorization: `Bearer ${accessToken}` } : {} }
+            );
 
+            const result = await response.json();
+            if (response.ok && result.data) {
+                const mainBackground = result.data.userTemplateDetails.find(item => item.type === 4);
+                if (mainBackground) {
+                    setBackgroundImage(mainBackground.image ? encodeURI(mainBackground.image) : null);
+                }
+
+            } else {
+                console.error("Lỗi khi lấy dữ liệu người dùng:", result.message);
+            }
+
+        } catch (error) {
+            console.error("Lỗi khi gọi API:", error);
+        } finally {
+        }
+    }
     const fetchVersions = async () => {
         try {
             const pageSize = 100;
@@ -153,7 +179,7 @@ const PoemVersionPage = () => {
                             key={usageRights.buyer?.id}
                             header={
                                 <List.Item.Meta
-                                    avatar={<Avatar src={usageRights.buyer?.avatar || "/default-avatar.png"} />}
+                                    avatar={<Avatar src={usageRights.buyer?.avatar || "/default_avatar.png"} />}
                                     title={<Text strong>{usageRights.buyer?.displayName || "Không tên"}</Text>}
                                     description={`@${usageRights.buyer?.userName || "unknown"}`}
                                 />
@@ -206,34 +232,45 @@ const PoemVersionPage = () => {
 
     return (
         <>
-            {isLoggedIn ? <Headeruser /> : <Headerdefault />}
-            <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-                    <Button 
-                        type="text" 
-                        icon={<ArrowLeftOutlined />} 
-                        onClick={handleBack}
-                        style={{ marginRight: 16 }}
-                    >
-                        Quay lại
-                    </Button>
-                    <Title level={2} style={{ margin: 0, flex: 1 }}>
-                        <HistoryOutlined /> {version[0]?.poem?.title || 'Quản lý phiên bản'}
-                    </Title>
-                </div>
+            <div style={{
+                backgroundImage: `url("${backgroundImage}")`,
+                backgroundSize: 'cover',
+                backgroundAttachment: 'fixed',
+                minHeight: '100vh',
+                paddingBottom: '40px',
+                fontFamily: "'Noto Serif', serif",
+                color: '#333'
+            }}>
+                {isLoggedIn ? <Headeruser /> : <Headerdefault />}
+                <div style={{ maxWidth: 1200, margin: '0 auto', padding: 24 }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
+                        <Button
+                            type="text"
+                            icon={<ArrowLeftOutlined />}
+                            onClick={handleBack}
+                            style={{ marginRight: 16 }}
+                        >
+                            Quay lại
+                        </Button>
+                        <Title level={2} style={{ margin: 0, flex: 1 }}>
+                            <HistoryOutlined /> {version[0]?.poem?.title || 'Quản lý phiên bản'}
+                        </Title>
+                    </div>
 
-                {/* Phiên bản hiện tại */}
-                <Card
-                    title={
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                            <Tag color="green">PHIÊN BẢN HIỆN TẠI</Tag>
-                            <Text strong>#{currentVersion?.id?.slice(0, 8)}</Text>
-                        </div>
-                    }
-                    style={{ marginBottom: 24 }}
-                    extra={
-                        <div style={{ display: 'flex', gap: 12 }}>
-                            {(currentVersion?.status === 1 || currentVersion?.status === 4) && (
+                    {/* Phiên bản hiện tại */}
+                    <Card
+                        title={
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                                <Tag color="green">PHIÊN BẢN HIỆN TẠI</Tag>
+                                <Text strong>#{currentVersion?.id?.slice(0, 8)}</Text>
+                            </div>
+                        }
+                        style={{ marginBottom: 24 }}
+                        extra={
+                            <div style={{ display: 'flex', gap: 12 }}>
+                                {/* {(currentVersion?.status === 1 || currentVersion?.status === 4) && (
+                                
+                            )} */}
                                 <Button
                                     type="primary"
                                     icon={<GiftOutlined />}
@@ -241,9 +278,9 @@ const PoemVersionPage = () => {
                                 >
                                     Miễn phí
                                 </Button>
-                            )}
-
-                            {(currentVersion?.status === 3 || currentVersion?.status === 4) && (
+                                {/* {(currentVersion?.status === 3 || currentVersion?.status === 4) && (
+                               
+                            )} */}
                                 <Button
                                     type="primary"
                                     icon={<DollarOutlined />}
@@ -251,242 +288,243 @@ const PoemVersionPage = () => {
                                 >
                                     Bán lại
                                 </Button>
-                            )}
+                            </div>
+                        }
+                    >
+                        <div className="version-details-grid">
+                            <DetailItem
+                                label="Trạng thái"
+                                value={Status[currentVersion?.status] || "Không xác định"}
+                                icon={<Tag color={currentVersion?.price === 0 ? "green" : "gold"} />}
+                            />
+                            <DetailItem
+                                label="Giá"
+                                value={currentVersion?.price === 0 ?
+                                    "Miễn phí" :
+                                    `${currentVersion?.price?.toLocaleString()} VND`
+                                }
+                            />
+                            <DetailItem
+                                label="Thời hạn"
+                                value={currentVersion?.durationTime > 50 || currentVersion?.durationTime === 0 ?
+                                    "Vô thời hạn" :
+                                    `${currentVersion?.durationTime} năm kể từ ngày bán`
+                                }
+                            />
+                            <DetailItem
+                                label="Hoa hồng"
+                                value={currentVersion?.commissionPercentage === 0 ?
+                                    "Không có" :
+                                    `${currentVersion?.commissionPercentage}%`
+                                }
+                            />
                         </div>
-                    }
-                >
-                    <div className="version-details-grid">
-                        <DetailItem
-                            label="Trạng thái"
-                            value={Status[currentVersion?.status] || "Không xác định"}
-                            icon={<Tag color={currentVersion?.price === 0 ? "green" : "gold"} />}
-                        />
-                        <DetailItem
-                            label="Giá"
-                            value={currentVersion?.price === 0 ?
-                                "Miễn phí" :
-                                `${currentVersion?.price?.toLocaleString()} VND`
-                            }
-                        />
-                        <DetailItem
-                            label="Thời hạn"
-                            value={currentVersion?.durationTime > 50 || currentVersion?.durationTime === 0 ?
-                                "Vô thời hạn" :
-                                `${currentVersion?.durationTime} năm kể từ ngày bán`
-                            }
-                        />
-                        <DetailItem
-                            label="Hoa hồng"
-                            value={currentVersion?.commissionPercentage === 0 ?
-                                "Không có" :
-                                `${currentVersion?.commissionPercentage}%`
-                            }
-                        />
-                    </div>
 
-                    <Divider />
+                        <Divider />
 
-                    <Title level={5} style={{ marginBottom: 12 }}>
-                        <ShoppingCartOutlined /> Người đã mua ({currentVersion?.usageRights?.length || 0})
-                    </Title>
-                    <BuyerList usageRights={currentVersion?.usageRights} />
-                </Card>
+                        <Title level={5} style={{ marginBottom: 12 }}>
+                            <ShoppingCartOutlined /> Người đã mua ({currentVersion?.usageRights?.length || 0})
+                        </Title>
+                        <BuyerList usageRights={currentVersion?.usageRights} />
+                    </Card>
 
-                {/* Modal cài đặt bán */}
-                <Modal
-                    title="Cài đặt phiên bản trả phí"
-                    visible={isModalVisible}
-                    onCancel={() => setIsModalVisible(false)}
-                    onOk={() => form.submit()}
-                    okText="Lưu cài đặt"
-                    cancelText="Huỷ bỏ"
-                    centered
-                >
-                    <Form
-                        form={form}
-                        layout="vertical"
-                        initialValues={{
-                            price: 0,
-                            commissionPercentage: 0,
-                            durationTime: 1
-                        }}
-                        onFinish={handleSellVersion}
+                    {/* Modal cài đặt bán */}
+                    <Modal
+                        title="Cài đặt phiên bản trả phí"
+                        visible={isModalVisible}
+                        onCancel={() => setIsModalVisible(false)}
+                        onOk={() => form.submit()}
+                        okText="Lưu cài đặt"
+                        cancelText="Huỷ bỏ"
+                        centered
                     >
-                        <Form.Item
-                            label="Giá bán (VND)"
-                            name="price"
-                            rules={[{ required: true, message: 'Vui lòng nhập giá bán' }]}
+                        <Form
+                            form={form}
+                            layout="vertical"
+                            initialValues={{
+                                price: 0,
+                                commissionPercentage: 0,
+                                durationTime: 1
+                            }}
+                            onFinish={handleSellVersion}
                         >
-                            <InputNumber
-                                style={{ width: '100%' }}
-                                min={10000}
-                                formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
-                                parser={value => value.replace(/\$\s?|(,*)/g, '')}
-                            />
-                        </Form.Item>
+                            <Form.Item
+                                label="Giá bán (VND)"
+                                name="price"
+                                rules={[{ required: true, message: 'Vui lòng nhập giá bán' }]}
+                            >
+                                <InputNumber
+                                    style={{ width: '100%' }}
+                                    min={10000}
+                                    max={100000000}
+                                    formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+                                    parser={value => value.replace(/\$\s?|(,*)/g, '')}
+                                />
+                            </Form.Item>
 
-                        <Form.Item
-                            label="Phần trăm hoa hồng (%)"
-                            name="commissionPercentage"
-                            rules={[
-                                {
-                                    required: true,
-                                    message: 'Vui lòng nhập phần trăm hoa hồng'
-                                },
-                                {
-                                    type: 'number',
-                                    min: 0,
-                                    max: 100,
-                                    message: 'Phần trăm phải từ 0 đến 100'
-                                }
-                            ]}
+                            <Form.Item
+                                label="Phần trăm hoa hồng (%)"
+                                name="commissionPercentage"
+                                rules={[
+                                    {
+                                        required: true,
+                                        message: 'Vui lòng nhập phần trăm hoa hồng'
+                                    },
+                                    {
+                                        type: 'number',
+                                        min: 0,
+                                        max: 100,
+                                        message: 'Phần trăm phải từ 0 đến 100'
+                                    }
+                                ]}
+                            >
+                                <InputNumber
+                                    style={{ width: '100%' }}
+                                    min={0}
+                                    max={100}
+                                />
+                            </Form.Item>
+
+                            <Form.Item
+                                label="Thời hạn (năm)"
+                                name="durationTime"
+                                rules={[{ required: true, message: 'Vui lòng nhập thời hạn' }]}
+                            >
+                                <InputNumber
+                                    style={{ width: '100%' }}
+                                    min={0}
+                                    max={100}
+                                    addonAfter={
+                                        <Switch
+                                            checkedChildren="Vô thời hạn"
+                                            unCheckedChildren="Giới hạn"
+                                            onChange={checked =>
+                                                form.setFieldsValue({ durationTime: checked ? 999 : 1 })
+                                            }
+                                        />
+                                    }
+                                />
+                            </Form.Item>
+                        </Form>
+                    </Modal>
+
+                    {/* Lịch sử phiên bản */}
+                    <Collapse ghost defaultActiveKey={[]}>
+                        <Panel
+                            header={`LỊCH SỬ PHIÊN BẢN (${olderVersions?.length || 0})`}
+                            key="history"
+                            extra={<HistoryOutlined style={{ fontSize: 16 }} />}
                         >
-                            <InputNumber
-                                style={{ width: '100%' }}
-                                min={0}
-                                max={100}
-                            />
-                        </Form.Item>
-
-                        <Form.Item
-                            label="Thời hạn (năm)"
-                            name="durationTime"
-                            rules={[{ required: true, message: 'Vui lòng nhập thời hạn' }]}
-                        >
-                            <InputNumber
-                                style={{ width: '100%' }}
-                                min={0}
-                                max={100}
-                                addonAfter={
-                                    <Switch
-                                        checkedChildren="Vô thời hạn"
-                                        unCheckedChildren="Giới hạn"
-                                        onChange={checked =>
-                                            form.setFieldsValue({ durationTime: checked ? 999 : 1 })
-                                        }
-                                    />
-                                }
-                            />
-                        </Form.Item>
-                    </Form>
-                </Modal>
-
-                {/* Lịch sử phiên bản */}
-                <Collapse ghost defaultActiveKey={[]}>
-                    <Panel
-                        header={`LỊCH SỬ PHIÊN BẢN (${olderVersions?.length || 0})`}
-                        key="history"
-                        extra={<HistoryOutlined style={{ fontSize: 16 }} />}
-                    >
-                        {olderVersions?.length > 0 ? (
-                            <Timeline mode="alternate">
-                                {olderVersions.map((version) => (
-                                    <Timeline.Item
-                                        label={version?.createdTime ?
-                                            new Date(version.createdTime).toLocaleDateString() :
-                                            'N/A'
-                                        }
-                                    >
-                                        <Card
-                                            title={`Version ${version?.id?.slice(0, 8)}`}
-                                            style={{ width: '100%' }}
-                                            extra={<Tag color="volcano">CŨ</Tag>}
+                            {olderVersions?.length > 0 ? (
+                                <Timeline mode="alternate">
+                                    {olderVersions.map((version) => (
+                                        <Timeline.Item
+                                            label={version?.createdTime ?
+                                                new Date(version.createdTime).toLocaleDateString() :
+                                                'N/A'
+                                            }
                                         >
-                                            <div className="version-details-grid">
-                                                <DetailItem
-                                                    label="Trạng thái"
-                                                    value={Status[version?.status] || "Không xác định"}
-                                                    icon={<Tag color={version?.price === 0 ? "green" : "gold"} />}
-                                                />
-                                                <DetailItem
-                                                    label="Giá"
-                                                    value={version?.price === 0 ?
-                                                        "Miễn phí" :
-                                                        `${version?.price?.toLocaleString()} VND`
-                                                    }
-                                                />
-                                                <DetailItem
-                                                    label="Thời hạn"
-                                                    value={version?.durationTime > 50 || version?.durationTime === 0 ?
-                                                        "Vô thời hạn" :
-                                                        `${version?.durationTime} năm`
-                                                    }
-                                                />
-                                                <DetailItem
-                                                    label="Hoa hồng"
-                                                    value={version?.commissionPercentage === 0 ?
-                                                        "Không có" :
-                                                        `${version?.commissionPercentage}%`
-                                                    }
-                                                />
-                                            </div>
+                                            <Card
+                                                title={`Version ${version?.id?.slice(0, 8)}`}
+                                                style={{ width: '100%' }}
+                                                extra={<Tag color="volcano">CŨ</Tag>}
+                                            >
+                                                <div className="version-details-grid">
+                                                    <DetailItem
+                                                        label="Trạng thái"
+                                                        value={Status[version?.status] || "Không xác định"}
+                                                        icon={<Tag color={version?.price === 0 ? "green" : "gold"} />}
+                                                    />
+                                                    <DetailItem
+                                                        label="Giá"
+                                                        value={version?.price === 0 ?
+                                                            "Miễn phí" :
+                                                            `${version?.price?.toLocaleString()} VND`
+                                                        }
+                                                    />
+                                                    <DetailItem
+                                                        label="Thời hạn"
+                                                        value={version?.durationTime > 50 || version?.durationTime === 0 ?
+                                                            "Vô thời hạn" :
+                                                            `${version?.durationTime} năm`
+                                                        }
+                                                    />
+                                                    <DetailItem
+                                                        label="Hoa hồng"
+                                                        value={version?.commissionPercentage === 0 ?
+                                                            "Không có" :
+                                                            `${version?.commissionPercentage}%`
+                                                        }
+                                                    />
+                                                </div>
 
-                                            <Title level={5} style={{ marginBottom: 12, marginTop: 16 }}>
-                                                <ShoppingCartOutlined /> Người đã mua ({version?.usageRights?.length || 0})
-                                            </Title>
-                                            <List
-                                                dataSource={version?.usageRights || []}
-                                                renderItem={usageRights => (
-                                                    <List.Item>
-                                                        <Collapse
-                                                            ghost
-                                                            expandIconPosition="end"
-                                                            style={{ width: '100%' }}
-                                                        >
-                                                            <Panel
-                                                                key={usageRights.buyer?.id}
-                                                                header={
-                                                                    <List.Item.Meta
-                                                                        avatar={<Avatar src={usageRights.buyer?.avatar || "/default-avatar.png"} />}
-                                                                        title={<Text strong>{usageRights.buyer?.displayName || "Không tên"}</Text>}
-                                                                        description={`@${usageRights.buyer?.userName || "unknown"}`}
-                                                                    />
-                                                                }
+                                                <Title level={5} style={{ marginBottom: 12, marginTop: 16 }}>
+                                                    <ShoppingCartOutlined /> Người đã mua ({version?.usageRights?.length || 0})
+                                                </Title>
+                                                <List
+                                                    dataSource={version?.usageRights || []}
+                                                    renderItem={usageRights => (
+                                                        <List.Item>
+                                                            <Collapse
+                                                                ghost
+                                                                expandIconPosition="end"
+                                                                style={{ width: '100%' }}
                                                             >
-                                                                <div style={{ paddingLeft: 42 }}>
-                                                                    <div style={{ marginBottom: 8 }}>
-                                                                        <Text type="secondary">
-                                                                            <ShoppingCartOutlined /> Ngày mua: {
-                                                                                usageRights.copyRightValidFrom ?
-                                                                                    new Date(usageRights.copyRightValidFrom).toLocaleDateString('vi-VN', {
-                                                                                        day: '2-digit',
-                                                                                        month: '2-digit',
-                                                                                        year: 'numeric'
-                                                                                    }) :
-                                                                                    "N/A"
-                                                                            }
-                                                                        </Text>
-                                                                    </div>
+                                                                <Panel
+                                                                    key={usageRights.buyer?.id}
+                                                                    header={
+                                                                        <List.Item.Meta
+                                                                            avatar={<Avatar src={usageRights.buyer?.avatar || "/default-avatar.png"} />}
+                                                                            title={<Text strong>{usageRights.buyer?.displayName || "Không tên"}</Text>}
+                                                                            description={`@${usageRights.buyer?.userName || "unknown"}`}
+                                                                        />
+                                                                    }
+                                                                >
+                                                                    <div style={{ paddingLeft: 42 }}>
+                                                                        <div style={{ marginBottom: 8 }}>
+                                                                            <Text type="secondary">
+                                                                                <ShoppingCartOutlined /> Ngày mua: {
+                                                                                    usageRights.copyRightValidFrom ?
+                                                                                        new Date(usageRights.copyRightValidFrom).toLocaleDateString('vi-VN', {
+                                                                                            day: '2-digit',
+                                                                                            month: '2-digit',
+                                                                                            year: 'numeric'
+                                                                                        }) :
+                                                                                        "N/A"
+                                                                                }
+                                                                            </Text>
+                                                                        </div>
 
-                                                                    <div>
-                                                                        <Text type="secondary">
-                                                                            <HourglassOutlined /> Ngày hết hạn: {
-                                                                                usageRights?.copyRightValidTo ?
-                                                                                    new Date(usageRights.copyRightValidTo).toLocaleDateString('vi-VN', {
-                                                                                        day: '2-digit',
-                                                                                        month: '2-digit',
-                                                                                        year: 'numeric'
-                                                                                    }) :
-                                                                                    "Vô thời hạn"
-                                                                            }
-                                                                        </Text>
+                                                                        <div>
+                                                                            <Text type="secondary">
+                                                                                <HourglassOutlined /> Ngày hết hạn: {
+                                                                                    usageRights?.copyRightValidTo ?
+                                                                                        new Date(usageRights.copyRightValidTo).toLocaleDateString('vi-VN', {
+                                                                                            day: '2-digit',
+                                                                                            month: '2-digit',
+                                                                                            year: 'numeric'
+                                                                                        }) :
+                                                                                        "Vô thời hạn"
+                                                                                }
+                                                                            </Text>
+                                                                        </div>
                                                                     </div>
-                                                                </div>
-                                                            </Panel>
-                                                        </Collapse>
-                                                    </List.Item>
-                                                )}
-                                                locale={{ emptyText: "Chưa có người mua phiên bản này" }}
-                                            />
-                                        </Card>
-                                    </Timeline.Item>
-                                ))}
-                            </Timeline>
-                        ) : (
-                            <Empty description="Không có phiên bản cũ nào" />
-                        )}
-                    </Panel>
-                </Collapse>
+                                                                </Panel>
+                                                            </Collapse>
+                                                        </List.Item>
+                                                    )}
+                                                    locale={{ emptyText: "Chưa có người mua phiên bản này" }}
+                                                />
+                                            </Card>
+                                        </Timeline.Item>
+                                    ))}
+                                </Timeline>
+                            ) : (
+                                <Empty description="Không có phiên bản cũ nào" />
+                            )}
+                        </Panel>
+                    </Collapse>
+                </div>
             </div>
         </>
     );

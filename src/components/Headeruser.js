@@ -12,7 +12,7 @@ const Headeruser = ({ userData }) => {
   const roles = JSON.parse(localStorage.getItem("role")) || [];
   const access_token = localStorage.getItem("accessToken");
   const username = localStorage.getItem("username");
-  const avatarUrl = JSON.parse(localStorage.getItem("avatar"));
+  const avatarUrl = localStorage.getItem("avatar2") || JSON.parse(localStorage.getItem("avatar"));
   const { announcements, setAnnouncements, createAnnouncementConnection, announcementConnection } = useSignalR();
 
   const [refreshKey, setRefreshKey] = useState(0);
