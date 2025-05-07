@@ -197,7 +197,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, poetId, collect
                     </div>
                 </div>
                 <h3 style={styles.poemTitle}>{item.title}</h3>
-                <p style={styles.poemType}>Thể loại: {poemType[item.type]}</p>
+                <p style={styles.poemType}>Thể loại: {item?.type?.name}</p>
                 {item.description && (
                     <p style={styles.poemDescription}>Mô tả: {truncatedDescription}</p>
                 )}
@@ -325,6 +325,7 @@ const styles = {
     },
 
     poemType: {
+        fontWeight:"bold",
         color: "#444",
         margin: "1px 0 0",
         fontSize: "0.85rem",
@@ -393,6 +394,7 @@ const styles = {
     },
 
     viewButton: {
+        marginTop: "10px",
         background: "none",
         border: "1px solid #2a7fbf",
         color: "#2a7fbf",
