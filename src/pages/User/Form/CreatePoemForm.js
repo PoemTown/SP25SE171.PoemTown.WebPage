@@ -1010,6 +1010,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
       const data = await response.json();
       setPlagiarismResult(data.data.score);
       setPlagiarismPoems(data.data.plagiarismFrom);
+      console.log("plagia", data.data.plagiarismFrom)
     } catch (error) {
       console.error("Error checking plagiarism:", error);
       message.error("Không thể kiểm tra đạo văn");
@@ -1738,7 +1739,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
                               onClick={() => handlePopupContentPlagiarism(item.content)}
                               style={plagiarismItemStyle}
                             >
-                              {item.title} - {item.user?.displayName}
+                              {item.title} - {item.isFamousPoet ? item.poetSample?.name : item.user?.displayName}
                             </li>
                           ))}
                         </ul>
