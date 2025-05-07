@@ -312,7 +312,7 @@ const RecordContent = ({
                                     <LockFilled style={styles.lockIcon} />
                                     <p style={styles.purchaseText}>
                                         {record.isAbleToRemoveFromPoem
-                                            ? "Bài thơ đã bị khóa do thu hồi bản quyền sử dụng"
+                                            ? "Bản ghi âm không còn tồn tại do bài thư đã bị xoá hoặc hết quyền sử dụng"
                                             : "Mua để nghe bản ghi này"}
                                     </p>
                                     {!record.isAbleToRemoveFromPoem && (

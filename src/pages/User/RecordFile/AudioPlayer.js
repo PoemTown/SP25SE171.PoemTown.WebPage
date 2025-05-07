@@ -13,8 +13,8 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
   const formatDuration = (sec) => {
     if (!sec || isNaN(sec)) return "00:00";
     const m = Math.floor(sec / 60),
-          s = Math.floor(sec % 60);
-    return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+      s = Math.floor(sec % 60);
+    return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
   useEffect(() => {
@@ -77,36 +77,56 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
   return (
     <div style={styles.audioSection}>
       {record.fileUrl ? (
-        record.price > 0 && !isAllowedUser && previewEnded ? (
-          <div style={styles.purchaseBlock}>
-            <LockFilled style={styles.lockIcon} />
-            <p style={styles.purchaseText}>
-              Hết 30 giây nghe thử. Mua để nghe tiếp.
-            </p>
-            <Button
-              type="primary"
-              shape="round"
-              size="large"
-              onClick={() => showPurchaseConfirm(record.id, record.price)}
-            >
-              Mua ngay – {record.price.toLocaleString()} VND
-            </Button>
-          </div>
-        ) : (
-          <div style={styles.audioWrapper}>
-            <audio
-              ref={audioRef}
-              controls
-              src={audioUrl}
-              onTimeUpdate={onTimeUpdate}
-              style={styles.audioPlayer}
-            />
-            {/* <span style={styles.duration}>{duration}</span> */}
-            <span style={styles.priceTag}>
-              {record.price === 0 ? "MIỄN PHÍ" : `${record.price.toLocaleString()} VND`}
-            </span>
-          </div>
-        )
+        <>
+          {!record.isAbleToRemoveFromPoem ? (
+            record.price > 0 && !isAllowedUser && previewEnded ? (
+              <div style={styles.purchaseBlock}>
+                <LockFilled style={styles.lockIcon} />
+                <p style={styles.purchaseText}>
+                  Hết 30 giây nghe thử. Mua để nghe tiếp.
+                </p>
+                <Button
+                  type="primary"
+                  shape="round"
+                  size="large"
+                  onClick={() => showPurchaseConfirm(record.id, record.price)}
+                >
+                  Mua ngay – {record.price.toLocaleString()} VND
+                </Button>
+              </div>
+            ) : (
+              <div style={styles.audioWrapper}>
+                <audio
+                  ref={audioRef}
+                  controls
+                  src={audioUrl}
+                  onTimeUpdate={onTimeUpdate}
+                  style={styles.audioPlayer}
+                />
+                {/* <span style={styles.duration}>{duration}</span> */}
+                <span style={styles.priceTag}>
+                  {record.price === 0 ? "MIỄN PHÍ" : `${record.price.toLocaleString()} VND`}
+                </span>
+              </div>
+            )) : (
+            <div style={styles.purchaseBlock}>
+              <LockFilled style={styles.lockIcon} />
+              <p style={styles.purchaseText}>
+                Bản ghi âm không còn tồn tại do bài thơ đã bị xoá hoặc hết quyền sử dụng
+              </p>
+              {/* <Button
+                type="primary"
+                shape="round"
+                size="large"
+                onClick={() => showPurchaseConfirm(record.id, record.price)}
+              >
+                Mua ngay – {record.price.toLocaleString()} VND
+              </Button> */}
+            </div>
+          )
+
+          }
+        </>
       ) : (
         <Spin size="large" />
       )}

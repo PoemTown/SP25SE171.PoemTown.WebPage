@@ -50,9 +50,9 @@ const PoemDetail = () => {
         const storedRoles = JSON.parse(localStorage.getItem("role")) || [];
         // chỉ set khi khác nhau về giá trị
         if (JSON.stringify(storedRoles) !== JSON.stringify(roles)) {
-          setRoles(storedRoles);
+            setRoles(storedRoles);
         }
-      }, [roles]);
+    }, [roles]);
 
     const deletePermission = roles?.includes("ADMIN") || roles?.includes("MODERATOR");
 
@@ -1029,7 +1029,7 @@ const PoemDetail = () => {
 
                                     </div>
 
-                                    {!poem?.isMine && poem?.saleVersion?.status !== 4 && (
+                                    {!poem?.isMine && poem?.saleVersion?.status !== 4 && poem?.isAlreadyBought !== true && (
                                         <Button
                                             type="primary"
                                             onClick={() => {
@@ -1053,6 +1053,28 @@ const PoemDetail = () => {
                                             }}
                                         >
                                             {poem?.saleVersion?.status === 1 ? "Mua ngay" : "Sử dụng"}
+                                        </Button>
+                                    )}
+                                    {poem?.isAlreadyBought === true && (
+                                        <Button
+                                            type="primary"
+                                            onClick={() => {
+                                                    setShowCreateRecordModal(true);
+                                            }}
+                                            style={{
+                                                background: '#7d6b58',
+                                                border: 'none',
+                                                fontWeight: 500,
+                                                height: '40px',
+                                                borderRadius: '8px',
+                                                boxShadow: '0 4px 12px rgba(138, 99, 210, 0.3)',
+                                                ':hover': {
+                                                    background: 'linear-gradient(135deg, #7a53c2, #5a3b9a)',
+                                                    transform: 'translateY(-2px)'
+                                                }
+                                            }}
+                                        >
+                                            Sử dụng
                                         </Button>
                                     )}
                                 </div>
