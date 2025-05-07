@@ -230,7 +230,7 @@ const TransactionDetailModal = ({ transaction, open, onClose, loading }) => {
             {transaction.type === 6 || transaction.type === 10 ? (
               <Card sx={{ mb: 2, boxShadow: 3 }}>
                 <CardContent>
-                  <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>{transaction.type === 10 ? "Thông tin người gửi" : "Thông tin người nhận" }</Typography>
+                  <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>{transaction.type === 10 ? "Thông tin người gửi" : "Thông tin người nhận"}</Typography>
                   <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
                     <Avatar
                       src={transaction.receiveUser?.avatar || ""}
@@ -337,6 +337,7 @@ const TransactionsManagement = () => {
   const [totalRecords, setTotalRecords] = useState(0);
   const [totalPages, setTotalPages] = useState(1);
   const [detailLoading, setDetailLoading] = useState(false);
+  const [selectedType, setSelectedType] = useState(null);
 
   const pageSizeOptions = [
     { value: 10, label: '10 bản ghi' },
@@ -348,7 +349,7 @@ const TransactionsManagement = () => {
 
   useEffect(() => {
     fetchTransactions();
-  }, [pageSize, currentPage]);
+  }, [pageSize, currentPage, selectedType])
 
   const fetchTransactions = async () => {
     setLoading(true);
@@ -358,7 +359,8 @@ const TransactionsManagement = () => {
         {
           params: {
             pageNumber: currentPage,
-            pageSize: pageSize
+            pageSize: pageSize,
+            ...(selectedType !== null && { 'filterOptions.type': selectedType }),
           },
           headers: {
             Authorization: `Bearer ${localStorage.getItem("accessToken")}`,
@@ -395,6 +397,41 @@ const TransactionsManagement = () => {
     }
   };
 
+  const getTransactionType = (type) => {
+    switch (type) {
+      case 1: return "Nạp tiền vào ví";
+      case 2: return "Mua mẫu chính";
+      case 3: return "Mua bản ghi âm";
+      case 4: return "Mua bài thơ";
+      case 5: return "Rút tiền";
+      case 6: return "Ủng hộ";
+      case 7: return "Phí hoa hồng";
+      case 8: return "Hoàn tiền";
+      case 9: return "Phí dịch vụ nạp tiền";
+      case 10: return "Nhận ủng hộ";
+      default: return "Không xác định";
+    }
+  };
+
+
+  const handleTypeChange = (event) => {
+    const value = event.target.value;
+    if (value === '') {
+      setSelectedType(null);
+    } else {
+      setSelectedType(Number(value));
+    }
+    setCurrentPage(1); // Reset to first page when filter changes
+  };
+
+  const transactionTypeOptions = [
+    { value: '', label: 'Tất cả' },
+    ...Array.from({ length: 10 }, (_, i) => ({
+      value: i + 1,
+      label: getTransactionType(i + 1),
+    })),
+  ];
+
   const handlePageSizeChange = (event) => {
     setPageSize(event.target.value);
     setCurrentPage(1);
@@ -416,22 +453,6 @@ const TransactionsManagement = () => {
     return date.toLocaleString();
   };
 
-  const getTransactionType = (type) => {
-    switch (type) {
-      case 1: return "Nạp tiền vào ví";
-      case 2: return "Mua mẫu chính";
-      case 3: return "Mua bản ghi âm";
-      case 4: return "Mua bài thơ";
-      case 5: return "Rút tiền";
-      case 6: return "Ủng hộ";
-      case 7: return "Phí hoa hồng";
-      case 8: return "Hoàn tiền";
-      case 9: return "Phí dịch vụ nạp tiền";
-      case 10: return "Nhận ủng hộ";
-      default: return "Không xác định";
-    }
-  };
-
   const getStatusLabel = (status) => {
     switch (status) {
       case 1: return { label: "Chờ thanh toán", color: "warning" };
@@ -451,25 +472,44 @@ const TransactionsManagement = () => {
         Danh sách giao dịch
       </Typography>
 
+      {/* In the JSX where the page controls are */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
         <Typography variant="subtitle1">
           Tổng số giao dịch: {totalRecords}
         </Typography>
 
-        <TextField
-          select
-          label="Số bản ghi mỗi trang"
-          value={pageSize}
-          onChange={handlePageSizeChange}
-          size="small"
-          sx={{ minWidth: 150 }}
-        >
-          {pageSizeOptions.map((option) => (
-            <MenuItem key={option.value} value={option.value}>
-              {option.label}
-            </MenuItem>
-          ))}
-        </TextField>
+        <Box sx={{ display: 'flex', gap: 2 }}>
+          <TextField
+            select
+            label="Lọc theo loại"
+            value={selectedType || ''}
+            onChange={handleTypeChange}
+            size="small"
+            sx={{ minWidth: 200 }}
+          >
+            {transactionTypeOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+
+          {/* Existing page size selector */}
+          <TextField
+            select
+            label="Số bản ghi mỗi trang"
+            value={pageSize}
+            onChange={handlePageSizeChange}
+            size="small"
+            sx={{ minWidth: 150 }}
+          >
+            {pageSizeOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Box>
       </Box>
 
       {loading ? (

@@ -52,6 +52,9 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
   const quillRef = useRef(null);
   const accessToken = localStorage.getItem("accessToken");
 
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false);
+  const [duplicatePoem, setDuplicatePoem] = useState(null);
+
   // Styles
   const containerStyle = {
     maxWidth: '1200px',
@@ -883,6 +886,314 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
       }
     }
   };
+
+  const handlePublishClick = async () => {
+    try {
+      setIsLoading(true);
+      if (!accessToken) {
+        message.error("Vui lòng đăng nhập để đăng bài.");
+        setIsLoading(false);
+        return;
+      }
+
+      if (validationError) {
+        message.error(validationError);
+        setIsLoading(false)
+        return;
+      }
+
+      // Kiểm tra hình ảnh
+      if (!poemData.poemImage) {
+        message.error("Vui lòng thêm hình ảnh minh họa trước khi đăng bài!");
+        setImageError(true);
+        setIsLoading(false);
+        return;
+      }
+
+      // Kiểm tra các trường bắt buộc
+      if (!poemData.title.trim()) {
+        message.error("Vui lòng nhập tiêu đề");
+        setIsLoading(false);
+        return;
+      }
+      if (!poemData.description.trim()) {
+        message.error("Vui lòng nhập mô tả");
+        setIsLoading(false);
+        return;
+      }
+
+      const poemType = poemTypes.find(type => type.id.toString() === selectedType) || {};
+      const poemTypeName = poemType.name || 'Unknown';
+      const validatePoemStructure = () => {
+        const lines = formatContent(poemData.content, selectedType)
+          .split('\n')
+          .filter(line => line.trim() !== '');
+
+        if (lines.length === 0) {
+          setValidationError("Thơ chưa được soạn");
+          return false;
+        };
+
+        switch (poemTypeName) {
+          case 'Thơ Tự Do': {
+            if (lines.length < 4) {
+              setValidationError("Thơ phải có ít nhất 4 câu");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ Lục Bát': {
+            if (lines.length % 2 !== 0) {
+              setValidationError("Thơ Lục Bát phải có số câu chẵn (mỗi cặp 6-8 chữ)");
+              return false;
+            }
+
+            // Kiểm tra câu cuối
+            const lastLineWordCount = lines[lines.length - 1].trim().split(/\s+/).length;
+            if (lastLineWordCount !== 8) {
+              setValidationError("Vui lòng hoàn thiện đủ 8 chữ ở câu cuối");
+              return false;
+            }
+
+            if (lines.length < 4) {
+              setValidationError("Thơ phải có ít nhất 4 câu");
+              return false;
+            }
+
+            // Kiểm tra cấu trúc 6-8
+            const isValidStructure = lines.every((line, index) => {
+              const wordCount = line.trim().split(/\s+/).length;
+              return (index % 2 === 0) ? wordCount === 6 : wordCount === 8;
+            });
+
+            if (!isValidStructure) {
+              setValidationError("Thơ Lục Bát phải theo cấu trúc: câu 6 chữ luân phiên với câu 8 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ Song Thất Lục Bát': {
+            if (lines.length % 4 !== 0) {
+              setValidationError("Song Thất Lục Bát theo cấu trúc 7-7-6-8 và phải kết thúc ở câu 8 chữ");
+              return false;
+            };
+
+            const hasInvalidEightWordLine = lines.some((line, index) => {
+              const stanzaIndex = index % 4;
+              return stanzaIndex === 3 && line.trim().split(/\s+/).length !== 8;
+            });
+
+            if (hasInvalidEightWordLine) {
+              setValidationError("Vui lòng hoàn thiện đủ 8 chữ ở câu cuối");
+              return false;
+            }
+
+            const pattern = [7, 7, 6, 8];
+            return lines.every((line, index) => {
+              const stanzaIndex = index % 4;
+              return line.trim().split(/\s+/).length === pattern[stanzaIndex];
+            });
+          }
+
+          case 'Thơ Thất Ngôn Tứ Tuyệt': {
+            if (lines.length !== 4) {
+              setValidationError("Thất Ngôn Tứ Tuyệt phải có đúng 4 câu");
+              return false;
+            }
+            const hasInvalidLine = lines.some(line => line.trim().split(/\s+/).length !== 7);
+            if (hasInvalidLine) {
+              setValidationError("Thất Ngôn Tứ Tuyệt mỗi câu phải có 7 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ Ngũ Ngôn Tứ Tuyệt': {
+            if (lines.length !== 4) {
+              setValidationError("Ngũ Ngôn Tứ Tuyệt phải có đúng 4 câu");
+              return false;
+            }
+            const hasInvalidLine = lines.some(line => line.trim().split(/\s+/).length !== 5);
+            if (hasInvalidLine) {
+              setValidationError("Ngũ Ngôn Tứ Tuyệt mỗi câu phải có 5 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ Thất Ngôn Bát Cú': {
+            if (lines.length !== 8) {
+              setValidationError("Thất Ngôn Bát Cú phải có đúng 8 câu");
+              return false;
+            }
+
+            const hasInvalidLine = lines.some(line => line.trim().split(/\s+/).length !== 7);
+            if (hasInvalidLine) {
+              setValidationError("Mỗi câu trong Thất Ngôn Bát Cú phải có 7 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ 4 Chữ': {
+            if (lines.length < 4) {
+              setValidationError("Thơ 4 chữ phải có ít nhất 4 câu");
+              return false;
+            }
+            const hasError = lines.some(line => line.trim().split(/\s+/).length !== 4);
+            if (hasError) {
+              setValidationError("Mỗi câu thơ 4 chữ phải có đúng 4 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ 5 Chữ': {
+            if (lines.length < 4) {
+              setValidationError("Thơ 5 chữ phải có ít nhất 4 câu");
+              return false;
+            }
+            const hasError = lines.some(line => line.trim().split(/\s+/).length !== 5);
+            if (hasError) {
+              setValidationError("Mỗi câu thơ 5 chữ phải có đúng 5 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ 6 Chữ': {
+            if (lines.length < 4) {
+              setValidationError("Thơ 6 chữ phải có ít nhất 4 câu");
+              return false;
+            }
+            const hasError = lines.some(line => line.trim().split(/\s+/).length !== 6);
+            if (hasError) {
+              setValidationError("Mỗi câu thơ 6 chữ phải có đúng 6 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ 7 Chữ': {
+            if (lines.length < 4) {
+              setValidationError("Thơ 7 chữ phải có ít nhất 4 câu");
+              return false;
+            }
+            const hasError = lines.some(line => line.trim().split(/\s+/).length !== 7);
+            if (hasError) {
+              setValidationError("Mỗi câu thơ 7 chữ phải có đúng 7 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          case 'Thơ 8 Chữ': {
+            if (lines.length < 4) {
+              setValidationError("Thơ 8 chữ phải có ít nhất 4 câu");
+              return false;
+            }
+            const hasError = lines.some(line => line.trim().split(/\s+/).length !== 8);
+            if (hasError) {
+              setValidationError("Mỗi câu thơ 8 chữ phải có đúng 8 chữ");
+              return false;
+            }
+            return true;
+          }
+
+          default: {
+            setValidationError(`Thể thơ "${poemTypeName}" không được hỗ trợ`);
+            return false;
+          }
+        }
+      };
+
+      const isValid = validatePoemStructure();
+      if (!isValid) {
+        setIsLoading(false);
+        return;
+      }
+
+      const content = formatContent(poemData.content, selectedType);
+
+      // Check for duplicates
+      const duplicateResponse = await axios.post(
+        `${process.env.REACT_APP_API_BASE_URL}/poems/v1/duplicate`,
+        { poemContent: content },
+        {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        }
+      );
+      console.log("dup",duplicateResponse.data.data?.duplicatedFrom)
+      if (duplicateResponse.data.data.duplicatedFrom[0]) {
+        setDuplicatePoem(duplicateResponse.data.data?.duplicatedFrom[0]);
+      } else {
+        setDuplicatePoem(null);
+      }
+
+      setIsConfirmModalOpen(true);
+    } catch (error) {
+      console.error("Error checking duplicates:", error);
+      // Fallback to normal confirmation if check fails
+      setDuplicatePoem(null);
+      setIsConfirmModalOpen(true);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const ConfirmPublishModal = () => (
+    <Modal
+      title="Xác nhận đăng bài"
+      open={isConfirmModalOpen}
+      onCancel={() => setIsConfirmModalOpen(false)}
+      footer={[
+        <Button key="cancel" onClick={() => setIsConfirmModalOpen(false)}>
+          Hủy
+        </Button>,
+        <Button
+          key="confirm"
+          type="primary"
+          onClick={() => {
+            setIsConfirmModalOpen(false);
+            setDrafting ? handleSubmitDraft() : handleSubmit(1);
+          }}
+        >
+          Xác nhận
+        </Button>,
+      ]}
+      width={700}
+    >
+      {duplicatePoem ? (
+        <>
+          <p style={{ color: '#ff4d4f', fontWeight: 'bold' }}>
+            Bài thơ bạn đăng có vẻ giống một bài thơ trước đó của bạn. Bạn có chắc chắn muốn đăng bài?
+          </p>
+          <div style={{ margin: '16px 0' }}>
+            <p><strong>Tiêu đề bài thơ trùng:</strong> {duplicatePoem.title}</p>
+            <p><strong>Mô tả:</strong> {duplicatePoem.description}</p>
+            <p><strong>Thể loại:</strong> {duplicatePoem.type?.name}</p>
+            <div style={{ marginTop: '8px' }}>
+              <label style={{ display: 'block', marginBottom: '8px' }}>
+                <strong>Nội dung:</strong>
+              </label>
+              <TextArea
+                value={duplicatePoem.content}
+                readOnly
+                autoSize={{ minRows: 4, maxRows: 8 }}
+                style={{ background: '#f5f5f5' }}
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <p>Bạn có chắc chắn muốn đăng bài?</p>
+      )}
+    </Modal>
+  );
 
   // Xử lý gợi ý từ AI
   const handleAISuggest = async () => {
@@ -1785,7 +2096,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
           <Button
             type="primary"
             icon={<SendOutlined />}
-            onClick={setDrafting ? handleSubmitDraft : () => handleSubmit(1)}
+            onClick={handlePublishClick}
             loading={isLoading}
             disabled={!poemData.poemImage}
           >
@@ -1793,7 +2104,7 @@ const CreatePoemForm = ({ onBack, initialData, setDrafting, fetchPoems }) => {
           </Button>
         </Tooltip>
       </div>
-
+      <ConfirmPublishModal />
       {/* Modal gợi ý từ AI */}
       <Modal
         title="Gợi ý nội dung từ AI"

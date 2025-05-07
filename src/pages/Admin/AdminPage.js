@@ -67,7 +67,7 @@ const AdminPage = () => {
                 { key: "accounts", icon: <PeopleAlt />, text: "Tài khoản người dùng" },
                 { key: "moderators", icon: <Gavel />, text: "Quản trị viên" },
                 { key: "transactions", icon: <MonetizationOn />, text: "Giao dịch" },
-                { key: "orders", icon: <ShoppingCart />, text: "Đơn hàng" },
+                // { key: "orders", icon: <ShoppingCart />, text: "Đơn hàng" },
                 { key: "commissionfee", icon: <ControlOutlined />, text: "Phí nạp tiền"}
             ]
         },
@@ -107,7 +107,7 @@ const AdminPage = () => {
             "accounts": "Quản lý tài khoản người dùng",
             "moderators": "Quản lý quản trị viên",
             "transactions": "Quản lý giao dịch",
-            "orders": "Quản lý đơn hàng",
+            // "orders": "Quản lý đơn hàng",
             "commissionfee": "Quản lý phí nạp tiền",
             "poems": "Quản lý bài thơ",
             "poemtypes": "Quản lý thể loại thơ",
@@ -377,7 +377,7 @@ const AdminPage = () => {
                     
                     <Box sx={{ mt: 2 }}>
                         {currentPage === "transactions" && <TransactionsManagement />}
-                        {currentPage === "orders" && <OrderManagement />}
+                        {/* {currentPage === "orders" && <OrderManagement />} */}
                         {currentPage === "accounts" && <AccountManagement />}
                         {currentPage === "templates" && <TemplateManagement />}
                         {currentPage === "dashboard" && <DashboardPage />}
