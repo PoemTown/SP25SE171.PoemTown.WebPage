@@ -192,7 +192,7 @@ const EditPoetForm = ({
           placeholder="Nhập tiểu sử nhà thơ..."
           showCount
           maxLength={1000}
-          style={{ resize: 'none' }}
+          style={{ resize: 'none', textAlign:"justify" }}
         />
       </Form.Item>
 
