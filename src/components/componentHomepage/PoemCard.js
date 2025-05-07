@@ -5,7 +5,7 @@ import { IoIosMore } from "react-icons/io";
 import { IoBookmark } from "react-icons/io5";
 import { MdReport } from "react-icons/md";
 import { IoIosLink } from "react-icons/io";
-import { FaUserPlus } from "react-icons/fa";
+import { FaUserPlus, FaVolumeDown } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useState } from "react";
 import ReportPoemModal from "./ReportPoemModal";
@@ -208,6 +208,15 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                         <span style={styles.postDate}>– <ClockCircleOutlined style={{ fontSize: "0.9rem" }} />{formatDate(item.createdTime)}</span>
                     </div>
                     <div style={styles.headerRight}>
+                        {item?.recordFileCount > 0 && (
+                            <div style={styles.iconButton}>
+                                <FaVolumeDown size={15} />
+                            </div>
+                        )
+
+                        }
+
+
                         <button style={styles.iconButton} onClick={() => onBookmark(item.id)}>
                             {bookmarked ? <IoBookmark size={15} color="#FFCE1B" /> : <CiBookmark size={15} />}
                         </button>
@@ -371,7 +380,7 @@ const styles = {
         position: 'relative',
         flexShrink: 0,
         width: '204px',
-        height:'360px',
+        height: '360px',
         borderRadius: '16px',
         overflow: 'hidden',
 
@@ -382,7 +391,7 @@ const styles = {
         height: '320px',
         background: '#f0eafa',
         position: 'relative',
-        
+
     },
     poemImage: {
         width: '100%',
