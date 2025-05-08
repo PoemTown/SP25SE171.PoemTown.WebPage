@@ -210,7 +210,7 @@ const PoemCard = ({ item, bookmarked, liked, onBookmark, onLike, onHover, collec
                     <div style={styles.headerRight}>
                         {item?.recordFileCount > 0 && (
                             <div style={styles.iconButton}>
-                                <FaVolumeDown size={15} />
+                                <FaVolumeDown size={15} color="#08bcd4"/>
                             </div>
                         )
 
