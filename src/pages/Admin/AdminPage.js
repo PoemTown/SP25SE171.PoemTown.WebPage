@@ -32,6 +32,7 @@ import { BankOutlined, ControlOutlined, MessageOutlined } from "@ant-design/icon
 import DepositCommissionFeeManagement from "./Tabs/DepositCommissionFeeManagement";
 import ComplaintsManagement from "./Tabs/ComplaintsManagement";
 import BanksManagement from "./Tabs/BankManagement";
+import MessageReportManagement from "./Tabs/MessageReportManagement";
 
 const drawerWidth = 260;
 
@@ -67,7 +68,6 @@ const AdminPage = () => {
                 { key: "accounts", icon: <PeopleAlt />, text: "Tài khoản người dùng" },
                 { key: "moderators", icon: <Gavel />, text: "Quản trị viên" },
                 { key: "transactions", icon: <MonetizationOn />, text: "Giao dịch" },
-                // { key: "orders", icon: <ShoppingCart />, text: "Đơn hàng" },
                 { key: "commissionfee", icon: <ControlOutlined />, text: "Phí nạp tiền"}
             ]
         },
@@ -81,6 +81,7 @@ const AdminPage = () => {
                 { key: "templates", icon: <Description />, text: "Mẫu trang trí" },
                 { key: "contents", icon: <Article />, text: "Nội dung" },
                 { key: "banks", icon: <BankOutlined />, text: "Ngân hàng" },
+                { key: "reportmessage", icon: <MessageOutlined />, text: "Quản lý mẫu báo cáo" },
             ]
         },
         { 
@@ -107,7 +108,6 @@ const AdminPage = () => {
             "accounts": "Quản lý tài khoản người dùng",
             "moderators": "Quản lý quản trị viên",
             "transactions": "Quản lý giao dịch",
-            // "orders": "Quản lý đơn hàng",
             "commissionfee": "Quản lý phí nạp tiền",
             "poems": "Quản lý bài thơ",
             "poemtypes": "Quản lý thể loại thơ",
@@ -121,7 +121,8 @@ const AdminPage = () => {
             "reports": "Quản lý báo cáo",
             "requests": "Quản lý yêu cầu",
             "complaints": "Quản lý phản hồi về rút tiền",
-            "banks": "Quản lý ngân hàng"
+            "banks": "Quản lý ngân hàng",
+            "reportmessage":"Quản lý mẫu báo cáo"
         };
         return pageTitles[key] || key;
     };
@@ -396,6 +397,7 @@ const AdminPage = () => {
                         {currentPage === "contacts" && <ContactsManagement />}
                         {currentPage === "complaints" && <ComplaintsManagement />}
                         {currentPage === "banks" && <BanksManagement />}
+                        {currentPage === "reportmessage" && <MessageReportManagement />}
                     </Box>
                 </Box>
             </Box>
