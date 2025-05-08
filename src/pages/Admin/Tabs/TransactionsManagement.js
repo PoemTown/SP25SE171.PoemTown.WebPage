@@ -468,9 +468,6 @@ const TransactionsManagement = () => {
 
   return (
     <Box sx={{ flexGrow: 1, p: 3 }}>
-      <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
-        Danh sách giao dịch
-      </Typography>
 
       {/* In the JSX where the page controls are */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>

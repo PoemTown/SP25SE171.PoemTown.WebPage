@@ -310,9 +310,7 @@ const RequestFromUser = () => {
             </Snackbar>
 
             {/* Main Content */}
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
-                Danh sách yêu cầu rút tiền
-            </Typography>
+           
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="subtitle1">

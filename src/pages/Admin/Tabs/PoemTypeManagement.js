@@ -381,9 +381,7 @@ const PoemTypeManagement = () => {
     <Box sx={{ p: 3 }}>
       {/* Header section */}
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-        <Typography variant="h4" component="h1">
-          Quản lý thể loại thơ
-        </Typography>
+       
         <Button
           variant="contained"
           startIcon={<Add />}
