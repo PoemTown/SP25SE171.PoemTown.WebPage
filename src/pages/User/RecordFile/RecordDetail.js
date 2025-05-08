@@ -437,7 +437,7 @@ const RecordDetail = () => {
                                             fontStyle: 'italic',
                                             color: '#7d6b58'
                                         }}>
-                                            — {record.poem?.user.displayName || "Khuyết danh"}
+                                            — {record.poem?.isFamousPoet ? record.poem?.poetSample?.name : record.poem?.user.displayName || "Khuyết danh"}
                                         </div>
                                     </div>
 

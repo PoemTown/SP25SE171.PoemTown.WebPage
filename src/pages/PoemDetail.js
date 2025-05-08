@@ -303,6 +303,7 @@ const PoemDetail = () => {
 
             const data = response.data; // vì dùng axios, không cần `.json()`
             message.success("Thanh toán thành công");
+            window.location.reload();
 
         } catch (error) {
             console.error("Error fetching poem:", error);
