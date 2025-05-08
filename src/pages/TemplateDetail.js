@@ -266,7 +266,7 @@ const TemplateDetail = () => {
                 return;
             }
 
-            message.success(data.message || "Mua template thành công");
+            message.success("Mua template thành công");
             setIsBought(true);
 
             setTimeout(() => {
