@@ -159,7 +159,6 @@ const DailyMessagesManagement = () => {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={3}>
-        <Typography variant="h5">Quản lý tin nhắn hàng ngày</Typography>
         <Button
           variant="contained"
           color="primary"

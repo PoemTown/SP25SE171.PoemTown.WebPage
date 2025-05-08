@@ -150,9 +150,7 @@ const AnnouncementsManagement = () => {
   return (
     <Box>
       <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-        <Typography variant="h5" gutterBottom>
-          Quản lý thông báo
-        </Typography>
+        
         <Button
           variant="contained"
           color="primary"

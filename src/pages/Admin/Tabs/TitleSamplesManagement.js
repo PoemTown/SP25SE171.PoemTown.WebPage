@@ -222,9 +222,7 @@ const TitleSamplesManagement = () => {
   return (
     <Box sx={{ width: '100%' }}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-        <Typography variant="h5" component="h2" gutterBottom>
-          Quản lý Mẫu Danh hiệu
-        </Typography>
+       
         <Box>
           <Button
             variant="contained"
