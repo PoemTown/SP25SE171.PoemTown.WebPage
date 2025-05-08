@@ -39,8 +39,17 @@ const getReportType = (type) => {
 const getReportStatus = (status) => {
     switch (status) {
         case 1: return "Đang chờ xử lý";
-        case 2: return "Đã chấp nhận";
-        case 3: return "Đã từ chối";
+        case 2: return "Đã xử lý";
+        case 3: return "Từ chối xử lý";
+        default: return "Không xác định";
+    }
+};
+
+const getReportStatusPlagiarism = (status) => {
+    switch (status) {
+        case 1: return "Đang chờ xử lý";
+        case 2: return "Thông qua";
+        case 3: return "Từ chối đăng bài";
         default: return "Không xác định";
     }
 };
@@ -70,6 +79,12 @@ const statusOptions = [
     { value: 1, label: 'Đang chờ xử lý' },
     { value: 2, label: 'Đã chấp nhận' },
     { value: 3, label: 'Đã từ chối' }
+];
+
+const plagiarismStatusOptions = [
+    { value: 1, label: 'Đang chờ xử lý' },
+    { value: 2, label: 'Thông qua' },
+    { value: 3, label: 'Từ chối đăng bài' }
 ];
 
 const ReportFromUser = () => {
@@ -267,7 +282,7 @@ const ReportFromUser = () => {
                                     <TableCell>{report?.reportMessage?.description || "Không có mô tả"}</TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={getReportStatus(report.status)}
+                                            label={report.type === 3 ? getReportStatusPlagiarism(report.status) : getReportStatus(report.status)}
                                             color={getStatusColor(report.status)}
                                             size="small"
                                         />
@@ -322,13 +337,13 @@ const ReportFromUser = () => {
                             <Typography variant="subtitle1" gutterBottom>
                                 <strong>Loại báo cáo:</strong> {getReportType(selectedReport.type)}
                             </Typography>
-                            
+
                             {/* Phần thông tin báo cáo được cải thiện */}
                             <Box sx={{ mb: 2, p: 2, border: '1px solid #eee', borderRadius: 1, backgroundColor: '#f9f9f9' }}>
                                 <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 'bold' }}>
                                     Thông tin báo cáo
                                 </Typography>
-                                
+
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
                                     <div>
                                         <Typography component="span" sx={{ fontWeight: 'bold' }}>Lý do báo cáo: </Typography>
@@ -336,7 +351,7 @@ const ReportFromUser = () => {
                                             {selectedReport.reportReason || "Không có lý do cụ thể"}
                                         </Typography>
                                     </div>
-                                    
+
                                     <div>
                                         <Typography component="span" sx={{ fontWeight: 'bold' }}>Mô tả chi tiết: </Typography>
                                         <Typography component="span">
@@ -470,11 +485,18 @@ const ReportFromUser = () => {
                                     onChange={handleStatusChange}
                                     disabled={!isEditable}
                                 >
-                                    {statusOptions.map((option) => (
-                                        <MenuItem key={option.value} value={option.value}>
-                                            {option.label}
-                                        </MenuItem>
-                                    ))}
+                                    {selectedReport.type === 3 ?
+                                        plagiarismStatusOptions.map((option) => (
+                                            <MenuItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </MenuItem>
+                                        )) :
+                                        statusOptions.map((option) => (
+                                            <MenuItem key={option.value} value={option.value}>
+                                                {option.label}
+                                            </MenuItem>
+                                        ))
+                                    }
                                 </Select>
                             </FormControl>
 
