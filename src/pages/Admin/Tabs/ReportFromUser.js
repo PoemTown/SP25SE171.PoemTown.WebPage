@@ -195,9 +195,7 @@ const ReportFromUser = () => {
 
     return (
         <Box sx={{ flexGrow: 1, p: 3 }}>
-            <Typography variant="h4" gutterBottom sx={{ fontWeight: "bold" }}>
-                Báo cáo từ người dùng
-            </Typography>
+          
 
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                 <Typography variant="subtitle1">

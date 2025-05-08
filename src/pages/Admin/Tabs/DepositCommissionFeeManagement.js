@@ -153,13 +153,7 @@ const DepositCommissionFeeManagement = () => {
     return (
         <Box sx={{ mt: 2 }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                <Typography variant="h5" sx={{
-                    color: '#5a4a42',
-                    fontFamily: '"Times New Roman", serif',
-                    fontWeight: 700
-                }}>
-                    Thiết lập phí nạp tiền
-                </Typography>
+
                 <Button
                     variant="contained"
                     startIcon={<Add />}
