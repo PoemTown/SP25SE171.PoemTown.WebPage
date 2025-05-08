@@ -525,7 +525,7 @@ const TransactionsManagement = () => {
                 <TableCell><strong>Mô tả</strong></TableCell>
                 <TableCell><strong>Loại</strong></TableCell>
                 <TableCell><strong>Số tiền (VNĐ)</strong></TableCell>
-                <TableCell><strong>Giảm giá (VNĐ)</strong></TableCell>
+                {/* <TableCell><strong>Giảm giá (VNĐ)</strong></TableCell> */}
                 <TableCell><strong>Thời gian tạo</strong></TableCell>
                 <TableCell><strong>Họ và tên</strong></TableCell>
                 <TableCell><strong>Avatar</strong></TableCell>
@@ -540,7 +540,7 @@ const TransactionsManagement = () => {
                   <TableCell>{transaction.description || "Không có mô tả"}</TableCell>
                   <TableCell>{getTransactionType(transaction.type)}</TableCell>
                   <TableCell>{transaction.amount ? transaction.amount.toLocaleString() : "0"} VNĐ</TableCell>
-                  <TableCell>{transaction.discountAmount ? transaction.discountAmount.toLocaleString() : "0"} VNĐ</TableCell>
+                  {/* <TableCell>{transaction.discountAmount ? transaction.discountAmount.toLocaleString() : "0"} VNĐ</TableCell> */}
                   <TableCell>{formatDate(transaction.createdTime)}</TableCell>
                   <TableCell>{transaction.user?.fullName || "Không có tên"}</TableCell>
                   <TableCell>

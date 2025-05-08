@@ -8,6 +8,7 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
   const [duration, setDuration] = useState("00:00");
   const [previewEnded, setPreviewEnded] = useState(false);
   const audioRef = useRef(null);
+  const [totalDuration, setTotalDuration] = useState(0);
   const accessToken = localStorage.getItem("accessToken");
 
   const formatDuration = (sec) => {
@@ -17,8 +18,14 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
     return `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
   };
 
+  const handleLoadedMetadata = () => {
+    if (audioRef.current) {
+      setTotalDuration(audioRef.current.duration);
+      setDuration(formatDuration(audioRef.current.duration));
+    }
+  };
+
   useEffect(() => {
-    let metadataAudio;
     const fetchAudio = async () => {
       try {
         const headers = accessToken ? { Authorization: `Bearer ${accessToken}` } : {};
@@ -28,12 +35,6 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
         );
         const url = URL.createObjectURL(resp.data);
         setAudioUrl(url);
-
-        // tạo audio tạm để đọc duration gốc
-        metadataAudio = new Audio(url);
-        metadataAudio.onloadedmetadata = () => {
-          setDuration(formatDuration(metadataAudio.duration));
-        };
       } catch (err) {
         console.error(err);
         setAudioUrl(null);
@@ -45,11 +46,8 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
       setPreviewEnded(false);
       fetchAudio();
     }
+
     return () => {
-      if (metadataAudio) {
-        metadataAudio.pause();
-        metadataAudio.src = "";
-      }
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = "";
@@ -68,7 +66,10 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
     const aud = audioRef.current;
     if (!aud) return;
     // nếu có giá >0, chưa mua và đã chạy >=30s → stop preview
-    if (record.price > 0 && !isAllowedUser && aud.currentTime >= 30) {
+    const previewLimit = totalDuration * 0.2;
+
+    // Check if preview time exceeded
+    if (record.price > 0 && !isAllowedUser && aud.currentTime >= previewLimit) {
       aud.pause();
       setPreviewEnded(true);
     }
@@ -83,7 +84,7 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
               <div style={styles.purchaseBlock}>
                 <LockFilled style={styles.lockIcon} />
                 <p style={styles.purchaseText}>
-                  Hết 30 giây nghe thử. Mua để nghe tiếp.
+                  Hết {Math.ceil(totalDuration * 0.2)} giây nghe thử. Mua để nghe tiếp.
                 </p>
                 <Button
                   type="primary"
@@ -101,6 +102,7 @@ const AudioPlayer = ({ record, currentUser, showPurchaseConfirm }) => {
                   controls
                   src={audioUrl}
                   onTimeUpdate={onTimeUpdate}
+                  onLoadedMetadata={handleLoadedMetadata}
                   style={styles.audioPlayer}
                 />
                 {/* <span style={styles.duration}>{duration}</span> */}
