@@ -8,6 +8,7 @@ import {
     Logout, LibraryBooks, Collections, Report, Notifications, 
     ManageAccounts, Home, Category,Chat
 } from "@mui/icons-material";
+import {  MessageOutlined } from "@ant-design/icons";
 import { Title as TitleIcon } from '@mui/icons-material';
 import ReportFromUser from "../Admin/Tabs/ReportFromUser";
 import PoemManagement from "../Admin/Tabs/PoemManagement";
@@ -17,6 +18,7 @@ import AccountManagement from "../Admin/Tabs/AccountManagement";
 import PoemTypeManagement from "../Admin/Tabs/PoemTypeManagement";
 import TitleSamplesManagement from "../Admin/Tabs/TitleSamplesManagement";
 import DailyMessagesManagement from "../Admin/Tabs/DailyMessagesManagement";
+import MessageReportManagement from "../Admin/Tabs/MessageReportManagement";
 const drawerWidth = 260;
 
 const ModeratorPage = () => {
@@ -54,6 +56,7 @@ const ModeratorPage = () => {
                 { key: "poemtypes", icon: <Category />, text: "Thể loại thơ" },
                 { key: "titlesamples", icon: <TitleIcon />, text: "Mẫu danh hiệu" },
                 { key: "dailymessages", icon: <Chat />, text: "Thông nghiệp hằng ngày" },
+                { key: "reportmessage", icon: <MessageOutlined />, text: "Quản lý mẫu báo cáo" },
             ]
         }
     ];
@@ -67,6 +70,7 @@ const ModeratorPage = () => {
             "poemtypes": "Quản lý thể loại thơ",
             "titlesamples": "Quản lý mẫu danh hiệu",
             "dailymessages": "Quản lý tin nhắn hàng ngày",
+            "reportmessage":"Quản lý mẫu báo cáo"
         };
         return pageTitles[key] || key;
     };
@@ -329,6 +333,7 @@ const ModeratorPage = () => {
                         {currentPage === "poemtypes" && <PoemTypeManagement />}
                         {currentPage === "titlesamples" && <TitleSamplesManagement />}
                         {currentPage === "dailymessages" && <DailyMessagesManagement />}
+                        {currentPage === "reportmessage" && <MessageReportManagement />}
                     </Box>
                 </Box>
             </Box>
